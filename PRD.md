@@ -41,7 +41,8 @@ Ia menyelesaikan masalah konfigurasi berulang dengan menyediakan satu hab setemp
 | **Modular Capability Library** | Pengurusan alatan & arahan daripada fail JSON. | Membaca fail JSON dalam `skills_library/`. Mengabaikan fail rosak secara automatik dengan amaran mesra. Membenarkan penambahan skil baharu secara interaktif. |
 | **Template Injector** | Menjana fail konfigurasi AI menggunakan Handlebars. | Menyuntik variabel `projectName`, `agentName`, dan `skillsInstructions` dengan mod teks mentah (`noEscape: true`). Menyalin fail aset fizikal (cth: `scripts/` $\rightarrow$ `tools/`). |
 | **Dependency Automation** | Automasi pemasangan kebergantungan (`npm` / `pip`). | Mengumpul kebergantungan secara unik dan menawarkan pilihan pengesahan (Y/N) untuk menjalankan `npm install` atau `pip install` dalam direktori sasaran. |
-| **GitIgnore Manager** | Pengurusan pintar fail `.gitignore`. | Menawarkan pengesahan (Y/N) untuk menambah laluan artifak janaan skil (cth: `graphify-out/`) ke dalam `.gitignore` secara automatik. |
+| **GitIgnore Manager** | Pengurusan pintar fail `.gitignore`. | Menambah laluan artifak janaan skil (cth: `graphify-out/`) ke dalam `.gitignore` secara automatik tanpa prompts lewah. |
+| **Skill Updater & Sync** | Pengesanan versi dan kemas kini pintar skil. | Mengesan skil terpasang dalam projek sasaran menggunakan hash content perbandingan, memaparkan status `[UPDATE AVAILABLE]` atau `[UP TO DATE]`, dan mengemas kini fail tools serta rules dengan sekali klik. |
 
 ---
 
@@ -67,6 +68,7 @@ contextrig/
 │   │   ├── agentSelector.js         # Interactive selection of AI profiles
 │   │   ├── fileInjector.js          # Handlebars compiler & asset copier
 │   │   ├── skillManager.js          # Skill schema validator & library manager
+│   │   ├── skillUpdater.js          # Automatic update detector & sync engine
 │   │   ├── dependencyInstaller.js   # Automated npm/pip dependency installer
 │   │   └── gitIgnoreManager.js      # Automated .gitignore updater
 │   └── utils/

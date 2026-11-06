@@ -6,6 +6,7 @@ import { injectTemplate } from './src/core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './src/core/skillManager.js';
 import { aggregateDependencies } from './src/core/dependencyInstaller.js';
 import { aggregateGitIgnorePatterns } from './src/core/gitIgnoreManager.js';
+import { detectInstalledSkills, syncSkills } from './src/core/skillUpdater.js';
 
 async function runTests() {
   console.log('🧪 Starting ContextRig CLI automated integration tests...');
@@ -98,9 +99,25 @@ async function runTests() {
   assert(ignorePatterns.includes('graphify-out/'), 'graphify-out/ must be recommended for .gitignore');
   console.log('✔ Test 7: GitIgnore pattern aggregation verified.');
 
+  // Test 8: Skill update detection & sync
+  // Simulate an outdated version of scraper.py in the target project
+  await fs.writeFile(copiedToolPath, '# outdated version\nprint("old")', 'utf8');
+  let detected = await detectInstalledSkills(fullPath, skills);
+  let scraperCheck = detected.find((s) => s.id === 'web_scraper');
+  assert(scraperCheck && scraperCheck.hasUpdate === true, 'Outdated scraper.py should be flagged with hasUpdate=true');
+  assert(scraperCheck.outdatedFiles.includes('scraper.py'), 'outdatedFiles should include scraper.py');
+  console.log('✔ Test 8: Outdated skill version correctly detected [UPDATE AVAILABLE].');
+
+  // Test 9: Re-sync outdated skills to latest version
+  await syncSkills(fullPath, projectName, [scraperCheck], { promptDeps: false });
+  detected = await detectInstalledSkills(fullPath, skills);
+  scraperCheck = detected.find((s) => s.id === 'web_scraper');
+  assert(scraperCheck && scraperCheck.hasUpdate === false, 'After syncSkills, scraper.py should be up-to-date (hasUpdate=false)');
+  console.log('✔ Test 9: Skill re-synchronization verified [UP TO DATE].');
+
   // Cleanup test directory
   await fs.rm(fullPath, { recursive: true, force: true });
-  console.log('✔ Test 8: Cleanup test project directory completed.');
+  console.log('✔ Test 10: Cleanup test project directory completed.');
 
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
 }

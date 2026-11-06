@@ -48,6 +48,7 @@ contextrig/
 │   │   ├── agentSelector.js         # Interactive selection of AI profiles
 │   │   ├── fileInjector.js          # Handlebars compiler & asset copier
 │   │   ├── skillManager.js          # Skill schema validator & library manager
+│   │   ├── skillUpdater.js          # Automatic update detector & sync engine
 │   │   ├── dependencyInstaller.js   # Automated npm/pip dependency installer
 │   │   └── gitIgnoreManager.js      # Automated .gitignore updater
 │   └── utils/

@@ -3,6 +3,7 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import inquirer from 'inquirer';
+import chalk from 'chalk';
 import { logger } from './utils/logger.js';
 import { setupTargetProject } from './core/projectSetup.js';
 import { selectAgent } from './core/agentSelector.js';
@@ -10,6 +11,7 @@ import { injectTemplate } from './core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
 import { handleDependencies } from './core/dependencyInstaller.js';
 import { handleGitIgnore } from './core/gitIgnoreManager.js';
+import { detectInstalledSkills, syncSkills } from './core/skillUpdater.js';
 
 const execAsync = promisify(exec);
 
@@ -100,6 +102,68 @@ async function handleInjectSkills() {
       }
     }
   }
+}
+
+/**
+ * Handle Option [2]: Sync & Update Existing Project Skills
+ */
+async function handleSyncSkills() {
+  logger.divider();
+  logger.step('Checking Project for Skill Updates...');
+
+  const { targetPath } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'targetPath',
+      message: 'Enter the target project folder path to check & update:',
+      default: './',
+      validate: (input) => (input.trim().length > 0 ? true : 'Path cannot be empty.')
+    }
+  ]);
+
+  const { fullPath, projectName } = await setupTargetProject(targetPath);
+  const availableSkills = await loadAvailableSkills();
+  const installedSkills = await detectInstalledSkills(fullPath, availableSkills);
+
+  if (installedSkills.length === 0) {
+    logger.warn(`No ContextRig skills detected in ${fullPath}. Use [1] Inject Skills to Project instead.`);
+    return;
+  }
+
+  logger.info(`Installed Skills in ${projectName}:`);
+  const outdatedSkills = [];
+
+  for (const s of installedSkills) {
+    if (s.hasUpdate) {
+      const filesInfo = s.outdatedFiles.length > 0 ? ` (${s.outdatedFiles.join(', ')})` : '';
+      console.log(chalk.bold.yellow(`  ⚡ [UPDATE AVAILABLE] ${s.name}${filesInfo}`));
+      outdatedSkills.push(s);
+    } else {
+      console.log(chalk.green(`  ✔ [UP TO DATE] ${s.name}`));
+    }
+  }
+
+  if (outdatedSkills.length === 0) {
+    logger.success('All installed skills and tool files are already up to date!');
+    return;
+  }
+
+  logger.divider();
+  const { shouldUpdate } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'shouldUpdate',
+      message: `Found ${outdatedSkills.length} outdated skill(s). Do you want to apply updates now?`,
+      default: true
+    }
+  ]);
+
+  if (!shouldUpdate) {
+    logger.info('Skill update cancelled.');
+    return;
+  }
+
+  await syncSkills(fullPath, projectName, outdatedSkills);
 }
 
 /**
@@ -217,9 +281,10 @@ async function mainMenu() {
           name: 'choice',
           message: 'What would you like to do?',
           choices: [
-            { name: '[1] Inject Skills to Project', value: 'inject' },
-            { name: '[2] Manage Skills Library', value: 'manage' },
-            { name: '[3] Exit', value: 'exit' }
+            { name: '[1] 🚀 Inject Skills to Project', value: 'inject' },
+            { name: '[2] 🔄 Sync & Update Project Skills', value: 'sync' },
+            { name: '[3] 📚 Manage Skills Library', value: 'manage' },
+            { name: '[4] ❌ Exit', value: 'exit' }
           ]
         }
       ]);
@@ -227,6 +292,9 @@ async function mainMenu() {
       switch (choice) {
         case 'inject':
           await handleInjectSkills();
+          break;
+        case 'sync':
+          await handleSyncSkills();
           break;
         case 'manage':
           await handleManageSkills();
