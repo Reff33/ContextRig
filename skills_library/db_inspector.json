@@ -1,0 +1,17 @@
+{
+  "id": "db_inspector",
+  "name": "Database Schema Inspector",
+  "description": "Inspects local database tables, columns, and connection profiles to generate accurate schema context for AI agents.",
+  "ai_instructions": "To inspect project database tables and column types, run 'node tools/db_inspector.js'. Use the generated docs/db_schema.md to ensure all queries, models, and migrations adhere strictly to real database schemas.",
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "files_to_copy": [
+    {
+      "source": "scripts/db_inspector.js",
+      "destination": "tools/db_inspector.js",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/scripts/db_inspector.js"
+    }
+  ]
+}

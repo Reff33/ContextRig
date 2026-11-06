@@ -368,3 +368,4 @@ export async function runSyncWorkflow(inputTargetDir = null) {
 
   logger.success(`Successfully updated ${outdatedSkills.length} skill(s) to the latest version!`);
 }
+

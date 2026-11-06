@@ -17,7 +17,7 @@
     {
       "source": "scripts/scraper.py",
       "destination": "tools/scraper.py",
-      "remote_url": "https://raw.githubusercontent.com/reff/ContextRig/main/scripts/scraper.py"
+      "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/scripts/scraper.py"
     }
   ]
 }

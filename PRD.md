@@ -41,8 +41,8 @@ Ia menyelesaikan masalah konfigurasi berulang dengan menyediakan satu hab setemp
 | **Modular Capability Library** | Pengurusan alatan & arahan daripada fail JSON. | Membaca fail JSON dalam `skills_library/`. Mengabaikan fail rosak secara automatik dengan amaran mesra. Membenarkan penambahan skil baharu secara interaktif. |
 | **Template Injector** | Menjana fail konfigurasi AI menggunakan Handlebars. | Menyuntik variabel `projectName`, `agentName`, dan `skillsInstructions` dengan mod teks mentah (`noEscape: true`). Menyalin fail aset fizikal (cth: `scripts/` $\rightarrow$ `tools/`). |
 | **Dependency Automation** | Automasi pemasangan kebergantungan (`npm` / `pip`). | Mengumpul kebergantungan secara unik dan menawarkan pilihan pengesahan (Y/N) untuk menjalankan `npm install` atau `pip install` dalam direktori sasaran. |
-| **GitIgnore Manager** | Pengurusan pintar fail `.gitignore`. | Menambah laluan artifak janaan skil (cth: `graphify-out/`) ke dalam `.gitignore` secara automatik tanpa prompts lewah. |
-| **Skill Updater & Sync** | Pengesanan versi dan kemas kini pintar skil. | Mengesan skil terpasang dalam projek sasaran menggunakan hash content perbandingan, memaparkan status `[UPDATE AVAILABLE]` atau `[UP TO DATE]`, dan mengemas kini fail tools serta rules dengan sekali klik. |
+| **GitIgnore Manager** | Pengurusan pintar fail `.gitignore`. | Menambah laluan artifak janaan skil (cth: `graphify-out/`, `.contextrig_cache.json`) ke dalam `.gitignore` secara automatik tanpa prompts lewah. |
+| **Cloud Sync & ETag Engine** | Pengesanan versi awan & optimum had permintaan. | Menggunakan Conditional Requests (`If-None-Match: ETag`), had masa TTL (1 jam), sokongan `GITHUB_TOKEN`, dan perbandingan SHA-256 hash untuk mengemas kini alatan skil tanpa terkena sekatan rate limit. |
 
 ---
 
@@ -69,22 +69,29 @@ contextrig/
 │   │   ├── fileInjector.js          # Handlebars compiler & asset copier
 │   │   ├── skillManager.js          # Skill schema validator & library manager
 │   │   ├── skillUpdater.js          # Automatic update detector & sync engine
+│   │   ├── syncEngine.js            # Cloud-based ETag & TTL remote sync engine
 │   │   ├── dependencyInstaller.js   # Automated npm/pip dependency installer
 │   │   └── gitIgnoreManager.js      # Automated .gitignore updater
 │   └── utils/
 │       └── logger.js                # Styled console output & banners
 ├── templates/                       # Dynamic Handlebars templates
 │   ├── claude.md.hbs                # Context template for Claude (CLAUDE.md)
-│   └── cursorrules.hbs              # Rules template for Cursor (.cursorrules)
+│   ├── cursorrules.hbs              # Rules template for Cursor (.cursorrules)
+│   ├── opencode.md.hbs              # Rules template for OpenCode (AGENTS.md)
+│   ├── windsurfrules.hbs            # Rules template for Windsurf (.windsurfrules)
+│   ├── copilot.md.hbs               # Rules template for Copilot
+│   └── aider.md.hbs                 # Rules template for Aider (CONVENTIONS.md)
 ├── skills_library/                  # Curated library of JSON capabilities
 │   ├── web_scraper.json             # Web scraping tool & dependencies
 │   ├── api_tester.json              # REST API tester & mock runner
 │   ├── graphify.json                # Graphify visual dependency & report skill
+│   ├── db_inspector.json            # Database schema inspection skill
 │   └── git_workflow.json            # Conventional commit & git conventions
 ├── scripts/                         # Reusable tools & scripts
 │   ├── scraper.py                   # Python scraping tool asset
 │   ├── api_tester.js                # API testing tool asset
-│   └── graphify.py                  # Codebase visualizer & Graphify asset
+│   ├── graphify.py                  # Codebase visualizer & Graphify asset
+│   └── db_inspector.js              # Database inspector utility asset
 ├── test_runner.js                   # Automated integration test suite
 ├── package.json
 └── README.md
