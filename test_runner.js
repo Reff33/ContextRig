@@ -72,6 +72,19 @@ async function runTests() {
   assert(copilotContent.includes('GitHub Copilot Instructions - temp_test_project'), 'Copilot file should contain project name');
   console.log('✔ Test 5b: Nested Copilot template injection verified.');
 
+  // Test 5c: Inject OpenCode template (AGENTS.md)
+  const opencodeOut = await injectTemplate({
+    targetDir: fullPath,
+    templateFileName: 'opencode.md.hbs',
+    outputFileName: 'AGENTS.md',
+    projectName,
+    agentName: 'OpenCode (AGENTS.md)',
+    skillsInstructions: [webScraper]
+  });
+  const opencodeContent = await fs.readFile(opencodeOut, 'utf8');
+  assert(opencodeContent.includes('OpenCode Agents & Instructions - temp_test_project'), 'AGENTS.md should contain project name');
+  console.log('✔ Test 5c: OpenCode (AGENTS.md) template injection verified.');
+
   // Test 6: Verify copied asset
   const copiedToolPath = path.join(fullPath, 'tools', 'scraper.py');
   const toolStats = await fs.stat(copiedToolPath);

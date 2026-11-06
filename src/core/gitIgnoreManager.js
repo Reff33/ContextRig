@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import inquirer from 'inquirer';
 import { logger } from '../utils/logger.js';
 
 /**
@@ -48,21 +47,6 @@ export async function handleGitIgnore(targetDir, selectedSkills) {
     return; // All recommended patterns are already ignored
   }
 
-  logger.divider();
-  const { shouldIgnore } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'shouldIgnore',
-      message: `Would you like to add [${missingPatterns.join(', ')}] to .gitignore?`,
-      default: true
-    }
-  ]);
-
-  if (!shouldIgnore) {
-    logger.info('Skipping .gitignore update.');
-    return;
-  }
-
   let updatedContent = existingContent;
   if (updatedContent && !updatedContent.endsWith('\n')) {
     updatedContent += '\n';
@@ -71,6 +55,6 @@ export async function handleGitIgnore(targetDir, selectedSkills) {
   updatedContent += `\n# Added by ContextRig\n${missingPatterns.join('\n')}\n`;
 
   await fs.writeFile(gitignorePath, updatedContent, 'utf8');
-  logger.success(`Updated .gitignore: added ${missingPatterns.join(', ')}`);
+  logger.success(`Automatically updated .gitignore: added ${missingPatterns.join(', ')}`);
 }
 

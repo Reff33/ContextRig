@@ -41,6 +41,12 @@ export const SUPPORTED_AGENTS = [
     value: 'aider',
     templateFile: 'aider.md.hbs',
     outputFile: 'CONVENTIONS.md'
+  },
+  {
+    name: 'OpenCode (AGENTS.md)',
+    value: 'opencode',
+    templateFile: 'opencode.md.hbs',
+    outputFile: 'AGENTS.md'
   }
 ];
 

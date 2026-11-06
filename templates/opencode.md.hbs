@@ -1,0 +1,29 @@
+# OpenCode Agents & Instructions - {{projectName}}
+# Configured for Agent: {{agentName}}
+
+You are an expert AI software engineer operating within `{{projectName}}`.
+
+{{#if skillsInstructions.length}}
+## Available Skills & Tools
+
+The following capabilities and tool scripts have been provisioned in this repository:
+
+{{#each skillsInstructions}}
+### {{this.name}}
+- **Description:** {{this.description}}
+- **AI Instructions:**
+  {{this.ai_instructions}}
+{{#if this.dependencies.npm.length}}
+- **NPM Dependencies:** `{{#each this.dependencies.npm}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}`
+{{/if}}
+{{#if this.dependencies.pip.length}}
+- **Pip Dependencies:** `{{#each this.dependencies.pip}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}`
+{{/if}}
+
+{{/each}}
+{{/if}}
+
+## Operating Conventions
+- Always check available tools in `tools/` before performing repetitive tasks.
+- Keep modifications clean, modular, and maintain test coverage.
+- Adhere strictly to Conventional Commits when creating git commits.
