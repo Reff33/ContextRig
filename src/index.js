@@ -27,17 +27,26 @@ async function handleInjectSkills() {
     {
       type: 'input',
       name: 'targetPath',
-      message: 'Enter the target project folder path:',
-      default: './my-project',
-      validate: (input) => (input.trim().length > 0 ? true : 'Path cannot be empty.')
+      message: 'Enter target project folder path (or "b" to back):',
+      default: './my-project'
     }
   ]);
 
-  const { fullPath, projectName } = await setupTargetProject(targetPath);
+  const cleanPath = targetPath.trim();
+  if (cleanPath.toLowerCase() === 'b' || cleanPath.toLowerCase() === 'back') {
+    logger.info('Returning to Main Menu...');
+    return;
+  }
+
+  const { fullPath, projectName } = await setupTargetProject(cleanPath);
   logger.info(`Target directory: ${fullPath} (Project: ${projectName})`);
 
   // 2. Select AI profile (Claude, Cursor, etc.)
   const agent = await selectAgent();
+  if (!agent) {
+    logger.info('Returning to Main Menu...');
+    return;
+  }
   logger.info(`Selected AI profile: ${agent.name}`);
 
   // 3. Load and present available skills
@@ -51,14 +60,18 @@ async function handleInjectSkills() {
     {
       type: 'checkbox',
       name: 'selectedSkills',
-      message: 'Select the skills to inject into the project:',
+      message: 'Select the skills to inject (Space to toggle, Enter to confirm):',
       choices: skills.map((skill) => ({
         name: `${skill.name} - ${skill.description}`,
         value: skill
-      })),
-      validate: (answer) => (answer.length > 0 ? true : 'You must select at least one skill.')
+      }))
     }
   ]);
+
+  if (!selectedSkills || selectedSkills.length === 0) {
+    logger.warn('No skills selected. Returning to Main Menu...');
+    return;
+  }
 
   // 4. Compile and inject template
   logger.step(`Injecting rules into ${agent.outputFile}...`);
@@ -115,13 +128,18 @@ async function handleSyncSkills() {
     {
       type: 'input',
       name: 'targetPath',
-      message: 'Enter the target project folder path to check & update:',
-      default: './',
-      validate: (input) => (input.trim().length > 0 ? true : 'Path cannot be empty.')
+      message: 'Enter target project folder path to check & update (or "b" to back):',
+      default: './'
     }
   ]);
 
-  const { fullPath, projectName } = await setupTargetProject(targetPath);
+  const cleanPath = targetPath.trim();
+  if (cleanPath.toLowerCase() === 'b' || cleanPath.toLowerCase() === 'back') {
+    logger.info('Returning to Main Menu...');
+    return;
+  }
+
+  const { fullPath, projectName } = await setupTargetProject(cleanPath);
   const availableSkills = await loadAvailableSkills();
   const installedSkills = await detectInstalledSkills(fullPath, availableSkills);
 
@@ -136,7 +154,7 @@ async function handleSyncSkills() {
   for (const s of installedSkills) {
     if (s.hasUpdate) {
       const filesInfo = s.outdatedFiles.length > 0 ? ` (${s.outdatedFiles.join(', ')})` : '';
-      console.log(chalk.bold.yellow(`  ⚡ [UPDATE AVAILABLE] ${s.name}${filesInfo}`));
+      console.log(chalk.bold.yellow(`  ▲ [UPDATE AVAILABLE] ${s.name}${filesInfo}`));
       outdatedSkills.push(s);
     } else {
       console.log(chalk.green(`  ✔ [UP TO DATE] ${s.name}`));
@@ -179,9 +197,10 @@ async function handleManageSkills() {
       name: 'subAction',
       message: 'Choose a skill library operation:',
       choices: [
-        { name: '📋 List All Available Skills', value: 'list' },
-        { name: '➕ Create a New Skill', value: 'create' },
-        { name: '⬅ Back to Main Menu', value: 'back' }
+        { name: 'List All Available Skills', value: 'list' },
+        { name: 'Create a New Skill', value: 'create' },
+        new inquirer.Separator(),
+        { name: '← Back to Main Menu', value: 'back' }
       ]
     }
   ]);
@@ -211,13 +230,21 @@ async function handleManageSkills() {
     console.log();
   } else if (subAction === 'create') {
     logger.step('Define a new Skill according to standard schema:');
-    const answers = await inquirer.prompt([
+    const { id } = await inquirer.prompt([
       {
         type: 'input',
         name: 'id',
-        message: 'Skill ID (e.g., api_tester):',
+        message: 'Skill ID (e.g. api_tester, or "b" to cancel):',
         validate: (input) => (input.trim().length > 0 ? true : 'Skill ID is required.')
-      },
+      }
+    ]);
+
+    if (id.trim().toLowerCase() === 'b' || id.trim().toLowerCase() === 'back') {
+      logger.info('Skill creation cancelled. Returning to Main Menu...');
+      return;
+    }
+
+    const answers = await inquirer.prompt([
       {
         type: 'input',
         name: 'name',
@@ -249,7 +276,7 @@ async function handleManageSkills() {
     ]);
 
     const newSkill = {
-      id: answers.id.trim(),
+      id: id.trim(),
       name: answers.name.trim(),
       description: answers.description.trim(),
       ai_instructions: answers.ai_instructions.trim(),
@@ -281,10 +308,11 @@ async function mainMenu() {
           name: 'choice',
           message: 'What would you like to do?',
           choices: [
-            { name: '[1] 🚀 Inject Skills to Project', value: 'inject' },
-            { name: '[2] 🔄 Sync & Update Project Skills', value: 'sync' },
-            { name: '[3] 📚 Manage Skills Library', value: 'manage' },
-            { name: '[4] ❌ Exit', value: 'exit' }
+            { name: '[1] Inject Skills to Project', value: 'inject' },
+            { name: '[2] Sync & Update Project Skills', value: 'sync' },
+            { name: '[3] Manage Skills Library', value: 'manage' },
+            new inquirer.Separator(),
+            { name: '[4] Exit', value: 'exit' }
           ]
         }
       ]);

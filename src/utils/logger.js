@@ -3,10 +3,10 @@ import chalk from 'chalk';
 export const logger = {
   banner() {
     console.log();
-    console.log(chalk.bold.cyan('╔═══════════════════════════════════════════════════╗'));
-    console.log(chalk.bold.cyan('║               🛠️  CONTEXTRIG CLI                   ║'));
-    console.log(chalk.bold.cyan('║     AI Agent Context & Environment Scaffolder     ║'));
-    console.log(chalk.bold.cyan('╚═══════════════════════════════════════════════════╝'));
+    console.log(chalk.cyan('  ┌──────────────────────────────────────────────────┐'));
+    console.log(chalk.cyan('  │') + chalk.bold.white('                  CONTEXTRIG CLI                  ') + chalk.cyan('│'));
+    console.log(chalk.cyan('  │') + chalk.gray('    AI Agent Context & Environment Scaffolder     ') + chalk.cyan('│'));
+    console.log(chalk.cyan('  └──────────────────────────────────────────────────┘'));
     console.log();
   },
 
@@ -15,23 +15,22 @@ export const logger = {
   },
 
   success(msg) {
-    console.log(chalk.green('✔'), chalk.bold.green(msg));
+    console.log(chalk.green('✔'), chalk.green(msg));
   },
 
   warn(msg) {
-    console.log(chalk.yellow('⚠'), chalk.yellow(msg));
+    console.log(chalk.yellow('▲'), chalk.yellow(msg));
   },
 
   error(msg) {
-    console.log(chalk.red('✖'), chalk.bold.red(msg));
+    console.log(chalk.red('✖'), chalk.red(msg));
   },
 
   step(msg) {
-    console.log(chalk.cyan('➜'), chalk.bold(msg));
+    console.log(chalk.cyan('›'), chalk.bold.white(msg));
   },
 
   divider() {
     console.log(chalk.gray('─'.repeat(52)));
   }
 };
-

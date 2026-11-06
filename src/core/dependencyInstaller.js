@@ -46,10 +46,10 @@ export async function handleDependencies(targetDir, selectedSkills) {
   logger.divider();
   logger.info('Detected Skill Dependencies:');
   if (npm.length > 0) {
-    console.log(`  📦 NPM: ${npm.join(', ')}`);
+    console.log(`  • npm: ${npm.join(', ')}`);
   }
   if (pip.length > 0) {
-    console.log(`  🐍 Pip: ${pip.join(', ')}`);
+    console.log(`  • pip: ${pip.join(', ')}`);
   }
 
   const { shouldInstall } = await inquirer.prompt([
