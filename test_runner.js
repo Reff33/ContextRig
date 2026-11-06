@@ -7,6 +7,7 @@ import { loadAvailableSkills, saveSkill } from './src/core/skillManager.js';
 import { aggregateDependencies } from './src/core/dependencyInstaller.js';
 import { aggregateGitIgnorePatterns } from './src/core/gitIgnoreManager.js';
 import { detectInstalledSkills, syncSkills } from './src/core/skillUpdater.js';
+import { loadCache, saveCache, calculateHash } from './src/core/syncEngine.js';
 
 async function runTests() {
   console.log('🧪 Starting ContextRig CLI automated integration tests...');
@@ -115,9 +116,20 @@ async function runTests() {
   assert(scraperCheck && scraperCheck.hasUpdate === false, 'After syncSkills, scraper.py should be up-to-date (hasUpdate=false)');
   console.log('✔ Test 9: Skill re-synchronization verified [UP TO DATE].');
 
+  // Test 10: SyncEngine cache, ETag handling, and hash verification
+  const testHash = calculateHash('print("hello world")');
+  assert(typeof testHash === 'string' && testHash.length === 64, 'SHA-256 hash must be 64 characters hex');
+  await saveCache(fullPath, {
+    last_checked: Date.now(),
+    etags: { 'web_scraper:tools/scraper.py': '"test-etag-123"' }
+  });
+  const loadedCache = await loadCache(fullPath);
+  assert(loadedCache.etags['web_scraper:tools/scraper.py'] === '"test-etag-123"', 'Cache ETag must persist');
+  console.log('✔ Test 10: SyncEngine ETag caching & hash calculations verified.');
+
   // Cleanup test directory
   await fs.rm(fullPath, { recursive: true, force: true });
-  console.log('✔ Test 10: Cleanup test project directory completed.');
+  console.log('✔ Test 11: Cleanup test project directory completed.');
 
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
 }

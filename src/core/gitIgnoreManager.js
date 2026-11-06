@@ -10,6 +10,9 @@ import { logger } from '../utils/logger.js';
 export function aggregateGitIgnorePatterns(selectedSkills) {
   const patterns = new Set();
 
+  // Always ignore ContextRig local cache
+  patterns.add('.contextrig_cache.json');
+
   for (const skill of selectedSkills) {
     if (Array.isArray(skill.gitignore)) {
       skill.gitignore.forEach((pat) => patterns.add(pat.trim()));

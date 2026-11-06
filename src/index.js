@@ -12,6 +12,7 @@ import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
 import { handleDependencies } from './core/dependencyInstaller.js';
 import { handleGitIgnore } from './core/gitIgnoreManager.js';
 import { detectInstalledSkills, syncSkills } from './core/skillUpdater.js';
+import { runSyncWorkflow } from './core/syncEngine.js';
 
 const execAsync = promisify(exec);
 
@@ -121,67 +122,7 @@ async function handleInjectSkills() {
  * Handle Option [2]: Sync & Update Existing Project Skills
  */
 async function handleSyncSkills() {
-  logger.divider();
-  logger.step('Checking Project for Skill Updates...');
-
-  const { targetPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'targetPath',
-      message: 'Enter target project folder path to check & update (or "b" to back):',
-      default: './'
-    }
-  ]);
-
-  const cleanPath = targetPath.trim();
-  if (cleanPath.toLowerCase() === 'b' || cleanPath.toLowerCase() === 'back') {
-    logger.info('Returning to Main Menu...');
-    return;
-  }
-
-  const { fullPath, projectName } = await setupTargetProject(cleanPath);
-  const availableSkills = await loadAvailableSkills();
-  const installedSkills = await detectInstalledSkills(fullPath, availableSkills);
-
-  if (installedSkills.length === 0) {
-    logger.warn(`No ContextRig skills detected in ${fullPath}. Use [1] Inject Skills to Project instead.`);
-    return;
-  }
-
-  logger.info(`Installed Skills in ${projectName}:`);
-  const outdatedSkills = [];
-
-  for (const s of installedSkills) {
-    if (s.hasUpdate) {
-      const filesInfo = s.outdatedFiles.length > 0 ? ` (${s.outdatedFiles.join(', ')})` : '';
-      console.log(chalk.bold.yellow(`  ▲ [UPDATE AVAILABLE] ${s.name}${filesInfo}`));
-      outdatedSkills.push(s);
-    } else {
-      console.log(chalk.green(`  ✔ [UP TO DATE] ${s.name}`));
-    }
-  }
-
-  if (outdatedSkills.length === 0) {
-    logger.success('All installed skills and tool files are already up to date!');
-    return;
-  }
-
-  logger.divider();
-  const { shouldUpdate } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'shouldUpdate',
-      message: `Found ${outdatedSkills.length} outdated skill(s). Do you want to apply updates now?`,
-      default: true
-    }
-  ]);
-
-  if (!shouldUpdate) {
-    logger.info('Skill update cancelled.');
-    return;
-  }
-
-  await syncSkills(fullPath, projectName, outdatedSkills);
+  await runSyncWorkflow();
 }
 
 /**

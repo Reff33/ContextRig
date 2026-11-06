@@ -15,7 +15,8 @@
   "files_to_copy": [
     {
       "source": "scripts/graphify.py",
-      "destination": "tools/graphify.py"
+      "destination": "tools/graphify.py",
+      "remote_url": "https://raw.githubusercontent.com/reff/ContextRig/main/scripts/graphify.py"
     }
   ]
 }
