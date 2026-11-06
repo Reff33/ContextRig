@@ -3,6 +3,16 @@ ContextRig Web Scraper Tool
 Fetches and extracts readable text from a URL.
 """
 import sys
+import os
+
+# Safe encoding for Windows consoles
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -27,4 +37,3 @@ if __name__ == '__main__':
         print("Usage: python scraper.py <url>")
         sys.exit(1)
     scrape(sys.argv[1])
-

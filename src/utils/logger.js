@@ -11,7 +11,7 @@ export const logger = {
   },
 
   info(msg) {
-    console.log(chalk.blue('ℹ'), chalk.white(msg));
+    console.log(chalk.cyan('›'), chalk.white(msg));
   },
 
   success(msg) {
@@ -19,11 +19,11 @@ export const logger = {
   },
 
   warn(msg) {
-    console.log(chalk.yellow('▲'), chalk.yellow(msg));
+    console.log(chalk.yellow('!'), chalk.yellow(msg));
   },
 
   error(msg) {
-    console.log(chalk.red('✖'), chalk.red(msg));
+    console.log(chalk.red('×'), chalk.red(msg));
   },
 
   step(msg) {

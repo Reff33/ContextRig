@@ -11,6 +11,14 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
+# Safe encoding for Windows consoles (prevents 'charmap' codec can't encode character errors)
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 IGNORE_DIRS = {
     ".git", "node_modules", "vendor", "graphify-out", "dist",
     "build", ".next", ".nuxt", "__pycache__", ".venv", "venv",
@@ -101,12 +109,13 @@ def generate_vis_html(graph_data, project_name):
     border-bottom: 1px solid #282846;
   }}
   .sidebar-header h2 {{
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: #4da3ff;
     display: flex;
     align-items: center;
     gap: 8px;
+    letter-spacing: -0.01em;
   }}
   .sidebar-header p {{
     font-size: 11px;
@@ -212,7 +221,7 @@ def generate_vis_html(graph_data, project_name):
 
 <div id="sidebar">
   <div class="sidebar-header">
-    <h2>🌐 Graphify Visualizer</h2>
+    <h2>Graphify Visualizer</h2>
     <p>Project: <b>{project_name}</b></p>
   </div>
   <div id="search-box">
@@ -229,8 +238,8 @@ def generate_vis_html(graph_data, project_name):
     </div>
   </div>
   <div class="controls">
-    <button class="btn" id="btn-fit">🔍 Fit View</button>
-    <button class="btn" id="btn-physics">⚡ Toggle Physics</button>
+    <button class="btn" id="btn-fit">Fit View</button>
+    <button class="btn" id="btn-physics">Toggle Physics</button>
   </div>
 </div>
 
@@ -325,7 +334,7 @@ def generate_vis_html(graph_data, project_name):
 
     const neighborsList = connectedNodes.map(nId => `
       <div class="neighbor-item" onclick="focusNode('${{nId}}')">
-        ➜ ${{nId}}
+        › ${{nId}}
       </div>
     `).join('');
 
@@ -352,21 +361,21 @@ def generate_vis_html(graph_data, project_name):
 
 def run_graphify(target_dir="."):
     target_path = Path(target_dir).resolve()
-    print(f"➜ Scanning codebase for Graphify analysis at: {target_path}")
+    print(f"> Scanning codebase for Graphify analysis at: {target_path}")
 
     # Check if official graphify CLI is installed
     official_cli = shutil.which("graphify")
     if official_cli:
-        print(f"ℹ Found official Graphify CLI: {official_cli}")
+        print(f"> Found official Graphify CLI: {official_cli}")
         try:
-            print("🚀 Running official Graphify engine...")
+            print("> Running official Graphify engine...")
             res = subprocess.run([official_cli, "update", str(target_path)], capture_output=True, text=True)
             if res.returncode == 0:
                 print(res.stdout)
-                print("✔ Official Graphify run completed successfully!")
+                print("> Official Graphify run completed successfully!")
                 return
         except Exception as e:
-            print(f"⚠ Official CLI run had an issue ({e}), falling back to internal generator...")
+            print(f"! Official CLI run had an issue ({e}), falling back to internal generator...")
 
     # Internal robust Graphify generator fallback
     out_dir = target_path / "graphify-out"
@@ -429,13 +438,13 @@ def run_graphify(target_dir="."):
     # 1. Write graph.json
     graph_json_path = out_dir / "graph.json"
     graph_json_path.write_text(json.dumps(graph_data, indent=2), encoding="utf-8")
-    print(f"✔ Saved graph dataset: {graph_json_path}")
+    print(f"> Saved graph dataset: {graph_json_path}")
 
     # 2. Write graph.html (Interactive Force Directed Visualizer)
     html_content = generate_vis_html(graph_data, target_path.name)
     graph_html_path = out_dir / "graph.html"
     graph_html_path.write_text(html_content, encoding="utf-8")
-    print(f"✔ Saved interactive visualization: {graph_html_path}")
+    print(f"> Saved interactive visualization: {graph_html_path}")
 
     # 3. Write GRAPH_REPORT.md
     sorted_nodes = sorted(nodes, key=lambda x: x["degree"], reverse=True)
@@ -472,7 +481,7 @@ def run_graphify(target_dir="."):
 
     report_path = out_dir / "GRAPH_REPORT.md"
     report_path.write_text("\n".join(report_lines), encoding="utf-8")
-    print(f"✔ Saved architectural report: {report_path}")
+    print(f"> Saved architectural report: {report_path}")
 
     # 4. Manifest & .gitkeep
     manifest_data = {
@@ -485,7 +494,7 @@ def run_graphify(target_dir="."):
     (out_dir / "manifest.json").write_text(json.dumps(manifest_data, indent=2), encoding="utf-8")
     (out_dir / ".gitkeep").touch()
 
-    print("\n🎉 Graphify complete! Explore results in 'graphify-out/'.")
+    print("\n[OK] Graphify complete! Explore results in 'graphify-out/'.")
 
 if __name__ == '__main__':
     target = sys.argv[1] if len(sys.argv) > 1 else "."
