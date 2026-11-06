@@ -1,0 +1,12 @@
+{
+  "id": "git_workflow",
+  "name": "Git Workflow & Conventional Commits",
+  "description": "Standardizes git branches, commit formatting, and pre-commit checks.",
+  "ai_instructions": "Always follow Conventional Commits (feat, fix, docs, chore, test). Before writing commit messages, check git status and summarize specific file changes cleanly.",
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "files_to_copy": []
+}
+

@@ -1,0 +1,23 @@
+{
+  "id": "web_scraper",
+  "name": "Web Scraper",
+  "description": "Allows the AI to fetch and read web pages.",
+  "ai_instructions": "To use the web scraper, run 'python tools/scraper.py <url>'. Read the output from the terminal.",
+  "dependencies": {
+    "npm": [
+      "axios",
+      "cheerio"
+    ],
+    "pip": [
+      "requests",
+      "beautifulsoup4"
+    ]
+  },
+  "files_to_copy": [
+    {
+      "source": "scripts/scraper.py",
+      "destination": "tools/scraper.py"
+    }
+  ]
+}
+

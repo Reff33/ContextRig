@@ -1,0 +1,21 @@
+{
+  "id": "graphify",
+  "name": "Graphify (Code & Knowledge Graph)",
+  "description": "Visualizes project files and structural dependency graphs with interactive HTML & markdown reports.",
+  "ai_instructions": "To analyze and graph project dependencies, run 'python tools/graphify.py .'. This generates an interactive visual graph at 'graphify-out/graph.html', raw graph data at 'graphify-out/graph.json', and an architectural summary at 'graphify-out/GRAPH_REPORT.md'. Review God Nodes and community hubs before modifying large architectures.",
+  "dependencies": {
+    "npm": [],
+    "pip": [
+      "networkx"
+    ]
+  },
+  "gitignore": [
+    "graphify-out/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/graphify.py",
+      "destination": "tools/graphify.py"
+    }
+  ]
+}

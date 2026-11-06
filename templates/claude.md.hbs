@@ -1,0 +1,30 @@
+# Claude Project Guidelines - {{projectName}}
+
+Agent Profile: {{agentName}}
+
+## System Architecture & Overview
+This file contains instructions and context for Claude when working within `{{projectName}}`.
+
+{{#if skillsInstructions.length}}
+## Available AI Skills & Tools
+The following skills and tools are configured for this environment:
+
+{{#each skillsInstructions}}
+### {{this.name}}
+- **Description:** {{this.description}}
+- **Usage Instructions:**
+  {{this.ai_instructions}}
+{{#if this.dependencies.npm.length}}
+- **NPM Dependencies:** `{{#each this.dependencies.npm}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}`
+{{/if}}
+{{#if this.dependencies.pip.length}}
+- **Pip Dependencies:** `{{#each this.dependencies.pip}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}`
+{{/if}}
+
+{{/each}}
+{{/if}}
+
+## Operating Principles
+- Follow standard project conventions and keep code modular.
+- Validate all assumptions and run tests when adding features.
+

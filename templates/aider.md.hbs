@@ -1,0 +1,26 @@
+# Aider Conventions - {{projectName}}
+# Configured for Agent: {{agentName}}
+
+You are pair programming on {{projectName}}.
+
+{{#if skillsInstructions.length}}
+## Available Skills & Tools
+
+{{#each skillsInstructions}}
+### {{this.name}}
+- Description: {{this.description}}
+- Instructions: {{this.ai_instructions}}
+{{#if this.dependencies.npm.length}}
+- NPM Dependencies: {{#each this.dependencies.npm}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+{{/if}}
+{{#if this.dependencies.pip.length}}
+- Pip Dependencies: {{#each this.dependencies.pip}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+{{/if}}
+
+{{/each}}
+{{/if}}
+
+## Working Rules
+- Run tests before and after code changes whenever applicable.
+- Adhere strictly to the requested scope and conventions.
+
