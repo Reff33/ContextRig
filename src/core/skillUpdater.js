@@ -168,8 +168,121 @@ export async function syncSkills(targetDir, projectName, skillsToSync, { promptD
 
   // Ensure dependencies are up to date
   if (promptDeps) {
-    await handleDependencies(targetDir, skillsToSync);
+    await handleDependencies(targetDir, skillsToSync, existingAgents[0]);
   }
 
   logger.success(`All ${skillsToSync.length} skill(s) are now up to date with the latest version!`);
+}
+
+/**
+ * Uninstalls and removes selected skills from a project, deleting their files,
+ * slash commands, and re-syncing AI rules without them.
+ * @param {string} targetDir
+ * @param {string} projectName
+ * @param {Array<Object>} skillsToRemove
+ * @param {Array<Object>} remainingSkills
+ * @param {Object} [options]
+ * @param {boolean} [options.deleteArtifacts=true]
+ */
+export async function removeSkillsFromProject(
+  targetDir,
+  projectName,
+  skillsToRemove,
+  remainingSkills,
+  { deleteArtifacts = true } = {}
+) {
+  if (skillsToRemove.length === 0) return;
+
+  logger.step(`Removing ${skillsToRemove.length} skill(s) from ${targetDir}...`);
+
+  for (const skill of skillsToRemove) {
+    // 1. Remove copied tool files
+    if (Array.isArray(skill.files_to_copy)) {
+      for (const item of skill.files_to_copy) {
+        const destFile = path.resolve(targetDir, item.destination);
+        try {
+          await fs.unlink(destFile);
+          logger.info(`Deleted: ${item.destination}`);
+        } catch (err) {
+          if (err.code !== 'ENOENT') {
+            logger.warn(`Could not delete ${item.destination}: ${err.message}`);
+          }
+        }
+      }
+    }
+
+    // 2. Remove Claude slash commands (.claude/commands/<name>.md)
+    if (skill.claude_command?.name) {
+      const cmdPath = path.join(targetDir, '.claude', 'commands', `${skill.claude_command.name}.md`);
+      try {
+        await fs.unlink(cmdPath);
+        logger.info(`Deleted Claude command: .claude/commands/${skill.claude_command.name}.md`);
+      } catch (err) {
+        if (err.code !== 'ENOENT') {
+          logger.warn(`Could not delete Claude command: ${err.message}`);
+        }
+      }
+    }
+
+    // 3. Remove artifact/output directories associated with this skill (e.g. .archify/, graphify-out/)
+    if (Array.isArray(skill.gitignore)) {
+      for (const pattern of skill.gitignore) {
+        const cleanPattern = pattern.replace(/\/+$/, '').trim();
+        if (cleanPattern && !cleanPattern.startsWith('*')) {
+          const artifactPath = path.resolve(targetDir, cleanPattern);
+          try {
+            const stat = await fs.stat(artifactPath);
+            if (deleteArtifacts) {
+              if (stat.isDirectory()) {
+                await fs.rm(artifactPath, { recursive: true, force: true });
+                logger.info(`Deleted artifact directory: ${cleanPattern}/`);
+              } else if (stat.isFile()) {
+                await fs.unlink(artifactPath);
+                logger.info(`Deleted artifact file: ${cleanPattern}`);
+              }
+            } else {
+              logger.info(`Preserved generated output: ${cleanPattern}/`);
+            }
+          } catch {
+            // Path didn't exist or already removed
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Re-sync AI rules in all detected agents with remaining skills
+  const existingAgents = await detectConfiguredAgents(targetDir);
+  for (const agent of existingAgents) {
+    logger.step(`Re-syncing AI rules in ${agent.outputFile}...`);
+    await injectTemplate({
+      targetDir,
+      templateFileName: agent.templateFile,
+      outputFileName: agent.outputFile,
+      projectName,
+      agentName: agent.name,
+      skillsInstructions: remainingSkills
+    });
+    logger.success(`Updated ${agent.outputFile} (removed ${skillsToRemove.map((s) => s.name).join(', ')})`);
+  }
+
+  // 4. Try cleaning up empty tools/ or .claude/commands/ directories
+  try {
+    const toolsDir = path.join(targetDir, 'tools');
+    const remainingTools = await fs.readdir(toolsDir);
+    if (remainingTools.length === 0) {
+      await fs.rmdir(toolsDir);
+      logger.info('Cleaned up empty tools/ directory.');
+    }
+  } catch {}
+
+  try {
+    const commandsDir = path.join(targetDir, '.claude', 'commands');
+    const remainingCommands = await fs.readdir(commandsDir);
+    if (remainingCommands.length === 0) {
+      await fs.rmdir(commandsDir);
+    }
+  } catch {}
+
+  logger.success(`Successfully removed ${skillsToRemove.length} skill(s) from ${projectName}!`);
 }

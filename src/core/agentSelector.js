@@ -34,7 +34,7 @@ export async function selectAgent(targetDir = null) {
       };
     }),
     new inquirer.Separator(),
-    { name: '← Back to Main Menu', value: null }
+    { name: chalk.yellow('← Back to Main Menu'), value: null }
   ];
 
   const { selectedAgent } = await inquirer.prompt([

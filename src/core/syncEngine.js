@@ -222,6 +222,7 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
 export async function runSyncWorkflow(inputTargetDir = null) {
   logger.divider();
   logger.step('Checking Project for Skill Updates (Cloud & Local Sync)...');
+  console.log();
 
   let targetPath = inputTargetDir;
   if (!targetPath) {
@@ -238,11 +239,16 @@ export async function runSyncWorkflow(inputTargetDir = null) {
 
   const cleanPath = sanitizePath(targetPath);
   if (cleanPath.toLowerCase() === 'b' || cleanPath.toLowerCase() === 'back') {
+    console.log();
     logger.info('Returning to Main Menu...');
     return;
   }
 
   const { fullPath, projectName } = await setupTargetProject(cleanPath);
+  console.log();
+  logger.info(`Target directory: ${fullPath} (Project: ${projectName})`);
+  console.log();
+
   const availableSkills = await loadAvailableSkills();
 
   // Detect which skills are currently present in the target project
@@ -296,7 +302,7 @@ export async function runSyncWorkflow(inputTargetDir = null) {
       console.log(chalk.bold.yellow(`  ▲ [UPDATE AVAILABLE] ${s.name}${filesInfo}`));
       outdatedSkills.push(s);
     } else {
-      console.log(chalk.green(`  ✔ [UP TO DATE] ${s.name}`));
+      console.log(chalk.green(`  ✔  [UP TO DATE] ${s.name}`));
     }
   }
 

@@ -1,8 +1,12 @@
 {
   "id": "web_scraper",
   "name": "Web Scraper",
-  "description": "Allows the AI to fetch and read web pages.",
-  "ai_instructions": "To use the web scraper, run 'python tools/scraper.py <url>'. Read the output from the terminal.",
+  "description": "Fetches & extracts clean webpage text",
+  "ai_instructions": "When the user provides an external URL or explicitly asks to read a webpage, immediately execute `python tools/scraper.py <URL>` without asking for redundant permission. Only ask for confirmation if you autonomously suggest visiting an external link not mentioned by the user. Always summarize key findings concisely rather than repeating raw scraped text.",
+  "claude_command": {
+    "name": "scrape",
+    "content": "# /scrape <url>\n\nFetch and read clean web page content using tools/scraper.py.\n\n1. Run: `python tools/scraper.py <url>`\n2. Read terminal output and provide a concise, structured summary focused on user intent."
+  },
   "dependencies": {
     "npm": [
       "axios",

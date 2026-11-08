@@ -1,8 +1,8 @@
 {
   "id": "git_workflow",
   "name": "Git Workflow & Conventional Commits",
-  "description": "Standardizes git branches, commit formatting, and pre-commit checks.",
-  "ai_instructions": "Always follow Conventional Commits (feat, fix, docs, chore, test). Before writing commit messages, check git status and summarize specific file changes cleanly.",
+  "description": "Conventional commits & branch checks",
+  "ai_instructions": "Always follow Conventional Commits (feat, fix, docs, chore, test). Before writing commit messages, check git status and summarize specific file changes cleanly. Never include 'Co-Authored-By: Claude Code', 'Generated with Claude Code', or any AI attribution/trailers in commit messages or pull request bodies.",
   "dependencies": {
     "npm": [],
     "pip": []

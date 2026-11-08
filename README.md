@@ -81,7 +81,7 @@ ContextRig inspects the target folder before writing anything:
 | :--- | :--- | :--- |
 | **Graphify** | `tools/graphify.py` | Visualizes codebase architectures, generates interactive **`graphify-out/graph.html`** (vis-network), God Node metrics, and architectural reports. Automatically added to `.gitignore`. |
 | **Web Scraper** | `tools/scraper.py` | Enables the AI agent to fetch clean text content from external web URLs or documentation directly from the terminal. |
-| **API Tester** | `tools/api_tester.js` | Zero-dependency Node.js HTTP testing tool for AI agents to validate REST endpoints and payload responses before writing integration code. |
+| **Playwright** | `tools/playwright_runner.js` | Headless Chromium runner for E2E testing, visual UI verification, and console error inspection. Claude slash command: `/playwright`. |
 | **DB Inspector** | `tools/db_inspector.js` | Inspects local SQLite databases and `.env` profiles, generating clean markdown schemas in `docs/db_schema.md` for accurate queries and models. |
 | **Git Workflow** | *(System Rules)* | Enforces Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`) and pre-commit status validation. |
 
@@ -125,13 +125,13 @@ contextrig/
 │   └── aider.md.hbs                 # Rules template for Aider (CONVENTIONS.md)
 ├── skills_library/                  # Curated library of JSON capabilities
 │   ├── web_scraper.json             # Web scraping tool & dependencies
-│   ├── api_tester.json              # REST API tester & mock runner
+│   ├── playwright.json              # Playwright browser & E2E testing skill
 │   ├── graphify.json                # Graphify visual dependency & report skill
 │   ├── db_inspector.json            # Database schema inspection skill
 │   └── git_workflow.json            # Conventional commit & git conventions
 ├── scripts/                         # Reusable tools & scripts
 │   ├── scraper.py                   # Python scraping tool asset
-│   ├── api_tester.js                # API testing tool asset
+│   ├── playwright_runner.js         # Playwright browser runner asset
 │   ├── graphify.py                  # Codebase visualizer & Graphify asset
 │   └── db_inspector.js              # Database inspector utility asset
 ├── test_runner.js                   # Automated integration test suite

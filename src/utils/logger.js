@@ -11,23 +11,23 @@ export const logger = {
   },
 
   info(msg) {
-    console.log(chalk.cyan('›'), chalk.white(msg));
+    console.log(chalk.cyan('›  ') + chalk.white(msg));
   },
 
   success(msg) {
-    console.log(chalk.green('✔'), chalk.green(msg));
+    console.log(chalk.green('✔  ') + chalk.green(msg));
   },
 
   warn(msg) {
-    console.log(chalk.yellow('!'), chalk.yellow(msg));
+    console.log(chalk.yellow('!  ') + chalk.yellow(msg));
   },
 
   error(msg) {
-    console.log(chalk.red('×'), chalk.red(msg));
+    console.log(chalk.red('×  ') + chalk.red(msg));
   },
 
   step(msg) {
-    console.log(chalk.cyan('›'), chalk.bold.white(msg));
+    console.log(chalk.cyan('›  ') + chalk.bold.white(msg));
   },
 
   divider() {

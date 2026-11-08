@@ -1,0 +1,28 @@
+{
+  "id": "playwright",
+  "name": "Playwright (Browser & E2E Testing)",
+  "description": "Headless browser automation & UI testing",
+  "ai_instructions": "To test web pages, verify UI rendering, or capture screenshots of localhost/external apps, run 'node tools/playwright_runner.js <URL> [output.png]'. Review captured console errors and screenshot outputs before verifying frontend fixes.",
+  "claude_command": {
+    "name": "playwright",
+    "content": "# /playwright <url> [screenshot_path]\n\nAutomate headless browser inspection and UI testing.\n\n1. Run: `node tools/playwright_runner.js <url>`\n2. Inspect page title, HTTP response status, and browser console errors.\n3. If visual UI verification is required, inspect the generated screenshot in `.playwright/`.\n4. Summarize test results concisely with pass/fail status."
+  },
+  "dependencies": {
+    "npm": [
+      "playwright"
+    ],
+    "pip": []
+  },
+  "gitignore": [
+    ".playwright/",
+    "test-results/",
+    "playwright-report/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/playwright_runner.js",
+      "destination": "tools/playwright_runner.js",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/scripts/playwright_runner.js"
+    }
+  ]
+}

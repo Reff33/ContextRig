@@ -83,13 +83,13 @@ contextrig/
 │   └── aider.md.hbs                 # Rules template for Aider (CONVENTIONS.md)
 ├── skills_library/                  # Curated library of JSON capabilities
 │   ├── web_scraper.json             # Web scraping tool & dependencies
-│   ├── api_tester.json              # REST API tester & mock runner
+│   ├── playwright.json              # Playwright browser & E2E testing skill
 │   ├── graphify.json                # Graphify visual dependency & report skill
 │   ├── db_inspector.json            # Database schema inspection skill
 │   └── git_workflow.json            # Conventional commit & git conventions
 ├── scripts/                         # Reusable tools & scripts
 │   ├── scraper.py                   # Python scraping tool asset
-│   ├── api_tester.js                # API testing tool asset
+│   ├── playwright_runner.js         # Playwright browser runner asset
 │   ├── graphify.py                  # Codebase visualizer & Graphify asset
 │   └── db_inspector.js              # Database inspector utility asset
 ├── test_runner.js                   # Automated integration test suite

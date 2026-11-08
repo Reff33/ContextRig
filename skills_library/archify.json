@@ -1,0 +1,20 @@
+{
+  "id": "archify",
+  "name": "Archify (Interactive Diagrams & ERD)",
+  "description": "Interactive HTML diagrams & ERD",
+  "install_command": "npx -y skills@latest add https://archify.si --skill archify --agent {{agent_flag}} --copy --yes",
+  "ai_instructions": "When the user asks for a diagram without specifying the exact type, first present the relevant options (architecture: system components & services with showcase sidebar; erd: database tables & PK/FK relationships; sequence: API message interactions; workflow: business process steps) and recommend the best fit. Once the type is confirmed, generate the diagram via the installed archify skill (.agents/skills/archify or .claude/skills/archify). For architecture diagrams, always set 'quality_profile': 'showcase' to produce the full interactive sidebar, narrative, and lens controls. Save output in '.archify/' and provide a clickable markdown link to the HTML file.",
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "gitignore": [
+    ".archify/",
+    ".agents/"
+  ],
+  "claude_command": {
+    "name": "archify",
+    "content": "# /archify [type] <description>\n\nGenerate an interactive HTML diagram.\n\n1. If [type] is omitted by the user, briefly list the main choices (architecture, erd, sequence, workflow) and recommend the best one before generating.\n2. For `architecture`, always enable `'quality_profile': 'showcase'` to render the complete UI with right sidebar, main path, node index, and lens tracing.\n3. Save generated diagram to `.archify/` directory.\n4. Output a clickable link to the HTML diagram with a concise architectural summary."
+  },
+  "files_to_copy": []
+}
