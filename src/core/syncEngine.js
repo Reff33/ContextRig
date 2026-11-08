@@ -6,7 +6,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { ROOT_DIR, SUPPORTED_AGENTS } from '../config.js';
 import { loadAvailableSkills } from './skillManager.js';
-import { setupTargetProject } from './projectSetup.js';
+import { setupTargetProject, sanitizePath } from './projectSetup.js';
 import { injectTemplate } from './fileInjector.js';
 import { handleDependencies } from './dependencyInstaller.js';
 import { handleGitIgnore } from './gitIgnoreManager.js';
@@ -236,7 +236,7 @@ export async function runSyncWorkflow(inputTargetDir = null) {
     targetPath = answer.targetPath;
   }
 
-  const cleanPath = targetPath.trim();
+  const cleanPath = sanitizePath(targetPath);
   if (cleanPath.toLowerCase() === 'b' || cleanPath.toLowerCase() === 'back') {
     logger.info('Returning to Main Menu...');
     return;

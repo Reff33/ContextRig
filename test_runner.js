@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { setupTargetProject } from './src/core/projectSetup.js';
+import { setupTargetProject, sanitizePath } from './src/core/projectSetup.js';
 import { injectTemplate } from './src/core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './src/core/skillManager.js';
 import { aggregateDependencies } from './src/core/dependencyInstaller.js';
@@ -116,7 +116,15 @@ async function runTests() {
   assert(scraperCheck && scraperCheck.hasUpdate === false, 'After syncSkills, scraper.py should be up-to-date (hasUpdate=false)');
   console.log('✔ Test 9: Skill re-synchronization verified [UP TO DATE].');
 
-  // Test 10: SyncEngine cache, ETag handling, and hash verification
+  // Test 10: Path sanitization (Explorer "Copy as path" quotes, ~, env vars)
+  assert.strictEqual(sanitizePath('  "D:\\laragon\\www\\Myra"  '), 'D:\\laragon\\www\\Myra');
+  assert.strictEqual(sanitizePath("'./my-project'"), './my-project');
+  assert.strictEqual(sanitizePath('%USERPROFILE%'), process.env.USERPROFILE);
+  assert(sanitizePath('~/proj').endsWith('proj'), '~ should expand to home dir');
+  assert(!sanitizePath('~/proj').startsWith('~'), '~ should not survive sanitization');
+  console.log('✔ Test 10: Path sanitization verified.');
+
+  // Test 10b: SyncEngine cache, ETag handling, and hash verification
   const testHash = calculateHash('print("hello world")');
   assert(typeof testHash === 'string' && testHash.length === 64, 'SHA-256 hash must be 64 characters hex');
   await saveCache(fullPath, {
@@ -125,7 +133,7 @@ async function runTests() {
   });
   const loadedCache = await loadCache(fullPath);
   assert(loadedCache.etags['web_scraper:tools/scraper.py'] === '"test-etag-123"', 'Cache ETag must persist');
-  console.log('✔ Test 10: SyncEngine ETag caching & hash calculations verified.');
+  console.log('✔ Test 10b: SyncEngine ETag caching & hash calculations verified.');
 
   // Cleanup test directory
   await fs.rm(fullPath, { recursive: true, force: true });
