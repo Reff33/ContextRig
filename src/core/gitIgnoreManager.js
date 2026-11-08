@@ -3,6 +3,22 @@ import path from 'node:path';
 import { logger } from '../utils/logger.js';
 
 /**
+ * Checks if a pattern is already covered by existing gitignore lines.
+ * Handles variations in leading/trailing slashes (e.g. 'tools/' matches 'tools', '/tools', '/tools/').
+ * @param {string[]} existingLines
+ * @param {string} pattern
+ * @returns {boolean}
+ */
+export function isPatternIgnored(existingLines, pattern) {
+  if (existingLines.includes(pattern)) return true;
+  const cleanPat = pattern.replace(/^\/+/, '').replace(/\/+$/, '');
+  return existingLines.some((line) => {
+    const cleanLine = line.replace(/^\/+/, '').replace(/\/+$/, '');
+    return cleanLine === cleanPat;
+  });
+}
+
+/**
  * Aggregates all gitignore recommendations from selected skills.
  * @param {Array<Object>} selectedSkills
  * @returns {string[]}
@@ -12,6 +28,20 @@ export function aggregateGitIgnorePatterns(selectedSkills) {
 
   // Always ignore ContextRig local cache
   patterns.add('.contextrig_cache.json');
+
+  // Auto-ignore tools/ directory if any skill injects tools/ scripts
+  const hasToolFiles = selectedSkills.some(
+    (skill) =>
+      Array.isArray(skill.files_to_copy) &&
+      skill.files_to_copy.some((item) => {
+        const dest = (item.destination || '').replace(/\\/g, '/');
+        return dest.startsWith('tools/') || dest === 'tools';
+      })
+  );
+
+  if (hasToolFiles) {
+    patterns.add('tools/');
+  }
 
   for (const skill of selectedSkills) {
     if (Array.isArray(skill.gitignore)) {
@@ -44,7 +74,7 @@ export async function handleGitIgnore(targetDir, selectedSkills) {
   }
 
   const existingLines = existingContent.split(/\r?\n/).map((l) => l.trim());
-  const missingPatterns = patterns.filter((pat) => !existingLines.includes(pat));
+  const missingPatterns = patterns.filter((pat) => !isPatternIgnored(existingLines, pat));
 
   if (missingPatterns.length === 0) {
     return; // All recommended patterns are already ignored

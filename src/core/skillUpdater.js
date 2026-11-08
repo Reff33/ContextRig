@@ -228,7 +228,8 @@ export async function removeSkillsFromProject(
     if (Array.isArray(skill.gitignore)) {
       for (const pattern of skill.gitignore) {
         const cleanPattern = pattern.replace(/\/+$/, '').trim();
-        if (cleanPattern && !cleanPattern.startsWith('*')) {
+        // Skip shared 'tools' directory (handled separately in step 4)
+        if (cleanPattern && cleanPattern !== 'tools' && !cleanPattern.startsWith('*')) {
           const artifactPath = path.resolve(targetDir, cleanPattern);
           try {
             const stat = await fs.stat(artifactPath);

@@ -2,7 +2,7 @@
   "id": "graphify",
   "name": "Graphify (Code & Knowledge Graph)",
   "description": "Code dependency graph & God Nodes",
-  "ai_instructions": "To analyze and graph project dependencies, run 'python tools/graphify.py .'. This generates an interactive visual graph at 'graphify-out/graph.html', raw graph data at 'graphify-out/graph.json', and an architectural summary at 'graphify-out/GRAPH_REPORT.md'. Review God Nodes and community hubs before modifying large architectures.",
+  "ai_instructions": "To analyze and graph project dependencies, run 'python tools/graphify.py .'. This generates an interactive visual graph at 'graphify-out/graph.html', raw graph data at 'graphify-out/graph.json', and an architectural summary at 'graphify-out/GRAPH_REPORT.md'. MANDATORY: Always inspect 'graphify-out/GRAPH_REPORT.md' first before searching or reading multiple files to trace God Nodes and direct connections, cutting token usage.",
   "dependencies": {
     "npm": [],
     "pip": [
@@ -10,6 +10,7 @@
     ]
   },
   "gitignore": [
+    "tools/",
     "graphify-out/"
   ],
   "claude_command": {

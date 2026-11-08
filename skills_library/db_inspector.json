@@ -7,6 +7,9 @@
     "npm": [],
     "pip": []
   },
+  "gitignore": [
+    "tools/"
+  ],
   "files_to_copy": [
     {
       "source": "scripts/db_inspector.js",

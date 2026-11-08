@@ -14,6 +14,7 @@
     "pip": []
   },
   "gitignore": [
+    "tools/",
     ".playwright/",
     "test-results/",
     "playwright-report/"

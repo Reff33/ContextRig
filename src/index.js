@@ -361,7 +361,7 @@ async function handleRemoveSkills() {
     if (Array.isArray(skill.gitignore)) {
       for (const pattern of skill.gitignore) {
         const cleanPattern = pattern.replace(/\/+$/, '').trim();
-        if (cleanPattern && !cleanPattern.startsWith('*')) {
+        if (cleanPattern && cleanPattern !== 'tools' && !cleanPattern.startsWith('*')) {
           const artifactPath = path.resolve(fullPath, cleanPattern);
           if (fs.existsSync(artifactPath)) {
             existingArtifactDirs.push(cleanPattern);

@@ -17,6 +17,9 @@
       "beautifulsoup4"
     ]
   },
+  "gitignore": [
+    "tools/"
+  ],
   "files_to_copy": [
     {
       "source": "scripts/scraper.py",

@@ -5,7 +5,7 @@ import { setupTargetProject, sanitizePath } from './src/core/projectSetup.js';
 import { injectTemplate } from './src/core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './src/core/skillManager.js';
 import { aggregateDependencies, getAgentCliFlag } from './src/core/dependencyInstaller.js';
-import { aggregateGitIgnorePatterns } from './src/core/gitIgnoreManager.js';
+import { aggregateGitIgnorePatterns, isPatternIgnored } from './src/core/gitIgnoreManager.js';
 import { detectInstalledSkills, syncSkills, removeSkillsFromProject } from './src/core/skillUpdater.js';
 import { loadCache, saveCache, calculateHash } from './src/core/syncEngine.js';
 
@@ -141,14 +141,15 @@ async function runTests() {
   assert(toolStats.isFile(), 'tools/scraper.py should have been copied into target project');
   console.log('✔ Test 6: Skill asset copy verified.');
 
-  // Test 7: Gitignore pattern aggregation (Graphify)
+  // Test 7: Gitignore pattern aggregation (Graphify & tools/)
   const graphifySkill = skills.find((s) => s.id === 'graphify');
   assert(graphifySkill, 'graphify skill should exist');
   const ignorePatterns = aggregateGitIgnorePatterns([graphifySkill]);
   assert(ignorePatterns.includes('graphify-out/'), 'graphify-out/ must be recommended for .gitignore');
-  console.log('✔ Test 7: GitIgnore pattern aggregation verified.');
+  assert(ignorePatterns.includes('tools/'), 'tools/ must be recommended for .gitignore when skill copies tool files');
+  console.log('✔ Test 7: GitIgnore pattern aggregation (including tools/) verified.');
 
-  // Test 7b: Archify skill verification
+  // Test 7b: Archify skill verification (no tools/ copied)
   const archifySkill = skills.find((s) => s.id === 'archify');
   assert(archifySkill, 'archify skill should exist');
   assert(aggregateGitIgnorePatterns([archifySkill]).includes('.archify/'), '.archify/ must be recommended for .gitignore');
@@ -159,7 +160,15 @@ async function runTests() {
   assert(playwrightSkill, 'playwright skill should exist');
   assert(playwrightSkill.claude_command?.name === 'playwright', 'playwright slash command must be /playwright');
   assert(aggregateGitIgnorePatterns([playwrightSkill]).includes('.playwright/'), '.playwright/ must be recommended for .gitignore');
+  assert(aggregateGitIgnorePatterns([playwrightSkill]).includes('tools/'), 'tools/ must be recommended for playwright');
   console.log('✔ Test 7c: Playwright skill definition and slash command verified.');
+
+  // Test 7d: isPatternIgnored duplicate check verification
+  assert.strictEqual(isPatternIgnored(['tools'], 'tools/'), true, 'tools should match tools/');
+  assert.strictEqual(isPatternIgnored(['/tools/'], 'tools/'), true, '/tools/ should match tools/');
+  assert.strictEqual(isPatternIgnored(['tools/'], 'tools/'), true, 'tools/ should match tools/');
+  assert.strictEqual(isPatternIgnored(['other_tools'], 'tools/'), false, 'other_tools should not match tools/');
+  console.log('✔ Test 7d: isPatternIgnored slash normalization verified.');
 
   // Test 8: Skill update detection & sync
   // Simulate an outdated version of scraper.py in the target project
