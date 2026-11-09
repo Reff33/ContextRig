@@ -26,13 +26,15 @@ function getHash(content) {
 export async function detectInstalledSkills(targetDir, availableSkills) {
   const installed = [];
 
-  const toolsDir = path.join(targetDir, 'tools');
   let toolFiles = [];
   try {
-    toolFiles = await fs.readdir(toolsDir);
-  } catch (err) {
-    toolFiles = [];
-  }
+    const rigFiles = await fs.readdir(path.join(targetDir, 'rigtools'));
+    toolFiles.push(...rigFiles);
+  } catch {}
+  try {
+    const legacyFiles = await fs.readdir(path.join(targetDir, 'tools'));
+    toolFiles.push(...legacyFiles);
+  } catch {}
 
   let combinedRulesText = '';
   for (const agent of SUPPORTED_AGENTS) {
@@ -224,29 +226,32 @@ export async function removeSkillsFromProject(
       }
     }
 
-    // 3. Remove artifact/output directories associated with this skill (e.g. .archify/, graphify-out/)
-    if (Array.isArray(skill.gitignore)) {
-      for (const pattern of skill.gitignore) {
-        const cleanPattern = pattern.replace(/\/+$/, '').trim();
-        // Skip shared 'tools' directory (handled separately in step 4)
-        if (cleanPattern && cleanPattern !== 'tools' && !cleanPattern.startsWith('*')) {
-          const artifactPath = path.resolve(targetDir, cleanPattern);
-          try {
-            const stat = await fs.stat(artifactPath);
-            if (deleteArtifacts) {
-              if (stat.isDirectory()) {
-                await fs.rm(artifactPath, { recursive: true, force: true });
-                logger.info(`Deleted artifact directory: ${cleanPattern}/`);
-              } else if (stat.isFile()) {
-                await fs.unlink(artifactPath);
-                logger.info(`Deleted artifact file: ${cleanPattern}`);
-              }
-            } else {
-              logger.info(`Preserved generated output: ${cleanPattern}/`);
+    // 3. Remove artifact/output directories associated with this skill (e.g. .archify/, graphify-out/, rigmotion/, promo-video/)
+    const artifactPatterns = new Set([
+      ...(Array.isArray(skill.artifacts) ? skill.artifacts : []),
+      ...(Array.isArray(skill.gitignore) ? skill.gitignore : [])
+    ]);
+
+    for (const pattern of artifactPatterns) {
+      const cleanPattern = pattern.replace(/\/+$/, '').trim();
+      // Skip shared 'rigtools' / 'tools' directory (handled separately in step 4)
+      if (cleanPattern && cleanPattern !== 'rigtools' && cleanPattern !== 'tools' && !cleanPattern.startsWith('*')) {
+        const artifactPath = path.resolve(targetDir, cleanPattern);
+        try {
+          const stat = await fs.stat(artifactPath);
+          if (deleteArtifacts) {
+            if (stat.isDirectory()) {
+              await fs.rm(artifactPath, { recursive: true, force: true });
+              logger.info(`Deleted artifact directory: ${cleanPattern}/`);
+            } else if (stat.isFile()) {
+              await fs.unlink(artifactPath);
+              logger.info(`Deleted artifact file: ${cleanPattern}`);
             }
-          } catch {
-            // Path didn't exist or already removed
+          } else {
+            logger.info(`Preserved generated output: ${cleanPattern}/`);
           }
+        } catch {
+          // Path didn't exist or already removed
         }
       }
     }
@@ -267,15 +272,17 @@ export async function removeSkillsFromProject(
     logger.success(`Updated ${agent.outputFile} (removed ${skillsToRemove.map((s) => s.name).join(', ')})`);
   }
 
-  // 4. Try cleaning up empty tools/ or .claude/commands/ directories
-  try {
-    const toolsDir = path.join(targetDir, 'tools');
-    const remainingTools = await fs.readdir(toolsDir);
-    if (remainingTools.length === 0) {
-      await fs.rmdir(toolsDir);
-      logger.info('Cleaned up empty tools/ directory.');
-    }
-  } catch {}
+  // 4. Try cleaning up empty rigtools/, tools/, or .claude/commands/ directories
+  for (const dirName of ['rigtools', 'tools']) {
+    try {
+      const dirPath = path.join(targetDir, dirName);
+      const remainingFiles = await fs.readdir(dirPath);
+      if (remainingFiles.length === 0) {
+        await fs.rmdir(dirPath);
+        logger.info(`Cleaned up empty ${dirName}/ directory.`);
+      }
+    } catch {}
+  }
 
   try {
     const commandsDir = path.join(targetDir, '.claude', 'commands');

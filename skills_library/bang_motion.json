@@ -1,0 +1,30 @@
+{
+  "id": "bang_motion",
+  "name": "Bang Motion (Browser Motion Graphics & Video)",
+  "description": "GSAP & Three.js kinetic video, openers & motion graphics",
+  "install_command": "npx -y skills@latest add https://github.com/bangtutorial/bang-motion --agent {{agent_flag}} --copy --yes",
+  "ai_instructions": "When the user asks to create a video, animation, opener, or motion graphics without specifying the exact visual style, DO NOT immediately generate code. FIRST analyze the current project context (README.md, package.json, tech stack, or domain) and explicitly recommend the best-matching style with rationale, then present the Style Gallery for confirmation:\n• If SaaS, Dashboard, B2B, or web app -> Recommend 'Product tour with claims' (Lifted UI cards, dynamic camera zoom into clicked elements).\n• If AI, Tech, or premium product launch -> Recommend 'Grainy gradient' (Glowing layered shapes, soft film grain, traveling 3D camera).\n• If CLI, DevTools, backend, or engineering tool -> Recommend 'Brutalist / Mono' (High-contrast monochrome, raw kinetic typography, technical minimalism).\n• If Event, Music, Festival, or announcement -> Recommend 'Poster color-block' (Kinetic typography, high-impact solid color fields slamming on beat).\n• If Fintech, consumer app, mobile, or e-commerce -> Recommend 'Flat vector / pop' (Solid vector shapes, vibrant illustrations, product cutouts).\nAsk the user to confirm the recommended style or choose another, and specify aspect ratio (16:9 for YouTube/Web or 9:16 for TikTok/Reels/Shorts).\nOnce confirmed, build a single self-contained 'rigmotion/index.html' using GSAP (v3) & Three.js from CDN (no build step, no Remotion). Enforce anti-PowerPoint rules: no static slide deck fades, persistent subject across transitions, real moving camera, max 2 text levels, min 30px font on 1080p, autoplay, loop, and '?debug=1' scrub bar.\nVIDEO DOWNLOAD SOLUTON: Always include an in-browser '🎥 Download Video' button (hidden in '?clean=1' mode) that uses the browser native MediaRecorder API with canvas.captureStream(60) to record 1 full timeline cycle and automatically trigger a video file download (.webm/.mp4). Also provide the headless Puppeteer frame-capture and ffmpeg command for lossless 60fps MP4 studio export.",
+  "claude_command": {
+    "name": "bang-motion",
+    "content": "# /bang-motion <brief> [aspect_ratio] [style]\n\nGenerate browser motion graphics, video openers, or kinetic typography.\n\n1. **Project-Aware Style Recommendation Guard:** If [style] is not specified in <brief>, DO NOT write code yet. Inspect current project context (package.json, README, or domain) and explicitly recommend the single best matching style from the Style Gallery:\n   - SaaS / Dashboard / B2B: Recommend **Product tour with claims** (interactive UI card zooms).\n   - AI / Tech / Product Launches: Recommend **Grainy gradient** (glowing shapes, camera depth).\n   - DevTools / CLI / Engineering: Recommend **Brutalist mono** (monochrome kinetic type).\n   - Events / Music / Announcements: Recommend **Poster color-block** (punchy text slams).\n   - Fintech / Consumer / Mobile: Recommend **Flat vector illustration** (clean vector motion).\n   Ask the user to confirm the recommendation or pick another, and confirm aspect ratio (16:9 vs 9:16).\n2. **Architecture:** Generate a single self-contained `rigmotion/index.html` with GSAP v3 & Three.js loaded from CDN (zero build step).\n3. **Anti-PowerPoint Motion Rules:** Never fade between full-screen static slides. Keep a persistent focal subject, move camera with depth, and keep text hierarchy to max 2 levels (min 30px at 1080p).\n4. **Controls & Video Export:**\n   - Include autoplay, seamless looping, and `?debug=1` timeline scrubbing parameter.\n   - **One-Click Video Download:** Embed a floating '🎥 Export Video' button in the UI using browser `MediaRecorder` + `canvas.captureStream(60)`. When clicked, it plays 1 cycle and downloads the `.webm`/`.mp4` video directly without extra software.\n5. **Studio MP4 Export (Optional):** Provide the Puppeteer frame-capture script and ffmpeg command (`ffmpeg -framerate 60 -i frames/f%05d.png -c:v libx264 -pix_fmt yuv420p -crf 16 output.mp4`) for lossless 60fps rendering."
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "artifacts": [
+    "rigmotion/",
+    "promo-video/",
+    "motion-out/",
+    "renders/",
+    ".motion/"
+  ],
+  "gitignore": [
+    "rigmotion/",
+    "promo-video/",
+    "motion-out/",
+    "renders/",
+    ".motion/"
+  ],
+  "files_to_copy": []
+}

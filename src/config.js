@@ -25,22 +25,16 @@ export const SUPPORTED_AGENTS = [
     outputFile: '.cursorrules'
   },
   {
-    name: 'Windsurf (.windsurfrules)',
-    value: 'windsurf',
-    templateFile: 'windsurfrules.hbs',
-    outputFile: '.windsurfrules'
+    name: 'ChatGPT (CHATGPT.md)',
+    value: 'chatgpt',
+    templateFile: 'chatgpt.md.hbs',
+    outputFile: 'CHATGPT.md'
   },
   {
     name: 'GitHub Copilot (.github/copilot-instructions.md)',
     value: 'copilot',
     templateFile: 'copilot.md.hbs',
     outputFile: '.github/copilot-instructions.md'
-  },
-  {
-    name: 'Aider (CONVENTIONS.md)',
-    value: 'aider',
-    templateFile: 'aider.md.hbs',
-    outputFile: 'CONVENTIONS.md'
   },
   {
     name: 'OpenCode (AGENTS.md)',

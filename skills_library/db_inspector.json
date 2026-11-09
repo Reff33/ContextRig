@@ -2,18 +2,18 @@
   "id": "db_inspector",
   "name": "Database Schema Inspector",
   "description": "Inspects local DB tables & schema",
-  "ai_instructions": "To inspect project database tables and column types, run 'node tools/db_inspector.js'. Use the generated docs/db_schema.md to ensure all queries, models, and migrations adhere strictly to real database schemas.",
+  "ai_instructions": "To inspect project database tables and column types, run 'node rigtools/db_inspector.js'. Use the generated docs/db_schema.md to ensure all queries, models, and migrations adhere strictly to real database schemas.",
   "dependencies": {
     "npm": [],
     "pip": []
   },
   "gitignore": [
-    "tools/"
+    "rigtools/"
   ],
   "files_to_copy": [
     {
       "source": "scripts/db_inspector.js",
-      "destination": "tools/db_inspector.js",
+      "destination": "rigtools/db_inspector.js",
       "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/scripts/db_inspector.js"
     }
   ]

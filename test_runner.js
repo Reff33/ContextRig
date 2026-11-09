@@ -31,6 +31,7 @@ async function runTests() {
   assert.strictEqual(getAgentCliFlag({ value: 'cursor' }), 'cursor');
   assert.strictEqual(getAgentCliFlag({ value: 'copilot' }), 'github-copilot');
   assert.strictEqual(getAgentCliFlag({ value: 'opencode' }), 'opencode');
+  assert.strictEqual(getAgentCliFlag({ value: 'chatgpt' }), 'chatgpt');
   const interpolated = 'npx add --agent {{agent_flag}}'.replace(/\{\{\s*agent(?:_flag)?\s*\}\}/g, getAgentCliFlag({ value: 'cursor' }));
   assert.strictEqual(interpolated, 'npx add --agent cursor');
   console.log('✔ Test 2b: Dynamic AI Agent CLI flag mapping verified.');
@@ -53,7 +54,7 @@ async function runTests() {
   const claudeContent = await fs.readFile(claudeOut, 'utf8');
   assert(claudeContent.includes('Web Scraper'), 'CLAUDE.md should contain skill name');
   assert(claudeContent.includes('temp_test_project'), 'CLAUDE.md should contain project name');
-  assert(claudeContent.toLowerCase().includes('python tools/scraper.py'), 'CLAUDE.md should contain skill instructions');
+  assert(claudeContent.toLowerCase().includes('python rigtools/scraper.py'), 'CLAUDE.md should contain skill instructions');
 
   // Verify Claude slash command generation (.claude/commands/scrape.md)
   const scrapeCmdPath = path.join(fullPath, '.claude', 'commands', 'scrape.md');
@@ -135,21 +136,34 @@ async function runTests() {
   assert(opencodeContent.includes('OpenCode Agents & Instructions - temp_test_project'), 'AGENTS.md should contain project name');
   console.log('✔ Test 5c: OpenCode (AGENTS.md) template injection verified.');
 
+  // Test 5d: Inject ChatGPT template (CHATGPT.md)
+  const chatgptOut = await injectTemplate({
+    targetDir: fullPath,
+    templateFileName: 'chatgpt.md.hbs',
+    outputFileName: 'CHATGPT.md',
+    projectName,
+    agentName: 'ChatGPT (CHATGPT.md)',
+    skillsInstructions: [webScraper]
+  });
+  const chatgptContent = await fs.readFile(chatgptOut, 'utf8');
+  assert(chatgptContent.includes('ChatGPT Instructions - temp_test_project'), 'CHATGPT.md should contain project name');
+  console.log('✔ Test 5d: ChatGPT (CHATGPT.md) template injection verified.');
+
   // Test 6: Verify copied asset
-  const copiedToolPath = path.join(fullPath, 'tools', 'scraper.py');
+  const copiedToolPath = path.join(fullPath, 'rigtools', 'scraper.py');
   const toolStats = await fs.stat(copiedToolPath);
-  assert(toolStats.isFile(), 'tools/scraper.py should have been copied into target project');
+  assert(toolStats.isFile(), 'rigtools/scraper.py should have been copied into target project');
   console.log('✔ Test 6: Skill asset copy verified.');
 
-  // Test 7: Gitignore pattern aggregation (Graphify & tools/)
+  // Test 7: Gitignore pattern aggregation (Graphify & rigtools/)
   const graphifySkill = skills.find((s) => s.id === 'graphify');
   assert(graphifySkill, 'graphify skill should exist');
   const ignorePatterns = aggregateGitIgnorePatterns([graphifySkill]);
   assert(ignorePatterns.includes('graphify-out/'), 'graphify-out/ must be recommended for .gitignore');
-  assert(ignorePatterns.includes('tools/'), 'tools/ must be recommended for .gitignore when skill copies tool files');
-  console.log('✔ Test 7: GitIgnore pattern aggregation (including tools/) verified.');
+  assert(ignorePatterns.includes('rigtools/'), 'rigtools/ must be recommended for .gitignore when skill copies tool files');
+  console.log('✔ Test 7: GitIgnore pattern aggregation (including rigtools/) verified.');
 
-  // Test 7b: Archify skill verification (no tools/ copied)
+  // Test 7b: Archify skill verification (no rigtools/ copied)
   const archifySkill = skills.find((s) => s.id === 'archify');
   assert(archifySkill, 'archify skill should exist');
   assert(aggregateGitIgnorePatterns([archifySkill]).includes('.archify/'), '.archify/ must be recommended for .gitignore');
@@ -160,15 +174,22 @@ async function runTests() {
   assert(playwrightSkill, 'playwright skill should exist');
   assert(playwrightSkill.claude_command?.name === 'playwright', 'playwright slash command must be /playwright');
   assert(aggregateGitIgnorePatterns([playwrightSkill]).includes('.playwright/'), '.playwright/ must be recommended for .gitignore');
-  assert(aggregateGitIgnorePatterns([playwrightSkill]).includes('tools/'), 'tools/ must be recommended for playwright');
+  assert(aggregateGitIgnorePatterns([playwrightSkill]).includes('rigtools/'), 'rigtools/ must be recommended for playwright');
   console.log('✔ Test 7c: Playwright skill definition and slash command verified.');
 
   // Test 7d: isPatternIgnored duplicate check verification
-  assert.strictEqual(isPatternIgnored(['tools'], 'tools/'), true, 'tools should match tools/');
-  assert.strictEqual(isPatternIgnored(['/tools/'], 'tools/'), true, '/tools/ should match tools/');
-  assert.strictEqual(isPatternIgnored(['tools/'], 'tools/'), true, 'tools/ should match tools/');
-  assert.strictEqual(isPatternIgnored(['other_tools'], 'tools/'), false, 'other_tools should not match tools/');
+  assert.strictEqual(isPatternIgnored(['rigtools'], 'rigtools/'), true, 'rigtools should match rigtools/');
+  assert.strictEqual(isPatternIgnored(['/rigtools/'], 'rigtools/'), true, '/rigtools/ should match rigtools/');
+  assert.strictEqual(isPatternIgnored(['rigtools/'], 'rigtools/'), true, 'rigtools/ should match rigtools/');
+  assert.strictEqual(isPatternIgnored(['other_tools'], 'rigtools/'), false, 'other_tools should not match rigtools/');
   console.log('✔ Test 7d: isPatternIgnored slash normalization verified.');
+
+  // Test 7e: Bang Motion skill definition and gitignore verification
+  const bangMotionSkill = skills.find((s) => s.id === 'bang_motion');
+  assert(bangMotionSkill, 'bang_motion skill should exist');
+  assert.strictEqual(bangMotionSkill.claude_command?.name, 'bang-motion');
+  assert(aggregateGitIgnorePatterns([bangMotionSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
+  console.log('✔ Test 7e: Bang Motion skill definition and gitignore verified.');
 
   // Test 8: Skill update detection & sync
   // Simulate an outdated version of scraper.py in the target project
@@ -205,15 +226,38 @@ async function runTests() {
   assert(loadedCache.etags['web_scraper:tools/scraper.py'] === '"test-etag-123"', 'Cache ETag must persist');
   console.log('✔ Test 10b: SyncEngine ETag caching & hash calculations verified.');
 
-  // Test 10c: Skill removal workflow
-  await removeSkillsFromProject(fullPath, projectName, [scraperCheck], []);
+  // Test 10c: Skill removal and artifact cleanup workflow
+  const fakePromoDir = path.join(fullPath, 'promo-video');
+  const fakeRigMotionDir = path.join(fullPath, 'rigmotion');
+  await fs.mkdir(fakePromoDir, { recursive: true });
+  await fs.writeFile(path.join(fakePromoDir, 'index.html'), '<html></html>', 'utf8');
+  await fs.mkdir(fakeRigMotionDir, { recursive: true });
+  await fs.writeFile(path.join(fakeRigMotionDir, 'index.html'), '<html></html>', 'utf8');
+
+  await removeSkillsFromProject(fullPath, projectName, [scraperCheck, bangMotionSkill], [], { deleteArtifacts: true });
   let scraperFileExists = true;
   try {
     await fs.access(copiedToolPath);
   } catch {
     scraperFileExists = false;
   }
-  assert(!scraperFileExists, 'tools/scraper.py should be deleted after removal');
+  assert(!scraperFileExists, 'rigtools/scraper.py should be deleted after removal');
+
+  let promoDirExists = true;
+  try {
+    await fs.access(fakePromoDir);
+  } catch {
+    promoDirExists = false;
+  }
+  assert(!promoDirExists, 'promo-video/ artifact should be deleted when deleteArtifacts=true');
+
+  let rigMotionDirExists = true;
+  try {
+    await fs.access(fakeRigMotionDir);
+  } catch {
+    rigMotionDirExists = false;
+  }
+  assert(!rigMotionDirExists, 'rigmotion/ artifact should be deleted when deleteArtifacts=true');
 
   let scrapeCmdExists = true;
   try {
@@ -225,7 +269,7 @@ async function runTests() {
 
   const updatedClaudeContent = await fs.readFile(claudeOut, 'utf8');
   assert(!updatedClaudeContent.includes('Web Scraper'), 'CLAUDE.md should no longer contain removed skill');
-  console.log('✔ Test 10c: Skill removal and rules cleanup verified.');
+  console.log('✔ Test 10c: Skill removal and artifact cleanup verified.');
 
   // Cleanup test directory
   await fs.rm(fullPath, { recursive: true, force: true });

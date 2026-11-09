@@ -29,18 +29,18 @@ export function aggregateGitIgnorePatterns(selectedSkills) {
   // Always ignore ContextRig local cache
   patterns.add('.contextrig_cache.json');
 
-  // Auto-ignore tools/ directory if any skill injects tools/ scripts
+  // Auto-ignore rigtools/ directory if any skill injects rigtools/ scripts
   const hasToolFiles = selectedSkills.some(
     (skill) =>
       Array.isArray(skill.files_to_copy) &&
       skill.files_to_copy.some((item) => {
         const dest = (item.destination || '').replace(/\\/g, '/');
-        return dest.startsWith('tools/') || dest === 'tools';
+        return dest.startsWith('rigtools/') || dest === 'rigtools' || dest.startsWith('tools/') || dest === 'tools';
       })
   );
 
   if (hasToolFiles) {
-    patterns.add('tools/');
+    patterns.add('rigtools/');
   }
 
   for (const skill of selectedSkills) {

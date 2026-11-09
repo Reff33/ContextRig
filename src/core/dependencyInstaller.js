@@ -46,9 +46,8 @@ export function getAgentCliFlag(agent) {
     cursor: 'cursor',
     copilot: 'github-copilot',
     opencode: 'opencode',
-    codex: 'codex',
-    windsurf: 'cursor',
-    aider: 'claude-code'
+    chatgpt: 'chatgpt',
+    codex: 'codex'
   };
   return agentMap[agentVal] || 'claude-code';
 }

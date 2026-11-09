@@ -242,9 +242,12 @@ async function handleInjectSkills() {
 
     if (shouldRunGraphify) {
       console.log();
-      logger.step(`Running: python tools/graphify.py in ${fullPath}...`);
+      const graphifyCmd = fs.existsSync(path.join(fullPath, 'rigtools', 'graphify.py'))
+        ? 'python rigtools/graphify.py .'
+        : 'python tools/graphify.py .';
+      logger.step(`Running: ${graphifyCmd} in ${fullPath}...`);
       try {
-        const { stdout } = await execAsync('python tools/graphify.py .', { cwd: fullPath });
+        const { stdout } = await execAsync(graphifyCmd, { cwd: fullPath });
         if (stdout) console.log(stdout.trim());
         console.log();
         logger.success('graphify-out/graph.html generated successfully! Open it in your browser to inspect the visual graph.');
@@ -355,15 +358,20 @@ async function handleRemoveSkills() {
     return;
   }
 
-  // Check for any existing artifact/output directories (e.g. .archify/, graphify-out/)
+  // Check for any existing artifact/output directories (e.g. .archify/, graphify-out/, promo-video/, rigmotion/)
   const existingArtifactDirs = [];
   for (const skill of finalSkillsToRemove) {
-    if (Array.isArray(skill.gitignore)) {
-      for (const pattern of skill.gitignore) {
-        const cleanPattern = pattern.replace(/\/+$/, '').trim();
-        if (cleanPattern && cleanPattern !== 'tools' && !cleanPattern.startsWith('*')) {
-          const artifactPath = path.resolve(fullPath, cleanPattern);
-          if (fs.existsSync(artifactPath)) {
+    const candidatePatterns = new Set([
+      ...(Array.isArray(skill.artifacts) ? skill.artifacts : []),
+      ...(Array.isArray(skill.gitignore) ? skill.gitignore : [])
+    ]);
+
+    for (const pattern of candidatePatterns) {
+      const cleanPattern = pattern.replace(/\/+$/, '').trim();
+      if (cleanPattern && cleanPattern !== 'rigtools' && cleanPattern !== 'tools' && !cleanPattern.startsWith('*')) {
+        const artifactPath = path.resolve(fullPath, cleanPattern);
+        if (fs.existsSync(artifactPath)) {
+          if (!existingArtifactDirs.includes(cleanPattern)) {
             existingArtifactDirs.push(cleanPattern);
           }
         }
@@ -534,6 +542,7 @@ async function handleManageSkills() {
  * Main Interactive Menu Loop
  */
 async function mainMenu() {
+  console.clear();
   logger.banner();
 
   let keepRunning = true;

@@ -1,0 +1,31 @@
+# ChatGPT Instructions - {{projectName}}
+
+Agent Profile: {{agentName}}
+
+You are an expert AI software engineer operating in `{{projectName}}`.
+
+{{#if skillsInstructions.length}}
+## Available Skills & Tools
+
+The following capabilities and tool scripts have been provisioned in this repository:
+
+{{#each skillsInstructions}}
+### {{this.name}}
+- **Description:** {{this.description}}
+- **AI Instructions:**
+  {{this.ai_instructions}}
+{{#if this.dependencies.npm.length}}
+- **NPM Dependencies:** `{{#each this.dependencies.npm}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}`
+{{/if}}
+{{#if this.dependencies.pip.length}}
+- **Pip Dependencies:** `{{#each this.dependencies.pip}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}`
+{{/if}}
+
+{{/each}}
+{{/if}}
+
+## Operating Conventions
+- Always check available tools in `rigtools/` before executing tasks.
+- Keep modifications clean, modular, and maintain test coverage.
+- Adhere strictly to Conventional Commits when creating git commits.
+- Follow existing codebase patterns and avoid unnecessary dependencies.

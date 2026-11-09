@@ -10,9 +10,9 @@
 
 ## 1. Executive Summary
 
-ContextRig CLI ialah perkakasan pembangun (developer tooling) berasaskan terminal yang mengautomasikan penyediaan persekitaran (environment provisioning) dan suntikan konteks untuk Ejen Pengekodan AI (seperti Claude Code, Cursor, Aider, dan Windsurf) di dalam mana-mana projek tempatan. 
+ContextRig CLI ialah perkakasan pembangun (developer tooling) berasaskan terminal yang mengautomasikan penyediaan persekitaran (environment provisioning) dan suntikan konteks untuk Ejen Pengekodan AI (seperti Claude Code, Cursor, ChatGPT, OpenCode, dan GitHub Copilot) di dalam mana-mana projek tempatan.
 
-Ia menyelesaikan masalah konfigurasi berulang dengan menyediakan satu hab setempat untuk menyuntik fail peraturan (`CLAUDE.md`, `.cursorrules`), skrip alatan tempatan (`tools/`), serta menguruskan pemasangan kebergantungan pakej (`npm` & `pip`) secara automatik.
+Ia menyelesaikan masalah konfigurasi berulang dengan menyediakan satu hab setempat untuk menyuntik fail peraturan (`CLAUDE.md`, `.cursorrules`), skrip alatan tempatan (`rigtools/`), serta menguruskan pemasangan kebergantungan pakej (`npm` & `pip`) secara automatik.
 
 ---
 
@@ -26,7 +26,7 @@ Ia menyelesaikan masalah konfigurasi berulang dengan menyediakan satu hab setemp
 
 ## 3. Target Audience
 
-- **Pembangun Perisian:** Pengguna AI code editors (Cursor, Windsurf) atau terminal agents (Claude Code, Aider) yang memerlukan fail konfigurasi spesifik projek.
+- **Pembangun Perisian:** Pengguna AI code editors (Cursor, VS Code) atau coding agents (Claude Code, ChatGPT, OpenCode) yang memerlukan fail konfigurasi spesifik projek.
 - **Jurutera AI & DevOps:** Pasukan yang mahu menyeragamkan amalan pengekodan (conventional commits, linting, testing tools) yang dipatuhi oleh pembantu AI.
 
 ---
@@ -39,7 +39,7 @@ Ia menyelesaikan masalah konfigurasi berulang dengan menyediakan satu hab setemp
 | **Target Project Scaffolder** | Pengesahan & inisialisasi direktori projek sasaran. | Mengesahkan laluan folder (path), mencipta folder jika belum wujud, dan mengekstrak nama projek secara automatik. |
 | **AI Profile Selector** | Pemilihan profil AI sasaran (Claude, Cursor, dsb.). | Mengenal pasti format fail output yang betul (`CLAUDE.md` untuk Claude, `.cursorrules` untuk Cursor). |
 | **Modular Capability Library** | Pengurusan alatan & arahan daripada fail JSON. | Membaca fail JSON dalam `skills_library/`. Mengabaikan fail rosak secara automatik dengan amaran mesra. Membenarkan penambahan skil baharu secara interaktif. |
-| **Template Injector** | Menjana fail konfigurasi AI menggunakan Handlebars. | Menyuntik variabel `projectName`, `agentName`, dan `skillsInstructions` dengan mod teks mentah (`noEscape: true`). Menyalin fail aset fizikal (cth: `scripts/` $\rightarrow$ `tools/`). |
+| **Template Injector** | Menjana fail konfigurasi AI menggunakan Handlebars. | Menyuntik variabel `projectName`, `agentName`, dan `skillsInstructions` dengan mod teks mentah (`noEscape: true`). Menyalin fail aset fizikal (cth: `scripts/` $\rightarrow$ `rigtools/`). |
 | **Dependency Automation** | Automasi pemasangan kebergantungan (`npm` / `pip`). | Mengumpul kebergantungan secara unik dan menawarkan pilihan pengesahan (Y/N) untuk menjalankan `npm install` atau `pip install` dalam direktori sasaran. |
 | **GitIgnore Manager** | Pengurusan pintar fail `.gitignore`. | Menambah laluan artifak janaan skil (cth: `graphify-out/`, `.contextrig_cache.json`) ke dalam `.gitignore` secara automatik tanpa prompts lewah. |
 | **Cloud Sync & ETag Engine** | Pengesanan versi awan & optimum had permintaan. | Menggunakan Conditional Requests (`If-None-Match: ETag`), had masa TTL (1 jam), sokongan `GITHUB_TOKEN`, dan perbandingan SHA-256 hash untuk mengemas kini alatan skil tanpa terkena sekatan rate limit. |
@@ -77,11 +77,12 @@ contextrig/
 ├── templates/                       # Dynamic Handlebars templates
 │   ├── claude.md.hbs                # Context template for Claude (CLAUDE.md)
 │   ├── cursorrules.hbs              # Rules template for Cursor (.cursorrules)
-│   ├── opencode.md.hbs              # Rules template for OpenCode (AGENTS.md)
-│   ├── windsurfrules.hbs            # Rules template for Windsurf (.windsurfrules)
-│   ├── copilot.md.hbs               # Rules template for Copilot
-│   └── aider.md.hbs                 # Rules template for Aider (CONVENTIONS.md)
+│   ├── chatgpt.md.hbs               # Rules template for ChatGPT (CHATGPT.md)
+│   ├── copilot.md.hbs               # Rules template for Copilot (.github/copilot-instructions.md)
+│   └── opencode.md.hbs              # Rules template for OpenCode (AGENTS.md)
 ├── skills_library/                  # Curated library of JSON capabilities
+│   ├── bang_motion.json             # GSAP & Three.js browser motion graphics skill
+│   ├── archify.json                 # Interactive HTML diagrams & ERD skill
 │   ├── web_scraper.json             # Web scraping tool & dependencies
 │   ├── playwright.json              # Playwright browser & E2E testing skill
 │   ├── graphify.json                # Graphify visual dependency & report skill
@@ -108,7 +109,7 @@ Setiap fail di dalam `skills_library/` mematuhi skema standard berikut:
   "id": "web_scraper",
   "name": "Web Scraper",
   "description": "Allows the AI to fetch and read web pages.",
-  "ai_instructions": "To use the web scraper, run 'python tools/scraper.py <url>'. Read the output from the terminal.",
+  "ai_instructions": "To use the web scraper, run 'python rigtools/scraper.py <url>'. Read the output from the terminal.",
   "dependencies": {
     "npm": ["axios", "cheerio"],
     "pip": ["requests", "beautifulsoup4"]
@@ -116,7 +117,7 @@ Setiap fail di dalam `skills_library/` mematuhi skema standard berikut:
   "files_to_copy": [
     {
       "source": "scripts/scraper.py",
-      "destination": "tools/scraper.py"
+      "destination": "rigtools/scraper.py"
     }
   ]
 }
