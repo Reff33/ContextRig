@@ -81,9 +81,9 @@ Naskah yang sama disimpan sebagai `vo-script.md`. Jangan hanya menulis
 ## Mulai dari starter yang benar
 
 Explainer SELALU dimulai dari starter gayanya (folder `assets/`):
-`starter-explainer-kartun.html`, `starter-explainer-jurnalisme.html`,
-`starter-explainer-katalog.html`, `starter-explainer-sketsa.html`, atau
-`starter-explainer.html` untuk aksi kontinu. Kelimanya satu rig; yang beda
+`kinet-collage.html`, `kinet-editorial.html`,
+`kinet-catalog.html`, `kinet-engraving.html`, atau
+`kinet-flow.html` untuk aksi kontinu. Kelimanya satu rig; yang beda
 hanya PERMUKAAN (tekstur latar, jenis aset, font, warna). Dua mode gerak:
 
 | Mode | Dunia | Gerak utama | Gaya yang memakainya |
@@ -183,7 +183,7 @@ simbol tidak cukup menjelaskan. Explainer jurnalistik yang baik (±20 beat per
 9. Kalau `remove_background` menghapus subjeknya (kapal hilang, tersisa
    haluan kapal lain), jangan dipaksa — generate properti pengganti.
 
-Helper di `assets/starter-explainer-katalog.html`: `slam` (stempel
+Helper di `assets/kinet-catalog.html`: `slam` (stempel
 dihentak), `block` (blok tanggal disingkap dari kiri), `multiply` (grid
 beruntun); CSS `.doc`, `.stampblk`, `.pnote`, `.grid`, `.cut.card`.
 

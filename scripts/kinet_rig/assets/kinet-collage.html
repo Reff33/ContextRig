@@ -3,7 +3,7 @@
 <!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Cartoon Collage (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
-<title>KinetRig — Explainer: Cartoon Collage (144 FPS)</title>
+<title>KinetRig — Paper Collage (144 FPS)</title>
 <!--
   Gaya 1: kartun kolase. Kertas krem bertekstur + noda warna, cutout ilustrasi flat (generate lalu hapus latar) dengan drop shadow, Bricolage tebal + Caveat (tulisan tangan), pill warna sebagai highlighter, bingkai polaroid untuk foto.
 
@@ -209,7 +209,7 @@ if (btnExport) {
         document.body.classList.remove('clean-capture');
         const blob = new Blob(chunks, { type: 'video/webm' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = 'KinetRig-Explainer-Kartun.webm'; a.click();
+        a.download = 'KinetRig-Collage.webm'; a.click();
         tl.play();
       };
       tl.pause(0); recorder.start(); tl.play();

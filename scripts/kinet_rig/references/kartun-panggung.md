@@ -13,7 +13,7 @@ kalimat; gambar membawa makna; **tidak ada caption**.
 
 Bedakan dari mode lain di skill ini:
 
-| | Kartun kolase (`starter-explainer-kartun`) | Kartun panggung (`starter-explainer-panggung`) |
+| | Kartun kolase (`kinet-collage`) | Kartun panggung (`kinet-stage`) |
 |---|---|---|
 | Dunia | satu kertas besar berisi cutout diam | banyak panggung, tiap panggung satu frame |
 | Gerak utama | kamera menyusuri aset diam | isi panggung beraksi; kamera menemani |

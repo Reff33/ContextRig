@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en">
-<!-- KinetRig v1.0.0 by Reff33 - Starter Data & Animated Charts (MIT) -->
+<!-- KinetRig v1.0.0 by Reff33 - Metric Pulse & Charts (MIT) -->
 <head>
 <meta charset="utf-8">
-<title>KinetRig — Data & Chart Animation (144 FPS)</title>
+<title>KinetRig — Metric Pulse & Charts (144 FPS)</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <style>
@@ -181,7 +181,7 @@ $('#btn-export').onclick = async () => {
       document.body.classList.remove('clean-capture');
       const blob = new Blob(chunks, { type: 'video/webm' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = 'KinetRig-Data.webm'; a.click();
+      a.download = 'KinetRig-Metrics.webm'; a.click();
       tl.play();
     };
     tl.pause(0); recorder.start(); tl.play();

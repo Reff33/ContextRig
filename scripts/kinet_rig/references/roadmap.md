@@ -36,7 +36,7 @@ warna, brand, atau kalimat spesifik proyek asalnya.
    berkerangka sama. Yang dikembangkan adalah menu di
    `opener-konsep.md`: tambahkan konsep baru dari proyek yang diterima,
    jangan menambah urutan baku.
-4. **Starter multi-file.** `assets/starter-opener.html` sengaja satu berkas agar
+4. **Starter multi-file.** `assets/kinet-opener.html` sengaja satu berkas agar
    mudah disalin; sediakan juga versi terpecah (struktur di
    `architecture.md`) begitu ekosistem skill mendukung folder template.
 5. **Ekspor lebih mulus.** Alternatif puppeteer: `MediaRecorder` +
@@ -73,13 +73,13 @@ Folder ini portabel: `SKILL.md` + `references/` + `assets/` + `scripts/`
 hanyalah markdown, HTML, dan skrip. Untuk AI tanpa sistem skill:
 tempelkan isi `SKILL.md` sebagai instruksi, lampirkan `anti-ppt.md` +
 `techniques.md` saat sesi desain, `architecture.md` saat sesi coding,
-dan berikan `starter-opener.html` sebagai titik awal kode.
+dan berikan `kinet-opener.html` sebagai titik awal kode.
 
 
 ## Sudah dikerjakan
 
 - Explainer: dua gaya (kartun+VO, foto jurnalistik tanpa VO) di 9:16 —
   `references/explainer.md`. Belum ada starter khusus explainer; kandidat
-  berikutnya: `assets/starter-explainer.html` (stage 9:16, helper
+  berikutnya: `assets/kinet-flow.html` (stage 9:16, helper
   say/unsay/photo/draw/cut/tint, syncAudio) supaya tidak menulis ulang.
 - Deliverable satu berkas tanpa server; `seek()` sinkron; angka tabular.

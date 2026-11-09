@@ -34,17 +34,17 @@ Identify:
 ### Phase 2: Style Brief (Three Candidates, One Pick)
 DO NOT write code yet. Inspect project context (README, package.json, tech stack, domain) and propose 3 concept candidates:
 - **Concept:** Pick from:
-  1. **Opener Concepts (19 Variants in `references/opener-konsep.md`):** One continuous shot, pure typography, problem -> gone, before/after, journey inside UI, product macro, object metaphor, living number, one feature demo, diegetic Q&A, rhythmic collage, logo as stage, object relay, brand showcase, claim -> how -> result, living UI ecosystem, flat pop, through gradient shapes, product tour. Starter: `starter-opener.html`.
+  1. **Opener Concepts (19 Variants in `references/opener-konsep.md`):** One continuous shot, pure typography, problem -> gone, before/after, journey inside UI, product macro, object metaphor, living number, one feature demo, diegetic Q&A, rhythmic collage, logo as stage, object relay, brand showcase, claim -> how -> result, living UI ecosystem, flat pop, through gradient shapes, product tour. Starter: `kinet-opener.html`.
   2. **Explainer Styles (6 Starters in `references/explainer.md`):**
-     - Continuous Action: `starter-explainer.html`
-     - Cartoon Collage: `starter-explainer-kartun.html`
-     - Visual Journalism: `starter-explainer-jurnalisme.html`
-     - White Catalog: `starter-explainer-katalog.html`
-     - Cartoon Stage: `starter-explainer-panggung.html`
-     - Vintage Sketch: `starter-explainer-sketsa.html`
-  3. **Data & Animated Charts:** `starter-data.html`
-  4. **Product & E-Commerce Showcase:** `starter-ecommerce.html`
-  5. **Diegetic Chat Simulation:** `starter-chat.html`
+     - Continuous Action Flow: `kinet-flow.html`
+     - Paper & Print Collage: `kinet-collage.html`
+     - Visual Editorial Dossier: `kinet-editorial.html`
+     - Minimalist Studio Catalog: `kinet-catalog.html`
+     - Proscenium Theatre Stage: `kinet-stage.html`
+     - Vintage Blueprint & Engraving: `kinet-engraving.html`
+  3. **Data & Animated Charts:** `kinet-metrics.html`
+  4. **Product & E-Commerce Showcase:** `kinet-showcase.html`
+  5. **Diegetic Chat Simulation:** `kinet-dialogue.html`
 - **Style Direction (10 Directions):**
   1. *Cinematic Dark* (near-black, neon bloom, bold grotesk | gaming, creative tools, dev)
   2. *Poster Color-Block* (solid color fields, giant cropped letters | consumer apps, events)

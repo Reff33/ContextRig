@@ -18,7 +18,7 @@ proyek/
     └── export-frames.mjs  render frame-by-frame (puppeteer)
 ```
 
-Boleh dipadatkan jadi satu berkas (lihat `assets/starter-opener.html`) untuk
+Boleh dipadatkan jadi satu berkas (lihat `assets/kinet-opener.html`) untuk
 prototipe; pecah ke struktur di atas begitu adegan > 3.
 
 ## Panggung: 1920×1080 dipatok, lalu di-scale

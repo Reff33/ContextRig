@@ -60,7 +60,7 @@ Contoh explainer sejarah 30 dtk, 6 adegan, yang terasa seperti PPT. Kodenya:
 
 Pelajaran: hukum naratif saja tidak cukup; perlu larangan struktural yang bisa diperiksa dari kode
 (SKILL.md → "Larangan struktural") dan starter yang memaksa rig yang benar
-(`assets/starter-explainer.html`).
+(`assets/kinet-flow.html`).
 
 ## Prinsip yang bisa dibawa ke proyek mana pun
 

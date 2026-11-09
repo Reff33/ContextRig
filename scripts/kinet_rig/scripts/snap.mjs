@@ -11,7 +11,7 @@
 
    Usage:
      node scripts/snap.mjs shots 1 3.5 8 12 18
-     URL="file:///D:/laragon/www/KinetRig/assets/starter-opener.html?clean=1" node scripts/snap.mjs shots 1 3 5 10
+     URL="file:///D:/laragon/www/KinetRig/assets/kinet-opener.html?clean=1" node scripts/snap.mjs shots 1 3 5 10
 
    Output:
      shots/t1_00.png, shots/t3_50.png, etc.

@@ -139,20 +139,20 @@ flowchart LR
 ## 📦 Curated Starters (`assets/`)
 
 ### Brand Openers & Narrative
-1. **`starter-opener.html`** — High-impact brand opener with continuous 3D camera, macro zoom, Three.js particle space, and kinetic text.
-2. **`starter-explainer.html`** — Continuous action explainer with camera traveling through a unified world.
+1. **`kinet-opener.html`** — High-impact brand opener with continuous 3D camera, macro zoom, Three.js particle space, and kinetic text.
+2. **`kinet-flow.html`** — Continuous action flow with camera traveling through a unified vector world.
 
-### Explainer Styles
-3. **`starter-explainer-kartun.html`** — Paper & print cartoon collage explainer with cutout illustrations and drop shadows.
-4. **`starter-explainer-jurnalisme.html`** — Visual journalism explainer with editorial framing and data evidence.
-5. **`starter-explainer-katalog.html`** — Clean white catalog explainer for minimalist product or portfolio showcases.
-6. **`starter-explainer-panggung.html`** — Cartoon stage explainer with proscenium depth, curtains, and spotlight entries.
-7. **`starter-explainer-sketsa.html`** — Vintage sketch explainer with textured blueprints and architectural hatching.
+### Narrative Styles
+3. **`kinet-collage.html`** — Paper & print collage with cutout illustrations, textural depth, and drop shadows.
+4. **`kinet-editorial.html`** — Visual editorial dossier with evidence framing, highlighter sweeps, and data callouts.
+5. **`kinet-catalog.html`** — Minimalist studio catalog for product lineups, portfolios, and grid showcases.
+6. **`kinet-stage.html`** — Proscenium theatre stage with foreground depth, jointed character puppets, and spotlight entries.
+7. **`kinet-engraving.html`** — Vintage blueprint & sepia etching on aged paper with rust annotations.
 
 ### Interactive & Product Simulation
-8. **`starter-data.html`** — Data animation with animated metric counters, dynamic SVG bar/line charts, and KPI pulse cards.
-9. **`starter-ecommerce.html`** — 3D product showcase card with price badge, specs matrix, and CTA glow.
-10. **`starter-chat.html`** — Diegetic text message & conversational chat simulation with realistic typing cadence.
+8. **`kinet-metrics.html`** — Data animation with animated metric counters, dynamic SVG bar/line charts, and KPI pulse cards.
+9. **`kinet-showcase.html`** — 3D product showcase card with price badge, specs matrix, and CTA glow.
+10. **`kinet-dialogue.html`** — Diegetic text message & conversational chat simulation with realistic typing cadence.
 
 ---
 
@@ -219,16 +219,16 @@ KinetRig/
 ├── SKILL.md                         Agent specification & instructions
 ├── README.md                        Full documentation & style guides
 ├── assets/                          10 production-ready starter templates
-│   ├── starter-opener.html          3D camera brand opener
-│   ├── starter-explainer.html       Continuous action explainer
-│   ├── starter-explainer-kartun.html Cartoon collage explainer
-│   ├── starter-explainer-jurnalisme.html Visual journalism explainer
-│   ├── starter-explainer-katalog.html White catalog explainer
-│   ├── starter-explainer-panggung.html Cartoon stage explainer
-│   ├── starter-explainer-sketsa.html Vintage sketch explainer
-│   ├── starter-data.html            Data & animated charts
-│   ├── starter-ecommerce.html       3D product showcase
-│   └── starter-chat.html            Diegetic chat simulation
+│   ├── kinet-opener.html            3D camera brand opener
+│   ├── kinet-flow.html              Continuous action vector flow
+│   ├── kinet-collage.html           Paper & cutout collage
+│   ├── kinet-editorial.html         Visual editorial dossier
+│   ├── kinet-catalog.html           Minimalist studio catalog
+│   ├── kinet-stage.html             Proscenium theatre stage
+│   ├── kinet-engraving.html         Vintage blueprint & sepia etching
+│   ├── kinet-metrics.html           Data & animated charts
+│   ├── kinet-showcase.html          3D product showcase card
+│   └── kinet-dialogue.html          Diegetic chat simulation
 ├── references/                      Comprehensive motion design manuals
 │   ├── 144fps-guide.md              144 FPS offline stepping formulas
 │   ├── anti-ppt.md                  30+ slide violations & motion remedies

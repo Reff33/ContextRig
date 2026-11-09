@@ -30,54 +30,54 @@
   ],
   "files_to_copy": [
     {
-      "source": "scripts/kinet_rig/assets/starter-opener.html",
-      "destination": "rigtools/kinet_rig/assets/starter-opener.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-opener.html"
+      "source": "scripts/kinet_rig/assets/kinet-opener.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-opener.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-opener.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-explainer.html",
-      "destination": "rigtools/kinet_rig/assets/starter-explainer.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer.html"
+      "source": "scripts/kinet_rig/assets/kinet-flow.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-flow.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-flow.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-explainer-jurnalisme.html",
-      "destination": "rigtools/kinet_rig/assets/starter-explainer-jurnalisme.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-jurnalisme.html"
+      "source": "scripts/kinet_rig/assets/kinet-editorial.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-editorial.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-editorial.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-explainer-kartun.html",
-      "destination": "rigtools/kinet_rig/assets/starter-explainer-kartun.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-kartun.html"
+      "source": "scripts/kinet_rig/assets/kinet-collage.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-collage.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-collage.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-explainer-katalog.html",
-      "destination": "rigtools/kinet_rig/assets/starter-explainer-katalog.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-katalog.html"
+      "source": "scripts/kinet_rig/assets/kinet-catalog.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-catalog.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-catalog.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-explainer-panggung.html",
-      "destination": "rigtools/kinet_rig/assets/starter-explainer-panggung.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-panggung.html"
+      "source": "scripts/kinet_rig/assets/kinet-stage.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-stage.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-stage.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-explainer-sketsa.html",
-      "destination": "rigtools/kinet_rig/assets/starter-explainer-sketsa.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-sketsa.html"
+      "source": "scripts/kinet_rig/assets/kinet-engraving.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-engraving.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-engraving.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-data.html",
-      "destination": "rigtools/kinet_rig/assets/starter-data.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-data.html"
+      "source": "scripts/kinet_rig/assets/kinet-metrics.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-metrics.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-metrics.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-ecommerce.html",
-      "destination": "rigtools/kinet_rig/assets/starter-ecommerce.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-ecommerce.html"
+      "source": "scripts/kinet_rig/assets/kinet-showcase.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-showcase.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-showcase.html"
     },
     {
-      "source": "scripts/kinet_rig/assets/starter-chat.html",
-      "destination": "rigtools/kinet_rig/assets/starter-chat.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-chat.html"
+      "source": "scripts/kinet_rig/assets/kinet-dialogue.html",
+      "destination": "rigtools/kinet_rig/assets/kinet-dialogue.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/kinet-dialogue.html"
     },
     {
       "source": "scripts/kinet_rig/references/opener-konsep.md",

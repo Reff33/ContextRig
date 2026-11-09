@@ -190,8 +190,8 @@ async function runTests() {
   assert.strictEqual(kinetRigSkill.claude_command?.name, 'kinet-rig');
   assert(aggregateGitIgnorePatterns([kinetRigSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
   assert(kinetRigSkill.files_to_copy?.length >= 5, 'kinet_rig should include official starters and references');
-  const starterOpenerItem = kinetRigSkill.files_to_copy.find((f) => f.destination.includes('starter-opener.html'));
-  assert(starterOpenerItem && starterOpenerItem.remote_url, 'starter-opener.html must have remote_url for sync');
+  const openerItem = kinetRigSkill.files_to_copy.find((f) => f.destination.includes('kinet-opener.html'));
+  assert(openerItem && openerItem.remote_url, 'kinet-opener.html must have remote_url for sync');
   assert(kinetRigSkill.ai_instructions.includes('144 FPS'), 'kinet_rig must document 144 FPS');
   console.log('✔ Test 7e: KinetRig skill definition, official starters & gitignore verified.');
 

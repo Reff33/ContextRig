@@ -3,7 +3,7 @@
 <!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Cartoon Stage (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
-<title>KinetRig — Explainer: Cartoon Stage (144 FPS)</title>
+<title>KinetRig — Theatre Stage (144 FPS)</title>
 <!--
   Gaya 6: kartun panggung (references/kartun-panggung.md).
     - SATU PANGGUNG PER ADEGAN seukuran frame; kamera per panggung, zoom 1,08–1,95, tidak pernah wide.
@@ -235,7 +235,7 @@ if (btnExport) {
         document.body.classList.remove('clean-capture');
         const blob = new Blob(chunks, { type: 'video/webm' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = 'KinetRig-Explainer-Panggung.webm'; a.click();
+        a.download = 'KinetRig-Stage.webm'; a.click();
         tl.play();
       };
       tl.pause(0); recorder.start(); tl.play();
