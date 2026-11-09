@@ -189,7 +189,11 @@ async function runTests() {
   assert(bangMotionSkill, 'bang_motion skill should exist');
   assert.strictEqual(bangMotionSkill.claude_command?.name, 'bang-motion');
   assert(aggregateGitIgnorePatterns([bangMotionSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
-  console.log('✔ Test 7e: Bang Motion skill definition and gitignore verified.');
+  assert(bangMotionSkill.files_to_copy?.length >= 5, 'bang_motion should include official starters and references');
+  const starterOpenerItem = bangMotionSkill.files_to_copy.find((f) => f.destination.includes('starter-opener.html'));
+  assert(starterOpenerItem && starterOpenerItem.remote_url, 'starter-opener.html must have remote_url for sync');
+  assert(bangMotionSkill.ai_instructions.includes('10 STYLE DIRECTIONS'), 'bang_motion must document 10 style directions');
+  console.log('✔ Test 7e: Bang Motion skill definition, official starters & gitignore verified.');
 
   // Test 7f: Git Workflow skill definition and slash command verification
   const gitWorkflowSkill = skills.find((s) => s.id === 'git_workflow');

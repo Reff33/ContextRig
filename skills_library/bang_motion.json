@@ -1,12 +1,12 @@
 {
   "id": "bang_motion",
   "name": "Bang Motion (Browser Motion Graphics & Video)",
-  "description": "GSAP & Three.js kinetic video, openers & motion graphics",
+  "description": "GSAP & Three.js kinetic video, openers & motion graphics with official starters & sync",
   "install_command": "npx -y skills@latest add https://github.com/bangtutorial/bang-motion --agent {{agent_flag}} --copy --yes",
-  "ai_instructions": "When the user asks to create a video, animation, opener, or motion graphics without specifying the exact visual style, DO NOT immediately generate code. FIRST analyze the current project context (README.md, package.json, tech stack, or domain) and explicitly recommend the best-matching style with rationale, then present the Style Gallery for confirmation:\n• If SaaS, Dashboard, B2B, or web app -> Recommend 'Product tour with claims' (Lifted UI cards, dynamic camera zoom into clicked elements).\n• If AI, Tech, or premium product launch -> Recommend 'Grainy gradient' (Glowing layered shapes, soft film grain, traveling 3D camera).\n• If CLI, DevTools, backend, or engineering tool -> Recommend 'Brutalist / Mono' (High-contrast monochrome, raw kinetic typography, technical minimalism).\n• If Event, Music, Festival, or announcement -> Recommend 'Poster color-block' (Kinetic typography, high-impact solid color fields slamming on beat).\n• If Fintech, consumer app, mobile, or e-commerce -> Recommend 'Flat vector / pop' (Solid vector shapes, vibrant illustrations, product cutouts).\nAsk the user to confirm the recommended style or choose another, and specify aspect ratio (16:9 for YouTube/Web or 9:16 for TikTok/Reels/Shorts).\nOnce confirmed, build a single self-contained 'rigmotion/index.html' using GSAP (v3) & Three.js from CDN (no build step, no Remotion). Enforce anti-PowerPoint rules: no static slide deck fades, persistent subject across transitions, real moving camera, max 2 text levels, min 30px font on 1080p, autoplay, loop, and '?debug=1' scrub bar.\nVIDEO DOWNLOAD SOLUTON: Always include an in-browser '🎥 Download Video' button (hidden in '?clean=1' mode) that uses the browser native MediaRecorder API with canvas.captureStream(60) to record 1 full timeline cycle and automatically trigger a video file download (.webm/.mp4). Also provide the headless Puppeteer frame-capture and ffmpeg command for lossless 60fps MP4 studio export.",
+  "ai_instructions": "Follow the official Bang Motion workflow (bangtutorial/bang-motion):\n\n1. WORKFLOW (6 PHASES):\n   • Phase 1 (Brief): Identify product/topic, brand colors/logo, audio/VO, duration (25-40s for opener, 30-90s for explainer), and aspect ratio (16:9 for Web/YouTube or 9:16 for TikTok/Reels/Shorts).\n   • Phase 2 (Style Brief — Three Candidates, One Pick): DO NOT write code yet. Inspect project context (README.md, package.json, tech stack, domain) and propose 3 specific concept candidates with:\n     - Concept: Pick from the 19 Opener Concepts or 6 Explainer Styles.\n     - Style Direction: Pick from the 10 Style Directions.\n     - Palette with Source: 1 primary brand HEX, 1 background HEX, 1 accent HEX (explicitly stating source).\n     - Rationale: Explain why each candidate fits the product.\n   • Phase 3 (User Approval): Wait for the user to confirm 1 candidate or adjust parameters.\n   • Phase 4 (Build from Official Starter): Adapt the corresponding starter template from `rigtools/bang_motion/assets/` (or GSAP v3 + Three.js from CDN) into a single self-contained `rigmotion/index.html`.\n   • Phase 5 (Anti-PowerPoint Motion Rules):\n     - No static slide deck fades (scenes must change via continuous camera traveling, whip pan, or push-through, not fading `<section>`).\n     - Persistent subject or shared world across transitions.\n     - Max 2 text levels per scene (min 30px font on 1080p).\n     - Deterministic timeline: all animations strictly driven by `tl.time()` (no Date.now() / Math.random()).\n   • Phase 6 (Controls & Video Export):\n     - Include autoplay, loop, and `?debug=1` timeline scrubbing parameter.\n     - One-Click Video Download: Floating '🎥 Download Video' button using browser MediaRecorder API with tab capture or canvas.captureStream(60) to export .webm/.mp4.\n     - Studio MP4 export command: `ffmpeg -framerate 60 -i frames/f%05d.png -c:v libx264 -pix_fmt yuv420p -crf 16 output.mp4`.\n\n2. 10 STYLE DIRECTIONS:\n   1. Cinematic dark (near-black, bloom on objects, bold grotesk | creative tools, gaming, tech)\n   2. Poster color-block (solid color fields, giant cropped letters | consumer apps, music, events)\n   3. Editorial light (white/cream, display serif + hairlines | productivity, finance, SaaS)\n   4. Paper & print (paper texture, collage, stamps, handwriting | education, community, food)\n   5. Retro / analog (faded color, grain, scanlines, geometric | nostalgia, entertainment)\n   6. Brutalist mono (B&W hard grid, monospace, hard cuts | developer tools, CLI)\n   7. Pastel playful (stacked pastels, rounded shapes, elastic bounce | kids, health, lifestyle)\n   8. Luxury dark (black + gold/bronze, tall wide-tracked serif | fashion, automotive, luxury)\n   9. Flat pop with photos (stickers, photo cutouts, snapping on beat | fintech, consumer, e-commerce)\n   10. Grainy gradient (deep base, glowing shapes, fine grain, traveling camera | AI, tech, launches)\n\n3. 19 OPENER CONCEPTS:\n   1. One continuous shot 2. Pure typography 3. Problem -> gone 4. Before / after 5. Journey inside the UI 6. Product macro 7. Object metaphor 8. Living number 9. One feature fully demoed 10. Diegetic question -> answer 11. Rhythmic collage 12. Logo as stage 13. Object relay 14. Brand system showcase 15. Claim -> how -> result 16. Living UI ecosystem 17. Flat pop with photos 18. Through the gradient shapes 19. Product tour with claims.\n\n4. 6 EXPLAINER STYLES & STARTERS (in `rigtools/bang_motion/assets/`):\n   1. Continuous action (`starter-explainer.html`)\n   2. Cartoon collage (`starter-explainer-kartun.html`)\n   3. Visual journalism (`starter-explainer-jurnalisme.html`)\n   4. White catalog (`starter-explainer-katalog.html`)\n   5. Vintage sketch (`starter-explainer-sketsa.html`)\n   6. Cartoon stage (`starter-explainer-panggung.html`)",
   "claude_command": {
     "name": "bang-motion",
-    "content": "# /bang-motion <brief> [aspect_ratio] [style]\n\nGenerate browser motion graphics, video openers, or kinetic typography.\n\n1. **Project-Aware Style Recommendation Guard:** If [style] is not specified in <brief>, DO NOT write code yet. Inspect current project context (package.json, README, or domain) and explicitly recommend the single best matching style from the Style Gallery:\n   - SaaS / Dashboard / B2B: Recommend **Product tour with claims** (interactive UI card zooms).\n   - AI / Tech / Product Launches: Recommend **Grainy gradient** (glowing shapes, camera depth).\n   - DevTools / CLI / Engineering: Recommend **Brutalist mono** (monochrome kinetic type).\n   - Events / Music / Announcements: Recommend **Poster color-block** (punchy text slams).\n   - Fintech / Consumer / Mobile: Recommend **Flat vector illustration** (clean vector motion).\n   Ask the user to confirm the recommendation or pick another, and confirm aspect ratio (16:9 vs 9:16).\n2. **Architecture:** Generate a single self-contained `rigmotion/index.html` with GSAP v3 & Three.js loaded from CDN (zero build step).\n3. **Anti-PowerPoint Motion Rules:** Never fade between full-screen static slides. Keep a persistent focal subject, move camera with depth, and keep text hierarchy to max 2 levels (min 30px at 1080p).\n4. **Controls & Video Export:**\n   - Include autoplay, seamless looping, and `?debug=1` timeline scrubbing parameter.\n   - **One-Click Video Download:** Embed a floating '🎥 Export Video' button in the UI using browser `MediaRecorder` + `canvas.captureStream(60)`. When clicked, it plays 1 cycle and downloads the `.webm`/`.mp4` video directly without extra software.\n5. **Studio MP4 Export (Optional):** Provide the Puppeteer frame-capture script and ffmpeg command (`ffmpeg -framerate 60 -i frames/f%05d.png -c:v libx264 -pix_fmt yuv420p -crf 16 output.mp4`) for lossless 60fps rendering."
+    "content": "# /bang-motion <brief> [aspect_ratio] [concept/style]\n\nGenerate browser-based motion graphics or kinetic video using the official Bang Motion workflow:\n\n1. **Style Brief (Three Candidates, One Pick):** If concept/style is not specified, DO NOT write code yet. Inspect project context (README.md, package.json, tech stack, domain) and present 3 Concept Candidates:\n   - Propose 3 combinations of Concept (from 19 opener concepts / 6 explainer styles) and Style Direction (from 10 style directions).\n   - Provide a 3-color palette (Primary Brand HEX, Background HEX, Accent HEX) extracted from project assets.\n   - Give concise rationale why each candidate fits this project.\n   - Ask user to confirm 1 candidate and aspect ratio (16:9 vs 9:16).\n2. **Official Starters:** Adapt the corresponding starter template from `rigtools/bang_motion/assets/` (e.g. `starter-opener.html` or `starter-explainer-*.html`) and build into a self-contained `rigmotion/index.html`.\n3. **Anti-PowerPoint Rules:** Continuous moving camera with depth (push-through / whip pan), persistent subject, max 2 text levels per scene (min 30px at 1080p), zero static slide deck fades.\n4. **Controls & Export:** Include `?debug=1` scrubber, in-browser '🎥 Download Video' button (MediaRecorder), and ffmpeg lossless 60fps frame-export command."
   },
   "dependencies": {
     "npm": [],
@@ -26,5 +26,61 @@
     "renders/",
     ".motion/"
   ],
-  "files_to_copy": []
+  "files_to_copy": [
+    {
+      "source": "scripts/bang_motion/assets/starter-opener.html",
+      "destination": "rigtools/bang_motion/assets/starter-opener.html",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/assets/starter-opener.html"
+    },
+    {
+      "source": "scripts/bang_motion/assets/starter-explainer.html",
+      "destination": "rigtools/bang_motion/assets/starter-explainer.html",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/assets/starter-explainer.html"
+    },
+    {
+      "source": "scripts/bang_motion/assets/starter-explainer-jurnalisme.html",
+      "destination": "rigtools/bang_motion/assets/starter-explainer-jurnalisme.html",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/assets/starter-explainer-jurnalisme.html"
+    },
+    {
+      "source": "scripts/bang_motion/assets/starter-explainer-kartun.html",
+      "destination": "rigtools/bang_motion/assets/starter-explainer-kartun.html",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/assets/starter-explainer-kartun.html"
+    },
+    {
+      "source": "scripts/bang_motion/assets/starter-explainer-katalog.html",
+      "destination": "rigtools/bang_motion/assets/starter-explainer-katalog.html",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/assets/starter-explainer-katalog.html"
+    },
+    {
+      "source": "scripts/bang_motion/assets/starter-explainer-sketsa.html",
+      "destination": "rigtools/bang_motion/assets/starter-explainer-sketsa.html",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/assets/starter-explainer-sketsa.html"
+    },
+    {
+      "source": "scripts/bang_motion/assets/starter-explainer-panggung.html",
+      "destination": "rigtools/bang_motion/assets/starter-explainer-panggung.html",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/assets/starter-explainer-panggung.html"
+    },
+    {
+      "source": "scripts/bang_motion/references/opener-konsep.md",
+      "destination": "rigtools/bang_motion/references/opener-konsep.md",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/references/opener-konsep.md"
+    },
+    {
+      "source": "scripts/bang_motion/references/explainer.md",
+      "destination": "rigtools/bang_motion/references/explainer.md",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/references/explainer.md"
+    },
+    {
+      "source": "scripts/bang_motion/references/anti-ppt.md",
+      "destination": "rigtools/bang_motion/references/anti-ppt.md",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/references/anti-ppt.md"
+    },
+    {
+      "source": "scripts/bang_motion/references/techniques.md",
+      "destination": "rigtools/bang_motion/references/techniques.md",
+      "remote_url": "https://raw.githubusercontent.com/bangtutorial/bang-motion/main/references/techniques.md"
+    }
+  ]
 }

@@ -55,12 +55,21 @@ export async function detectInstalledSkills(targetDir, availableSkills) {
     if (skill.files_to_copy && skill.files_to_copy.length > 0) {
       for (const item of skill.files_to_copy) {
         const destBase = path.basename(item.destination);
-        if (toolFiles.includes(destBase)) {
+        const destPath = path.resolve(targetDir, item.destination);
+
+        let destExists = false;
+        try {
+          await fs.access(destPath);
+          destExists = true;
+        } catch {
+          destExists = toolFiles.includes(destBase);
+        }
+
+        if (destExists) {
           isPresent = true;
 
           // Compare content of source vs destination
           const srcPath = path.resolve(ROOT_DIR, item.source);
-          const destPath = path.resolve(targetDir, item.destination);
 
           try {
             const [srcContent, destContent] = await Promise.all([
@@ -272,10 +281,22 @@ export async function removeSkillsFromProject(
     logger.success(`Updated ${agent.outputFile} (removed ${skillsToRemove.map((s) => s.name).join(', ')})`);
   }
 
-  // 4. Try cleaning up empty rigtools/, tools/, or .claude/commands/ directories
+  // 4. Try cleaning up empty subdirectories and rigtools/, tools/, or .claude/commands/ directories
   for (const dirName of ['rigtools', 'tools']) {
     try {
       const dirPath = path.join(targetDir, dirName);
+      // Clean subdirectories first if empty
+      const subEntries = await fs.readdir(dirPath, { withFileTypes: true });
+      for (const entry of subEntries) {
+        if (entry.isDirectory()) {
+          const subDirPath = path.join(dirPath, entry.name);
+          try {
+            await fs.rm(subDirPath, { recursive: true, force: false });
+          } catch {
+            // not empty
+          }
+        }
+      }
       const remainingFiles = await fs.readdir(dirPath);
       if (remainingFiles.length === 0) {
         await fs.rmdir(dirPath);
