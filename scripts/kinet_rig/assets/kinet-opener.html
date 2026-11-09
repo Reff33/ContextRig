@@ -263,6 +263,81 @@ function playImpact() {
   } catch (e) {}
 }
 
+function playSubReveal() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    // Soft upward micro-glide for subtitle text reveal
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(420, now);
+    osc.frequency.exponentialRampToValueAtTime(560, now + 0.12);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.09, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (audioDest) gain.connect(audioDest);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  } catch (e) {}
+}
+
+function playExitSweep() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    // Soft upward air filter lift for vanishing elements
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(480, now + 0.22);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.07, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (audioDest) gain.connect(audioDest);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  } catch (e) {}
+}
+
+function playTerminalChirp() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    // Tactile double-chime for CLI code box arrival
+    [840, 1120].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const t = now + idx * 0.04;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.9, t + 0.08);
+
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.1, t + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      if (audioDest) gain.connect(audioDest);
+      osc.start(t);
+      osc.stop(t + 0.1);
+    });
+  } catch (e) {}
+}
+
 function playCardPop(freq = 520) {
   const ctx = initAudio();
   if (!ctx || ctx.state !== 'running') return;
@@ -327,6 +402,7 @@ function playWhoosh() {
 
 // Scene 1 (0.0s - 5.0s)
 tl.call(playImpact, null, 0.2);
+tl.call(playSubReveal, null, 0.8);
 tl.call(() => playCardPop(520), null, 1.4);
 tl.call(() => playCardPop(640), null, 1.55);
 tl.call(() => playCardPop(780), null, 1.7);
@@ -341,6 +417,7 @@ tl.fromTo($$('#cards-sc1 .vector-card'),
 );
 
 // Exit Scene 1 -> Enter Scene 2 (5.0s)
+tl.call(playExitSweep, null, 4.4);
 tl.call(playWhoosh, null, 4.8);
 tl.call(playImpact, null, 5.2);
 tl.to(['#h1-sc1', '#sub-sc1', '#cards-sc1'], { opacity: 0, y: -40, duration: 0.5, ease: 'power2.in' }, 4.4);
@@ -348,8 +425,10 @@ tl.set('#sc1', { autoAlpha: 0 }, 5.0);
 
 tl.set('#sc2', { autoAlpha: 1 }, 5.0);
 tl.fromTo('#h1-sc2', { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1, duration: 1.0, ease: 'power3.out' }, 5.2);
+tl.call(playTerminalChirp, null, 6.0);
 tl.fromTo('#sub-sc2', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 6.0);
 tl.to(S, { camZ: 15, duration: 4.5, ease: 'power2.out' }, 5.0);
+tl.call(playExitSweep, null, 9.4);
 tl.to({}, { duration: 0.01 }, DURATION);
 
 /* ============ STAGE FIT & CONTROLS ============ */

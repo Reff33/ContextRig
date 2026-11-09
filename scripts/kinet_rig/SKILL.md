@@ -18,7 +18,8 @@ Motion graphics that move like real studio cinema, not PowerPoint slides. Built 
 2. **Deterministic 144 FPS Timeline:** All animations driven strictly by `tl.time()`. No `Date.now()`, no `Math.random()`. Allows frame-accurate offline rendering with 0 dropped frames.
 3. **Zero OS Emojis Everywhere (Strict Vector Quality):** NEVER use system/OS copy-paste emojis (🤖, ⚡, 🐙, 🧠, 🕷, 🎥, ⚙, 🔴) anywhere — neither in scene cards, titles, body text, nor in UI buttons (Download Video, HUD, scrubbers, controls). ALWAYS use resolution-independent Inline SVG vectors (`<svg viewBox="0 0 24 24">`) with `currentColor` or brand colors with neon glow. Emojis look amateurish and pixelate on 1080p/4K; inline SVGs guarantee crisp studio finish with zero external dependencies.
 4. **Anti-PowerPoint Motion:** No static slide deck fades. Scenes transition through continuous camera traveling (push-through, whip pan, yaw 3D) or motivated object wipes.
-5. **Clean Video Export:** `body.clean-capture` auto-hides all UI, scrubber, and HUD buttons during recording. Passes `cursor: 'never'` to stream capture.
+5. **Motivated Sound Design (100% Movement-to-SFX Lock):** Every primary keyframe event (Hero statement entrance, subtitle reveal, card stagger pop, camera whip/push-through, element exit) MUST have a mathematically synchronized procedural Web Audio SFX cue. Motion without audio feels dead; unmotivated audio feels noisy. Each sound uses non-harsh, velvety acoustic profiles (pure sine, 15ms soft attack, bandpass pink-noise air whoosh).
+6. **Clean Video Export:** `body.clean-capture` auto-hides all UI, scrubber, and HUD buttons during recording. Passes `cursor: 'never'` to stream capture.
 
 ---
 
@@ -106,3 +107,5 @@ Consult these technical guides during production:
 - `sequences.md`: Complete storyboard blueprints (SaaS Launch 30s, Dev Tool CLI 30s, Product Manifesto 45s, Metric Milestone 20s).
 - `aesthetic-qa.md`: 10-point visual quality scorecard and focal point eye-tracking rules.
 - `mockups.md`: Zero-dependency CSS 3D mockups (unibody laptop, dynamic island smartphone, browser chrome window).
+
+

@@ -95,3 +95,33 @@ When voiceover narration enters the timeline:
 1. Reduce background music volume by -12dB to -16dB over 0.3s.
 2. Retain full presence for micro-SFX (UI clicks, impacts, tactile ticks).
 3. Smoothly restore music level once voiceover finishes (0.6s release curve).
+
+---
+
+## 4. Rule of Motivated Movement Audio (100% Movement-to-SFX Lock)
+
+In high-end studio motion graphics, visual movement without sound feels lifeless, while generic background music without synchronized foley feels detached. **Every visual movement must have a motivated, non-harsh procedural audio cue.**
+
+### The 6 Motion Graphics Sound Archetypes
+
+| Visual Movement | Sound Archetype | Acoustic Recipe |
+| --- | --- | --- |
+| **Hero Statement Slam** | `playImpact()` | Pure sine 220Hz -> 60Hz + 15ms soft attack + subtle 520Hz glass sheen |
+| **Subtitle / Label Glide** | `playSubReveal()` | Soft sine upward micro-glide 420Hz -> 560Hz (80ms decay) |
+| **Staggered Card / Badge Pop** | `playCardPop(freq)` | Resonant melodic chime at 520Hz, 640Hz, 780Hz |
+| **Element Exit / Vanish** | `playExitSweep()` | Motivated upward sine lift 180Hz -> 480Hz |
+| **3D Camera Traveling / Whip** | `playWhoosh()` | Velvet pink-noise bandpass filter sweep 350Hz -> 1100Hz |
+| **CLI / Code Box Reveal** | `playTerminalChirp()` | Tactile dual-tone crystal chime 840Hz + 1120Hz |
+
+```javascript
+// Example: Complete Movement-to-SFX Mapping in GSAP Timeline
+tl.call(playImpact, null, 0.2);             // Hero title slam
+tl.call(playSubReveal, null, 0.8);          // Subtitle glide reveal
+tl.call(() => playCardPop(520), null, 1.4);  // Staggered card 1
+tl.call(() => playCardPop(640), null, 1.55); // Staggered card 2
+tl.call(() => playCardPop(780), null, 1.7);  // Staggered card 3
+tl.call(playExitSweep, null, 4.4);          // Scene 1 elements lift out
+tl.call(playWhoosh, null, 4.8);             // Camera traveling through 3D space
+tl.call(playImpact, null, 5.2);             // Scene 2 hero slam
+tl.call(playTerminalChirp, null, 6.0);      // CLI code box reveal
+```
