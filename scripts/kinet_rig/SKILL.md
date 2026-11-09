@@ -81,3 +81,20 @@ Adapt the chosen starter template from `assets/` into a single self-contained `i
   node scripts/export-frames.mjs
   ffmpeg -framerate 144 -i frames/f%05d.png -c:v libx264 -pix_fmt yuv420p -crf 14 output_144fps.mp4
   ```
+
+---
+
+## 10 Master Skill Modules (`references/modules/`)
+
+Consult these technical guides during production:
+1. `01-cinematography-camera.md`: 3D camera rig, angles (Dutch, low/high), push-through, whip-pan, rack focus blur swap.
+2. `02-advanced-motion-graphics.md`: Word-split kinetic typography, logo stroke draw, UI click simulation, counter animations.
+3. `03-animation-physics.md`: Easing hierarchy, anticipation, follow-through, squash & stretch, SVG directional motion blur.
+4. `04-transitions-choreography.md`: 7 transition archetypes, clip-path mask wipes, match cuts, persistent subject world.
+5. `05-vfx-particles.md`: Deterministic PRNG canvas particles, neon bloom pulses, glassmorphism, RGB chromatic glitch.
+6. `06-sound-design.md`: Zero-dependency Web Audio API synthesizer (sub-bass impacts, whoosh), BPM beat-sync math, audio ducking.
+7. `07-lighting-color.md`: 3-point studio CSS lighting, volumetric god rays, film vignette, SVG micro-noise grain.
+8. `08-3d-spatial-design.md`: Zero-dependency 3D laptop/phone chassis, Three.js particle helix, 3D typography drop-shadows.
+9. `09-editing-post-production.md`: Speed ramping, kinetic karaoke subtitles, 144 FPS CRF 14 studio render pipeline.
+10. `10-ai-production-intelligence.md`: Visual QA scorecard, storyboard generation protocol, headless keyframe snapshot inspection.
+

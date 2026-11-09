@@ -100,6 +100,56 @@
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/techniques.md"
     },
     {
+      "source": "scripts/kinet_rig/references/modules/01-cinematography-camera.md",
+      "destination": "rigtools/kinet_rig/references/modules/01-cinematography-camera.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/01-cinematography-camera.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/02-advanced-motion-graphics.md",
+      "destination": "rigtools/kinet_rig/references/modules/02-advanced-motion-graphics.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/02-advanced-motion-graphics.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/03-animation-physics.md",
+      "destination": "rigtools/kinet_rig/references/modules/03-animation-physics.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/03-animation-physics.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/04-transitions-choreography.md",
+      "destination": "rigtools/kinet_rig/references/modules/04-transitions-choreography.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/04-transitions-choreography.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/05-vfx-particles.md",
+      "destination": "rigtools/kinet_rig/references/modules/05-vfx-particles.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/05-vfx-particles.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/06-sound-design.md",
+      "destination": "rigtools/kinet_rig/references/modules/06-sound-design.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/06-sound-design.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/07-lighting-color.md",
+      "destination": "rigtools/kinet_rig/references/modules/07-lighting-color.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/07-lighting-color.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/08-3d-spatial-design.md",
+      "destination": "rigtools/kinet_rig/references/modules/08-3d-spatial-design.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/08-3d-spatial-design.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/09-editing-post-production.md",
+      "destination": "rigtools/kinet_rig/references/modules/09-editing-post-production.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/09-editing-post-production.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/modules/10-ai-production-intelligence.md",
+      "destination": "rigtools/kinet_rig/references/modules/10-ai-production-intelligence.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/modules/10-ai-production-intelligence.md"
+    },
+    {
       "source": "scripts/kinet_rig/scripts/export-frames.mjs",
       "destination": "rigtools/kinet_rig/scripts/export-frames.mjs",
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/export-frames.mjs"

@@ -1,6 +1,8 @@
 <div align="center">
 
-# KinetRig 🎬
+<img src="assets/image/KinetRig%20Icon.png" alt="KinetRig Icon" width="128" />
+
+# KinetRig
 
 **Zero-dependency 144 FPS kinetic motion graphics & video engine built for AI coding agents.**<br>
 Openers, promos, product demos, kinetic typography, and explainers — built as a single `index.html` with deterministic 144 FPS rendering and zero dropped frames.
@@ -51,6 +53,24 @@ Every deliverable is a single self-contained `index.html`: double-click to play,
 ---
 
 ## The menus behind the looks
+
+<details>
+<summary><b>10 master skill modules</b> — cinematography, physics, sound, VFX & AI orchestration</summary>
+
+| Module | Core Capabilities | Key Formulas & Techniques |
+|---|---|---|
+| **1. Cinematography & Camera** | 3D Camera Rig, angles, lens depth, rack focus | `#world` / `#camera` container, 2.5D push-through, whip pan, multi-plane Z-parallax |
+| **2. Advanced Motion Graphics** | Kinetic typography, logo reveals, UI simulation | Word-split stagger slam, SVG path stroke draw, tabular counters, clip-path morphing |
+| **3. Animation Physics** | 12 animation principles, easing hierarchy, squash & stretch | Master easing curves (`power3.out`, `expo.out`), anticipation bounce, directional SVG motion blur |
+| **4. Transitions & Choreography** | 7 transition archetypes, persistent subject | Motivated whip-pans, match cuts, letter O push-through, geometric polygon wipes |
+| **5. VFX & Particle Systems** | Deterministic particles, neon bloom, glassmorphism | PRNG canvas particles (0 dropped frames), volumetric bloom pulses, RGB chromatic glitch |
+| **6. Sound Design & Audio** | Zero-dep Web Audio synthesizer, BPM beat sync | Real-time procedural sub-bass impact, whoosh generator, BPM frame-exact cuts, audio ducking |
+| **7. Cinematic Lighting & Color** | 3-point CSS lighting, volumetric god rays | Key/fill/rim lighting, moving light cones, film vignettes, SVG `feTurbulence` grain |
+| **8. 3D Spatial Design** | Device mockups, 3D card tumbles, Three.js scenes | Zero-dependency 3D laptop/mobile chassis, floating 3D typography with depth drop-shadows |
+| **9. Editing & Post-Production** | Code-driven NLE, speed ramping, subtitles | Kinetic karaoke subtitles, speed ramping curve, 144 FPS CRF 14 lossless studio render |
+| **10. AI Production Intelligence** | Visual QA scorecard, storyboard generation | 6-metric QA check (zero emojis, typography scale), headless keyframe snapshot inspection |
+
+</details>
 
 <details>
 <summary><b>10 style directions</b> — the skin, derived from your brand</summary>
