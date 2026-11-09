@@ -22,7 +22,7 @@ console.log(`======================================================\n`);
 const htmlContent = readFileSync(resolve(inputArg), 'utf8');
 
 let duration = 10;
-const durMatch = htmlContent.match(/const\s+DURATION\s*=\s*([0-9.]+)/i);
+const durMatch = htmlContent.match(/\b(?:DURATION|DUR)\s*=\s*([0-9.]+)/i);
 if (durMatch) duration = parseFloat(durMatch[1]);
 
 const events = [];
@@ -32,8 +32,8 @@ const manifestMatch = htmlContent.match(/const\s+audioManifest\s*=\s*(\{[\s\S]*?
 if (manifestMatch) {
   try {
     const rawObj = manifestMatch[1].replace(/;\s*$/, '');
-    const fn = new Function('DURATION', `"use strict"; return (${rawObj});`);
-    const manifestObj = fn(duration);
+    const fn = new Function('DURATION', 'DUR', `"use strict"; return (${rawObj});`);
+    const manifestObj = fn(duration, duration);
     if (manifestObj && Array.isArray(manifestObj.events)) {
       events.push(...manifestObj.events);
     }
