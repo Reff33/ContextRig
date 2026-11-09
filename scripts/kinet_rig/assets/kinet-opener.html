@@ -73,27 +73,87 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   filter: drop-shadow(0 0 8px var(--primary-glow));
 }
 
-/* 144 FPS Export & Scrubber Controls */
-.top-bar { position: fixed; top: 20px; right: 24px; display: flex; gap: 12px; z-index: 100; }
+/* 240 FPS Export & HUD Controls */
+.top-bar { position: fixed; top: 20px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 100; }
 .btn-action {
-  background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(0, 245, 255, 0.4);
+  background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(0, 245, 255, 0.35);
   color: #FFF; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
-  padding: 10px 18px; border-radius: 10px; cursor: pointer;
-  backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  padding: 8px 16px; border-radius: 9999px; cursor: pointer;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   display: inline-flex; align-items: center; gap: 8px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action:hover {
+  border-color: var(--primary); color: #FFF;
+  box-shadow: 0 0 16px rgba(0, 245, 255, 0.35); transform: translateY(-1px);
+}
+.btn-action.active {
+  background: rgba(0, 245, 255, 0.22); border-color: var(--primary);
+  box-shadow: 0 0 14px rgba(0, 245, 255, 0.4);
 }
 .btn-action svg {
   width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none;
 }
 #ui {
   position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 14px; padding: 10px 20px;
-  border-radius: 14px; background: rgba(9, 14, 26, 0.92);
-  border: 1px solid rgba(0, 245, 255, 0.25); font-family: var(--font-mono);
-  font-size: 13px; color: #94A3B8; z-index: 90; display: none;
+  display: flex; align-items: center; gap: 12px; padding: 8px 18px;
+  border-radius: 9999px; background: rgba(9, 14, 26, 0.90);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 245, 255, 0.15);
+  font-family: var(--font-mono); font-size: 13px; color: #94A3B8; z-index: 90;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
-#ui.on { display: flex; }
-#scrub { width: 360px; accent-color: var(--primary); }
+#ui.hidden {
+  opacity: 0; pointer-events: none; transform: translate(-50%, 14px);
+}
+#ui button {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #F8FAFC;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.02em;
+}
+#ui button:hover {
+  background: rgba(0, 245, 255, 0.2);
+  border-color: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(0, 245, 255, 0.4);
+  transform: translateY(-1px);
+}
+#ui button:active {
+  transform: translateY(0) scale(0.96);
+  background: rgba(0, 245, 255, 0.35);
+}
+#ui button#btn-audio { padding: 6px 10px; }
+#ui button.muted { opacity: 0.6; color: #94A3B8; }
+#scrub {
+  width: 340px;
+  height: 6px;
+  accent-color: var(--primary);
+  border-radius: 3px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.18);
+  outline: none;
+}
+#clock {
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: right;
+  color: #E2E8F0;
+  font-weight: 600;
+}
 
 /* 100% Clean Recording Mode (Zero HUD, Zero Scrubber, Zero Cursor) */
 body.clean-capture .top-bar,
@@ -143,19 +203,22 @@ body.clean-capture, body.clean-mode { cursor: none !important; }
 </div>
 
 <div class="top-bar">
-  <button class="btn-action" id="btn-hud">
+  <button class="btn-action active" id="btn-hud" title="Toggle HUD (H)">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>HUD (H)</span>
   </button>
   <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-    <span id="btn-export-text">Download Video (144 FPS)</span>
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
   </button>
 </div>
 
 <div id="ui">
   <button id="btn-play">Pause</button>
-  <button id="btn-restart">Restart</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
   <input type="range" id="scrub" min="0" max="1000" value="0">
   <span id="clock">0.00s</span>
 </div>
@@ -165,6 +228,8 @@ import * as THREE from 'three';
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
+let isRecording = false;
 
 /* ============ THREE.JS 144 FPS PARTICLES ============ */
 const canvas = $('#gl');
@@ -200,20 +265,149 @@ const render = t => {
 const DURATION = 10.0;
 const tl = gsap.timeline({ paused: true });
 
-// Procedural Web Audio API Sound Triggers (Smooth, subtle, velvety studio design)
+/* ============ HYBRID AUDIO ENGINE (3-LAYER ACOUSTIC SANDWICH & CINEMATIC TECH SFX) ============ */
 let audioCtx = null;
 let audioDest = null;
+let ambientStarted = false;
+let ambientMaster = null;
+let isAudioMuted = false;
+let mainMasterGain = null;
+
+const btnAudio = $('#btn-audio'), iconAudioOn = $('#icon-audio-on'), iconAudioOff = $('#icon-audio-off');
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  if (iconAudioOn) iconAudioOn.style.display = isAudioMuted ? 'none' : 'block';
+  if (iconAudioOff) iconAudioOff.style.display = isAudioMuted ? 'block' : 'none';
+  if (btnAudio) {
+    btnAudio.classList.toggle('muted', isAudioMuted);
+    btnAudio.title = isAudioMuted ? 'Unmute Audio (M)' : 'Mute Audio (M)';
+  }
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+if (btnAudio) btnAudio.onclick = toggleAudio;
+
+const SFX_CDN_BASE = 'https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main';
+const STUDIO_SFX = {
+  'impact-deep-soft': 'sounds/impacts/impact-deep-soft.wav',
+  'tone-step-2': 'sounds/tones/tone-step-2.wav',
+  'pop-small-in': 'sounds/pops/pop-small-in.wav',
+  'pop-medium-in': 'sounds/pops/pop-medium-in.wav',
+  'tone-ding-high': 'sounds/tones/tone-ding-high.wav',
+  'whoosh-slow-soft': 'sounds/whooshes/whoosh-slow-soft.wav',
+  'whoosh-medium-soft': 'sounds/whooshes/whoosh-medium-soft.wav',
+  'digital-blip-clear': 'sounds/digital/digital-blip-clear.wav',
+  'riser-1s-soft': 'sounds/risers-and-fallers/riser-1s-soft.wav'
+};
+
+const sfxRawBuffers = {};
+const sfxAudioBuffers = {};
+
+async function fetchSfxArrayBuffer(rel) {
+  const tryUrls = [
+    '../sfx/' + rel,
+    '../../sfx/' + rel,
+    'sfx/' + rel,
+    `${SFX_CDN_BASE}/${rel}`
+  ];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+// Immediately initiate background prefetching
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+  });
+}
+
+function startAmbientBed() {
+  if (ambientStarted || !audioCtx || audioCtx.state !== 'running') return;
+  ambientStarted = true;
+  try {
+    // Layer 1: Ambient analog room tone & cyber drone (-26dB)
+    ambientMaster = audioCtx.createGain();
+    ambientMaster.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(50, audioCtx.currentTime);
+
+    const bufLen = Math.floor(audioCtx.sampleRate * 2);
+    const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0, b1 = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.98 * b0 + white * 0.02;
+      b1 = 0.95 * b1 + white * 0.05;
+      data[i] = (b0 + b1) * 0.25;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buf;
+    noise.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(180, audioCtx.currentTime);
+
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    osc.connect(oscGain);
+    oscGain.connect(ambientMaster);
+
+    noise.connect(filter);
+    filter.connect(ambientMaster);
+
+    ambientMaster.connect(mainMasterGain || audioCtx.destination);
+    if (audioDest && !mainMasterGain) ambientMaster.connect(audioDest);
+
+    osc.start();
+    noise.start();
+  } catch (e) {}
+}
+
 const initAudio = () => {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) audioCtx = new AudioContextClass();
-    try { audioDest = audioCtx.createMediaStreamDestination(); } catch (e) {}
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+    }
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+    startAmbientBed();
   }
   return audioCtx;
 };
+
 window.addEventListener('click', initAudio);
 window.addEventListener('keydown', initAudio);
 window.addEventListener('message', e => {
@@ -222,12 +416,30 @@ window.addEventListener('message', e => {
   }
 });
 
+function triggerSfx(sfxId, fallbackFn, gain = 0.5) {
+  const ctx = initAudio();
+  if (ctx && sfxAudioBuffers[sfxId]) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = sfxAudioBuffers[sfxId];
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn();
+}
+
+/* ============ ZERO-DEPENDENCY PROCEDURAL FALLBACK SYNTHESIZERS ============ */
 function playImpact() {
   const ctx = initAudio();
   if (!ctx || ctx.state !== 'running') return;
   const now = ctx.currentTime;
   try {
-    // 1. Warm rounded body (smooth sine, 220Hz -> 60Hz, soft attack to prevent click)
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -239,12 +451,11 @@ function playImpact() {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
 
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    if (audioDest) gain.connect(audioDest);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
     osc.start(now);
     osc.stop(now + 0.4);
 
-    // 2. Subtle glass sheen (adds presence on small speakers without harshness)
     const sheen = ctx.createOscillator();
     const sheenGain = ctx.createGain();
     sheen.type = 'sine';
@@ -256,8 +467,8 @@ function playImpact() {
     sheenGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
 
     sheen.connect(sheenGain);
-    sheenGain.connect(ctx.destination);
-    if (audioDest) sheenGain.connect(audioDest);
+    sheenGain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) sheenGain.connect(audioDest);
     sheen.start(now);
     sheen.stop(now + 0.16);
   } catch (e) {}
@@ -268,7 +479,6 @@ function playSubReveal() {
   if (!ctx || ctx.state !== 'running') return;
   const now = ctx.currentTime;
   try {
-    // Soft upward micro-glide for subtitle text reveal
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -280,8 +490,8 @@ function playSubReveal() {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
 
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    if (audioDest) gain.connect(audioDest);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
     osc.start(now);
     osc.stop(now + 0.15);
   } catch (e) {}
@@ -292,7 +502,6 @@ function playExitSweep() {
   if (!ctx || ctx.state !== 'running') return;
   const now = ctx.currentTime;
   try {
-    // Soft upward air filter lift for vanishing elements
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -304,8 +513,8 @@ function playExitSweep() {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
 
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    if (audioDest) gain.connect(audioDest);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
     osc.start(now);
     osc.stop(now + 0.25);
   } catch (e) {}
@@ -316,7 +525,6 @@ function playTerminalChirp() {
   if (!ctx || ctx.state !== 'running') return;
   const now = ctx.currentTime;
   try {
-    // Tactile double-chime for CLI code box arrival
     [840, 1120].forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -330,8 +538,8 @@ function playTerminalChirp() {
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
-      if (audioDest) gain.connect(audioDest);
+      gain.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) gain.connect(audioDest);
       osc.start(t);
       osc.stop(t + 0.1);
     });
@@ -354,8 +562,8 @@ function playCardPop(freq = 520) {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
 
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    if (audioDest) gain.connect(audioDest);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
     osc.start(now);
     osc.stop(now + 0.11);
   } catch (e) {}
@@ -394,42 +602,84 @@ function playWhoosh() {
 
     node.connect(filter);
     filter.connect(gain);
-    gain.connect(ctx.destination);
-    if (audioDest) gain.connect(audioDest);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
     node.start(now);
   } catch (e) {}
 }
 
+/* ============ AUDIO-VISUAL CHOREOGRAPHY (100% MOTIVATED MOVEMENT LOCK) ============ */
 // Scene 1 (0.0s - 5.0s)
-tl.call(playImpact, null, 0.2);
-tl.call(playSubReveal, null, 0.8);
-tl.call(() => playCardPop(520), null, 1.4);
-tl.call(() => playCardPop(640), null, 1.55);
-tl.call(() => playCardPop(780), null, 1.7);
 tl.set('#sc1', { autoAlpha: 1 }, 0);
-tl.fromTo('#h1-sc1', { opacity: 0, scale: 0.85, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: 'power3.out' }, 0.2);
-tl.fromTo('#sub-sc1', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 0.8);
 tl.to(S, { camZ: 11, duration: 4.8, ease: 'none' }, 0);
+
+// 1. Headline 1 slam (snappy 0.45s deceleration matching 350ms sub-bass decay)
+tl.fromTo('#h1-sc1', { opacity: 0, scale: 0.85, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: 'expo.out' }, 0.2);
+tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.85), null, 0.20);
+
+// 2. Subtitle upward glide (smooth 0.5s reveal)
+tl.fromTo('#sub-sc1', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 0.8);
+tl.call(() => triggerSfx('tone-step-2', playSubReveal, 0.35), null, 0.80);
+
+// 3. Staggered Vector Cards landing (snappy 0.45s card snaps matching 100ms pop transients)
 tl.fromTo($$('#cards-sc1 .vector-card'),
   { opacity: 0, y: 40, scale: 0.9 },
-  { opacity: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.15, ease: 'back.out(1.5)' },
+  { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.15, ease: 'back.out(2)' },
   1.4
 );
+// Card 1: 1.40s
+tl.call(() => triggerSfx('pop-small-in', () => playCardPop(520), 0.50), null, 1.40);
+// Card 2: 1.55s
+tl.call(() => triggerSfx('pop-medium-in', () => playCardPop(640), 0.55), null, 1.55);
+// Card 3: 1.70s
+tl.call(() => triggerSfx('tone-ding-high', () => playCardPop(780), 0.60), null, 1.70);
 
-// Exit Scene 1 -> Enter Scene 2 (5.0s)
-tl.call(playExitSweep, null, 4.4);
-tl.call(playWhoosh, null, 4.8);
-tl.call(playImpact, null, 5.2);
+// 4. Traveling camera air drag through particle space
+tl.call(() => triggerSfx('whoosh-slow-soft', playWhoosh, 0.25), null, 2.80);
+
+// 5. Scene 1 departure & lift (J-cut 50ms ahead)
 tl.to(['#h1-sc1', '#sub-sc1', '#cards-sc1'], { opacity: 0, y: -40, duration: 0.5, ease: 'power2.in' }, 4.4);
-tl.set('#sc1', { autoAlpha: 0 }, 5.0);
+tl.call(() => triggerSfx('riser-1s-soft', playExitSweep, 0.40), null, 4.35);
 
+// 6. Camera traveling dive / push-through transition into Scene 2
+tl.call(() => triggerSfx('whoosh-medium-soft', playWhoosh, 0.55), null, 4.80);
+tl.set('#sc1', { autoAlpha: 0 }, 5.0);
 tl.set('#sc2', { autoAlpha: 1 }, 5.0);
-tl.fromTo('#h1-sc2', { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1, duration: 1.0, ease: 'power3.out' }, 5.2);
-tl.call(playTerminalChirp, null, 6.0);
-tl.fromTo('#sub-sc2', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 6.0);
+
+// 7. Hero Headline 2 slam (snappy 0.45s deceleration locking to 5.20s sub-bass impact)
+tl.fromTo('#h1-sc2', { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'expo.out' }, 5.2);
+tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.85), null, 5.20);
+
+// 8. Scene 2 CLI subtitle box reveal (J-cut 50ms ahead of ease)
+tl.fromTo('#sub-sc2', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 6.0);
+tl.call(() => triggerSfx('digital-blip-clear', playTerminalChirp, 0.45), null, 5.95);
+
+// 9. Camera continues forward through Scene 2
 tl.to(S, { camZ: 15, duration: 4.5, ease: 'power2.out' }, 5.0);
-tl.call(playExitSweep, null, 9.4);
+tl.call(() => triggerSfx('whoosh-slow-soft', playWhoosh, 0.20), null, 7.40);
+
+// 10. Loop wrap-around exit sweep
+tl.call(() => triggerSfx('riser-1s-soft', playExitSweep, 0.35), null, 9.40);
 tl.to({}, { duration: 0.01 }, DURATION);
+
+/* ============ AUDIO MANIFEST INTERMEDIATE REPRESENTATION ============ */
+const audioManifest = {
+  duration: DURATION,
+  events: [
+    { time: 0.20, type: 'impact', sfx_id: 'impact-deep-soft', gain: 0.85 },
+    { time: 0.80, type: 'sub_reveal', sfx_id: 'tone-step-2', gain: 0.35 },
+    { time: 1.40, type: 'card_pop', sfx_id: 'pop-small-in', gain: 0.50, pitch: 520 },
+    { time: 1.55, type: 'card_pop', sfx_id: 'pop-medium-in', gain: 0.55, pitch: 640 },
+    { time: 1.70, type: 'card_pop', sfx_id: 'tone-ding-high', gain: 0.60, pitch: 780 },
+    { time: 2.80, type: 'whoosh', sfx_id: 'whoosh-slow-soft', gain: 0.25 },
+    { time: 4.35, type: 'exit_sweep', sfx_id: 'riser-1s-soft', gain: 0.40 },
+    { time: 4.80, type: 'whoosh', sfx_id: 'whoosh-medium-soft', gain: 0.55 },
+    { time: 5.20, type: 'impact', sfx_id: 'impact-deep-soft', gain: 0.85 },
+    { time: 5.95, type: 'terminal_chirp', sfx_id: 'digital-blip-clear', gain: 0.45 },
+    { time: 7.40, type: 'whoosh', sfx_id: 'whoosh-slow-soft', gain: 0.20 },
+    { time: 9.40, type: 'exit_sweep', sfx_id: 'riser-1s-soft', gain: 0.35 }
+  ]
+};
 
 /* ============ STAGE FIT & CONTROLS ============ */
 const stage = $('#stage');
@@ -443,6 +693,11 @@ const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
 let scrubbing = false;
 (function frame() {
   const t = tl.time();
+  if (!isRecording && !Q.has('clean') && t >= DURATION) {
+    tl.pause(0);
+    tl.play(0);
+    return requestAnimationFrame(frame);
+  }
   render(t);
   clock.textContent = t.toFixed(2) + 's';
   if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
@@ -452,24 +707,45 @@ let scrubbing = false;
 const toggle = () => {
   if (tl.paused() || tl.progress() >= 1) {
     if (tl.progress() >= 1) tl.progress(0);
+    initAudio();
+    if (ambientMaster && audioCtx && !isAudioMuted) {
+      ambientMaster.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.1);
+    }
     tl.play(); btnPlay.textContent = 'Pause';
   } else {
+    if (ambientMaster && audioCtx) {
+      ambientMaster.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 0.1);
+    }
     tl.pause(); btnPlay.textContent = 'Play';
   }
 };
 btnPlay.onclick = toggle;
-$('#btn-restart').onclick = () => { tl.pause(0); tl.play(); btnPlay.textContent = 'Pause'; };
-$('#btn-hud').onclick = () => { $('#ui').classList.toggle('on'); };
+
+const btnHud = $('#btn-hud'), uiPanel = $('#ui');
+function toggleHud() {
+  const isHidden = uiPanel.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !isHidden);
+}
+if (btnHud) btnHud.onclick = toggleHud;
+
 addEventListener('keydown', e => {
-  if (e.key === 'h' || e.key === 'H') {
-    $('#ui').classList.toggle('on');
+  if (/^[rR]$/.test(e.key)) {
+    tl.pause(0);
+    initAudio();
+    tl.play();
+    btnPlay.textContent = 'Pause';
   }
+  if (e.code === 'Space') {
+    e.preventDefault();
+    toggle();
+  }
+  if (e.key === 'h' || e.key === 'H') toggleHud();
+  if (e.key === 'm' || e.key === 'M') toggleAudio();
 });
 scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); btnPlay.textContent = 'Play'; });
 addEventListener('pointerup', () => scrubbing = false);
 scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
 
-const Q = new URLSearchParams(location.search);
 if (Q.has('debug')) $('#ui').classList.add('on');
 if (Q.has('clean')) document.body.classList.add('clean-mode');
 
@@ -480,66 +756,92 @@ const seek = t => {
   render(t);
 };
 
-const audioManifest = {
-  duration: DURATION,
-  events: [
-    { time: 0.20, type: 'impact', gain: 0.8 },
-    { time: 0.80, type: 'sub_reveal', gain: 0.5 },
-    { time: 1.40, type: 'card_pop', gain: 0.5, pitch: 520 },
-    { time: 1.55, type: 'card_pop', gain: 0.5, pitch: 640 },
-    { time: 1.70, type: 'card_pop', gain: 0.5, pitch: 780 },
-    { time: 4.40, type: 'exit_sweep', gain: 0.4 },
-    { time: 4.80, type: 'whoosh', gain: 0.6 },
-    { time: 5.20, type: 'impact', gain: 0.8 },
-    { time: 6.00, type: 'terminal_chirp', gain: 0.5 },
-    { time: 9.40, type: 'exit_sweep', gain: 0.3 }
-  ]
-};
-
 window.OPENER = { tl, DURATION, seek, ready: false, audioManifest };
 
 document.fonts.ready.then(() => {
   window.OPENER.ready = true;
   if (!Q.has('clean')) {
     tl.play(0);
-    tl.eventCallback('onComplete', () => { tl.play(0); });
+    tl.eventCallback('onComplete', () => { if (!isRecording) tl.play(0); });
   }
 });
 
 /* ============ 144 FPS CLEAN VIDEO EXPORTER ============ */
+const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
 const btnExport = $('#btn-export');
 const btnExportLabel = $('#btn-export-text');
-let isRecording = false;
 btnExport.onclick = async () => {
   if (isRecording) return;
   try {
     isRecording = true;
-    btnExportLabel.textContent = 'Preparing Capture...';
+    btnExportLabel.textContent = 'Recording 240 FPS...';
     document.body.classList.add('clean-capture');
 
     initAudio();
+    const captureAudio = !isAudioMuted;
     let stream;
     if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-      try {
-        stream = await navigator.mediaDevices.getDisplayMedia({
-          video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
-          audio: true, preferCurrentTab: true
-        });
-      } catch {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.textContent = 'Download Video (144 FPS)';
-        isRecording = false; return;
+      if (captureAudio) {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+            audio: true, preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; return;
+          }
+        }
+      } else {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+            audio: false, preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; return;
+          }
+        }
+        if (stream) {
+          stream.getAudioTracks().forEach(t => {
+            t.stop();
+            stream.removeTrack(t);
+          });
+        }
       }
     } else {
-      stream = canvas.captureStream(144);
+      stream = canvas.captureStream(240);
+    }
+
+    if (!stream) {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; return;
     }
 
     // Combine visual video stream with procedural Web Audio destination track
     const tracks = [...stream.getVideoTracks()];
-    if (audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
-      tracks.push(audioDest.stream.getAudioTracks()[0]);
-    } else if (stream.getAudioTracks().length > 0) {
-      tracks.push(stream.getAudioTracks()[0]);
+    if (captureAudio) {
+      if (audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
+        tracks.push(audioDest.stream.getAudioTracks()[0]);
+      } else if (stream.getAudioTracks().length > 0) {
+        tracks.push(stream.getAudioTracks()[0]);
+      }
     }
     const combinedStream = new MediaStream(tracks);
 
@@ -560,7 +862,7 @@ btnExport.onclick = async () => {
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
-      btnExportLabel.textContent = 'Download Video (144 FPS)';
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
       isRecording = false; tl.play();
     };
 
@@ -574,8 +876,8 @@ btnExport.onclick = async () => {
     }, 100);
   } catch (err) {
     document.body.classList.remove('clean-capture');
-    btnExport.textContent = '🎥 Download Video (144 FPS)';
-    isRecording = false; alert('Export error: ' + err.message);
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    isRecording = false;
   }
 };
 </script>

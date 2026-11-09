@@ -1,219 +1,715 @@
 <!doctype html>
-<html lang="id">
-<!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Vintage Sketch (MIT) - https://github.com/Reff33/KinetRig -->
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Vintage Blueprint Sketch & Engraving (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
-<title>KinetRig — Vintage Engraving (144 FPS)</title>
-<!--
-  Gaya 4: buku sketsa vintage untuk topik sejarah. Kertas tua (tekstur sepia dari feTurbulence, ganti dengan foto kertas bila ada), ilustrasi gaya ukiran/etsa (generate satu batch prompt sama, hapus latar) dipasang mix-blend-mode:multiply agar tinta meresap; Playfair Display 900 + EB Garamond italic + Cinzel small-caps untuk nama/tahun; anotasi tangan warna karat; highlighter emas transparan.
-
-  Rig (sama untuk semua starter explainer, lihat explainer.md "Mulai dari starter yang benar"):
-    - MODE KOLASE: dunia diam (#world, lebih besar dari frame) berisi cutout/foto; KAMERA yang berkoreografi
-      (into → settle → look → home lalu DIAM; teks baru muncul SETELAH zoom out selesai).
-    - aset masuk dengan fly (blur berarah) dan tetap bergoyang (±25 px / 1,5 dtk + putaran).
-    - teks per kata (say/unsay) dengan highlighter yang menyapu; anotasi digambar (draw).
-    - push-through antar adegan (into 0,9 dtk sebelum cut, settle sesudahnya) — bukan section yang di-fade.
-    - autoplay + loop TANPA player; ?debug=1 = panel scrub; ?clean=1 = untuk export; suara opsional (isi src #vo).
-    - 16:9 default. Untuk 9:16 bila diminta: W=1080,H=1920 + wrapper .safe scale(.78).
-  Ganti: aset (.cut), kalimat (.line dengan span.w per kata), label (.name), anotasi (.hand, svg.anno), tahun hantu (.ghost).
--->
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<title>KinetRig — Vintage Blueprint Sketch (144 FPS)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#2E2115;--ink2:#5B4634;--rust:#9A3B22;--gold:#B8862B;--paper:#EFE4CC;--accent:#9A3B22}
-html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden}
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:var(--paper);font-family:"EB Garamond",Georgia,serif;color:var(--ink)}
-#world{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
-#filters{position:fixed;width:0;height:0;opacity:0;pointer-events:none}
-.t{position:absolute;opacity:0}
-.w{display:inline-block;white-space:nowrap;margin:0 .1em;opacity:0;will-change:transform,opacity}
-.paper{position:absolute;inset:-1400px;background:var(--paper);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .42 0 0 0 0 .25 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .2 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");background-size:800px 800px,300px 300px}
-.cut{position:absolute;opacity:0;will-change:transform,filter;mix-blend-mode:multiply}
-.cut img{display:block;width:100%}
-.ph{display:grid;place-items:center;width:100%;height:100%;border:6px double var(--ink2);border-radius:50% 50% 50% 50%/40% 40% 40% 40%;color:var(--ink2);font-style:italic;font-size:40px;text-align:center;line-height:1.4}
-.line{position:absolute;left:140px;right:140px;font-family:"Playfair Display",serif;font-weight:900;font-size:104px;line-height:.98;letter-spacing:-.01em;color:var(--ink);opacity:0}
-.line.it{font-family:"EB Garamond",serif;font-style:italic;font-weight:500;font-size:78px;color:var(--ink2)}
-.hl{position:relative;display:inline-block;padding:0 .08em}
-.hl i{position:absolute;left:0;right:0;top:.62em;bottom:0;background:rgba(184,134,43,.45);transform:scaleX(0);transform-origin:0 50%;z-index:-1}
-.name{position:absolute;font-family:"Cinzel",serif;font-weight:600;font-size:34px;letter-spacing:.16em;color:var(--ink);opacity:0;white-space:nowrap}
-.hand{position:absolute;font-style:italic;font-size:54px;color:var(--rust);opacity:0;white-space:nowrap}
-.ghost{position:absolute;font-family:"Playfair Display",serif;font-weight:900;font-size:320px;line-height:.85;letter-spacing:-.04em;color:rgba(154,59,34,.22);white-space:nowrap;opacity:0}
-.anno *{fill:none;stroke:var(--rust);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
-.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(70% 62% at 50% 50%,transparent 55%,rgba(60,40,20,.28) 100%)}
-#dbg{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:none;gap:12px;align-items:center;padding:10px 16px;border-radius:14px;background:rgba(14,16,22,.9);color:#cfd5e3;font:13px system-ui;z-index:50}
-#dbg input{width:360px}#dbg span{font-variant-numeric:tabular-nums;min-width:6ch}
-.top-bar{position:fixed;top:20px;right:24px;z-index:100}
-.btn-action{background:rgba(46,33,21,.88);border:1px solid var(--rust);color:#FFF;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
-.btn-action svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
-body.clean-capture .top-bar,body.clean-capture #dbg{display:none!important}
-body.clean-capture{cursor:none!important}
+:root {
+  --bg: #0A1628;
+  --blueprint-blue: #0F223D;
+  --grid-cyan: rgba(56, 189, 248, 0.15);
+  --line-cyan: #38BDF8;
+  --ink-white: #F0F9FF;
+  --ink-dim: #94A3B8;
+  --patent-gold: #F59E0B;
+  --stamp-red: #EF4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; height: 100%; background: #050B14; overflow: hidden; font-family: "Space Mono", monospace; }
+
+#stage {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 1920px; height: 1080px; overflow: hidden;
+  background: var(--bg); color: var(--ink-white);
+  box-shadow: 0 0 90px rgba(0, 0, 0, 0.98);
+}
+
+#world { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
+
+/* Blueprint Drafting Grid with Millimeter Subdivisions */
+.blueprint-grid {
+  position: absolute; inset: -300px;
+  background-color: var(--blueprint-blue);
+  background-image:
+    linear-gradient(var(--grid-cyan) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-cyan) 1px, transparent 1px),
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+
+/* Vintage Blueprint Paper Texture Grain */
+.blueprint-grain {
+  position: absolute; inset: -300px; opacity: 0.18; mix-blend-mode: overlay; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Blueprint Header / Title Block (Architectural Drafting Box) */
+.title-block {
+  position: absolute; top: 50px; left: 80px; right: 80px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  border-bottom: 2px solid var(--line-cyan); padding-bottom: 14px;
+  font-size: 13px; letter-spacing: 0.12em; color: var(--line-cyan);
+}
+.title-block-right {
+  display: flex; gap: 32px; font-size: 12px; color: var(--ink-dim);
+}
+
+/* Engineering Schematic Canvas & SVG Vectors */
+.schematic-box {
+  position: absolute; border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(11, 25, 46, 0.65);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(56, 189, 248, 0.06);
+}
+.draft-svg { width: 100%; height: 100%; overflow: visible; }
+.draft-line {
+  stroke: var(--line-cyan); stroke-width: 2.2; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.draft-dashed {
+  stroke: rgba(56, 189, 248, 0.45); stroke-width: 1.5; stroke-dasharray: 6 4; fill: none;
+}
+.dim-text {
+  font-family: "Space Mono", monospace; font-size: 14px; fill: var(--line-cyan); font-weight: 700;
+}
+
+/* Patent Seal / Stamp */
+.patent-stamp {
+  position: absolute; border: 3px double var(--stamp-red);
+  color: var(--stamp-red); padding: 12px 24px; text-align: center;
+  font-family: "Cinzel", serif; font-weight: 900; letter-spacing: 0.18em;
+  font-size: 15px; border-radius: 6px; box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+  transform-origin: center; will-change: transform;
+}
+
+/* Blueprint Typography */
+.patent-title {
+  position: absolute; font-family: "Cinzel", serif; font-size: 96px;
+  font-weight: 900; line-height: 1.0; letter-spacing: 0.04em; color: var(--ink-white);
+}
+.patent-lead {
+  position: absolute; font-size: 20px; line-height: 1.6; color: var(--ink-dim); max-width: 820px;
+}
+.callout-pill {
+  position: absolute; background: rgba(56, 189, 248, 0.12); border: 1px solid var(--line-cyan);
+  padding: 6px 16px; font-size: 13px; font-weight: 700; color: var(--line-cyan);
+  border-radius: 4px; letter-spacing: 0.08em;
+}
+
+/* HUD Glassmorphic Cyber-Pill Spec */
+.top-bar { position: fixed; top: 20px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 100; }
+.btn-action {
+  background: rgba(15, 34, 61, 0.92); border: 1px solid rgba(56, 189, 248, 0.38); color: #FFF;
+  font-family: "Space Mono", monospace; font-size: 13px; font-weight: 600;
+  padding: 8px 16px; border-radius: 9999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action:hover {
+  border-color: var(--line-cyan); transform: translateY(-1px);
+}
+.btn-action.active {
+  background: rgba(56, 189, 248, 0.22); border-color: var(--line-cyan);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
+}
+.btn-action svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+#ui {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; padding: 8px 18px;
+  border-radius: 9999px; background: rgba(10, 22, 40, 0.92);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.38);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15);
+  font-family: "Space Mono", monospace; font-size: 13px; color: #94A3B8; z-index: 90;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ui.hidden {
+  opacity: 0; pointer-events: none; transform: translate(-50%, 14px);
+}
+#ui button {
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #F8FAFC; font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 9999px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1); letter-spacing: 0.02em;
+}
+#ui button:hover {
+  background: rgba(56, 189, 248, 0.22); border-color: var(--line-cyan); color: #FFF;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.4); transform: translateY(-1px);
+}
+#ui button:active { transform: translateY(0) scale(0.96); background: rgba(56, 189, 248, 0.35); }
+#ui button#btn-audio {
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#ui button#btn-audio.muted {
+  color: #94a3b8;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+#scrub { width: 340px; height: 6px; accent-color: var(--line-cyan); border-radius: 3px; cursor: pointer; background: rgba(255, 255, 255, 0.18); outline: none; }
+#clock { font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; color: #E2E8F0; font-weight: 600; }
+
+body.clean-capture .top-bar, body.clean-capture #ui,
+body.clean-mode .top-bar, body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+body.clean-capture, body.clean-mode { cursor: none !important; }
 </style>
 </head>
 <body>
+
 <div class="top-bar">
+  <button class="btn-action active" id="btn-hud" title="Toggle HUD (H)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>HUD (H)</span>
+  </button>
   <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-    <span>Download Video (144 FPS)</span>
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
   </button>
 </div>
-<svg id="filters"><defs></defs></svg>
+
 <div id="stage">
   <div id="world">
-    <div class="paper"></div>
-    <div class="ghost" id="ghost" style="left:520px;top:120px">1769</div>
-    <div class="cut" id="cutA" style="left:220px;top:160px;width:600px;height:680px"><div class="ph">GANTI: ukiran sepia<br>(potret dalam oval)</div></div>
-    <div class="cut" id="cutB" style="left:1060px;top:260px;width:680px;height:520px"><div class="ph">GANTI: ukiran mesin</div></div>
-    <svg class="anno" id="annoA" style="position:absolute;left:180px;top:140px;width:720px;height:720px;overflow:visible" viewBox="0 0 720 720"><path id="ring" d="M60 380 C40 200 200 60 380 60 C560 60 680 200 660 380 C640 560 500 660 340 660 C180 660 80 540 60 380 Z"/></svg>
-    <div class="line t" id="line1" style="left:120px;top:860px">Sebuah ide yang <span class="hl"><i></i>mengubah abad</span>.</div>
-    <div class="name" id="nameA" style="left:250px;top:820px">NAMA TOKOH · 1769</div>
-    <div class="hand" id="handA" style="left:1100px;top:820px">catatan karat 54 px</div>
-    <!-- adegan 2: di luar frame, dicapai lewat push-through kamera -->
-    <div class="cut" id="cutC" style="left:2460px;top:200px;width:720px;height:640px"><div class="ph">GANTI: ukiran adegan 2</div></div>
-    <div class="line t" id="line2" style="left:2440px;top:880px;right:auto;width:1500px">Lalu datanglah <span class="hl"><i></i>mesin</span>.</div>
+    <div class="blueprint-grid"></div>
+    <div class="blueprint-grain"></div>
+
+    <div class="title-block">
+      <div>SPECIFICATION DWG NO. 1889-KINET-07 // MASTER SCHEMATIC</div>
+      <div class="title-block-right">
+        <div>SCALE: 1:1 DRAFT</div>
+        <div>TOLERANCE: ±0.001mm</div>
+        <div>APPROVED: CHIEF DRAFTSMAN</div>
+      </div>
+    </div>
+
+    <!-- ============ SCENE 1: ARCHITECTURAL DRAFTING & COMPASS STROKE ============ -->
+    <div id="sc1">
+      <!-- Main Schematic Box (Rotating Gear Assembly) -->
+      <div class="schematic-box" id="schem1" style="left: 100px; top: 150px; width: 840px; height: 600px;">
+        <svg class="draft-svg" viewBox="0 0 840 600">
+          <!-- Drafting Coordinate Axes -->
+          <line x1="40" y1="300" x2="800" y2="300" class="draft-dashed"/>
+          <line x1="420" y1="40" x2="420" y2="560" class="draft-dashed"/>
+
+          <!-- Outer Compass Radius Circle (Drawn by GSAP) -->
+          <circle id="compass-arc" cx="420" cy="300" r="220" class="draft-line"
+                  stroke-dasharray="1400" stroke-dashoffset="1400"/>
+
+          <!-- Primary Mechanical Gear -->
+          <g id="gear-mesh" style="transform-origin: 420px 300px;">
+            <circle cx="420" cy="300" r="140" class="draft-line" stroke-width="3"/>
+            <circle cx="420" cy="300" r="60" class="draft-line"/>
+            <circle cx="420" cy="300" r="24" fill="var(--line-cyan)"/>
+            <!-- 8 Gear Teeth -->
+            <rect x="408" y="140" width="24" height="320" rx="4" class="draft-line"/>
+            <rect x="408" y="140" width="24" height="320" rx="4" class="draft-line" transform="rotate(45 420 300)"/>
+            <rect x="408" y="140" width="24" height="320" rx="4" class="draft-line" transform="rotate(90 420 300)"/>
+            <rect x="408" y="140" width="24" height="320" rx="4" class="draft-line" transform="rotate(135 420 300)"/>
+          </g>
+
+          <!-- Caliper Dimension Callout -->
+          <line id="caliper-line" x1="160" y1="520" x2="680" y2="520" class="draft-line" stroke-dasharray="600" stroke-dashoffset="600"/>
+          <text id="caliper-text" x="420" y="550" text-anchor="middle" class="dim-text" opacity="0">Ø 440.00 mm NOMINAL</text>
+        </svg>
+      </div>
+
+      <!-- Blueprint Lead Typography -->
+      <div class="patent-title" id="p-title1" style="left: 1000px; top: 180px; width: 840px;">
+        PRECISION<br>
+        <span style="color: var(--line-cyan);">ENGINEERING</span><br>
+        IN MOTION.
+      </div>
+
+      <div class="patent-lead" id="p-lead1" style="left: 1000px; top: 510px;">
+        Every curve, gear tooth, and caliper marker is drafted mathematically. Not static vector drawings, but an orchestrated kinetic drafting table moving in 144 FPS synchrony.
+      </div>
+
+      <!-- Patent Approval Stamp -->
+      <div class="patent-stamp" id="stamp-patent" style="left: 1000px; top: 650px; opacity: 0;">
+        PATENTED ARCHIVE // OFFICE SEAL 1889
+      </div>
+    </div>
+
+    <!-- ============ SCENE 2: EXPLODED TECHNICAL VIEW ============ -->
+    <div id="sc2" style="position: absolute; inset: 0; opacity: 0;">
+      <div class="patent-title" id="p-title2" style="left: 100px; top: 180px; width: 900px;">
+        MECHANISMS<br>SYNCHRONIZED.
+      </div>
+
+      <div class="schematic-box" id="schem2" style="left: 1060px; top: 150px; width: 760px; height: 600px;">
+        <svg class="draft-svg" viewBox="0 0 760 600">
+          <circle cx="380" cy="300" r="180" class="draft-line" stroke-dasharray="1200" id="circle2"/>
+          <path d="M 180 300 L 580 300 M 380 100 L 380 500" class="draft-dashed"/>
+          <circle cx="380" cy="300" r="40" class="draft-line"/>
+          <!-- Caliper arcs -->
+          <path d="M 240 180 Q 380 120 520 180" class="draft-line" fill="none" stroke-width="2"/>
+          <text x="380" y="150" text-anchor="middle" class="dim-text">TOLERANCE 0.001</text>
+        </svg>
+      </div>
+
+      <div class="patent-lead" id="p-lead2" style="left: 100px; top: 480px; max-width: 860px;">
+        The blueprint style celebrates industrial craft. Clean geometric strokes, high-contrast drafting blueprints, and physical drafting foley synthesis.
+      </div>
+
+      <div class="callout-pill" style="left: 100px; top: 640px;">
+        SYSTEM FREQUENCY: 144 HZ DETERMINISTIC
+      </div>
+    </div>
   </div>
-  <div class="vig"></div>
-  <div id="dbg"><button id="dPlay">Pause</button><input id="dScrub" type="range" min="0" max="1000" value="0"><span id="dClock">0.00s</span></div>
 </div>
-<audio id="vo" src="" preload="auto"></audio>
+
+<div id="ui">
+  <button id="btn-play">Pause</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
-const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const W=1920,H=1080,DUR=18;
-function fit(){const s=Math.min(innerWidth/W,innerHeight/H);$('#stage').style.transform=`translate(-50%,-50%) scale(${s})`;}
-addEventListener('resize',fit);fit();
+const $ = s => document.querySelector(s);
+const Q = new URLSearchParams(location.search);
+let isRecording = false;
+const DURATION = 9.0;
+const tl = gsap.timeline({ paused: true });
 
-/* ---------- motion blur berarah (feGaussianBlur x/y terpisah) ---------- */
-const defs=$('#filters defs');let fc=0;
-function makeBlur(){const id='mb'+(fc++),NS='http://www.w3.org/2000/svg';const f=document.createElementNS(NS,'filter');f.id=id;
-  f.setAttribute('x','-70%');f.setAttribute('y','-70%');f.setAttribute('width','240%');f.setAttribute('height','240%');
-  const g=document.createElementNS(NS,'feGaussianBlur');g.setAttribute('stdDeviation','0 0');f.appendChild(g);defs.appendChild(f);return {url:`url(#${id})`,node:g};}
-function blurTween(tl,targets,at,from,to,dur,{ease='power3.out',ax=1,ay=.08}={}){const b=makeBlur(),o={v:from};tl.set(targets,{filter:b.url},at);
-  tl.to(o,{v:to,duration:dur,ease,onUpdate(){b.node.setAttribute('stdDeviation',`${(o.v*ax).toFixed(2)} ${(o.v*ay).toFixed(2)}`);}},at);tl.set(targets,{filter:'none'},at+dur);}
-const VERT={ax:.1,ay:1},HORZ={ax:1,ay:.1};
+/* ============ AUDIO SYNTHESIS & DRAFTING SFX ============ */
+let audioCtx = null, audioDest = null;
+let isAudioMuted = false;
+let mainMasterGain = null;
+const sfxAudioBuffers = {};
 
-/* ---------- pecah kalimat per kata (highlighter tetap satu span) ---------- */
-$$('.line').forEach(el=>{const out=[];el.childNodes.forEach(n=>{if(n.nodeType===3){n.textContent.split(/\s+/).filter(Boolean).forEach(w=>{const s=document.createElement('span');s.className='w';s.textContent=w;out.push(s);});}
-  else{const s=document.createElement('span');s.className='w';s.appendChild(n.cloneNode(true));out.push(s);}});el.textContent='';out.forEach(s=>el.appendChild(s));});
+const btnAudio = $('#btn-audio'), iconAudioOn = $('#icon-audio-on'), iconAudioOff = $('#icon-audio-off');
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  if (iconAudioOn) iconAudioOn.style.display = isAudioMuted ? 'none' : 'block';
+  if (iconAudioOff) iconAudioOff.style.display = isAudioMuted ? 'block' : 'none';
+  if (btnAudio) {
+    btnAudio.classList.toggle('muted', isAudioMuted);
+    btnAudio.title = isAudioMuted ? 'Unmute Audio (M)' : 'Mute Audio (M)';
+  }
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+if (btnAudio) btnAudio.onclick = toggleAudio;
 
-const tl=gsap.timeline({paused:true});const rig=$('#world');
-const words=el=>$$('.w',el);
-const say=(sel,at,{dur=.55,st=.08,mode='up'}={})=>{const el=$(sel),ws=words(el);tl.set(el,{opacity:1},at);
-  if(mode==='scale')tl.fromTo(ws,{opacity:0,scale:.7,rotate:-3},{opacity:1,scale:1,rotate:0,duration:dur,ease:'back.out(1.6)',stagger:st,immediateRender:false},at);
-  else tl.fromTo(ws,{opacity:0,yPercent:60,scaleY:1.25},{opacity:1,yPercent:0,scaleY:1,duration:dur,ease:'power4.out',stagger:st,immediateRender:false},at);
-  blurTween(tl,el,at,22,0,dur+st*ws.length,VERT);
-  $$('.hl i',el).forEach((h,i)=>tl.fromTo(h,{scaleX:0},{scaleX:1,duration:.4,ease:'power3.out',immediateRender:false},at+st*ws.length+.2+i*.2));};
-const unsay=(sel,at,{dur=.3}={})=>{const el=$(sel),ws=words(el);tl.to(ws,{opacity:0,yPercent:-50,duration:dur,ease:'power2.in',stagger:.02},at);
-  blurTween(tl,el,at,0,30,dur+.1,{ease:'power2.in',...VERT});tl.set(el,{opacity:0},at+dur+.15);};
-/* aset: masuk dengan kabut searah + TETAP hidup (ayunan ±25 px / 1,5 dtk + putaran) */
-const fly=(sel,at,{from={x:0,y:120,rotate:0,scale:.94},dur=.9,ease='power4.out',float=true}={})=>{const el=$(sel);
-  tl.fromTo(el,{opacity:0,...from},{opacity:1,x:0,y:0,rotate:0,scale:1,duration:dur,ease,immediateRender:false},at);
-  blurTween(tl,el,at,34,0,dur*.7,Math.abs(from.x||0)>Math.abs(from.y||0)?HORZ:VERT);
-  if(float)tl.to(el,{y:-25,rotate:1.5,scale:1.03,duration:1.5+((at*7)%1)*.3,ease:'sine.inOut',yoyo:true,repeat:-1},at+dur);};
-const flyOut=(sel,at,{to={x:0,y:-700,rotate:-8,scale:1.1},dur=.45}={})=>{const el=$(sel);tl.to(el,{opacity:0,...to,duration:dur,ease:'power2.in'},at);blurTween(tl,el,at,0,50,dur+.1,{ease:'power2.in',...VERT});};
-/* anotasi: garis digambar (clip-path) — bervariasi: utuh/putus/ganda, jangan selalu lingkaran putus */
-const draw=(sel,at,dur=.7)=>{const p=$(sel);tl.set(p,{opacity:0},0);tl.set(p,{opacity:1},at);const o={v:0};
-  tl.to(o,{v:1,duration:dur,ease:'power2.inOut',onUpdate(){p.style.clipPath=`inset(-300px ${(1-o.v)*100}% -300px -300px)`;}},at);};
-const label=(sel,at)=>tl.fromTo($(sel),{opacity:0,y:14},{opacity:1,y:0,duration:.4,ease:'power3.out',immediateRender:false},at);
-const unlabel=(sel,at)=>tl.to($(sel),{opacity:0,duration:.25},at);
+const initAudio = () => {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+};
+window.addEventListener('click', initAudio);
+window.addEventListener('keydown', initAudio);
 
-/* ---------- kamera: rig #world, semua gerak adegan lewat sini ---------- */
-const C={x:960,y:540,z:1};
-function applyCam(){rig.style.transform=`translate(${960-C.x*C.z}px,${540-C.y*C.z}px) scale(${C.z})`;}
-const look=(at,x,y,z,dur=1.6,ease='sine.inOut')=>tl.to(C,{x,y,z,duration:dur,ease,onUpdate:applyCam},at);   // meluncur ke aset lain
-const home=(at,x=960,y=540,dur=1.2)=>look(at,x,y,1,dur,'power2.inOut');                                       // zoom out ke frame adegan, lalu DIAM
-const into=(cutAt,x,y,z)=>tl.to(C,{x,y,z,duration:.9,ease:'power2.in',onUpdate:applyCam},cutAt-.9);          // push-through sebelum cut
-const settle=(cutAt,x,y,z)=>tl.to(C,{x,y,z:z*.94,duration:1.1,ease:'power3.out',onUpdate:applyCam},cutAt);   // mendarat setelah cut
-const breath=(a,b,z)=>tl.to(C,{z,duration:b-a,ease:'sine.inOut',onUpdate:applyCam},a);                       // napas halus saat "diam"
+function triggerSfx(sfxId, fallbackFn, gain = 0.5) {
+  const ctx = initAudio();
+  if (ctx && sfxAudioBuffers[sfxId]) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = sfxAudioBuffers[sfxId];
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn();
+}
 
-/* ---------- contoh koreografi (ganti isinya, pertahankan polanya) ---------- */
-tl.set(C,{x:530,y:490,z:1.8,onUpdate:applyCam},0);              // mulai close-up aset A
-tl.fromTo('#ghost',{opacity:0,y:40},{opacity:1,y:0,duration:1.2,ease:'power2.out'},.2);
-fly('#cutA',.3);
-look(2.2,1380,520,1.6,1.4);                                     // meluncur ke aset B
-fly('#cutB',2.5,{from:{x:400,y:0,rotate:-6,scale:.9}});
-home(4.2);                                                      // zoom out SELESAI di 5.4 → baru teks
-say('#line1',5.5);
-draw('#ring',6.8,.8);label('#nameA',7.2);label('#handA',7.8);
-breath(5.4,10.8,1.03);
-unsay('#line1',10.4);unlabel('#nameA',10.4);unlabel('#handA',10.4);tl.to('#ring',{opacity:0,duration:.25},10.4);
-/* adegan 2: push-through kontinu ke area dunia di sebelah kanan (bukan fade) */
-into(11.4,2600,540,1.6);settle(11.4,2820,520,1.7);
-fly('#cutC',11.5,{from:{x:0,y:400,rotate:8,scale:.9}});
-home(13.2,2800,540,1.2);                                        // frame adegan 2 (pusat dunia 2800,540)
-say('#line2',14.5);
-breath(14.4,DUR,1.03);
-tl.to({},{duration:.01},DUR);
+function playCompassDraw() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const bufLen = Math.floor(ctx.sampleRate * 0.40);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.sin((i / bufLen) * Math.PI);
+      data[i] = (Math.random() * 2 - 1) * env * 0.8;
+    }
+    const node = ctx.createBufferSource();
+    node.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(700, now);
+    filter.frequency.exponentialRampToValueAtTime(1400, now + 0.35);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.20, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.40);
+    node.connect(filter); filter.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    node.start(now);
+  } catch (e) {}
+}
 
-/* ---------- kontrol: autoplay + loop tanpa player; ?debug=1 panel; ?clean=1 export ---------- */
-const q=new URLSearchParams(location.search),vo=$('#vo'),hasVO=!!vo.getAttribute('src');let audioOn=false;
-function start(){tl.play(0);if(hasVO){vo.currentTime=0;vo.play().then(()=>audioOn=true).catch(()=>{});}}
-tl.eventCallback('onComplete',()=>start());
-gsap.ticker.add(()=>{if(!audioOn||tl.paused())return;if(Math.abs(vo.currentTime-tl.time())>.12)vo.currentTime=tl.time();});
-window.OPENER={W,H,DURATION:DUR,tl,ready:false,seek(t){tl.pause(t,false);applyCam();if(gsap.ticker.tick)gsap.ticker.tick();}   /* pause(t,false): callback onUpdate ikut jalan saat scrub/snapshot */,play:start};
-/* ================= FOOTAGE — layer video yang terikat timeline (seperti footage di After Effects) =================
-   Markup : <div class="clipbox"><video class="clip" src="assets/klip.mp4" muted playsinline preload="auto"></video></div>
-   Pasang : const k = clip($('#v1'), {at:4, in:1.5, out:6, rate:1, hold:false});
-            at = detik timeline klip mulai · in/out = potongan sumber (dtk) · rate = kecepatan · hold = tahan frame akhir
-   Animasi: tween PEMBUNGKUSNYA dengan tl (posisi, skala, mask, opacity, filter). Isi video mengikuti jam timeline,
-            bukan jamnya sendiri — scrub ?debug=1, snap.mjs, dan export-frames.mjs (OPENER.seekFrame) tetap presisi.
-   Format : MP4 H.264 (yuv420p, +faststart) atau WebM VP9, tanpa suara, 720p–1080p, 3–8 dtk per klip. */
-var CLIPS = CLIPS || [];
-function clip(el, o){ o = o || {}; el.muted = true; el.playsInline = true; el.preload = 'auto'; el.loop = false;
-  try { el.pause(); } catch(e) {}
-  var c = { el: el, at: o.at || 0, inT: o.in || 0, out: (o.out == null ? null : o.out), rate: o.rate || 1, hold: !!o.hold };
-  (CLIPS = CLIPS || []).push(c); return c; }
-function clipTime(c, t){ var end = c.out != null ? c.out : (isFinite(c.el.duration) ? c.el.duration : 1e9);
-  var lt = (t - c.at) * c.rate; if (lt < 0) return null; var vt = c.inT + lt;
-  if (vt > end - 1/120) { if (!c.hold) return null; vt = end - 1/60; } return vt; }
-function syncClips(t, playing){ for (var i = 0; i < CLIPS.length; i++){ var c = CLIPS[i], v = c.el, vt = clipTime(c, t);
-  if (vt === null) { if (!v.paused) v.pause(); continue; }
-  if (playing) { if (v.playbackRate !== c.rate) v.playbackRate = c.rate; if (v.paused) v.play().catch(function(){});
-    if (Math.abs(v.currentTime - vt) > .2) v.currentTime = vt; }
-  else { if (!v.paused) v.pause(); if (Math.abs(v.currentTime - vt) > 1/90) v.currentTime = vt; } } }
-function seekClips(t){ return Promise.all(CLIPS.map(function(c){ return new Promise(function(res){
-  var v = c.el, vt = clipTime(c, t); try { v.pause(); } catch(e) {}
-  if (vt === null) return res();
-  var fin = function(){ requestAnimationFrame(function(){ requestAnimationFrame(res); }); };
-  if (Math.abs(v.currentTime - vt) < 1/240 && v.readyState >= 2) return fin();
-  var to = setTimeout(res, 4000);
-  v.addEventListener('seeked', function h(){ v.removeEventListener('seeked', h); clearTimeout(to); fin(); });
-  v.currentTime = vt; }); })); }
-gsap.ticker.add(function(){ if (CLIPS.length) syncClips(window.OPENER.tl.time(), !window.OPENER.tl.paused()); });
-window.OPENER.clipsReady = function(){ return CLIPS.every(function(c){ return c.el.readyState >= 2; }); };
-window.OPENER.seekFrame = function(t){ window.OPENER.seek(t); return seekClips(t); };   // ekspor/snap: tunggu frame klip
-addEventListener('keydown',e=>{if(/^[rR]$/.test(e.key))start();if(e.code==='Space'){e.preventDefault();tl.paused()?tl.play():tl.pause();}});
-if(q.has('debug')){const dbg=$('#dbg');dbg.style.display='flex';const sc=$('#dScrub'),ck=$('#dClock');let drag=false;
-  gsap.ticker.add(()=>{if(!drag)sc.value=String(tl.time()/DUR*1000);ck.textContent=tl.time().toFixed(2)+'s';$('#dPlay').textContent=tl.paused()?'Play':'Pause';});
-  sc.addEventListener('pointerdown',()=>{drag=true;tl.pause();});addEventListener('pointerup',()=>drag=false);
-  sc.addEventListener('input',()=>{tl.pause();tl.time(sc.value/1000*DUR);});$('#dPlay').onclick=()=>tl.paused()?tl.play():tl.pause();}
-document.fonts.ready.then(()=>{applyCam();window.OPENER.ready=true;if(q.has('clean'))return;
-  if(!hasVO){start();return;}
-  vo.play().then(()=>{audioOn=true;vo.currentTime=0;tl.play(0);}).catch(()=>{const go=()=>{removeEventListener('pointerdown',go);removeEventListener('keydown',go);start();};addEventListener('pointerdown',go);addEventListener('keydown',go);});});
+function playGearClick() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1200, now);
+    osc.frequency.exponentialRampToValueAtTime(300, now + 0.04);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.06);
+  } catch (e) {}
+}
 
-/* 144 FPS Clean Video Exporter */
+function playStampThud() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.28);
+    g.gain.setValueAtTime(0.45, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.30);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.32);
+  } catch (e) {}
+}
+
+function playBlueprintWhoosh() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const bufLen = Math.floor(ctx.sampleRate * 0.45);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.sin((i / bufLen) * Math.PI);
+      data[i] = (Math.random() * 2 - 1) * env * 1.2;
+    }
+    const node = ctx.createBufferSource();
+    node.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(450, now);
+    filter.frequency.exponentialRampToValueAtTime(1200, now + 0.22);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.22, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+    node.connect(filter); filter.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    node.start(now);
+  } catch (e) {}
+}
+
+/* ============ VINTAGE BLUEPRINT MOTION CHOREOGRAPHY ============ */
+// 1. Blueprint Box reveals at 0.20s
+tl.fromTo('#schem1',
+  { y: -80, opacity: 0 },
+  { y: 0, opacity: 1, duration: 0.5, ease: 'expo.out' },
+  0.20
+);
+tl.call(() => triggerSfx('impact-deep-soft', playStampThud, 0.70), null, 0.22);
+
+// 2. Compass Arc draws itself dynamically (0.6s - 1.2s)
+tl.fromTo('#compass-arc',
+  { strokeDashoffset: 1400 },
+  { strokeDashoffset: 0, duration: 0.65, ease: 'power2.inOut' },
+  0.60
+);
+tl.call(() => triggerSfx('foley-paper-slide', playCompassDraw, 0.50), null, 0.62);
+
+// 3. Gear Assembly rotates & meshes into alignment (1.2s - 2.0s)
+tl.fromTo('#gear-mesh',
+  { rotate: -90, scale: 0.8, opacity: 0 },
+  { rotate: 0, scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.8)' },
+  1.20
+);
+tl.call(() => triggerSfx('click-snap-soft', playGearClick, 0.65), null, 1.35);
+
+// 4. Dimension caliper line slides in (1.8s - 2.3s)
+tl.fromTo('#caliper-line',
+  { strokeDashoffset: 600 },
+  { strokeDashoffset: 0, duration: 0.45, ease: 'power3.out' },
+  1.80
+);
+tl.to('#caliper-text', { opacity: 1, duration: 0.2 }, 2.00);
+tl.call(() => triggerSfx('digital-blip-clear', playGearClick, 0.40), null, 2.00);
+
+// 5. Patent Title reveals (2.3s - 2.8s)
+tl.fromTo('#p-title1',
+  { opacity: 0, x: 60 },
+  { opacity: 1, x: 0, duration: 0.5, ease: 'power4.out' },
+  2.30
+);
+tl.fromTo('#p-lead1',
+  { opacity: 0, y: 20 },
+  { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' },
+  2.70
+);
+
+// 6. Patent Seal SLAMS down with heavy ink impact at 3.30s
+tl.fromTo('#stamp-patent',
+  { scale: 2.2, opacity: 0, rotate: -25 },
+  { scale: 1, opacity: 1, rotate: -3, duration: 0.25, ease: 'power4.in' },
+  3.30
+);
+tl.call(() => triggerSfx('impact-medium-firm', playStampThud, 0.85), null, 3.52);
+
+// ============ SCENE 2: EXPLODED VIEW PAN (4.6s - 5.5s) ============
+tl.call(() => triggerSfx('whoosh-medium-soft', playBlueprintWhoosh, 0.65), null, 4.55);
+tl.to('#sc1', { opacity: 0, x: -120, duration: 0.45, ease: 'power2.in' }, 4.60);
+
+tl.set('#sc2', { opacity: 1 }, 5.00);
+tl.fromTo('#p-title2',
+  { opacity: 0, x: -50 },
+  { opacity: 1, x: 0, duration: 0.5, ease: 'power4.out' },
+  5.10
+);
+tl.call(() => triggerSfx('impact-deep-soft', playStampThud, 0.75), null, 5.12);
+
+tl.fromTo('#schem2',
+  { x: 120, opacity: 0 },
+  { x: 0, opacity: 1, duration: 0.5, ease: 'expo.out' },
+  5.30
+);
+tl.fromTo('#circle2',
+  { strokeDashoffset: 1200 },
+  { strokeDashoffset: 0, duration: 0.65, ease: 'power2.inOut' },
+  5.50
+);
+tl.call(() => triggerSfx('foley-paper-slide', playCompassDraw, 0.50), null, 5.52);
+
+tl.fromTo('#p-lead2',
+  { opacity: 0, y: 20 },
+  { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' },
+  6.00
+);
+
+// Exit sweep riser at 8.40s
+tl.call(() => triggerSfx('riser-1s-soft', playBlueprintWhoosh, 0.35), null, 8.40);
+tl.to({}, { duration: 0.01 }, DURATION);
+
+/* ============ AUDIO MANIFEST INTERMEDIATE REPRESENTATION ============ */
+const audioManifest = {
+  duration: DURATION,
+  events: [
+    { time: 0.22, type: 'blueprint_drop', sfx_id: 'impact-deep-soft', gain: 0.70 },
+    { time: 0.62, type: 'compass_stroke', sfx_id: 'foley-paper-slide', gain: 0.50 },
+    { time: 1.35, type: 'gear_engage', sfx_id: 'click-snap-soft', gain: 0.65 },
+    { time: 2.00, type: 'caliper_click', sfx_id: 'digital-blip-clear', gain: 0.40 },
+    { time: 3.52, type: 'patent_stamp_slam', sfx_id: 'impact-medium-firm', gain: 0.85 },
+    { time: 4.55, type: 'whoosh', sfx_id: 'whoosh-medium-soft', gain: 0.65 },
+    { time: 5.12, type: 'impact', sfx_id: 'impact-deep-soft', gain: 0.75 },
+    { time: 5.52, type: 'compass_stroke', sfx_id: 'foley-paper-slide', gain: 0.50 },
+    { time: 8.40, type: 'exit_sweep', sfx_id: 'riser-1s-soft', gain: 0.35 }
+  ]
+};
+
+/* ============ STAGE FIT & CONTROLS ============ */
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit); fit();
+
+const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+let scrubbing = false;
+(function frame() {
+  const t = tl.time();
+  clock.textContent = t.toFixed(2) + 's';
+  if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
+  if (!isRecording && !Q.has('clean') && t >= DURATION) {
+    tl.play(0);
+    return;
+  }
+  requestAnimationFrame(frame);
+})();
+
+const toggle = () => {
+  if (tl.paused() || tl.progress() >= 1) {
+    if (tl.progress() >= 1) tl.progress(0);
+    initAudio();
+    tl.play(); btnPlay.textContent = 'Pause';
+  } else {
+    tl.pause(); btnPlay.textContent = 'Play';
+  }
+};
+btnPlay.onclick = toggle;
+
+scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); btnPlay.textContent = 'Play'; });
+addEventListener('pointerup', () => scrubbing = false);
+scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
+
+const btnHud = $('#btn-hud');
+const ui = $('#ui');
+function toggleHud() {
+  const isHidden = ui.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !isHidden);
+}
+if (btnHud) btnHud.onclick = toggleHud;
+
+addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    toggle();
+  } else if (e.key === 'h' || e.key === 'H') {
+    toggleHud();
+  } else if (e.key === 'm' || e.key === 'M') {
+    toggleAudio();
+  } else if (e.key === 'r' || e.key === 'R') {
+    tl.pause(0);
+    initAudio();
+    tl.play();
+    btnPlay.textContent = 'Pause';
+  }
+});
+
+if (Q.has('clean')) document.body.classList.add('clean-mode');
+
+const seek = t => {
+  tl.pause();
+  tl.time(t, false);
+  if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+};
+
+window.OPENER = { tl, DURATION, seek, ready: true, audioManifest };
+
+if (!Q.has('clean')) {
+  tl.play(0);
+  tl.eventCallback('onComplete', () => { if (!isRecording) tl.play(0); });
+}
+
+/* Ultra-HFR Clean Video Exporter (Up to 240 FPS with Audio Muxing) */
 const btnExport = $('#btn-export');
+const btnExportLabel = $('#btn-export-text');
+
 if (btnExport) {
   btnExport.onclick = async () => {
-    document.body.classList.add('clean-capture');
+    if (isRecording) return;
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
-        audio: false, preferCurrentTab: true
-      });
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+      isRecording = true;
+      btnExportLabel.textContent = 'Preparing Capture...';
+      const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+      document.body.classList.add('clean-capture');
+      btnExportLabel.textContent = 'Recording 240 FPS...';
+      initAudio();
+
+      let stream;
+      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+            audio: !isAudioMuted,
+            preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false;
+            return;
+          }
+        }
+      } else {
+        document.body.classList.remove('clean-capture');
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        isRecording = false;
+        return;
+      }
+
+      if (!stream) {
+        document.body.classList.remove('clean-capture');
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        isRecording = false;
+        return;
+      }
+
+      const tracks = [...stream.getVideoTracks()];
+      if (!isAudioMuted) {
+        if (audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
+          tracks.push(audioDest.stream.getAudioTracks()[0]);
+        } else if (stream.getAudioTracks().length > 0) {
+          tracks.push(stream.getAudioTracks()[0]);
+        }
+      } else {
+        if (stream && stream.getAudioTracks) {
+          stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
+        }
+      }
+      const combinedStream = new MediaStream(tracks);
+
+      const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+        ? 'video/mp4; codecs="avc1.42E01E"'
+        : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+      const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
       const chunks = [];
       recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
       recorder.onstop = () => {
         document.body.classList.remove('clean-capture');
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = 'KinetRig-Engraving.webm'; a.click();
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        isRecording = false;
+        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const blob = new Blob(chunks, { type: mimeType });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `KinetRig-Blueprint.${ext}`;
+        a.click();
+        if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
         tl.play();
       };
-      tl.pause(0); recorder.start(); tl.play();
-      setTimeout(() => { tl.pause(); recorder.stop(); }, DUR * 1000);
-    } catch {
+
+      tl.pause(0);
+      recorder.start();
+      tl.play();
+      const check = setInterval(() => {
+        const cur = tl.time();
+        if (cur >= DURATION - 0.05 || tl.progress() >= 0.999) {
+          clearInterval(check);
+          tl.pause();
+          if (recorder.state === 'recording') recorder.stop();
+        }
+      }, 100);
+    } catch (e) {
       document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+      isRecording = false;
     }
   };
 }

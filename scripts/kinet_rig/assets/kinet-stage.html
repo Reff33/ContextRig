@@ -19,28 +19,51 @@
 html,body{margin:0;height:100%;background:#1D303C;overflow:hidden}
 #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:#F4EFE0}
 #world{position:absolute;inset:0;will-change:filter}
-#dbg{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:none;gap:12px;align-items:center;padding:10px 16px;border-radius:14px;background:rgba(14,16,22,.9);color:#cfd5e3;font:13px system-ui;z-index:50}
-#dbg input{width:420px}#dbg span{font-variant-numeric:tabular-nums;min-width:7ch}
-.top-bar{position:fixed;top:20px;right:24px;z-index:100}
-.btn-action{background:rgba(29,48,60,.88);border:1px solid #5AABB8;color:#FFF;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.top-bar{position:fixed;top:20px;right:24px;display:flex;align-items:center;gap:10px;z-index:100}
+.btn-action{background:rgba(29,48,60,.92);border:1px solid rgba(90,171,184,0.4);color:#FFF;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;padding:8px 16px;border-radius:9999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all 0.18s cubic-bezier(0.16, 1, 0.3, 1)}
+.btn-action:hover{border-color:#5AABB8;transform:translateY(-1px)}
+.btn-action.active{background:rgba(90,171,184,0.22);border-color:#5AABB8;box-shadow:0 0 14px rgba(90,171,184,0.4)}
 .btn-action svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
-body.clean-capture .top-bar,body.clean-capture #dbg{display:none!important}
-body.clean-capture{cursor:none!important}
+
+#dbg{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:8px 18px;border-radius:9999px;background:rgba(14,16,22,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(90,171,184,0.35);box-shadow:0 10px 30px rgba(0,0,0,.6);color:#cfd5e3;font:13px system-ui;z-index:90;transition:all 0.24s cubic-bezier(0.16, 1, 0.3, 1)}
+#dbg.hidden{opacity:0;pointer-events:none;transform:translate(-50%, 14px)}
+#dbg button{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:#F8FAFC;font-family:inherit;font-size:12px;font-weight:600;padding:6px 14px;border-radius:9999px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;outline:none;transition:all 0.18s cubic-bezier(0.16, 1, 0.3, 1)}
+#dbg button:hover{background:rgba(90,171,184,0.22);border-color:#5AABB8;color:#FFF}
+#dbg button#btn-audio{padding:6px 10px}
+#dbg button.muted{opacity:0.6;color:#94A3B8}
+#dbg input{width:340px;height:6px;accent-color:#5AABB8;border-radius:3px;cursor:pointer;background:rgba(255,255,255,0.18);outline:none}
+#dbg span{font-variant-numeric:tabular-nums;min-width:52px;text-align:right;color:#E2E8F0;font-weight:600}
+
+body.clean-capture .top-bar,body.clean-capture #dbg,body.clean-mode .top-bar,body.clean-mode #dbg{display:none!important;opacity:0!important;visibility:hidden!important}
+body.clean-capture,body.clean-mode{cursor:none!important}
 </style>
 </head>
 <body>
 <div class="top-bar">
+  <button class="btn-action active" id="btn-hud" title="Toggle HUD (H)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>HUD (H)</span>
+  </button>
   <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-    <span>Download Video (144 FPS)</span>
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
   </button>
 </div>
-<div id="stage"><div id="world"><svg id="scene" width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0" font-family="system-ui,sans-serif"></svg></div>
-<div id="dbg"><button id="dPlay">Pause</button><input id="dScrub" type="range" min="0" max="1000" value="0"><span id="dClock">0.00s</span></div></div>
+<div id="stage"><div id="world"><svg id="scene" width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0" font-family="system-ui,sans-serif"></svg></div></div>
+<div id="dbg">
+  <button id="dPlay">Pause</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <input id="dScrub" type="range" min="0" max="1000" value="0">
+  <span id="dClock">0.00s</span>
+</div>
 <audio id="vo" src="" preload="auto"></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 const $=(s,r=document)=>r.querySelector(s);
+let isRecording = false;
 const W=1920,H=1080,DUR=12,NS='http://www.w3.org/2000/svg',XL='http://www.w3.org/1999/xlink';
 /* palet flat cerah — ganti dari tema, tapi tetap TANPA tekstur */
 const C={cream:'#FFF3DC',white:'#FFFDF5',navy:'#345867',deep:'#172E3C',teal:'#237C80',mint:'#8DD3C3',blue:'#5AABB8',gold:'#F4BC52',
@@ -103,14 +126,14 @@ function character(p,x,ground,scale,{who='vektor',shirt=C.teal,pants=C.cream,sho
 const tl=gsap.timeline({paused:true}),world=$('#world');
 const show=(t,at,d=.5)=>tl.fromTo(t,{opacity:0},{opacity:1,duration:d,ease:'power2.out',immediateRender:false},at),hide=(t,at,d=.4)=>tl.to(t,{opacity:0,duration:d,ease:'power2.in'},at);
 const rot=(j,at,v,dur,ease='power2.inOut')=>tl.to(j,{r:v,duration:dur,ease,onUpdate:j.apply},at);
-const sway=(j,at,v,dur)=>tl.to(j,{r:v,duration:dur,ease:'sine.inOut',yoyo:true,repeat:-1,onUpdate:j.apply},at);
-const spin=(j,at,period)=>tl.fromTo(j,{r:0},{r:360,duration:period,ease:'none',repeat:-1,onUpdate:j.apply,immediateRender:false},at);
+const sway=(j,at,v,dur)=>tl.to(j,{r:v,duration:dur,ease:'sine.inOut',yoyo:true,repeat:Math.max(1,Math.ceil((DUR-at)/dur)),onUpdate:j.apply},at);
+const spin=(j,at,period)=>tl.fromTo(j,{r:0},{r:360,duration:period,ease:'none',repeat:Math.max(1,Math.ceil((DUR-at)/period)),onUpdate:j.apply,immediateRender:false},at);
 /* partikel: satu tween gerak + satu tween opacity berkeyframe (dua tween opacity tak-hingga saling menimpa) */
-const drift=(el,at,{y=-200,scale=null,dur=3,peak=.8}={})=>{const to={y,duration:dur,ease:'sine.out',repeat:-1,immediateRender:false};if(scale!=null)to.scale=scale;
-  tl.fromTo(el,{y:0,scale:scale!=null?.5:1,transformOrigin:'50% 50%'},to,at);tl.to(el,{keyframes:{opacity:[0,peak,peak,0],easeEach:'none'},duration:dur,repeat:-1,ease:'none'},at);};
+const drift=(el,at,{y=-200,scale=null,dur=3,peak=.8}={})=>{const rep=Math.max(1,Math.ceil((DUR-at)/dur));const to={y,duration:dur,ease:'sine.out',repeat:rep,immediateRender:false};if(scale!=null)to.scale=scale;
+  tl.fromTo(el,{y:0,scale:scale!=null?.5:1,transformOrigin:'50% 50%'},to,at);tl.to(el,{keyframes:{opacity:[0,peak,peak,0],easeEach:'none'},duration:dur,repeat:rep,ease:'none'},at);};
 /* tetes mengikuti jalur pipa (parametrik) */
-function flowAlong(drops,pathD,at,period){const p=N('path',{d:pathD},defsS),L=p.getTotalLength();drops.forEach((d,i)=>{const o={q:i/drops.length};tl.set(d,{opacity:1},at);
-  tl.to(o,{q:i/drops.length+1,duration:period,ease:'none',repeat:-1,onUpdate(){const pt=p.getPointAtLength((o.q%1)*L);d.setAttribute('cx',pt.x);d.setAttribute('cy',pt.y);}},at);});}
+function flowAlong(drops,pathD,at,period){const rep=Math.max(1,Math.ceil((DUR-at)/period)),p=N('path',{d:pathD},defsS),L=p.getTotalLength();drops.forEach((d,i)=>{const o={q:i/drops.length};tl.set(d,{opacity:1},at);
+  tl.to(o,{q:i/drops.length+1,duration:period,ease:'none',repeat:rep,onUpdate(){const pt=p.getPointAtLength((o.q%1)*L);d.setAttribute('cx',pt.x);d.setAttribute('cy',pt.y);}},at);});}
 /* kamera: tahan → satu gerak per beat → tahan; zoom 1,08–1,95 */
 const cam=(sc,at,x,y,z,dur=1.6,ease='sine.inOut')=>tl.to(sc.cam,{x,y,z,duration:dur,ease,onUpdate:sc.apply},at);
 /* pergantian panggung */
@@ -122,9 +145,10 @@ function slide(at,from,to,axis='x',dist=96){const o=axis==='x'?'ox':'oy';
   tl.to(b,{v:0,duration:.42,ease:'power3.out',onUpdate(){world.style.filter=b.v>.05?`blur(${b.v}px)`:'none'}},at+.28);}
 /* karakter: idle (napas, kedip tiap ≈3,5 dtk), ekspresi, jalan */
 function idle(ch,from){sway(ch.torso,from,1.1,1.7);sway(ch.head,from+.3,-1.7,2.3);sway(ch.Rarm,from+.5,-1.5,1.9);
+  const rep=Math.max(1,Math.ceil((DUR-from)/3.5));
   const kf=[{duration:3.3+ch.who.length*.11},{duration:.01},{duration:.13},{duration:.01}];
-  if(ch.eyes)tl.to(ch.eyes,{keyframes:kf.map((k,i)=>({sy:i===1||i===2?.06:1,...k})),repeat:-1,ease:'none',onUpdate:ch.eyes.apply},from);
-  for(const e in ch.faces)tl.to(ch.faces[e].blink,{keyframes:kf.map((k,i)=>({opacity:i===1||i===2?1:0,...k})),repeat:-1,ease:'none'},from);}
+  if(ch.eyes)tl.to(ch.eyes,{keyframes:kf.map((k,i)=>({sy:i===1||i===2?.06:1,...k})),repeat:rep,ease:'none',onUpdate:ch.eyes.apply},from);
+  for(const e in ch.faces)tl.to(ch.faces[e].blink,{keyframes:kf.map((k,i)=>({opacity:i===1||i===2?1:0,...k})),repeat:rep,ease:'none'},from);}
 const face=(ch,e,at)=>{for(const k in ch.faces)tl.to(ch.faces[k].g,{opacity:k===e?1:0,duration:.08},at);
   if(ch.mouth)tl.to(ch.mouth,{attr:{d:e==='cemas'?'M -16 -36 C -6 -46 6 -46 16 -36':e==='kaget'?'M -8 -46 C -8 -30 8 -30 8 -46 Z':'M -16 -46 C -6 -36 6 -36 16 -46'},duration:.1},at);};
 function walk(ch,at,dur,dx){const n=Math.max(1,Math.round(dur/.39));
@@ -160,7 +184,7 @@ const P2=scene('mesin');{const p=P2.g,gy=920;skyOf(p);hillsOf(p,740);groundOf(p,
 /* ================= KOREOGRAFI (contoh 12 dtk; saat dipakai, kunci ke jeda VO) ================= */
 tl.set(P1.g,{display:'block'},0);P1.cam.x=820;P1.cam.y=640;P1.cam.z=1.75;P1.apply();
 idle(P1.w,0);P1.clothes.forEach((c,i)=>sway(c,i*.2,6,1.3+i*.15));
-tl.to(P1.chick,{x:180,duration:4,ease:'none',yoyo:true,repeat:-1},0);sway(P1.legs,0,12,.18);tl.to(P1.chick,{y:-3,duration:.18,yoyo:true,repeat:-1,ease:'sine.inOut'},0);
+tl.to(P1.chick,{x:180,duration:4,ease:'none',yoyo:true,repeat:2},0);sway(P1.legs,0,12,.18);tl.to(P1.chick,{y:-3,duration:.18,yoyo:true,repeat:66,ease:'sine.inOut'},0);
 rot(P1.w.Rarm,.6,-72,.7);rot(P1.w.Rfore,.7,-18,.8);rot(P1.w.head,.6,7,.8);         // menunjuk ke papan
 cam(P1,.5,900,640,1.4,2.2,'power2.inOut');                                              // tahan → satu gerak → tahan
 walk(P1.w,3.2,1.56,220);face(P1.w,'kaget',4.9);
@@ -168,24 +192,41 @@ slide(5.8,P1,P2,'x',96);                                                        
 P2.cam.x=960;P2.cam.y=520;P2.cam.z=1.1;P2.apply();spin(P2.roofFan,5.8,1.1);flowAlong(P2.drops,P2.feedPath,5.8,2.2);
 P2.puffs.forEach((p,i)=>drift(p,5.8+((i*.29)%1)*4,{y:-420,scale:1.5,dur:4,peak:.85}));
 cam(P2,6.6,960,660,1.42,1.6,'power2.inOut');tl.set(P2.racks,{opacity:1},7.2);tl.to(P2.wall,{y:-560,duration:.9,ease:'power3.inOut'},7.2);
-P2.lights.forEach((l,i)=>{const at=7.8+i*.035;tl.to(l,{opacity:1,duration:.1,ease:'none'},at);tl.to(l,{keyframes:{opacity:[1,.3,1,.55,1],easeEach:'none'},duration:1.5,repeat:-1,ease:'none'},at+.1);});
+P2.lights.forEach((l,i)=>{const at=7.8+i*.035;tl.to(l,{opacity:1,duration:.1,ease:'none'},at);tl.to(l,{keyframes:{opacity:[1,.3,1,.55,1],easeEach:'none'},duration:1.5,repeat:2,ease:'none'},at+.1);});
 P2.fans.forEach((f,i)=>spin(f,8.0+i*.08,.85));
 tl.to({},{duration:.01},DUR);
 
-/* ---------- kontrol: autoplay + loop tanpa player; ?debug=1 panel; ?clean=1 export ---------- */
-const q=new URLSearchParams(location.search),vo=$('#vo'),hasVO=!!vo.getAttribute('src');let audioOn=false;
+/* ---------- kontrol: autoplay + auto-loop; audio toggle; ?clean=1 export ---------- */
+const q=new URLSearchParams(location.search),vo=$('#vo'),hasVO=!!vo.getAttribute('src');
+let audioOn=false, isAudioMuted=false;
+const btnAudio=$('#btn-audio'), iconAudioOn=$('#icon-audio-on'), iconAudioOff=$('#icon-audio-off');
+
+function toggleAudio(){
+  isAudioMuted = !isAudioMuted;
+  if (iconAudioOn) iconAudioOn.style.display = isAudioMuted ? 'none' : 'block';
+  if (iconAudioOff) iconAudioOff.style.display = isAudioMuted ? 'block' : 'none';
+  if (btnAudio) {
+    btnAudio.classList.toggle('muted', isAudioMuted);
+    btnAudio.title = isAudioMuted ? 'Unmute Audio (M)' : 'Mute Audio (M)';
+  }
+  if (hasVO && vo) vo.muted = isAudioMuted;
+}
+if (btnAudio) btnAudio.onclick = toggleAudio;
+
 function applyAll(){scenes.forEach(s=>s.apply());}
-function start(){tl.play(0);if(hasVO){vo.currentTime=0;vo.play().then(()=>audioOn=true).catch(()=>{});}}
-tl.eventCallback('onComplete',()=>start());
-gsap.ticker.add(()=>{if(!audioOn||tl.paused())return;if(Math.abs(vo.currentTime-tl.time())>.12)vo.currentTime=tl.time();});
+function start(){
+  tl.pause(0);
+  tl.play(0);
+  if(hasVO){
+    vo.muted = isAudioMuted;
+    vo.currentTime = 0;
+    vo.play().then(()=>audioOn=true).catch(()=>{});
+  }
+}
+tl.eventCallback('onComplete', () => { if (!isRecording) start(); });
+
 window.OPENER={W,H,DURATION:DUR,tl,ready:false,seek(t){tl.pause(t,false);applyAll();if(gsap.ticker.tick)gsap.ticker.tick();},play:start};
-/* ================= FOOTAGE — layer video yang terikat timeline (seperti footage di After Effects) =================
-   Markup : <div class="clipbox"><video class="clip" src="assets/klip.mp4" muted playsinline preload="auto"></video></div>
-   Pasang : const k = clip($('#v1'), {at:4, in:1.5, out:6, rate:1, hold:false});
-            at = detik timeline klip mulai · in/out = potongan sumber (dtk) · rate = kecepatan · hold = tahan frame akhir
-   Animasi: tween PEMBUNGKUSNYA dengan tl (posisi, skala, mask, opacity, filter). Isi video mengikuti jam timeline,
-            bukan jamnya sendiri — scrub ?debug=1, snap.mjs, dan export-frames.mjs (OPENER.seekFrame) tetap presisi.
-   Format : MP4 H.264 (yuv420p, +faststart) atau WebM VP9, tanpa suara, 720p–1080p, 3–8 dtk per klip. */
+/* ================= FOOTAGE — layer video yang terikat timeline ================= */
 var CLIPS = CLIPS || [];
 function clip(el, o){ o = o || {}; el.muted = true; el.playsInline = true; el.preload = 'auto'; el.loop = false;
   try { el.pause(); } catch(e) {}
@@ -209,39 +250,170 @@ function seekClips(t){ return Promise.all(CLIPS.map(function(c){ return new Prom
   v.currentTime = vt; }); })); }
 gsap.ticker.add(function(){ if (CLIPS.length) syncClips(window.OPENER.tl.time(), !window.OPENER.tl.paused()); });
 window.OPENER.clipsReady = function(){ return CLIPS.every(function(c){ return c.el.readyState >= 2; }); };
-window.OPENER.seekFrame = function(t){ window.OPENER.seek(t); return seekClips(t); };   // ekspor/snap: tunggu frame klip
-addEventListener('keydown',e=>{if(/^[rR]$/.test(e.key))start();if(e.code==='Space'){e.preventDefault();tl.paused()?tl.play():tl.pause();}});
-if(q.has('debug')){const dbg=$('#dbg');dbg.style.display='flex';const sc=$('#dScrub'),ck=$('#dClock');let drag=false;
-  gsap.ticker.add(()=>{if(!drag)sc.value=String(tl.time()/DUR*1000);ck.textContent=tl.time().toFixed(2)+'s';$('#dPlay').textContent=tl.paused()?'Play':'Pause';});
-  sc.addEventListener('pointerdown',()=>{drag=true;tl.pause();});addEventListener('pointerup',()=>drag=false);
-  sc.addEventListener('input',()=>{tl.pause();tl.time(sc.value/1000*DUR);});$('#dPlay').onclick=()=>tl.paused()?tl.play():tl.pause();}
-document.fonts.ready.then(()=>{applyAll();window.OPENER.ready=true;if(q.has('clean'))return;if(!hasVO){start();return;}
-  vo.play().then(()=>{audioOn=true;vo.currentTime=0;tl.play(0);}).catch(()=>{const go=()=>{removeEventListener('pointerdown',go);removeEventListener('keydown',go);start();};addEventListener('pointerdown',go);addEventListener('keydown',go);});});
+window.OPENER.seekFrame = function(t){ window.OPENER.seek(t); return seekClips(t); };
 
-/* 144 FPS Clean Video Exporter */
+const btnHud = $('#btn-hud');
+const dbg = $('#dbg');
+function toggleHud() {
+  const isHidden = dbg.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !isHidden);
+}
+if (btnHud) btnHud.onclick = toggleHud;
+
+addEventListener('keydown', e => {
+  if (/^[rR]$/.test(e.key)) start();
+  if (e.code === 'Space') {
+    e.preventDefault();
+    tl.paused() ? tl.play() : tl.pause();
+  }
+  if (e.key === 'h' || e.key === 'H') toggleHud();
+  if (e.key === 'm' || e.key === 'M') toggleAudio();
+});
+
+const sc = $('#dScrub'), ck = $('#dClock');
+let drag = false;
+gsap.ticker.add(() => {
+  const curT = tl.time();
+  if (curT >= DUR) {
+    start();
+    return;
+  }
+  if (!drag) sc.value = String(curT / DUR * 1000);
+  ck.textContent = curT.toFixed(2) + 's';
+  $('#dPlay').textContent = tl.paused() ? 'Play' : 'Pause';
+  if (!audioOn || tl.paused() || !hasVO) return;
+  if (Math.abs(vo.currentTime - curT) > .12) vo.currentTime = curT;
+});
+sc.addEventListener('pointerdown', () => { drag = true; tl.pause(); });
+addEventListener('pointerup', () => drag = false);
+sc.addEventListener('input', () => { tl.pause(); tl.time(sc.value / 1000 * DUR); });
+$('#dPlay').onclick = () => tl.paused() ? tl.play() : tl.pause();
+
+document.fonts.ready.then(() => {
+  applyAll();
+  window.OPENER.ready = true;
+  if (q.has('clean')) return;
+  if (!hasVO) { start(); return; }
+  vo.play().then(() => { audioOn = true; vo.currentTime = 0; tl.play(0); }).catch(() => {
+    const go = () => { removeEventListener('pointerdown', go); removeEventListener('keydown', go); start(); };
+    addEventListener('pointerdown', go); addEventListener('keydown', go);
+  });
+});
+
+/* Ultra-HFR Clean Video Exporter (Up to 240 FPS) */
+const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
 const btnExport = $('#btn-export');
+const btnExportLabel = $('#btn-export-text');
+
 if (btnExport) {
   btnExport.onclick = async () => {
-    document.body.classList.add('clean-capture');
+    if (isRecording) return;
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
-        audio: false, preferCurrentTab: true
-      });
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+      isRecording = true;
+      btnExportLabel.textContent = 'Preparing Capture...';
+      document.body.classList.add('clean-capture');
+
+      const captureAudio = !isAudioMuted;
+      let stream;
+      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+        if (captureAudio) {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              audio: true,
+              preferCurrentTab: true
+            });
+          } catch {
+            try {
+              stream = await navigator.mediaDevices.getDisplayMedia({
+                video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+                preferCurrentTab: true
+              });
+            } catch (e) {
+              document.body.classList.remove('clean-capture');
+              btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+              isRecording = false;
+              return;
+            }
+          }
+        } else {
+          // Explicitly muted: capture video-only without sound
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              audio: false,
+              preferCurrentTab: true
+            });
+          } catch {
+            try {
+              stream = await navigator.mediaDevices.getDisplayMedia({
+                video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+                preferCurrentTab: true
+              });
+            } catch (e) {
+              document.body.classList.remove('clean-capture');
+              btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+              isRecording = false;
+              return;
+            }
+          }
+          if (stream) {
+            stream.getAudioTracks().forEach(t => {
+              t.stop();
+              stream.removeTrack(t);
+            });
+          }
+        }
+      } else {
+        alert('Browser tidak menyokong rakaman skrin langsung. Sila buka melalui Chrome/Edge di localhost atau guna eksport CLI: node scripts/export-frames.mjs');
+        document.body.classList.remove('clean-capture');
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        isRecording = false;
+        return;
+      }
+
+      if (!stream) {
+        document.body.classList.remove('clean-capture');
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        isRecording = false;
+        return;
+      }
+
+      const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+        ? 'video/mp4; codecs="avc1.42E01E"'
+        : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 40000000 });
       const chunks = [];
       recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
       recorder.onstop = () => {
         document.body.classList.remove('clean-capture');
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = 'KinetRig-Stage.webm'; a.click();
-        tl.play();
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        isRecording = false;
+        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const blob = new Blob(chunks, { type: mimeType });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `KinetRig-Stage.${ext}`;
+        a.click();
+        stream.getTracks().forEach(t => t.stop());
+        start();
       };
-      tl.pause(0); recorder.start(); tl.play();
-      setTimeout(() => { tl.pause(); recorder.stop(); }, DUR * 1000);
+
+      tl.pause(0);
+      recorder.start();
+      tl.play();
+      btnExportLabel.textContent = 'Recording 240 FPS...';
+      setTimeout(() => {
+        if (recorder.state === 'recording') {
+          tl.pause();
+          recorder.stop();
+        }
+      }, DUR * 1000);
     } catch {
       document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false;
     }
   };
 }

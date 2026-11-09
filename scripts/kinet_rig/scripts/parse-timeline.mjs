@@ -55,9 +55,15 @@ if (events.length === 0) {
     let type = 'impact';
     let pitch = null;
 
-    if (fnName.includes('CardPop') || fnName.includes('Blip')) {
+    if (fnName.includes('CardPop') || fnName.includes('Blip') || fnName.includes('CardTouch')) {
       type = 'card_pop';
       if (fnArg) pitch = parseInt(fnArg, 10);
+    } else if (fnName.includes('PaperSlide') || fnName.includes('CardSlide')) {
+      type = 'paper_slide';
+    } else if (fnName.includes('SoftTap') || fnName.includes('PaperTouch')) {
+      type = 'soft_tap';
+    } else if (fnName.includes('StampSlam')) {
+      type = 'impact';
     } else if (fnName.includes('SubReveal') || fnName.includes('Glide')) {
       type = 'sub_reveal';
     } else if (fnName.includes('Whoosh')) {
@@ -68,8 +74,13 @@ if (events.length === 0) {
       type = 'terminal_chirp';
     }
 
+    // Extract triggerSfx('sfx-id', fallback, gain) if present
+    const sfxIdMatch = htmlContent.slice(Math.max(0, match.index - 50), match.index + 120).match(/triggerSfx\(\s*['"]([^'"]+)['"]/);
+    let sfx_id = sfxIdMatch ? sfxIdMatch[1] : null;
+
     const ev = { time: timestamp, type, gain: 0.6 };
     if (pitch) ev.pitch = pitch;
+    if (sfx_id) ev.sfx_id = sfx_id;
     events.push(ev);
   }
 

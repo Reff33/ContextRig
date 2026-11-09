@@ -100,30 +100,56 @@ When voiceover narration enters the timeline:
 
 ## 4. Rule of Motivated Movement Audio (100% Movement-to-SFX Lock)
 
-In high-end studio motion graphics, visual movement without sound feels lifeless, while generic background music without synchronized foley feels detached. **Every visual movement must have a motivated, non-harsh procedural audio cue.**
+In high-end studio motion graphics, visual movement without sound feels lifeless, while generic background music without synchronized foley feels detached. **Every visual movement must have a motivated, tactile, non-harsh procedural audio cue.**
+
+### The 4 Industry Laws of Cinematic Motion Sound (TikTok/Reels, Apple & Studio Showcases)
+
+1. **Law 1: The 3-Layer Acoustic Sandwich (Never Leave SFX Naked):**
+   In professional video commercials, isolated SFX without an ambient glue sound jarring like computer glitches. Build every scene with three acoustic layers:
+   - **Layer 1 (Ambient Texture Bed):** Continuous warm tape room tone or low analog sub-drone playing quietly at $-22\text{dB}$ to $-26\text{dB}$ to fuse the scene together.
+   - **Layer 2 (Tactile Micro-Foley):** Material-specific friction, felt landings, and soft taps at $-8\text{dB}$ to $-12\text{dB}$ that give weight to every card, paper, and UI transition.
+   - **Layer 3 (Hero Accents & Impacts):** Maximum 2–3 monumental, full-scale impacts at $0\text{dB}$ per 15–20s video.
+
+2. **Law 2: Material Consistency (Acoustic Universe Matching):**
+   Audio must match the physical material of the visual world:
+   - **White Catalog / Paper / Editorial:** Tactile paper friction (`foley-paper-slide`), felt card landings (`foley-card-touch`), soft mechanical clicks (`click-tap-soft`), and rubber stamp thuds (`impact-medium-firm`). Never use arcade lasers or digital sine pings.
+   - **Dark Cyber / Dev CLI / Terminal:** Tactile mechanical switch clatter (`click-snap-soft`), clean crystal tone pings (`tone-ding-mid`), and low 60Hz sub-bass sweeps.
+
+3. **Law 3: J-Cut Audio Anticipation (2–3 Frames / 30–50ms Pre-Roll):**
+   Human hearing processes transient impulses slightly slower than immediate optical shifts, but anticipates motion before it finishes. Whooshes, slides, and camera accelerations MUST trigger **$30\text{ms}$–$50\text{ms}$ (2–3 frames) before** the visual velocity apex:
+   $$t_{\text{audio\_trigger}} = t_{\text{motion\_apex}} - 0.04\text{s}$$
+   This draws the viewer's ear forward, pulling their eyes smoothly into the movement.
+
+4. **Law 4: Law of the Contact Frame & Negative Audio Space:**
+   - **Contact Frame Lock:** Audio triggers for arrivals, drops, and stamp slams MUST land on the physical surface contact frame ($t_{\text{contact}} = t_{\text{start}} + t_{\text{duration}}$), NEVER at animation takeoff.
+   - **Negative Audio Space (Auditory Breathing Room):** Over-sounding ruins elegance. Cap primary SFX density at **1 event per 2–3 seconds** (4–6 curated hero cues per 15–20s video). Secondary decorative artifacts (watermarks, hairline frames, ghost dates, sub-labels) MUST remain completely silent.
+
+5. **Law 5: The Velocity-Envelope Lock Law (Acoustic-Motion Isochrony):**
+   Visual tween duration and easing curve must mathematically mirror the audio ADSR envelope. A mismatch creates cognitive dissonance where the visual feels disconnected or sluggish:
+   - **Snappy Tactile Pops & Clicks (80–150ms audio):** Motion tween duration MUST be snappy ($\Delta t = 0.35\text{s} - 0.45\text{s}$) with `back.out(1.8)` or `power4.out`. Never use slow floating fades (>0.8s) with instant tactile clicks.
+   - **Hero Statement Slams (300–450ms sub-bass decay):** Text/card landing deceleration MUST lock within $\Delta t = 0.40\text{s} - 0.50\text{s}$ using `expo.out` or `power4.out`. Impact hits at the exact arrival frame.
+   - **Whip-Pans & World Traveling (350–550ms whoosh):** Camera travel velocity apex must align with the whoosh transient peak. Travel duration MUST be snappy ($\Delta t = 0.9\text{s} - 1.2\text{s}$) with `power3.inOut` or `power4.inOut`—never a 2.0s sluggish crawl against a 0.4s whoosh.
+   - **Risers & Exit Sweeps (600–1000ms):** Element exit acceleration must ramp exponentially (`power2.in` or `power3.in`) mirroring the frequency riser slope.
 
 ### The 6 Motion Graphics Sound Archetypes
 
 | Visual Movement | Sound Archetype | Acoustic Recipe |
 | --- | --- | --- |
 | **Hero Statement Slam** | `playImpact()` | Pure sine 220Hz -> 60Hz + 15ms soft attack + subtle 520Hz glass sheen |
-| **Subtitle / Label Glide** | `playSubReveal()` | Soft sine upward micro-glide 420Hz -> 560Hz (80ms decay) |
-| **Staggered Card / Badge Pop** | `playCardPop(freq)` | Resonant melodic chime at 520Hz, 640Hz, 780Hz |
+| **Tactile Card Landing** | `playCardPop()` | Soft felt paper touch / tap (`foley-card-touch`, `click-tap-soft`) |
+| **Paper / Card Slide** | `playPaperSlide()` | Velvety fibrous friction sweep (`foley-paper-slide`) |
 | **Element Exit / Vanish** | `playExitSweep()` | Motivated upward sine lift 180Hz -> 480Hz |
-| **3D Camera Traveling / Whip** | `playWhoosh()` | Velvet pink-noise bandpass filter sweep 350Hz -> 1100Hz |
+| **3D Camera Traveling / Push** | `playWhoosh()` | J-cut velvet pink-noise bandpass filter sweep 350Hz -> 1100Hz |
 | **CLI / Code Box Reveal** | `playTerminalChirp()` | Tactile dual-tone crystal chime 840Hz + 1120Hz |
 
 ```javascript
-// Example: Complete Movement-to-SFX Mapping in GSAP Timeline
-tl.call(playImpact, null, 0.2);             // Hero title slam
-tl.call(playSubReveal, null, 0.8);          // Subtitle glide reveal
-tl.call(() => playCardPop(520), null, 1.4);  // Staggered card 1
-tl.call(() => playCardPop(640), null, 1.55); // Staggered card 2
-tl.call(() => playCardPop(780), null, 1.7);  // Staggered card 3
-tl.call(playExitSweep, null, 4.4);          // Scene 1 elements lift out
-tl.call(playWhoosh, null, 4.8);             // Camera traveling through 3D space
-tl.call(playImpact, null, 5.2);             // Scene 2 hero slam
-tl.call(playTerminalChirp, null, 6.0);      // CLI code box reveal
+// Example: Pristine 6-Beat Physical Contact Mapping (18s Catalog Timeline)
+tl.call(() => triggerSfx('foley-card-touch', playCardPop, 0.6), null, 0.75);      // Photo card A lands on stage (contact)
+tl.call(() => triggerSfx('foley-paper-slide', playPaperSlide, 0.45), null, 2.45); // J-cut paper slide into Cutout B
+tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.8), null, 5.50);       // Hero statement snap
+tl.call(() => triggerSfx('impact-medium-firm', playStampSlam, 0.9), null, 9.36);  // Stamp slams into paper (contact)
+tl.call(() => triggerSfx('whoosh-slow-soft', playWhoosh, 0.55), null, 11.35);     // J-cut camera push-through to Scene 2
+tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.8), null, 14.50);      // Metric statement resolution
 ```
 
 ---
@@ -165,3 +191,26 @@ To bridge browser Web Audio with headless video rendering, KinetRig uses a code-
    ```
 
    If no external `--audio` file is provided, `render.mjs` automatically reads `window.OPENER.audioManifest`, synthesizes the WAV via `audio-synth.mjs`, and muxes high-fidelity audio into the MP4 with `-c:a aac -b:a 320k`.
+
+---
+
+## 6. wyzowl/sfx-kit Integration & Transient Alignment
+
+For studio deliverables, KinetRig bridges the open CC0 `wyzowl/sfx-kit` library (320 synthesized 48kHz 24-bit sound effects) with mathematical transient placement:
+
+1. **Download Studio Pack:**
+
+   ```bash
+   node scripts/fetch-sfx.mjs --archetypes
+   ```
+
+2. **Transient Peak Alignment (`sync.at`):**
+   `sounds.json` defines `sync.at` (the exact millisecond when the transient peak occurs). `audio-synth.mjs` automatically shifts the audio start time:
+
+   $$\text{Start Sample} = (\text{Keyframe Time} - \text{sync.at}) \times \text{Sample Rate}$$
+
+   This ensures the physical apex of whooshes, impacts, and chimes hits the exact frame of visual contact.
+
+3. **Zero-Dependency Fallback:**
+   If `sfx/` is not present, `audio-synth.mjs` seamlessly falls back to pure mathematical procedural Web Audio synthesis with 0 dropped frames.
+

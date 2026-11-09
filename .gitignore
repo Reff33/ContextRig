@@ -24,3 +24,6 @@ renders/
 RigMotion_repo/
 KinetRig/
 kinetrig/
+sfx/
+scripts/kinet_rig/sfx/
+*.wav

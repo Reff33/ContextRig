@@ -1,9 +1,11 @@
 <!doctype html>
 <html lang="en">
-<!-- KinetRig v1.0.0 by Reff33 - Continuous Vector Flow (MIT) -->
+<!-- KinetRig v1.0.0 by Reff33 - Continuous Vector Flow (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
 <title>KinetRig — Continuous Flow (144 FPS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <style>
@@ -46,18 +48,102 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 .zone-title span { color: var(--primary); text-shadow: 0 0 30px var(--primary-glow); }
 .zone-desc { font-size: 24px; color: #94A3B8; max-width: 800px; line-height: 1.6; margin-top: 24px; }
 
-.top-bar { position: fixed; top: 20px; right: 24px; z-index: 100; }
+/* 240 FPS Export & HUD Controls */
+.top-bar { position: fixed; top: 20px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 100; }
 .btn-action {
-  background: #18181B; border: 1px solid var(--primary); color: #FFF;
+  background: #18181B; border: 1px solid rgba(168, 85, 247, 0.4); color: #FFF;
   font-family: var(--font-mono); font-size: 13px; font-weight: 600;
-  padding: 10px 18px; border-radius: 10px; cursor: pointer;
+  padding: 8px 16px; border-radius: 9999px; cursor: pointer;
   display: inline-flex; align-items: center; gap: 8px;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.4); transform: translateY(-1px);
+}
+.btn-action.active {
+  background: rgba(168, 85, 247, 0.25); border-color: var(--primary);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
 }
 .btn-action svg {
   width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none;
 }
-body.clean-capture .top-bar { display: none !important; }
-body.clean-capture { cursor: none !important; }
+#ui {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; padding: 8px 18px;
+  border-radius: 9999px; background: rgba(9, 9, 14, 0.90);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.15);
+  font-family: var(--font-mono); font-size: 13px; color: #94A3B8; z-index: 90;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ui.hidden {
+  opacity: 0; pointer-events: none; transform: translate(-50%, 14px);
+}
+#ui button {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #F8FAFC;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.02em;
+}
+#ui button:hover {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
+  transform: translateY(-1px);
+}
+#ui button:active {
+  transform: translateY(0) scale(0.96);
+  background: rgba(168, 85, 247, 0.35);
+}
+#ui button#btn-audio {
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#ui button#btn-audio.muted {
+  color: #94a3b8;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+#scrub {
+  width: 340px;
+  height: 6px;
+  accent-color: var(--primary);
+  border-radius: 3px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.18);
+  outline: none;
+}
+#clock {
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: right;
+  color: #E2E8F0;
+  font-weight: 600;
+}
+
+/* Clean Recording Mode (Zero HUD, Zero Scrubber, Zero Cursor) */
+body.clean-capture .top-bar,
+body.clean-capture #ui,
+body.clean-mode .top-bar,
+body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+body.clean-capture, body.clean-mode { cursor: none !important; }
 </style>
 </head>
 <body>
@@ -83,67 +169,592 @@ body.clean-capture { cursor: none !important; }
 </div>
 
 <div class="top-bar">
-  <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-    <span>Download Video (144 FPS)</span>
+  <button class="btn-action active" id="btn-hud" title="Toggle HUD (H)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>HUD (H)</span>
   </button>
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+  </button>
+</div>
+
+<div id="ui">
+  <button id="btn-play">Pause</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
+const Q = new URLSearchParams(location.search);
+let isRecording = false;
 const DURATION = 8.0;
 const tl = gsap.timeline({ paused: true });
 
+/* ============ HYBRID AUDIO ENGINE (3-LAYER ACOUSTIC SANDWICH & CONTINUOUS FLOW) ============ */
+let audioCtx = null;
+let audioDest = null;
+let ambientStarted = false;
+let ambientMaster = null;
+let isAudioMuted = false;
+let mainMasterGain = null;
+
+const btnAudio = $('#btn-audio'), iconAudioOn = $('#icon-audio-on'), iconAudioOff = $('#icon-audio-off');
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  if (iconAudioOn) iconAudioOn.style.display = isAudioMuted ? 'none' : 'block';
+  if (iconAudioOff) iconAudioOff.style.display = isAudioMuted ? 'block' : 'none';
+  if (btnAudio) {
+    btnAudio.classList.toggle('muted', isAudioMuted);
+    btnAudio.title = isAudioMuted ? 'Unmute Audio (M)' : 'Mute Audio (M)';
+  }
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+if (btnAudio) btnAudio.onclick = toggleAudio;
+
+const SFX_CDN_BASE = 'https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main';
+const STUDIO_SFX = {
+  'pop-small-in': 'sounds/pops/pop-small-in.wav',
+  'impact-deep-soft': 'sounds/impacts/impact-deep-soft.wav',
+  'tone-step-2': 'sounds/tones/tone-step-2.wav',
+  'tone-ding-mid': 'sounds/tones/tone-ding-mid.wav',
+  'whoosh-medium-soft': 'sounds/whooshes/whoosh-medium-soft.wav',
+  'riser-1s-soft': 'sounds/risers-and-fallers/riser-1s-soft.wav'
+};
+
+const sfxRawBuffers = {};
+const sfxAudioBuffers = {};
+
+async function fetchSfxArrayBuffer(rel) {
+  const tryUrls = [
+    '../sfx/' + rel,
+    '../../sfx/' + rel,
+    'sfx/' + rel,
+    `${SFX_CDN_BASE}/${rel}`
+  ];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+// Background prefetch studio WAVs
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+  });
+}
+
+function startAmbientBed() {
+  if (ambientStarted || !audioCtx || audioCtx.state !== 'running') return;
+  ambientStarted = true;
+  try {
+    // Layer 1: Ambient warm drone & air bed (-26dB)
+    ambientMaster = audioCtx.createGain();
+    ambientMaster.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(55, audioCtx.currentTime);
+
+    const bufLen = Math.floor(audioCtx.sampleRate * 2);
+    const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0, b1 = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.98 * b0 + white * 0.02;
+      b1 = 0.95 * b1 + white * 0.05;
+      data[i] = (b0 + b1) * 0.25;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buf;
+    noise.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(190, audioCtx.currentTime);
+
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.setValueAtTime(0.28, audioCtx.currentTime);
+    osc.connect(oscGain);
+    oscGain.connect(ambientMaster);
+
+    noise.connect(filter);
+    filter.connect(ambientMaster);
+
+    ambientMaster.connect(mainMasterGain || audioCtx.destination);
+    if (audioDest && !mainMasterGain) ambientMaster.connect(audioDest);
+
+    osc.start();
+    noise.start();
+  } catch (e) {}
+}
+
+const initAudio = () => {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+    }
+  }
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+    startAmbientBed();
+  }
+  return audioCtx;
+};
+
+window.addEventListener('click', initAudio);
+window.addEventListener('keydown', initAudio);
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
+    initAudio();
+  }
+});
+
+function triggerSfx(sfxId, fallbackFn, gain = 0.5) {
+  const ctx = initAudio();
+  if (ctx && sfxAudioBuffers[sfxId]) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = sfxAudioBuffers[sfxId];
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn();
+}
+
+/* ============ ZERO-DEPENDENCY PROCEDURAL FALLBACK SYNTHESIZERS ============ */
+function playImpact() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.35);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.35, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+    osc.connect(gain);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
+    osc.start(now);
+    osc.stop(now + 0.4);
+
+    const sheen = ctx.createOscillator();
+    const sheenGain = ctx.createGain();
+    sheen.type = 'sine';
+    sheen.frequency.setValueAtTime(540, now);
+    sheen.frequency.exponentialRampToValueAtTime(320, now + 0.12);
+
+    sheenGain.gain.setValueAtTime(0.0001, now);
+    sheenGain.gain.linearRampToValueAtTime(0.08, now + 0.008);
+    sheenGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+
+    sheen.connect(sheenGain);
+    sheenGain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) sheenGain.connect(audioDest);
+    sheen.start(now);
+    sheen.stop(now + 0.16);
+  } catch (e) {}
+}
+
+function playSubReveal() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(420, now);
+    osc.frequency.exponentialRampToValueAtTime(560, now + 0.12);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.09, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+    osc.connect(gain);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  } catch (e) {}
+}
+
+function playCardPop(freq = 580) {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.7, now + 0.09);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.12, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+    osc.connect(gain);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
+    osc.start(now);
+    osc.stop(now + 0.11);
+  } catch (e) {}
+}
+
+function playToneDing() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(640, now);
+    osc.frequency.exponentialRampToValueAtTime(480, now + 0.18);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.10, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.20);
+
+    osc.connect(gain);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
+    osc.start(now);
+    osc.stop(now + 0.22);
+  } catch (e) {}
+}
+
+function playWhoosh() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const bufLen = Math.floor(ctx.sampleRate * 0.4);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0, b1 = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.95 * b0 + white * 0.05;
+      b1 = 0.9 * b1 + white * 0.1;
+      const env = Math.sin((i / bufLen) * Math.PI);
+      data[i] = (b0 + b1) * env * 1.5;
+    }
+    const node = ctx.createBufferSource();
+    node.buffer = buf;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.Q.setValueAtTime(1.2, now);
+    filter.frequency.setValueAtTime(320, now);
+    filter.frequency.exponentialRampToValueAtTime(950, now + 0.20);
+    filter.frequency.exponentialRampToValueAtTime(400, now + 0.40);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.18, now + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.40);
+
+    node.connect(filter);
+    filter.connect(gain);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
+    node.start(now);
+  } catch (e) {}
+}
+
+function playExitSweep() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(480, now + 0.22);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.07, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+
+    osc.connect(gain);
+    gain.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gain.connect(audioDest);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  } catch (e) {}
+}
+
+/* ============ AUDIO-VISUAL CHOREOGRAPHY (VELOCITY-ENVELOPE LOCK) ============ */
+// 1. Hero Orb enters & pops into existence (snappy 0.45s duration matching 120ms pop transient)
+tl.fromTo('#hero-orb', { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 0.2);
+tl.call(() => triggerSfx('pop-small-in', () => playCardPop(580), 0.60), null, 0.20);
+
+// 2. Zone 1 Statement Title slam (punchy 0.48s deceleration matching 350ms sub-bass decay)
+tl.fromTo('#t1', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.48, ease: 'power4.out' }, 0.5);
+tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.75), null, 0.50);
+
+// 3. Zone 1 Subtitle glide (smooth 0.5s reveal)
+tl.fromTo('#d1', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 0.8);
+tl.call(() => triggerSfx('tone-step-2', playSubReveal, 0.35), null, 0.80);
+
+// 4. Continuous horizontal camera traveling across unified world (3.5s - 4.6s)
+// Snappy 1.1s whip pan; whoosh transient peak locks directly to velocity apex at 4.05s
+tl.to('#world', { x: -1920, duration: 1.1, ease: 'power3.inOut' }, 3.5);
+tl.to('#hero-orb', { scale: 1.3, duration: 0.55, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 3.5);
+tl.call(() => triggerSfx('whoosh-medium-soft', playWhoosh, 0.60), null, 3.65);
+
+// 5. Persistent hero orb pulse chime at velocity midpoint
+tl.call(() => triggerSfx('tone-ding-mid', playToneDing, 0.40), null, 4.05);
+
+// 6. Zone 2 Climax Title slam (firm contact arrival at 4.70s)
+tl.fromTo('#t2', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.48, ease: 'power4.out' }, 4.7);
+tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.85), null, 4.70);
+
+// 7. Zone 2 Subtitle glide
+tl.fromTo('#d2', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 5.0);
+tl.call(() => triggerSfx('tone-step-2', playSubReveal, 0.35), null, 5.00);
+
+// 8. Loop wrap-around exit sweep
+tl.call(() => triggerSfx('riser-1s-soft', playExitSweep, 0.35), null, 7.40);
+tl.to({}, { duration: 0.01 }, DURATION);
+
+/* ============ AUDIO MANIFEST INTERMEDIATE REPRESENTATION ============ */
+const audioManifest = {
+  duration: DURATION,
+  events: [
+    { time: 0.20, type: 'card_pop', sfx_id: 'pop-small-in', gain: 0.60, pitch: 580 },
+    { time: 0.50, type: 'impact', sfx_id: 'impact-deep-soft', gain: 0.75 },
+    { time: 0.80, type: 'sub_reveal', sfx_id: 'tone-step-2', gain: 0.35 },
+    { time: 3.65, type: 'whoosh', sfx_id: 'whoosh-medium-soft', gain: 0.60 },
+    { time: 4.05, type: 'sub_reveal', sfx_id: 'tone-ding-mid', gain: 0.40 },
+    { time: 4.70, type: 'impact', sfx_id: 'impact-deep-soft', gain: 0.85 },
+    { time: 5.00, type: 'sub_reveal', sfx_id: 'tone-step-2', gain: 0.35 },
+    { time: 7.40, type: 'exit_sweep', sfx_id: 'riser-1s-soft', gain: 0.35 }
+  ]
+};
+
+/* ============ STAGE FIT & CONTROLS ============ */
 const fit = () => {
   const s = Math.min(innerWidth / 1920, innerHeight / 1080);
   $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
 };
 addEventListener('resize', fit); fit();
 
-// Zone 1 entrance
-tl.fromTo('#hero-orb', { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.0, ease: 'back.out(1.8)' }, 0.2);
-tl.fromTo('#t1', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8 }, 0.5);
-tl.fromTo('#d1', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7 }, 0.8);
+const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+let scrubbing = false;
+(function frame() {
+  const t = tl.time();
+  clock.textContent = t.toFixed(2) + 's';
+  if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
+  if (!isRecording && !Q.has('clean') && t >= DURATION) {
+    tl.play(0);
+    return;
+  }
+  requestAnimationFrame(frame);
+})();
 
-// Continuous camera travel from Zone 1 to Zone 2 (3.5s - 5.5s)
-tl.to('#world', { x: -1920, duration: 2.0, ease: 'power3.inOut' }, 3.5);
-tl.to('#hero-orb', { scale: 1.3, duration: 1.0, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 3.5);
+const toggle = () => {
+  if (tl.paused() || tl.progress() >= 1) {
+    if (tl.progress() >= 1) tl.progress(0);
+    initAudio();
+    if (ambientMaster && audioCtx) {
+      ambientMaster.gain.linearRampToValueAtTime(isAudioMuted ? 0 : 0.04, audioCtx.currentTime + 0.1);
+    }
+    tl.play(); btnPlay.textContent = 'Pause';
+  } else {
+    if (ambientMaster && audioCtx) {
+      ambientMaster.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 0.1);
+    }
+    tl.pause(); btnPlay.textContent = 'Play';
+  }
+};
+btnPlay.onclick = toggle;
 
-// Zone 2 entrance
-tl.fromTo('#t2', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8 }, 4.8);
-tl.fromTo('#d2', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7 }, 5.2);
+const btnHud = $('#btn-hud'), uiPanel = $('#ui');
+function toggleHud() {
+  const isHidden = uiPanel.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !isHidden);
+}
+if (btnHud) btnHud.onclick = toggleHud;
 
-tl.to({}, { duration: 0.01 }, DURATION);
+addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    toggle();
+  } else if (e.key === 'h' || e.key === 'H') {
+    toggleHud();
+  } else if (e.key === 'm' || e.key === 'M') {
+    toggleAudio();
+  } else if (e.key === 'r' || e.key === 'R') {
+    tl.pause(0);
+    initAudio();
+    if (ambientMaster && audioCtx) {
+      ambientMaster.gain.linearRampToValueAtTime(isAudioMuted ? 0 : 0.04, audioCtx.currentTime + 0.1);
+    }
+    tl.play();
+    btnPlay.textContent = 'Pause';
+  }
+});
+scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); btnPlay.textContent = 'Play'; });
+addEventListener('pointerup', () => scrubbing = false);
+scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
 
-const seek = t => { tl.pause(); tl.time(t, false); };
-window.OPENER = { tl, DURATION, seek, ready: true };
+if (Q.has('debug')) $('#ui').classList.add('on');
+if (Q.has('clean')) document.body.classList.add('clean-mode');
 
-if (!location.search.includes('clean')) {
+const seek = t => {
+  tl.pause();
+  tl.time(t, false);
+  if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+};
+
+window.OPENER = { tl, DURATION, seek, ready: true, audioManifest };
+
+if (!Q.has('clean')) {
   tl.play(0);
-  tl.eventCallback('onComplete', () => { tl.play(0); });
+  tl.eventCallback('onComplete', () => { if (!isRecording) tl.play(0); });
 }
 
-$('#btn-export').onclick = async () => {
-  document.body.classList.add('clean-capture');
+/* ============ 144 FPS VIDEO EXPORT ============ */
+const btnExport = $('#btn-export');
+const btnExportLabel = $('#btn-export-text');
+btnExport.onclick = async () => {
+  if (isRecording) return;
   try {
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
-      audio: false, preferCurrentTab: true
-    });
-    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+    isRecording = true;
+    btnExportLabel.textContent = 'Preparing Capture...';
+    const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+    document.body.classList.add('clean-capture');
+    btnExportLabel.textContent = 'Recording 240 FPS...';
+
+    initAudio();
+    let stream;
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      try {
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+          audio: !isAudioMuted, preferCurrentTab: true
+        });
+      } catch {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+            preferCurrentTab: true
+          });
+        } catch (e) {
+          document.body.classList.remove('clean-capture');
+          btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+          isRecording = false; return;
+        }
+      }
+    } else {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; return;
+    }
+
+    if (!stream) {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; return;
+    }
+
+    const tracks = [...stream.getVideoTracks()];
+    if (!isAudioMuted) {
+      if (audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
+        tracks.push(audioDest.stream.getAudioTracks()[0]);
+      } else if (stream.getAudioTracks().length > 0) {
+        tracks.push(stream.getAudioTracks()[0]);
+      }
+    } else {
+      if (stream && stream.getAudioTracks) {
+        stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
+      }
+    }
+    const combinedStream = new MediaStream(tracks);
+
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+      ? 'video/mp4; codecs="avc1.42E01E"'
+      : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
     const chunks = [];
-    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
     recorder.onstop = () => {
       document.body.classList.remove('clean-capture');
-      const blob = new Blob(chunks, { type: 'video/webm' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = 'KinetRig-Flow.webm'; a.click();
-      tl.play();
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `KinetRig-Flow.${ext}`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; tl.play();
     };
+
     tl.pause(0); recorder.start(); tl.play();
-    setTimeout(() => { tl.pause(); recorder.stop(); }, DURATION * 1000);
-  } catch {
+    const check = setInterval(() => {
+      const cur = tl.time();
+      if (cur >= DURATION - 0.05 || tl.progress() >= 0.999) {
+        clearInterval(check); tl.pause();
+        if (recorder.state === 'recording') recorder.stop();
+      }
+    }, 100);
+  } catch (err) {
     document.body.classList.remove('clean-capture');
+    btnExportLabel.innerHTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+    isRecording = false;
   }
 };
 </script>

@@ -1,12 +1,92 @@
 /* =========================================================
-   KinetRig Procedural Audio Synthesizer (Headless Node.js)
+   KinetRig Audio Synthesizer & Studio SFX Mixer (Headless Node.js)
    Zero-dependency PCM WAV generator for KinetRig timelines.
-   Synthesizes studio-calibrated SFX events into pristine audio.
+   Supports hybrid rendering:
+     1. Studio WAV mixing from wyzowl/sfx-kit (with sync.at transient alignment)
+     2. Zero-dependency procedural synthesis fallback
    ========================================================= */
 
-import { writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const SFX_DIR = resolve(__dirname, '../sfx');
 const SAMPLE_RATE = 48000;
+
+export const ARCHETYPE_MAP = {
+  impact: 'impact-deep-soft',
+  sub_reveal: 'tone-step-2',
+  card_pop: 'foley-card-touch',
+  paper_slide: 'foley-paper-slide',
+  card_slide: 'foley-card-slide',
+  paper_touch: 'foley-paper-touch',
+  soft_tap: 'click-tap-soft',
+  whoosh: 'whoosh-medium-soft',
+  exit_sweep: 'riser-1s-soft',
+  terminal_chirp: 'digital-blip-clear'
+};
+
+/**
+ * Decodes 16-bit or 24-bit PCM WAV buffers into normalized Float32 arrays.
+ */
+function decodeWavToFloat32(buffer) {
+  let offset = 12;
+  let fmt = null;
+  let dataChunk = null;
+
+  while (offset + 8 <= buffer.length) {
+    const id = buffer.slice(offset, offset + 4).toString('ascii');
+    const len = buffer.readUInt32LE(offset + 4);
+    if (id === 'fmt ') {
+      fmt = {
+        format: buffer.readUInt16LE(offset + 8),
+        channels: buffer.readUInt16LE(offset + 10),
+        sampleRate: buffer.readUInt32LE(offset + 12),
+        bitsPerSample: buffer.readUInt16LE(offset + 22)
+      };
+    } else if (id === 'data') {
+      dataChunk = {
+        offset: offset + 8,
+        length: len
+      };
+      break;
+    }
+    offset += 8 + len;
+  }
+
+  if (!fmt || !dataChunk) return null;
+
+  const { channels, bitsPerSample } = fmt;
+  const bytesPerSample = bitsPerSample / 8;
+  const numSamples = Math.floor(dataChunk.length / (channels * bytesPerSample));
+  const left = new Float32Array(numSamples);
+  const right = new Float32Array(numSamples);
+
+  let byteOffset = dataChunk.offset;
+  for (let i = 0; i < numSamples; i++) {
+    for (let c = 0; c < channels; c++) {
+      let val = 0;
+      if (bitsPerSample === 16) {
+        val = buffer.readInt16LE(byteOffset) / 32768.0;
+      } else if (bitsPerSample === 24) {
+        const b0 = buffer[byteOffset];
+        const b1 = buffer[byteOffset + 1];
+        const b2 = buffer[byteOffset + 2];
+        let raw = (b2 << 16) | (b1 << 8) | b0;
+        if (raw & 0x800000) raw |= ~0xFFFFFF;
+        val = raw / 8388608.0;
+      }
+      byteOffset += bytesPerSample;
+
+      if (c === 0) left[i] = val;
+      if (c === 1) right[i] = val;
+      else if (channels === 1) right[i] = val;
+    }
+  }
+
+  return { left, right, sampleRate: fmt.sampleRate };
+}
 
 /**
  * Encodes Float32Array stereo channels into standard 16-bit PCM WAV buffer.
@@ -22,13 +102,13 @@ function encodeWAV(left, right) {
 
   // fmt Subchunk
   buffer.write('fmt ', 12);
-  buffer.writeUInt32LE(16, 16); // Subchunk1Size (16 for PCM)
-  buffer.writeUInt16LE(1, 20);  // AudioFormat (1 = PCM)
-  buffer.writeUInt16LE(2, 22);  // NumChannels (2 = Stereo)
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(2, 22);
   buffer.writeUInt32LE(SAMPLE_RATE, 24);
-  buffer.writeUInt32LE(SAMPLE_RATE * 4, 28); // ByteRate
-  buffer.writeUInt16LE(4, 32);  // BlockAlign
-  buffer.writeUInt16LE(16, 34); // BitsPerSample
+  buffer.writeUInt32LE(SAMPLE_RATE * 4, 28);
+  buffer.writeUInt16LE(4, 32);
+  buffer.writeUInt16LE(16, 34);
 
   // data Subchunk
   buffer.write('data', 36);
@@ -36,7 +116,6 @@ function encodeWAV(left, right) {
 
   let offset = 44;
   for (let i = 0; i < numSamples; i++) {
-    // Clamp and convert -1.0..1.0 to 16-bit integer
     let sL = Math.max(-1, Math.min(1, left[i]));
     let sR = Math.max(-1, Math.min(1, right[i]));
     buffer.writeInt16LE(sL < 0 ? sL * 0x8000 : sL * 0x7FFF, offset);
@@ -45,6 +124,21 @@ function encodeWAV(left, right) {
   }
 
   return buffer;
+}
+
+/**
+ * Loads sfx-kit index metadata if available.
+ */
+function loadSfxIndex() {
+  const indexPath = resolve(SFX_DIR, 'sounds.json');
+  if (existsSync(indexPath)) {
+    try {
+      return JSON.parse(readFileSync(indexPath, 'utf8'));
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
 }
 
 /**
@@ -57,28 +151,57 @@ export function synthesizeManifest(manifest, outputPath) {
   const right = new Float32Array(totalSamples);
 
   const events = manifest.events || [];
+  const sfxIndex = loadSfxIndex();
+  let studioSamplesMixed = 0;
 
   for (const ev of events) {
-    const startSample = Math.floor((ev.time || 0) * SAMPLE_RATE);
     const gain = Number(ev.gain) || 0.5;
+    let mixedStudio = false;
 
+    // Check for sfx-kit match
+    const targetSoundId = ev.sfx_id || ARCHETYPE_MAP[ev.type];
+    if (sfxIndex && targetSoundId) {
+      const soundMeta = sfxIndex.sounds.find(s => s.id === targetSoundId);
+      if (soundMeta) {
+        const wavPath = resolve(SFX_DIR, soundMeta.file);
+        if (existsSync(wavPath)) {
+          try {
+            const rawBuffer = readFileSync(wavPath);
+            const decoded = decodeWavToFloat32(rawBuffer);
+            if (decoded) {
+              const syncOffset = soundMeta.sync?.at || 0;
+              const actualStartTime = Math.max(0, (ev.time || 0) - syncOffset);
+              const startSample = Math.floor(actualStartTime * SAMPLE_RATE);
+
+              for (let i = 0; i < decoded.left.length; i++) {
+                const targetIdx = startSample + i;
+                if (targetIdx >= totalSamples) break;
+                left[targetIdx] += decoded.left[i] * gain;
+                right[targetIdx] += decoded.right[i] * gain;
+              }
+              mixedStudio = true;
+              studioSamplesMixed++;
+            }
+          } catch (err) {}
+        }
+      }
+    }
+
+    if (mixedStudio) continue;
+
+    // Procedural synthesis fallback
+    const startSample = Math.floor((ev.time || 0) * SAMPLE_RATE);
     switch (ev.type) {
       case 'impact': {
-        // Pure sine 220Hz -> 60Hz over 380ms + 520Hz glass sheen
         const len = Math.floor(0.4 * SAMPLE_RATE);
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
           const t = i / SAMPLE_RATE;
-
-          // Frequency sweep 220 -> 60
           const f = 220 * Math.pow(60 / 220, t / 0.35);
           const phase = 2 * Math.PI * f * t;
-          let env = 0;
-          if (t < 0.015) env = t / 0.015; // 15ms soft attack
-          else env = Math.exp(-(t - 0.015) * 12);
+          let env = t < 0.015 ? t / 0.015 : Math.exp(-(t - 0.015) * 12);
 
-          // Sheen 520 -> 320
           const fSheen = 520 * Math.pow(320 / 520, t / 0.12);
           const phaseSheen = 2 * Math.PI * fSheen * t;
           let envSheen = t < 0.008 ? t / 0.008 : Math.exp(-(t - 0.008) * 25);
@@ -91,7 +214,6 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'sub_reveal': {
-        // Soft micro-glide 420Hz -> 560Hz over 140ms
         const len = Math.floor(0.15 * SAMPLE_RATE);
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
@@ -108,7 +230,6 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'card_pop': {
-        // Melodic resonant chime at specified frequency
         const freq = Number(ev.pitch) || 520;
         const len = Math.floor(0.12 * SAMPLE_RATE);
         for (let i = 0; i < len; i++) {
@@ -126,7 +247,6 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'exit_sweep': {
-        // Motivated upward sine lift 180Hz -> 480Hz
         const len = Math.floor(0.25 * SAMPLE_RATE);
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
@@ -143,18 +263,52 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'whoosh': {
-        // Velvet bandpass pink-noise sweep
         const len = Math.floor(0.3 * SAMPLE_RATE);
         let b0 = 0, b1 = 0;
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
-          const t = i / SAMPLE_RATE;
-          const white = Math.random() * 2 - 1;
+          const white = (Math.random() * 2 - 1);
           b0 = 0.95 * b0 + white * 0.05;
           b1 = 0.9 * b1 + white * 0.1;
-          const env = Math.sin((i / len) * Math.PI);
-          const sample = (b0 + b1) * env * gain * 0.6;
+          const t = i / len;
+          const env = Math.sin(t * Math.PI);
+          const sample = (b0 + b1) * env * gain * 0.5;
+          left[idx] += sample;
+          right[idx] += sample;
+        }
+        break;
+      }
+
+      case 'paper_slide':
+      case 'card_slide': {
+        const len = Math.floor(0.24 * SAMPLE_RATE);
+        let b0 = 0;
+        for (let i = 0; i < len; i++) {
+          const idx = startSample + i;
+          if (idx >= totalSamples) break;
+          const white = (Math.random() * 2 - 1);
+          b0 = 0.88 * b0 + white * 0.12;
+          const t = i / len;
+          const env = Math.sin(t * Math.PI);
+          const sample = b0 * env * gain * 0.35;
+          left[idx] += sample;
+          right[idx] += sample;
+        }
+        break;
+      }
+
+      case 'paper_touch':
+      case 'soft_tap': {
+        const len = Math.floor(0.08 * SAMPLE_RATE);
+        for (let i = 0; i < len; i++) {
+          const idx = startSample + i;
+          if (idx >= totalSamples) break;
+          const t = i / SAMPLE_RATE;
+          const f = 160 * Math.exp(-t * 35);
+          const phase = 2 * Math.PI * f * t;
+          const env = Math.exp(-t * 50);
+          const sample = Math.sin(phase) * env * gain * 0.4;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -162,19 +316,17 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'terminal_chirp': {
-        // Dual tactile crystal ping (840Hz + 1120Hz)
-        const tones = [840, 1120];
-        tones.forEach((freq, tIdx) => {
-          const offsetSamples = Math.floor(tIdx * 0.04 * SAMPLE_RATE);
-          const len = Math.floor(0.09 * SAMPLE_RATE);
+        [840, 1120].forEach((freq, chordIdx) => {
+          const chirpStart = startSample + Math.floor(chordIdx * 0.04 * SAMPLE_RATE);
+          const len = Math.floor(0.1 * SAMPLE_RATE);
           for (let i = 0; i < len; i++) {
-            const idx = startSample + offsetSamples + i;
+            const idx = chirpStart + i;
             if (idx >= totalSamples) break;
             const t = i / SAMPLE_RATE;
             const f = freq * Math.pow(0.9, t / 0.08);
             const phase = 2 * Math.PI * f * t;
-            const env = t < 0.005 ? t / 0.005 : Math.exp(-(t - 0.005) * 35);
-            const sample = Math.sin(phase) * env * gain * 0.4;
+            const env = t < 0.005 ? t / 0.005 : Math.exp(-(t - 0.005) * 40);
+            const sample = Math.sin(phase) * env * gain * 0.35;
             left[idx] += sample;
             right[idx] += sample;
           }
@@ -184,13 +336,11 @@ export function synthesizeManifest(manifest, outputPath) {
     }
   }
 
-  // Soft peak limiter to prevent digital clipping
+  // Soft peak limiter
   let maxPeak = 0;
   for (let i = 0; i < totalSamples; i++) {
-    const pL = Math.abs(left[i]);
-    const pR = Math.abs(right[i]);
-    if (pL > maxPeak) maxPeak = pL;
-    if (pR > maxPeak) maxPeak = pR;
+    const peak = Math.max(Math.abs(left[i]), Math.abs(right[i]));
+    if (peak > maxPeak) maxPeak = peak;
   }
   if (maxPeak > 0.95) {
     const scale = 0.95 / maxPeak;
@@ -204,20 +354,15 @@ export function synthesizeManifest(manifest, outputPath) {
   if (outputPath) {
     writeFileSync(outputPath, wavBuffer);
   }
-  return wavBuffer;
+  return { buffer: wavBuffer, studioSamplesMixed, totalEvents: events.length };
 }
 
-// CLI Execution support
-if (process.argv[1] && process.argv[1].endsWith('audio-synth.mjs')) {
-  const jsonPath = process.argv[2];
-  const outPath = process.argv[3] || 'output_audio.wav';
-  if (!jsonPath) {
-    console.log('Usage: node scripts/audio-synth.mjs <manifest.json> [output.wav]');
-    process.exit(1);
-  }
-  import('node:fs').then(({ readFileSync }) => {
-    const manifest = JSON.parse(readFileSync(jsonPath, 'utf8'));
-    synthesizeManifest(manifest, outPath);
-    console.log(`✔ Procedural audio rendered: ${outPath} (${manifest.duration}s)`);
-  });
+// CLI direct run test
+if (process.argv[2]) {
+  const manifestPath = process.argv[2];
+  const outPath = process.argv[3] || 'audio.wav';
+  const raw = readFileSync(manifestPath, 'utf8');
+  const manifest = JSON.parse(raw);
+  const res = synthesizeManifest(manifest, outPath);
+  console.log(`✔ Audio rendered: ${outPath} (${manifest.duration || 10}s) — [${res.studioSamplesMixed}/${res.totalEvents} studio WAVs mixed]`);
 }

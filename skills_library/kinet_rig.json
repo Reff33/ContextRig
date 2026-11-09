@@ -3,7 +3,7 @@
   "name": "KinetRig (Ultra-HFR 144–240 FPS Motion & Video Engine)",
   "description": "Zero-dependency Ultra-HFR kinetic motion graphics & video engine (up to 240 FPS) using HTML5, GSAP, Three.js & procedural Web Audio API with deterministic offline rendering and inline SVGs",
   "install_command": "npx -y skills@latest add https://github.com/Reff33/KinetRig --agent {{agent_flag}} --copy --yes",
-  "ai_instructions": "Follow the official KinetRig workflow (https://github.com/Reff33/KinetRig):\n\n1. CORE PRINCIPLES:\n   • Zero Runtime Dependencies: Deliverable (index.html) requires ONLY a browser. No React/Remotion/Manim bloat.\n   • Deterministic Ultra-HFR Timeline: All animations strictly driven by tl.time(). Deterministic 144 FPS up to 240 FPS with zero dropped frames.\n   • Procedural Audio & Music: Built-in Web Audio API synthesis for zero-asset sub-bass impacts and whooshes.\n   • Strict Vector Quality (Zero Emojis): NEVER use system emojis (🤖, ⚡, 🐙, 🧠, 🕷). ALWAYS use resolution-independent Inline SVG vectors (<svg viewBox=\"0 0 24 24\">) with currentColor or brand glow.\n   • Anti-PowerPoint Motion: No static slide deck fades. Continuous 3D camera travel (push-through, whip pan, yaw 3D) or motivated wipes.\n   • Clean Video Export: body.clean-capture auto-hides all UI and cursor during capture with combined video + audio stream.\n\n2. 6-PHASE AGENT WORKFLOW:\n   • Phase 1 (Brief): Topic, Duration (15-30s opener, 30-60s explainer/data), Aspect Ratio (16:9 vs 9:16).\n   • Phase 2 (Style Brief — Three Candidates, One Pick): DO NOT write code yet. Propose 3 candidates with Concept (Opener, Explainer, Data, E-Commerce, Chat), Style Direction, Palette (3 HEX), and Rationale.\n   • Phase 3 (User Approval): Wait for user confirmation.\n   • Phase 4 (Build from Official Starter): Adapt starter template from rigtools/kinet_rig/assets/ into self-contained index.html.\n   • Phase 5 (Anti-PowerPoint Rules): Continuous world, max 2 text levels per scene, 1 shot = 1 statement (≤ 5 words).\n   • Phase 6 (Clean Ultra-HFR Export): Floating '🎥 Download Video' button (auto audio-muxed) + All-in-one studio render (node scripts/render.mjs index.html output.mp4 240 --audio=track.mp3).",
+  "ai_instructions": "Follow the official KinetRig workflow (https://github.com/Reff33/KinetRig):\n\n1. CORE PRINCIPLES:\n   • Zero Runtime Dependencies: Deliverable (index.html) requires ONLY a browser. No React/Remotion/Manim bloat.\n   • Deterministic Ultra-HFR Timeline: All animations strictly driven by tl.time(). Deterministic 144 FPS up to 240 FPS with zero dropped frames.\n   • Procedural Audio & Music: Built-in Web Audio API synthesis for zero-asset sub-bass impacts and whooshes.\n   • Strict Vector Quality (Zero Emojis): NEVER use system emojis (🤖, ⚡, 🐙, 🧠, 🕷). ALWAYS use resolution-independent Inline SVG vectors (<svg viewBox=\"0 0 24 24\">) with currentColor or brand glow.\n   • Anti-PowerPoint Motion: No static slide deck fades. Continuous 3D camera travel (push-through, whip pan, yaw 3D) or motivated wipes.\n   • Clean Video Export: body.clean-capture auto-hides all UI and cursor during capture with combined video + audio stream.\n\n2. 6-PHASE AGENT WORKFLOW:\n   • Phase 1 (Brief): Topic, Duration (15-30s opener, 30-60s explainer/data), Aspect Ratio (16:9 vs 9:16).\n   • Phase 2 (Style Brief — Three Candidates, One Pick): DO NOT write code yet. Propose 3 candidates with Concept (Opener, Explainer, Data, E-Commerce, Chat), Style Direction, Palette (3 HEX), and Rationale.\n   • Phase 3 (User Approval): Wait for user confirmation.\n   • Phase 4 (Build from Official Starter): Adapt starter template from rigtools/kinet_rig/assets/ into self-contained index.html.\n   • Phase 5 (Anti-PowerPoint Rules): Continuous world, max 2 text levels per scene, 1 shot = 1 statement (≤ 5 words).\n   • Phase 6 (Clean Ultra-HFR Export & Glassmorphic Cyber-Pill HUD): Fixed top-right 'Download <svg ...> 240' button (immutable label contract), floating bottom cyber-pill HUD with Speaker Toggle (#btn-audio for mute/unmute & muted video export), Space/H/M/R keymap, and dual-layer finite auto-looping. All-in-one studio render (node scripts/render.mjs index.html output.mp4 240).",
   "claude_command": {
     "name": "kinet-rig",
     "content": "# /kinet-rig <brief> [aspect_ratio] [concept/style]\n\nGenerate zero-dependency Ultra-HFR browser motion graphics using KinetRig (Up to 240 FPS):\n\n1. **Style Brief (Three Candidates, One Pick):** Propose 3 Concept Candidates from the 5 categories (Opener, Explainer, Data, E-Commerce, Chat) with 3-color palette and rationale. Wait for user approval.\n2. **Official Starters:** Adapt from `rigtools/kinet_rig/assets/` into self-contained `index.html`.\n3. **Anti-PowerPoint & Zero-Emoji Laws:** Continuous camera traveling, zero static slide fades. NEVER use OS emojis; use inline SVG vectors with neon glow.\n4. **Ultra-HFR & Audio Export:** Clean capture mode with combined audio stream (`body.clean-capture`, cursor: 'never', 40 Mbps) and all-in-one studio render (`node scripts/render.mjs <file.html> <output.mp4> [fps] [--audio=track.mp3]`)."
@@ -18,6 +18,7 @@
     "promo-video/",
     "motion-out/",
     "renders/",
+    "sfx/",
     ".motion/"
   ],
   "gitignore": [
@@ -26,6 +27,7 @@
     "promo-video/",
     "motion-out/",
     "renders/",
+    "sfx/",
     ".motion/"
   ],
   "files_to_copy": [
@@ -203,6 +205,11 @@
       "source": "scripts/kinet_rig/scripts/parse-timeline.mjs",
       "destination": "rigtools/kinet_rig/scripts/parse-timeline.mjs",
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/parse-timeline.mjs"
+    },
+    {
+      "source": "scripts/kinet_rig/scripts/fetch-sfx.mjs",
+      "destination": "rigtools/kinet_rig/scripts/fetch-sfx.mjs",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/fetch-sfx.mjs"
     },
     {
       "source": "scripts/kinet_rig/preview.html",
