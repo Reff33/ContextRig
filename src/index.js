@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { exec } from 'node:child_process';
+import { exec, execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -539,10 +539,24 @@ async function handleManageSkills() {
 }
 
 /**
+ * Fully clears the terminal screen and scrollback buffer across Windows and POSIX.
+ */
+function clearTerminal() {
+  try {
+    process.stdout.write('\x1b[2J\x1b[3J\x1b[H');
+    if (process.platform === 'win32') {
+      execSync('cmd.exe /c cls', { stdio: 'inherit' });
+    }
+  } catch {
+    console.clear();
+  }
+}
+
+/**
  * Main Interactive Menu Loop
  */
 async function mainMenu() {
-  console.clear();
+  clearTerminal();
   logger.banner();
 
   let keepRunning = true;
