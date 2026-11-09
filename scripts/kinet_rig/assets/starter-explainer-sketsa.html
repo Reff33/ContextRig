@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="id">
-<!-- Made with the Bang Motion skill v1.0.0 by Bang Tutorial (https://youtube.com/bangtutorial) - MIT - https://github.com/bangtutorial/bang-motion -->
+<!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Vintage Sketch (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
-<title>Starter Explainer — Jurnalisme Visual (foto asli + highlighter)</title>
+<title>KinetRig — Explainer: Vintage Sketch (144 FPS)</title>
 <!--
-  Gaya 2: jurnalisme visual. Latar hitam pekat + grain tipis, foto asli berlisensi (Wikimedia/NASA) dengan gradasi gelap dan Ken Burns pelan, Barlow Condensed tebal + IBM Plex Mono untuk tag sumber, highlighter kuning, merah untuk peringatan, garis anotasi putus-putus. Tanpa VO pun bisa: beat 3–5 dtk untuk dibaca.
+  Gaya 4: buku sketsa vintage untuk topik sejarah. Kertas tua (tekstur sepia dari feTurbulence, ganti dengan foto kertas bila ada), ilustrasi gaya ukiran/etsa (generate satu batch prompt sama, hapus latar) dipasang mix-blend-mode:multiply agar tinta meresap; Playfair Display 900 + EB Garamond italic + Cinzel small-caps untuk nama/tahun; anotasi tangan warna karat; highlighter emas transparan.
 
   Rig (sama untuk semua starter explainer, lihat explainer.md "Mulai dari starter yang benar"):
     - MODE KOLASE: dunia diam (#world, lebih besar dari frame) berisi cutout/foto; KAMERA yang berkoreografi
@@ -17,49 +17,58 @@
     - 16:9 default. Untuk 9:16 bila diminta: W=1080,H=1920 + wrapper .safe scale(.78).
   Ganti: aset (.cut), kalimat (.line dengan span.w per kata), label (.name), anotasi (.hand, svg.anno), tahun hantu (.ghost).
 -->
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0B0B0C;--ink:#F5F2EA;--yel:#FFD400;--red:#E8402F;--mute:#B9B3A6;--accent:#FFD400}
+:root{--ink:#2E2115;--ink2:#5B4634;--rust:#9A3B22;--gold:#B8862B;--paper:#EFE4CC;--accent:#9A3B22}
 html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden}
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:var(--bg);font-family:"Barlow Condensed",system-ui,sans-serif;color:var(--ink)}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:var(--paper);font-family:"EB Garamond",Georgia,serif;color:var(--ink)}
 #world{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
 #filters{position:fixed;width:0;height:0;opacity:0;pointer-events:none}
 .t{position:absolute;opacity:0}
 .w{display:inline-block;white-space:nowrap;margin:0 .1em;opacity:0;will-change:transform,opacity}
-.paper{position:absolute;inset:-1400px;background:var(--bg)}
-.grain{position:absolute;inset:-1400px;pointer-events:none;opacity:.14;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)'/%3E%3C/svg%3E")}
-.cut{position:absolute;opacity:0;overflow:hidden;will-change:transform,filter}
-.cut img{display:block;width:100%;height:100%;object-fit:cover}
-.cut::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(11,11,12,.85))}
-.ph{display:grid;place-items:center;width:100%;height:100%;background:#2a2a2e;color:var(--mute);font-family:"IBM Plex Mono",monospace;font-size:30px;text-align:center;line-height:1.5}
-.line{position:absolute;left:100px;right:100px;font-weight:700;font-size:112px;line-height:.98;letter-spacing:-.01em;color:var(--ink);opacity:0;text-wrap:balance}
-.hl{position:relative;display:inline-block;color:#111;padding:0 .12em;margin-left:-.06em}
-.hl i{position:absolute;left:0;right:0;top:.06em;bottom:.02em;background:var(--yel);transform:scaleX(0);transform-origin:0 50%;z-index:-1}
-.hl.r{color:var(--ink)} .hl.r i{background:var(--red)}
-.name{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:30px;letter-spacing:.12em;color:var(--ink);padding:10px 16px;background:rgba(11,11,12,.72);border-left:5px solid var(--yel);opacity:0;white-space:nowrap}
-.hand{position:absolute;font-weight:700;font-size:52px;letter-spacing:.04em;color:var(--yel);opacity:0;white-space:nowrap}
-.ghost{position:absolute;font-weight:800;font-size:380px;line-height:.85;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:3px rgba(245,242,234,.22);white-space:nowrap;opacity:0}
-.anno *{fill:none;stroke:var(--yel);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:18 16}
-.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(80% 70% at 50% 50%,transparent 50%,rgba(0,0,0,.55) 100%)}
+.paper{position:absolute;inset:-1400px;background:var(--paper);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .42 0 0 0 0 .25 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .2 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");background-size:800px 800px,300px 300px}
+.cut{position:absolute;opacity:0;will-change:transform,filter;mix-blend-mode:multiply}
+.cut img{display:block;width:100%}
+.ph{display:grid;place-items:center;width:100%;height:100%;border:6px double var(--ink2);border-radius:50% 50% 50% 50%/40% 40% 40% 40%;color:var(--ink2);font-style:italic;font-size:40px;text-align:center;line-height:1.4}
+.line{position:absolute;left:140px;right:140px;font-family:"Playfair Display",serif;font-weight:900;font-size:104px;line-height:.98;letter-spacing:-.01em;color:var(--ink);opacity:0}
+.line.it{font-family:"EB Garamond",serif;font-style:italic;font-weight:500;font-size:78px;color:var(--ink2)}
+.hl{position:relative;display:inline-block;padding:0 .08em}
+.hl i{position:absolute;left:0;right:0;top:.62em;bottom:0;background:rgba(184,134,43,.45);transform:scaleX(0);transform-origin:0 50%;z-index:-1}
+.name{position:absolute;font-family:"Cinzel",serif;font-weight:600;font-size:34px;letter-spacing:.16em;color:var(--ink);opacity:0;white-space:nowrap}
+.hand{position:absolute;font-style:italic;font-size:54px;color:var(--rust);opacity:0;white-space:nowrap}
+.ghost{position:absolute;font-family:"Playfair Display",serif;font-weight:900;font-size:320px;line-height:.85;letter-spacing:-.04em;color:rgba(154,59,34,.22);white-space:nowrap;opacity:0}
+.anno *{fill:none;stroke:var(--rust);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(70% 62% at 50% 50%,transparent 55%,rgba(60,40,20,.28) 100%)}
 #dbg{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:none;gap:12px;align-items:center;padding:10px 16px;border-radius:14px;background:rgba(14,16,22,.9);color:#cfd5e3;font:13px system-ui;z-index:50}
 #dbg input{width:360px}#dbg span{font-variant-numeric:tabular-nums;min-width:6ch}
+.top-bar{position:fixed;top:20px;right:24px;z-index:100}
+.btn-action{background:rgba(46,33,21,.88);border:1px solid var(--rust);color:#FFF;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.btn-action svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
+body.clean-capture .top-bar,body.clean-capture #dbg{display:none!important}
+body.clean-capture{cursor:none!important}
 </style>
 </head>
 <body>
+<div class="top-bar">
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <span>Download Video (144 FPS)</span>
+  </button>
+</div>
 <svg id="filters"><defs></defs></svg>
 <div id="stage">
   <div id="world">
-    <div class="paper"></div><div class="grain"></div>
-    <div class="ghost" id="ghost" style="left:520px;top:120px">2026</div>
-    <div class="cut" id="cutA" style="left:160px;top:120px;width:900px;height:640px"><div class="ph">GANTI: foto asli berlisensi<br>(Wikimedia Commons / NASA)<br>+ tag sumber</div></div>
-    <div class="cut" id="cutB" style="left:1120px;top:300px;width:640px;height:480px"><div class="ph">GANTI: foto kedua</div></div>
+    <div class="paper"></div>
+    <div class="ghost" id="ghost" style="left:520px;top:120px">1769</div>
+    <div class="cut" id="cutA" style="left:220px;top:160px;width:600px;height:680px"><div class="ph">GANTI: ukiran sepia<br>(potret dalam oval)</div></div>
+    <div class="cut" id="cutB" style="left:1060px;top:260px;width:680px;height:520px"><div class="ph">GANTI: ukiran mesin</div></div>
     <svg class="anno" id="annoA" style="position:absolute;left:180px;top:140px;width:720px;height:720px;overflow:visible" viewBox="0 0 720 720"><path id="ring" d="M60 380 C40 200 200 60 380 60 C560 60 680 200 660 380 C640 560 500 660 340 660 C180 660 80 540 60 380 Z"/></svg>
-    <div class="line t" id="line1" style="left:120px;top:860px">Judul tegas dengan <span class="hl"><i></i>sorotan kuning</span>.</div>
-    <div class="name" id="nameA" style="left:250px;top:820px">FOTO: NAMA FOTOGRAFER / CC BY-SA</div>
-    <div class="hand" id="handA" style="left:1100px;top:820px">anotasi 52 px</div>
+    <div class="line t" id="line1" style="left:120px;top:860px">Sebuah ide yang <span class="hl"><i></i>mengubah abad</span>.</div>
+    <div class="name" id="nameA" style="left:250px;top:820px">NAMA TOKOH · 1769</div>
+    <div class="hand" id="handA" style="left:1100px;top:820px">catatan karat 54 px</div>
     <!-- adegan 2: di luar frame, dicapai lewat push-through kamera -->
-    <div class="cut" id="cutC" style="left:2400px;top:160px;width:960px;height:640px"><div class="ph">GANTI: foto adegan 2</div></div>
-    <div class="line t" id="line2" style="left:2440px;top:880px;right:auto;width:1500px">Peringatan pakai <span class="hl r"><i></i>merah</span>.</div>
+    <div class="cut" id="cutC" style="left:2460px;top:200px;width:720px;height:640px"><div class="ph">GANTI: ukiran adegan 2</div></div>
+    <div class="line t" id="line2" style="left:2440px;top:880px;right:auto;width:1500px">Lalu datanglah <span class="hl"><i></i>mesin</span>.</div>
   </div>
   <div class="vig"></div>
   <div id="dbg"><button id="dPlay">Pause</button><input id="dScrub" type="range" min="0" max="1000" value="0"><span id="dClock">0.00s</span></div>
@@ -96,7 +105,7 @@ const say=(sel,at,{dur=.55,st=.08,mode='up'}={})=>{const el=$(sel),ws=words(el);
 const unsay=(sel,at,{dur=.3}={})=>{const el=$(sel),ws=words(el);tl.to(ws,{opacity:0,yPercent:-50,duration:dur,ease:'power2.in',stagger:.02},at);
   blurTween(tl,el,at,0,30,dur+.1,{ease:'power2.in',...VERT});tl.set(el,{opacity:0},at+dur+.15);};
 /* aset: masuk dengan kabut searah + TETAP hidup (ayunan ±25 px / 1,5 dtk + putaran) */
-const fly=(sel,at,{from={x:0,y:60,rotate:0,scale:1.04},dur=.9,ease='power4.out',float=true}={})=>{const el=$(sel);
+const fly=(sel,at,{from={x:0,y:120,rotate:0,scale:.94},dur=.9,ease='power4.out',float=true}={})=>{const el=$(sel);
   tl.fromTo(el,{opacity:0,...from},{opacity:1,x:0,y:0,rotate:0,scale:1,duration:dur,ease,immediateRender:false},at);
   blurTween(tl,el,at,34,0,dur*.7,Math.abs(from.x||0)>Math.abs(from.y||0)?HORZ:VERT);
   if(float)tl.to(el,{y:-25,rotate:1.5,scale:1.03,duration:1.5+((at*7)%1)*.3,ease:'sine.inOut',yoyo:true,repeat:-1},at+dur);};
@@ -180,6 +189,34 @@ if(q.has('debug')){const dbg=$('#dbg');dbg.style.display='flex';const sc=$('#dSc
 document.fonts.ready.then(()=>{applyCam();window.OPENER.ready=true;if(q.has('clean'))return;
   if(!hasVO){start();return;}
   vo.play().then(()=>{audioOn=true;vo.currentTime=0;tl.play(0);}).catch(()=>{const go=()=>{removeEventListener('pointerdown',go);removeEventListener('keydown',go);start();};addEventListener('pointerdown',go);addEventListener('keydown',go);});});
+
+/* 144 FPS Clean Video Exporter */
+const btnExport = $('#btn-export');
+if (btnExport) {
+  btnExport.onclick = async () => {
+    document.body.classList.add('clean-capture');
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
+        audio: false, preferCurrentTab: true
+      });
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+      const chunks = [];
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        document.body.classList.remove('clean-capture');
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = 'KinetRig-Explainer-Sketsa.webm'; a.click();
+        tl.play();
+      };
+      tl.pause(0); recorder.start(); tl.play();
+      setTimeout(() => { tl.pause(); recorder.stop(); }, DUR * 1000);
+    } catch {
+      document.body.classList.remove('clean-capture');
+    }
+  };
+}
 </script>
 </body>
 </html>

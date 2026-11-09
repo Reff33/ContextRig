@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="id">
-<!-- Made with the Bang Motion skill v1.0.0 by Bang Tutorial (https://youtube.com/bangtutorial) - MIT - https://github.com/bangtutorial/bang-motion -->
+<!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Cartoon Collage (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
-<title>Starter Explainer — Kartun Kolase (kertas + cutout)</title>
+<title>KinetRig — Explainer: Cartoon Collage (144 FPS)</title>
 <!--
   Gaya 1: kartun kolase. Kertas krem bertekstur + noda warna, cutout ilustrasi flat (generate lalu hapus latar) dengan drop shadow, Bricolage tebal + Caveat (tulisan tangan), pill warna sebagai highlighter, bingkai polaroid untuk foto.
 
@@ -43,9 +43,20 @@ html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden}
 .vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(70% 62% at 50% 50%,transparent 55%,rgba(34,30,27,.18) 100%)}
 #dbg{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:none;gap:12px;align-items:center;padding:10px 16px;border-radius:14px;background:rgba(14,16,22,.9);color:#cfd5e3;font:13px system-ui;z-index:50}
 #dbg input{width:360px}#dbg span{font-variant-numeric:tabular-nums;min-width:6ch}
+.top-bar{position:fixed;top:20px;right:24px;z-index:100}
+.btn-action{background:rgba(14,16,22,.88);border:1px solid var(--orange);color:#FFF;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.btn-action svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
+body.clean-capture .top-bar,body.clean-capture #dbg{display:none!important}
+body.clean-capture{cursor:none!important}
 </style>
 </head>
 <body>
+<div class="top-bar">
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <span>Download Video (144 FPS)</span>
+  </button>
+</div>
 <svg id="filters"><defs></defs></svg>
 <div id="stage">
   <div id="world">
@@ -180,6 +191,34 @@ if(q.has('debug')){const dbg=$('#dbg');dbg.style.display='flex';const sc=$('#dSc
 document.fonts.ready.then(()=>{applyCam();window.OPENER.ready=true;if(q.has('clean'))return;
   if(!hasVO){start();return;}
   vo.play().then(()=>{audioOn=true;vo.currentTime=0;tl.play(0);}).catch(()=>{const go=()=>{removeEventListener('pointerdown',go);removeEventListener('keydown',go);start();};addEventListener('pointerdown',go);addEventListener('keydown',go);});});
+
+/* 144 FPS Clean Video Exporter */
+const btnExport = $('#btn-export');
+if (btnExport) {
+  btnExport.onclick = async () => {
+    document.body.classList.add('clean-capture');
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
+        audio: false, preferCurrentTab: true
+      });
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+      const chunks = [];
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        document.body.classList.remove('clean-capture');
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = 'KinetRig-Explainer-Kartun.webm'; a.click();
+        tl.play();
+      };
+      tl.pause(0); recorder.start(); tl.play();
+      setTimeout(() => { tl.pause(); recorder.stop(); }, DUR * 1000);
+    } catch {
+      document.body.classList.remove('clean-capture');
+    }
+  };
+}
 </script>
 </body>
 </html>

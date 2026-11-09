@@ -81,7 +81,7 @@ contextrig/
 │   ├── copilot.md.hbs               # Rules template for Copilot (.github/copilot-instructions.md)
 │   └── opencode.md.hbs              # Rules template for OpenCode (AGENTS.md)
 ├── skills_library/                  # Curated library of JSON capabilities
-│   ├── bang_motion.json             # GSAP & Three.js browser motion graphics skill
+│   ├── kinet_rig.json               # Zero-dependency 144 FPS kinetic motion & video engine
 │   ├── archify.json                 # Interactive HTML diagrams & ERD skill
 │   ├── web_scraper.json             # Web scraping tool & dependencies
 │   ├── playwright.json              # Playwright browser & E2E testing skill

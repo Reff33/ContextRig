@@ -15,6 +15,9 @@ sebuah adegan "kurang informasi", itu justru tanda adegannya sudah benar.
 
 | Pelanggaran | Perbaikan |
 |---|---|
+| OS emojis (🤖, ⚡, 🐙, 🧠, 🕷, 🎥, ⚙) dalam kartu, teks, atau tombol UI | **100% Inline SVG Vectors** (`<svg viewBox="0 0 24 24">`) dengan brand glow; emoji pecah di 1080p/4K dan tampak amatir (SKILL.md & svg-icons.md) |
+| Tombol HUD, scrubber kontrol, atau kursor mouse ikut terekam dalam video export | **Clean Capture Mode** (`body.clean-capture` auto-hide semua UI & HUD, pass `cursor: 'never'` ke capture stream) |
+| Rekam layar real-time 30/60 FPS yang lag atau patah-patah saat render WebGL/shader berat | **Deterministic 144 FPS Offline Stepping** (`tl.time(t)` via Puppeteer + ffmpeg lossless CRF 14; 144fps-guide.md) |
 | Kicker "02 — FITUR" + judul 2 baris + body copy 2 baris + 4 chip badge, layout kolom kiri-kanan | Satu kalimat ≤ 5 kata di tengah-atas + satu objek produk naik ke tengah |
 | Tiga baris teks besar berisi tiga klaim "TANPA …" | Headline 2 kata + satu cara dari menu fitur (`opener-konsep.md`): satu fitur didemokan, kata berganti, objek bertransformasi, kartu dikocok, grid tile… — dipilih per proyek |
 | Opener produk B memakai kulit opener produk A (palet, glow, nebula, font yang sama) karena diambil dari starter/proyek lama | Gaya diturunkan dari brand B lewat style brief: palet dari logo/ikon B, font berkarakter lain, bahasa latar lain, tanda tangan gerak lain (SKILL.md Hukum #3) |

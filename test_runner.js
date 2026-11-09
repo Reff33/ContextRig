@@ -184,16 +184,16 @@ async function runTests() {
   assert.strictEqual(isPatternIgnored(['other_tools'], 'rigtools/'), false, 'other_tools should not match rigtools/');
   console.log('✔ Test 7d: isPatternIgnored slash normalization verified.');
 
-  // Test 7e: Bang Motion skill definition and gitignore verification
-  const bangMotionSkill = skills.find((s) => s.id === 'bang_motion');
-  assert(bangMotionSkill, 'bang_motion skill should exist');
-  assert.strictEqual(bangMotionSkill.claude_command?.name, 'bang-motion');
-  assert(aggregateGitIgnorePatterns([bangMotionSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
-  assert(bangMotionSkill.files_to_copy?.length >= 5, 'bang_motion should include official starters and references');
-  const starterOpenerItem = bangMotionSkill.files_to_copy.find((f) => f.destination.includes('starter-opener.html'));
+  // Test 7e: KinetRig skill definition and gitignore verification
+  const kinetRigSkill = skills.find((s) => s.id === 'kinet_rig');
+  assert(kinetRigSkill, 'kinet_rig skill should exist');
+  assert.strictEqual(kinetRigSkill.claude_command?.name, 'kinet-rig');
+  assert(aggregateGitIgnorePatterns([kinetRigSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
+  assert(kinetRigSkill.files_to_copy?.length >= 5, 'kinet_rig should include official starters and references');
+  const starterOpenerItem = kinetRigSkill.files_to_copy.find((f) => f.destination.includes('starter-opener.html'));
   assert(starterOpenerItem && starterOpenerItem.remote_url, 'starter-opener.html must have remote_url for sync');
-  assert(bangMotionSkill.ai_instructions.includes('10 STYLE DIRECTIONS'), 'bang_motion must document 10 style directions');
-  console.log('✔ Test 7e: Bang Motion skill definition, official starters & gitignore verified.');
+  assert(kinetRigSkill.ai_instructions.includes('144 FPS'), 'kinet_rig must document 144 FPS');
+  console.log('✔ Test 7e: KinetRig skill definition, official starters & gitignore verified.');
 
   // Test 7f: Git Workflow skill definition and slash command verification
   const gitWorkflowSkill = skills.find((s) => s.id === 'git_workflow');
@@ -249,7 +249,7 @@ async function runTests() {
   await fs.mkdir(fakeRigMotionDir, { recursive: true });
   await fs.writeFile(path.join(fakeRigMotionDir, 'index.html'), '<html></html>', 'utf8');
 
-  await removeSkillsFromProject(fullPath, projectName, [scraperCheck, bangMotionSkill], [], { deleteArtifacts: true });
+  await removeSkillsFromProject(fullPath, projectName, [scraperCheck, kinetRigSkill], [], { deleteArtifacts: true });
   let scraperFileExists = true;
   try {
     await fs.access(copiedToolPath);

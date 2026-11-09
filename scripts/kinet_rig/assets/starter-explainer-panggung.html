@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="id">
-<!-- Made with the Bang Motion skill v1.4.0 by Bang Tutorial (https://youtube.com/bangtutorial) - MIT - https://github.com/bangtutorial/bang-motion -->
+<!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Cartoon Stage (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
-<title>Starter Explainer — Kartun Panggung</title>
+<title>KinetRig — Explainer: Cartoon Stage (144 FPS)</title>
 <!--
   Gaya 6: kartun panggung (references/kartun-panggung.md).
     - SATU PANGGUNG PER ADEGAN seukuran frame; kamera per panggung, zoom 1,08–1,95, tidak pernah wide.
@@ -21,9 +21,20 @@ html,body{margin:0;height:100%;background:#1D303C;overflow:hidden}
 #world{position:absolute;inset:0;will-change:filter}
 #dbg{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:none;gap:12px;align-items:center;padding:10px 16px;border-radius:14px;background:rgba(14,16,22,.9);color:#cfd5e3;font:13px system-ui;z-index:50}
 #dbg input{width:420px}#dbg span{font-variant-numeric:tabular-nums;min-width:7ch}
+.top-bar{position:fixed;top:20px;right:24px;z-index:100}
+.btn-action{background:rgba(29,48,60,.88);border:1px solid #5AABB8;color:#FFF;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.btn-action svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none}
+body.clean-capture .top-bar,body.clean-capture #dbg{display:none!important}
+body.clean-capture{cursor:none!important}
 </style>
 </head>
 <body>
+<div class="top-bar">
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <span>Download Video (144 FPS)</span>
+  </button>
+</div>
 <div id="stage"><div id="world"><svg id="scene" width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0" font-family="system-ui,sans-serif"></svg></div>
 <div id="dbg"><button id="dPlay">Pause</button><input id="dScrub" type="range" min="0" max="1000" value="0"><span id="dClock">0.00s</span></div></div>
 <audio id="vo" src="" preload="auto"></audio>
@@ -206,6 +217,34 @@ if(q.has('debug')){const dbg=$('#dbg');dbg.style.display='flex';const sc=$('#dSc
   sc.addEventListener('input',()=>{tl.pause();tl.time(sc.value/1000*DUR);});$('#dPlay').onclick=()=>tl.paused()?tl.play():tl.pause();}
 document.fonts.ready.then(()=>{applyAll();window.OPENER.ready=true;if(q.has('clean'))return;if(!hasVO){start();return;}
   vo.play().then(()=>{audioOn=true;vo.currentTime=0;tl.play(0);}).catch(()=>{const go=()=>{removeEventListener('pointerdown',go);removeEventListener('keydown',go);start();};addEventListener('pointerdown',go);addEventListener('keydown',go);});});
+
+/* 144 FPS Clean Video Exporter */
+const btnExport = $('#btn-export');
+if (btnExport) {
+  btnExport.onclick = async () => {
+    document.body.classList.add('clean-capture');
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
+        audio: false, preferCurrentTab: true
+      });
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+      const chunks = [];
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        document.body.classList.remove('clean-capture');
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = 'KinetRig-Explainer-Panggung.webm'; a.click();
+        tl.play();
+      };
+      tl.pause(0); recorder.start(); tl.play();
+      setTimeout(() => { tl.pause(); recorder.stop(); }, DUR * 1000);
+    } catch {
+      document.body.classList.remove('clean-capture');
+    }
+  };
+}
 </script>
 </body>
 </html>

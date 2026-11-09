@@ -78,7 +78,7 @@ ContextRig inspects the target folder before writing anything:
 
 | Skill | Asset Injected | Purpose |
 | :--- | :--- | :--- |
-| **Bang Motion** | *(Agent Skill & Rules)* | Browser-rendered motion graphics, openers, explainers, and kinetic typography using GSAP & Three.js via CDN. Anti-PPT motion rules. Claude slash command: `/bang-motion`. |
+| **KinetRig** | *(Agent Skill & Rules)* | Zero-dependency 144 FPS kinetic motion graphics, openers, explainers, data visualizers, and diegetic chat simulation using HTML5, GSAP & Three.js. Claude slash command: `/kinet-rig`. |
 | **Archify** | *(Agent Skill & Rules)* | Interactive HTML architecture diagrams and database ERD visualizers. Claude slash command: `/archify`. |
 | **Graphify** | `rigtools/graphify.py` | Visualizes codebase architectures, generates interactive **`graphify-out/graph.html`** (vis-network), God Node metrics, and architectural reports. Automatically added to `.gitignore`. |
 | **Web Scraper** | `rigtools/scraper.py` | Enables the AI agent to fetch clean text content from external web URLs or documentation directly from the terminal. |
@@ -124,7 +124,7 @@ contextrig/
 │   ├── copilot.md.hbs               # Rules template for Copilot (.github/copilot-instructions.md)
 │   └── opencode.md.hbs              # Rules template for OpenCode (AGENTS.md)
 ├── skills_library/                  # Curated library of JSON capabilities
-│   ├── bang_motion.json             # GSAP & Three.js browser motion graphics skill
+│   ├── kinet_rig.json               # Zero-dependency 144 FPS kinetic motion & video engine
 │   ├── archify.json                 # Interactive HTML diagrams & ERD skill
 │   ├── web_scraper.json             # Web scraping tool & dependencies
 │   ├── playwright.json              # Playwright browser & E2E testing skill

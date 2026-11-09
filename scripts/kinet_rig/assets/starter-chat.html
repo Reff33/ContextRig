@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - Starter Diegetic Chat Simulation (MIT) -->
+<head>
+<meta charset="utf-8">
+<title>KinetRig — Text Message Simulation (144 FPS)</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root {
+  --primary: #38BDF8;
+  --bg: #030712;
+  --bubble-ai: #1E293B;
+  --bubble-user: #0284C7;
+  --font-main: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:var(--font-main); color:#FFF; }
+
+#stage {
+  position: fixed; left:50%; top:50%; width:1920px; height:1080px;
+  transform: translate(-50%, -50%) scale(1);
+  background: radial-gradient(circle at 50% 30%, #0F172A, var(--bg) 80%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+.chat-device {
+  width: 720px; border-radius: 28px; background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255,255,255,0.12); padding: 36px 40px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(56, 189, 248, 0.15);
+  backdrop-filter: blur(24px);
+}
+.chat-header {
+  display: flex; align-items: center; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 24px; margin-bottom: 28px;
+}
+.avatar {
+  width: 52px; height: 52px; border-radius: 50%; background: #0284C7;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar svg { width: 28px; height: 28px; stroke: #FFF; stroke-width: 2; fill: none; }
+.header-info h2 { font-size: 20px; font-weight: 700; }
+.header-info p { font-size: 13px; color: #38BDF8; font-family: var(--font-mono); }
+
+.chat-stream { display: flex; flex-direction: column; gap: 18px; min-height: 320px; }
+.msg {
+  max-width: 80%; padding: 18px 24px; border-radius: 20px; font-size: 20px;
+  line-height: 1.5; opacity: 0; transform: translateY(20px) scale(0.95);
+}
+.msg.user {
+  align-self: flex-end; background: var(--bubble-user); border-bottom-right-radius: 4px;
+}
+.msg.ai {
+  align-self: flex-start; background: var(--bubble-ai); border-bottom-left-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.typing-dots {
+  display: inline-flex; gap: 6px; align-items: center; padding: 14px 22px;
+  background: var(--bubble-ai); border-radius: 999px; align-self: flex-start;
+  opacity: 0;
+}
+.typing-dots span {
+  width: 8px; height: 8px; border-radius: 50%; background: #94A3B8;
+  animation: blink 1.2s infinite both;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+.top-bar { position: fixed; top: 20px; right: 24px; z-index: 100; }
+.btn-action {
+  background: #0F172A; border: 1px solid var(--primary); color: #FFF;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  padding: 10px 18px; border-radius: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-action svg {
+  width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none;
+}
+body.clean-capture .top-bar { display: none !important; }
+body.clean-capture { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="chat-device">
+    <div class="chat-header">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      </div>
+      <div class="header-info">
+        <h2>KinetRig Assistant</h2>
+        <p>● Active 144 FPS Engine</p>
+      </div>
+    </div>
+
+    <div class="chat-stream">
+      <div class="msg user" id="m1">Can you animate our product launch at 144 FPS?</div>
+      <div class="typing-dots" id="dots"><span></span><span></span><span></span></div>
+      <div class="msg ai" id="m2">Already done. Pure browser native, zero dropped frames, and studio lossless MP4 export.</div>
+      <div class="msg user" id="m3">How do I install it into my project?</div>
+      <div class="msg ai" id="m4">Run <code>npx -y skills@latest add https://github.com/Reff33/KinetRig</code></div>
+    </div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <span>Download Video (144 FPS)</span>
+  </button>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const DURATION = 9.0;
+const tl = gsap.timeline({ paused: true });
+
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit); fit();
+
+tl.fromTo('#m1', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 0.4);
+tl.to('#dots', { opacity: 1, duration: 0.3 }, 1.2);
+tl.to('#dots', { opacity: 0, duration: 0.2 }, 2.0);
+tl.fromTo('#m2', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 2.2);
+
+tl.fromTo('#m3', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 4.0);
+tl.fromTo('#m4', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 5.2);
+
+tl.to({}, { duration: 0.01 }, DURATION);
+
+const seek = t => { tl.pause(); tl.time(t, false); };
+window.OPENER = { tl, DURATION, seek, ready: true };
+
+if (!location.search.includes('clean')) {
+  tl.play(0);
+  tl.eventCallback('onComplete', () => { tl.play(0); });
+}
+
+$('#btn-export').onclick = async () => {
+  document.body.classList.add('clean-capture');
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
+      audio: false, preferCurrentTab: true
+    });
+    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'KinetRig-Chat.webm'; a.click();
+      tl.play();
+    };
+    tl.pause(0); recorder.start(); tl.play();
+    setTimeout(() => { tl.pause(); recorder.stop(); }, DURATION * 1000);
+  } catch {
+    document.body.classList.remove('clean-capture');
+  }
+};
+</script>
+</body>
+</html>

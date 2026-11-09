@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - Starter Data & Animated Charts (MIT) -->
+<head>
+<meta charset="utf-8">
+<title>KinetRig — Data & Chart Animation (144 FPS)</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root {
+  --primary: #10B981;
+  --primary-glow: rgba(16, 185, 129, 0.4);
+  --accent: #00F5FF;
+  --bg: #070B14;
+  --card-bg: rgba(15, 23, 42, 0.85);
+  --font-main: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:var(--font-main); color:#FFF; }
+
+#stage {
+  position: fixed; left:50%; top:50%; width:1920px; height:1080px;
+  transform: translate(-50%, -50%) scale(1);
+  background: radial-gradient(circle at 50% 20%, #0F172A, var(--bg) 80%);
+  overflow: hidden;
+}
+.hud-title {
+  text-align: center; margin-top: 100px; font-size: 64px; font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.hud-title span { color: var(--primary); text-shadow: 0 0 25px var(--primary-glow); }
+
+.grid {
+  display: flex; gap: 36px; justify-content: center; align-items: center;
+  margin-top: 60px; padding: 0 100px;
+}
+.metric-card {
+  background: var(--card-bg); border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 20px; padding: 36px 40px; min-width: 380px; text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(20px);
+  opacity: 0; transform: translateY(40px);
+}
+.metric-val {
+  font-family: var(--font-mono); font-size: 80px; font-weight: 700;
+  color: var(--primary); text-shadow: 0 0 30px var(--primary-glow);
+  line-height: 1; margin: 16px 0;
+}
+.metric-lbl { font-size: 18px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Dynamic SVG Chart */
+.chart-container {
+  max-width: 1200px; margin: 50px auto 0; background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 30px 40px;
+  backdrop-filter: blur(16px); opacity: 0; transform: scale(0.95);
+}
+svg.bar-chart { width: 100%; height: 260px; overflow: visible; }
+rect.bar { fill: var(--primary); rx: 8; transform-origin: bottom; }
+line.grid-line { stroke: rgba(255,255,255,0.08); stroke-width: 1; }
+
+.top-bar { position: fixed; top: 20px; right: 24px; z-index: 100; }
+.btn-action {
+  background: #0F172A; border: 1px solid var(--primary); color: #FFF;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  padding: 10px 18px; border-radius: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-action svg {
+  width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none;
+}
+body.clean-capture .top-bar { display: none !important; }
+body.clean-capture { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <h1 class="hud-title">REAL-TIME <span>METRICS ENGINE</span></h1>
+
+  <div class="grid">
+    <div class="metric-card" id="m1">
+      <div class="metric-lbl">Total Processing Speed</div>
+      <div class="metric-val" id="num1">0</div>
+      <div class="metric-lbl">Requests / Second</div>
+    </div>
+    <div class="metric-card" id="m2">
+      <div class="metric-lbl">Latency Reduction</div>
+      <div class="metric-val" id="num2">0%</div>
+      <div class="metric-lbl">Compared to Legacy</div>
+    </div>
+    <div class="metric-card" id="m3">
+      <div class="metric-lbl">Throughput Yield</div>
+      <div class="metric-val" id="num3">0M</div>
+      <div class="metric-lbl">Verified Tokens</div>
+    </div>
+  </div>
+
+  <div class="chart-container" id="chart-box">
+    <svg class="bar-chart" viewBox="0 0 1100 240">
+      <line class="grid-line" x1="0" y1="60" x2="1100" y2="60"/>
+      <line class="grid-line" x1="0" y1="120" x2="1100" y2="120"/>
+      <line class="grid-line" x1="0" y1="180" x2="1100" y2="180"/>
+      <rect class="bar" x="60" y="240" width="80" height="0" data-h="160"/>
+      <rect class="bar" x="220" y="240" width="80" height="0" data-h="200"/>
+      <rect class="bar" x="380" y="240" width="80" height="0" data-h="140"/>
+      <rect class="bar" x="540" y="240" width="80" height="0" data-h="220"/>
+      <rect class="bar" x="700" y="240" width="80" height="0" data-h="190"/>
+      <rect class="bar" x="860" y="240" width="80" height="0" data-h="235"/>
+    </svg>
+  </div>
+</div>
+
+<div class="top-bar">
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <span>Download Video (144 FPS)</span>
+  </button>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const DURATION = 8.0;
+const tl = gsap.timeline({ paused: true });
+
+// Stage fit
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit); fit();
+
+// Numbers animation object
+const stats = { n1: 0, n2: 0, n3: 0 };
+tl.fromTo('.hud-title', { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.2);
+tl.fromTo(['#m1', '#m2', '#m3'],
+  { opacity: 0, y: 40, scale: 0.9 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.15, ease: 'back.out(1.5)' },
+  0.6
+);
+
+tl.to(stats, {
+  n1: 14400, n2: 84, n3: 256, duration: 2.2, ease: 'power2.out',
+  onUpdate: () => {
+    $('#num1').textContent = Math.round(stats.n1).toLocaleString();
+    $('#num2').textContent = Math.round(stats.n2) + '%';
+    $('#num3').textContent = Math.round(stats.n3) + 'M';
+  }
+}, 0.8);
+
+tl.fromTo('#chart-box', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.8, ease: 'power3.out' }, 1.2);
+$$('rect.bar').forEach((bar, i) => {
+  const h = Number(bar.dataset.h);
+  tl.fromTo(bar, { y: 0, height: 0 }, { y: -h, height: h, duration: 1.0, ease: 'elastic.out(1, 0.75)' }, 1.4 + (i * 0.1));
+});
+
+tl.to({}, { duration: 0.01 }, DURATION);
+
+// Seek for offline 144fps renderer
+const seek = t => { tl.pause(); tl.time(t, false); };
+window.OPENER = { tl, DURATION, seek, ready: true };
+
+if (!location.search.includes('clean')) {
+  tl.play(0);
+  tl.eventCallback('onComplete', () => { tl.play(0); });
+}
+
+// 144 FPS Export
+$('#btn-export').onclick = async () => {
+  document.body.classList.add('clean-capture');
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
+      audio: false, preferCurrentTab: true
+    });
+    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'KinetRig-Data.webm'; a.click();
+      tl.play();
+    };
+    tl.pause(0); recorder.start(); tl.play();
+    setTimeout(() => { tl.pause(); recorder.stop(); }, DURATION * 1000);
+  } catch {
+    document.body.classList.remove('clean-capture');
+  }
+};
+</script>
+</body>
+</html>

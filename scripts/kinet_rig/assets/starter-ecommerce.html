@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - Starter E-Commerce & Product Showcase (MIT) -->
+<head>
+<meta charset="utf-8">
+<title>KinetRig — Product Showcase (144 FPS)</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root {
+  --primary: #F59E0B;
+  --primary-glow: rgba(245, 158, 11, 0.4);
+  --bg: #090D1A;
+  --card-bg: rgba(17, 24, 39, 0.85);
+  --font-main: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:var(--font-main); color:#FFF; }
+
+#stage {
+  position: fixed; left:50%; top:50%; width:1920px; height:1080px;
+  transform: translate(-50%, -50%) scale(1);
+  background: radial-gradient(circle at 65% 50%, #1E293B, var(--bg) 75%);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+
+.product-layout {
+  display: flex; gap: 80px; align-items: center; max-width: 1400px;
+}
+.product-visual {
+  width: 520px; height: 520px; border-radius: 28px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(0,0,0,0.8));
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 40px var(--primary-glow);
+  position: relative; opacity: 0; transform: scale(0.85) rotate(-4deg);
+}
+.product-visual svg {
+  width: 260px; height: 260px; stroke: var(--primary); stroke-width: 1.5; fill: none;
+  filter: drop-shadow(0 0 16px var(--primary-glow));
+}
+.price-tag {
+  position: absolute; top: 24px; right: 24px; background: var(--primary);
+  color: #000; font-family: var(--font-mono); font-size: 28px; font-weight: 800;
+  padding: 8px 20px; border-radius: 999px; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5);
+}
+
+.product-info { max-width: 620px; text-align: left; }
+.badge {
+  display: inline-block; background: rgba(245, 158, 11, 0.15); color: var(--primary);
+  border: 1px solid rgba(245, 158, 11, 0.4); font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 16px; border-radius: 999px;
+  margin-bottom: 20px; opacity: 0;
+}
+.title { font-size: 64px; font-weight: 800; line-height: 1.1; margin-bottom: 24px; opacity: 0; }
+.desc { font-size: 20px; color: #94A3B8; line-height: 1.6; margin-bottom: 36px; opacity: 0; }
+
+.spec-grid { display: flex; gap: 20px; margin-bottom: 40px; }
+.spec-item {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 14px 22px; opacity: 0; transform: translateY(20px);
+}
+.spec-item .val { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: #FFF; }
+.spec-item .lbl { font-size: 13px; color: #64748B; text-transform: uppercase; margin-top: 4px; }
+
+.btn-buy {
+  background: var(--primary); color: #000; font-size: 22px; font-weight: 800;
+  padding: 18px 44px; border-radius: 14px; border: none; cursor: pointer;
+  box-shadow: 0 10px 30px var(--primary-glow); opacity: 0; transform: scale(0.9);
+}
+
+.top-bar { position: fixed; top: 20px; right: 24px; z-index: 100; }
+.btn-action {
+  background: #111827; border: 1px solid var(--primary); color: #FFF;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  padding: 10px 18px; border-radius: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-action svg {
+  width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none;
+}
+body.clean-capture .top-bar { display: none !important; }
+body.clean-capture { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="product-layout">
+    <div class="product-visual" id="card-vis">
+      <div class="price-tag">$299</div>
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+
+    <div class="product-info">
+      <div class="badge" id="b1">Featured Flagship</div>
+      <h1 class="title" id="t1">AERO-144 PRO</h1>
+      <p class="desc" id="d1">Precision crafted hardware accelerator engineered for real-time generative neural pipelines and sub-millisecond audio synthesis.</p>
+
+      <div class="spec-grid" id="specs">
+        <div class="spec-item"><div class="val">144 FPS</div><div class="lbl">Refresh</div></div>
+        <div class="spec-item"><div class="val">0.4 ms</div><div class="lbl">Latency</div></div>
+        <div class="spec-item"><div class="val">40 Gbps</div><div class="lbl">Bandwidth</div></div>
+      </div>
+
+      <button class="btn-buy" id="btn-cta">ORDER NOW — SHIPS TODAY</button>
+    </div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <span>Download Video (144 FPS)</span>
+  </button>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const DURATION = 8.0;
+const tl = gsap.timeline({ paused: true });
+
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit); fit();
+
+tl.fromTo('#card-vis',
+  { opacity: 0, scale: 0.8, rotate: -8 },
+  { opacity: 1, scale: 1, rotate: 0, duration: 1.1, ease: 'back.out(1.4)' },
+  0.2
+);
+tl.fromTo('#b1', { opacity: 0, y: -15 }, { opacity: 1, y: 0, duration: 0.5 }, 0.4);
+tl.fromTo('#t1', { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.8, ease: 'power3.out' }, 0.6);
+tl.fromTo('#d1', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7 }, 0.9);
+tl.fromTo($$('#specs .spec-item'),
+  { opacity: 0, y: 25 },
+  { opacity: 1, y: 0, duration: 0.6, stagger: 0.12, ease: 'back.out(1.5)' },
+  1.3
+);
+tl.fromTo('#btn-cta',
+  { opacity: 0, scale: 0.85 },
+  { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(2)' },
+  1.8
+);
+
+// Gentle floating pulse
+tl.to('#card-vis', { y: -12, duration: 2.2, yoyo: true, repeat: 2, ease: 'sine.inOut' }, 2.0);
+
+tl.to({}, { duration: 0.01 }, DURATION);
+
+const seek = t => { tl.pause(); tl.time(t, false); };
+window.OPENER = { tl, DURATION, seek, ready: true };
+
+if (!location.search.includes('clean')) {
+  tl.play(0);
+  tl.eventCallback('onComplete', () => { tl.play(0); });
+}
+
+$('#btn-export').onclick = async () => {
+  document.body.classList.add('clean-capture');
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
+      audio: false, preferCurrentTab: true
+    });
+    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'KinetRig-Product.webm'; a.click();
+      tl.play();
+    };
+    tl.pause(0); recorder.start(); tl.play();
+    setTimeout(() => { tl.pause(); recorder.stop(); }, DURATION * 1000);
+  } catch {
+    document.body.classList.remove('clean-capture');
+  }
+};
+</script>
+</body>
+</html>

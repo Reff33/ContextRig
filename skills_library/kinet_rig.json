@@ -1,0 +1,113 @@
+{
+  "id": "kinet_rig",
+  "name": "KinetRig (144 FPS Kinetic Motion & Video Engine)",
+  "description": "Zero-dependency 144 FPS kinetic motion graphics & video engine using HTML5, GSAP & Three.js with deterministic offline rendering and inline SVGs",
+  "install_command": "npx -y skills@latest add https://github.com/Reff33/KinetRig --agent {{agent_flag}} --copy --yes",
+  "ai_instructions": "Follow the official KinetRig workflow (https://github.com/Reff33/KinetRig):\n\n1. CORE PRINCIPLES:\n   • Zero Runtime Dependencies: Deliverable (index.html) requires ONLY a browser. No React/Remotion/Manim bloat.\n   • Deterministic 144 FPS Timeline: All animations strictly driven by tl.time(). Zero dropped frames during offline render.\n   • Strict Vector Quality (Zero Emojis): NEVER use system emojis (🤖, ⚡, 🐙, 🧠, 🕷). ALWAYS use resolution-independent Inline SVG vectors (<svg viewBox=\"0 0 24 24\">) with currentColor or brand glow.\n   • Anti-PowerPoint Motion: No static slide deck fades. Continuous 3D camera travel (push-through, whip pan, yaw 3D) or motivated wipes.\n   • Clean Video Export: body.clean-capture auto-hides all UI and cursor during 144 FPS recording.\n\n2. 6-PHASE AGENT WORKFLOW:\n   • Phase 1 (Brief): Topic, Duration (15-30s opener, 30-60s explainer/data), Aspect Ratio (16:9 vs 9:16).\n   • Phase 2 (Style Brief — Three Candidates, One Pick): DO NOT write code yet. Propose 3 candidates with Concept (Opener, Explainer, Data, E-Commerce, Chat), Style Direction, Palette (3 HEX), and Rationale.\n   • Phase 3 (User Approval): Wait for user confirmation.\n   • Phase 4 (Build from Official Starter): Adapt starter template from rigtools/kinet_rig/assets/ into self-contained index.html.\n   • Phase 5 (Anti-PowerPoint Rules): Continuous world, max 2 text levels per scene, 1 shot = 1 statement (≤ 5 words).\n   • Phase 6 (Clean 144 FPS Export): Floating '🎥 Download Video' button + Studio frame render (node scripts/export-frames.mjs + ffmpeg lossless MP4).",
+  "claude_command": {
+    "name": "kinet-rig",
+    "content": "# /kinet-rig <brief> [aspect_ratio] [concept/style]\n\nGenerate zero-dependency 144 FPS browser motion graphics using KinetRig:\n\n1. **Style Brief (Three Candidates, One Pick):** Propose 3 Concept Candidates from the 5 categories (Opener, Explainer, Data, E-Commerce, Chat) with 3-color palette and rationale. Wait for user approval.\n2. **Official Starters:** Adapt from `rigtools/kinet_rig/assets/` into self-contained `index.html`.\n3. **Anti-PowerPoint & Zero-Emoji Laws:** Continuous camera traveling, zero static slide fades. NEVER use OS emojis; use inline SVG vectors with neon glow.\n4. **144 FPS Export:** Clean capture mode (`body.clean-capture`, cursor: 'never', 40 Mbps) and deterministic offline frame export (`node scripts/export-frames.mjs` + `ffmpeg -framerate 144 ...`)."
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "artifacts": [
+    "kinetrig/",
+    "rigmotion/",
+    "promo-video/",
+    "motion-out/",
+    "renders/",
+    ".motion/"
+  ],
+  "gitignore": [
+    "kinetrig/",
+    "rigmotion/",
+    "promo-video/",
+    "motion-out/",
+    "renders/",
+    ".motion/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/kinet_rig/assets/starter-opener.html",
+      "destination": "rigtools/kinet_rig/assets/starter-opener.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-opener.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-explainer.html",
+      "destination": "rigtools/kinet_rig/assets/starter-explainer.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-explainer-jurnalisme.html",
+      "destination": "rigtools/kinet_rig/assets/starter-explainer-jurnalisme.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-jurnalisme.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-explainer-kartun.html",
+      "destination": "rigtools/kinet_rig/assets/starter-explainer-kartun.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-kartun.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-explainer-katalog.html",
+      "destination": "rigtools/kinet_rig/assets/starter-explainer-katalog.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-katalog.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-explainer-panggung.html",
+      "destination": "rigtools/kinet_rig/assets/starter-explainer-panggung.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-panggung.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-explainer-sketsa.html",
+      "destination": "rigtools/kinet_rig/assets/starter-explainer-sketsa.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-explainer-sketsa.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-data.html",
+      "destination": "rigtools/kinet_rig/assets/starter-data.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-data.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-ecommerce.html",
+      "destination": "rigtools/kinet_rig/assets/starter-ecommerce.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-ecommerce.html"
+    },
+    {
+      "source": "scripts/kinet_rig/assets/starter-chat.html",
+      "destination": "rigtools/kinet_rig/assets/starter-chat.html",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/assets/starter-chat.html"
+    },
+    {
+      "source": "scripts/kinet_rig/references/opener-konsep.md",
+      "destination": "rigtools/kinet_rig/references/opener-konsep.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/opener-konsep.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/explainer.md",
+      "destination": "rigtools/kinet_rig/references/explainer.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/explainer.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/anti-ppt.md",
+      "destination": "rigtools/kinet_rig/references/anti-ppt.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/anti-ppt.md"
+    },
+    {
+      "source": "scripts/kinet_rig/references/techniques.md",
+      "destination": "rigtools/kinet_rig/references/techniques.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/references/techniques.md"
+    },
+    {
+      "source": "scripts/kinet_rig/scripts/export-frames.mjs",
+      "destination": "rigtools/kinet_rig/scripts/export-frames.mjs",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/export-frames.mjs"
+    },
+    {
+      "source": "scripts/kinet_rig/scripts/snap.mjs",
+      "destination": "rigtools/kinet_rig/scripts/snap.mjs",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/snap.mjs"
+    }
+  ]
+}

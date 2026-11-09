@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - Zero-dependency 144 FPS Kinetic Motion Engine (MIT) - https://github.com/Reff33/KinetRig -->
+<head>
+<meta charset="utf-8">
+<title>KinetRig — 144 FPS Starter Opener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+}}
+</script>
+<style>
+:root {
+  --primary: #00F5FF;
+  --primary-glow: rgba(0, 245, 255, 0.45);
+  --accent: #3B82F6;
+  --ink: #F8FAFC;
+  --base: #060913;
+  --font-main: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:var(--font-main); color:var(--ink); }
+
+#stage {
+  position: fixed; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform: translate(-50%, -50%) scale(1);
+  overflow: hidden; background: var(--base);
+}
+#world { position: absolute; inset: 0; will-change: transform; }
+#gl { position: absolute; inset: 0; width: 1920px; height: 1080px; display: block; }
+.bgfx {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(70% 50% at 50% 100%, var(--primary-glow), transparent 70%);
+}
+.grain {
+  position: absolute; inset: -50px; pointer-events: none; opacity: 0.15;
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)"/></svg>');
+}
+#dom { position: absolute; inset: 0; }
+
+.scene {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; text-align: center;
+}
+.hero {
+  font-size: 88px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+  text-shadow: 0 10px 40px rgba(0,0,0,0.8);
+}
+.hero .hl { color: var(--primary); text-shadow: 0 0 35px var(--primary-glow); }
+.sub {
+  font-size: 26px; font-weight: 500; color: #94A3B8; margin-top: 24px;
+  max-width: 900px; line-height: 1.5;
+}
+
+/* Feature Cards & Badges */
+.card-row { display: flex; gap: 24px; margin-top: 48px; }
+.vector-card {
+  background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(0, 245, 255, 0.25);
+  backdrop-filter: blur(16px); padding: 24px 32px; border-radius: 16px;
+  display: flex; align-items: center; gap: 16px; font-size: 20px; font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; transform: translateY(30px);
+}
+.vector-card svg {
+  width: 28px; height: 28px; stroke: var(--primary); stroke-width: 2; fill: none;
+  filter: drop-shadow(0 0 8px var(--primary-glow));
+}
+
+/* 144 FPS Export & Scrubber Controls */
+.top-bar { position: fixed; top: 20px; right: 24px; display: flex; gap: 12px; z-index: 100; }
+.btn-action {
+  background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(0, 245, 255, 0.4);
+  color: #FFF; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  padding: 10px 18px; border-radius: 10px; cursor: pointer;
+  backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-action svg {
+  width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none;
+}
+#ui {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px; padding: 10px 20px;
+  border-radius: 14px; background: rgba(9, 14, 26, 0.92);
+  border: 1px solid rgba(0, 245, 255, 0.25); font-family: var(--font-mono);
+  font-size: 13px; color: #94A3B8; z-index: 90; display: none;
+}
+#ui.on { display: flex; }
+#scrub { width: 360px; accent-color: var(--primary); }
+
+/* 100% Clean Recording Mode (Zero HUD, Zero Scrubber, Zero Cursor) */
+body.clean-capture .top-bar,
+body.clean-capture #ui,
+body.clean-mode .top-bar,
+body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+body.clean-capture, body.clean-mode { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="world">
+    <canvas id="gl"></canvas>
+    <div class="bgfx"></div>
+    <div class="grain"></div>
+    <div id="dom">
+
+      <!-- SCENE 1: THE STATEMENT -->
+      <section class="scene" id="sc1">
+        <h1 class="hero" id="h1-sc1">ULTRA FLUID.<br><span class="hl">144 FPS NATIVE.</span></h1>
+        <p class="sub" id="sub-sc1">Deterministic mathematical timeline stepping. Zero dropped frames.</p>
+        <div class="card-row" id="cards-sc1">
+          <div class="vector-card">
+            <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Zero Runtime Build
+          </div>
+          <div class="vector-card">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+            100% Inline SVGs
+          </div>
+          <div class="vector-card">
+            <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 8 6 4-6 4Z"/></svg>
+            Lossless Headless Export
+          </div>
+        </div>
+      </section>
+
+      <!-- SCENE 2: CALL TO ACTION -->
+      <section class="scene" id="sc2">
+        <h1 class="hero" id="h1-sc2">CRAFTED FOR<br><span class="hl">AI CODING AGENTS</span></h1>
+        <p class="sub" id="sub-sc2">npx -y skills@latest add https://github.com/Reff33/KinetRig</p>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <button class="btn-action" id="btn-hud">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>HUD (H)</span>
+  </button>
+  <button class="btn-action" id="btn-export">
+    <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    <span id="btn-export-text">Download Video (144 FPS)</span>
+  </button>
+</div>
+
+<div id="ui">
+  <button id="btn-play">Pause</button>
+  <button id="btn-restart">Restart</button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+/* ============ THREE.JS 144 FPS PARTICLES ============ */
+const canvas = $('#gl');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+renderer.setSize(1920, 1080);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1920 / 1080, 0.1, 100);
+camera.position.z = 14;
+
+const pCount = 500;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(pCount * 3);
+for (let i = 0; i < pCount * 3; i += 3) {
+  pPos[i] = (Math.random() - 0.5) * 24;
+  pPos[i + 1] = (Math.random() - 0.5) * 14;
+  pPos[i + 2] = (Math.random() - 0.5) * 20;
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({ color: 0x00F5FF, size: 0.08, transparent: true, opacity: 0.65 });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+const S = { camZ: 14, camX: 0, camY: 0, rotY: 0 };
+const render = t => {
+  particles.rotation.y = t * 0.12;
+  camera.position.set(S.camX, S.camY, S.camZ);
+  renderer.render(scene, camera);
+};
+
+/* ============ GSAP 144 FPS DETERMINISTIC TIMELINE ============ */
+const DURATION = 10.0;
+const tl = gsap.timeline({ paused: true });
+
+// Scene 1 (0.0s - 5.0s)
+tl.set('#sc1', { autoAlpha: 1 }, 0);
+tl.fromTo('#h1-sc1', { opacity: 0, scale: 0.85, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: 'power3.out' }, 0.2);
+tl.fromTo('#sub-sc1', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 0.8);
+tl.to(S, { camZ: 11, duration: 4.8, ease: 'none' }, 0);
+tl.fromTo($$('#cards-sc1 .vector-card'),
+  { opacity: 0, y: 40, scale: 0.9 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.15, ease: 'back.out(1.5)' },
+  1.4
+);
+
+// Exit Scene 1 -> Enter Scene 2 (5.0s)
+tl.to(['#h1-sc1', '#sub-sc1', '#cards-sc1'], { opacity: 0, y: -40, duration: 0.5, ease: 'power2.in' }, 4.4);
+tl.set('#sc1', { autoAlpha: 0 }, 5.0);
+
+tl.set('#sc2', { autoAlpha: 1 }, 5.0);
+tl.fromTo('#h1-sc2', { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1, duration: 1.0, ease: 'power3.out' }, 5.2);
+tl.fromTo('#sub-sc2', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 6.0);
+tl.to(S, { camZ: 15, duration: 4.5, ease: 'power2.out' }, 5.0);
+tl.to({}, { duration: 0.01 }, DURATION);
+
+/* ============ STAGE FIT & CONTROLS ============ */
+const stage = $('#stage');
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit); fit();
+
+const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+let scrubbing = false;
+(function frame() {
+  const t = tl.time();
+  render(t);
+  clock.textContent = t.toFixed(2) + 's';
+  if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
+  requestAnimationFrame(frame);
+})();
+
+const toggle = () => {
+  if (tl.paused() || tl.progress() >= 1) {
+    if (tl.progress() >= 1) tl.progress(0);
+    tl.play(); btnPlay.textContent = 'Pause';
+  } else {
+    tl.pause(); btnPlay.textContent = 'Play';
+  }
+};
+btnPlay.onclick = toggle;
+$('#btn-restart').onclick = () => { tl.pause(0); tl.play(); btnPlay.textContent = 'Pause'; };
+$('#btn-hud').onclick = () => { $('#ui').classList.toggle('on'); };
+addEventListener('keydown', e => {
+  if (e.key === 'h' || e.key === 'H') {
+    $('#ui').classList.toggle('on');
+  }
+});
+scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); btnPlay.textContent = 'Play'; });
+addEventListener('pointerup', () => scrubbing = false);
+scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
+
+const Q = new URLSearchParams(location.search);
+if (Q.has('debug')) $('#ui').classList.add('on');
+if (Q.has('clean')) document.body.classList.add('clean-mode');
+
+const seek = t => {
+  tl.pause();
+  tl.time(t, false);
+  if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+  render(t);
+};
+window.OPENER = { tl, DURATION, seek, ready: false };
+
+document.fonts.ready.then(() => {
+  window.OPENER.ready = true;
+  if (!Q.has('clean')) {
+    tl.play(0);
+    tl.eventCallback('onComplete', () => { tl.play(0); });
+  }
+});
+
+/* ============ 144 FPS CLEAN VIDEO EXPORTER ============ */
+const btnExport = $('#btn-export');
+const btnExportLabel = $('#btn-export-text');
+let isRecording = false;
+btnExport.onclick = async () => {
+  if (isRecording) return;
+  try {
+    isRecording = true;
+    btnExportLabel.textContent = 'Preparing Capture...';
+    document.body.classList.add('clean-capture');
+
+    let stream;
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      try {
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 144, min: 60 } },
+          audio: false, preferCurrentTab: true
+        });
+      } catch {
+        document.body.classList.remove('clean-capture');
+        btnExportLabel.textContent = 'Download Video (144 FPS)';
+        isRecording = false; return;
+      }
+    } else {
+      stream = canvas.captureStream(144);
+    }
+
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+      ? 'video/mp4; codecs="avc1.42E01E"'
+      : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `KinetRig-Opener.${ext}`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
+      btnExportLabel.textContent = 'Download Video (144 FPS)';
+      isRecording = false; tl.play();
+    };
+
+    tl.pause(0); recorder.start(); tl.play();
+    const check = setInterval(() => {
+      const cur = tl.time();
+      if (cur >= DURATION - 0.05 || tl.progress() >= 0.999) {
+        clearInterval(check); tl.pause();
+        if (recorder.state === 'recording') recorder.stop();
+      }
+    }, 100);
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    btnExport.textContent = '🎥 Download Video (144 FPS)';
+    isRecording = false; alert('Export error: ' + err.message);
+  }
+};
+</script>
+</body>
+</html>
