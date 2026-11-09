@@ -1,16 +1,16 @@
 # 07 — Cinematic Lighting & Color Grading (KinetRig Engine)
 
-Pencahayaan membezakan grafik amatur yang rata (flat) dengan video studio sinematik berprofil tinggi.
+Lighting separates flat, amateur web animations from high-production studio visuals.
 
 ---
 
-## 1. 3-Point Studio Lighting in Web/CSS
+## 1. 3-Point Studio Lighting in Web / CSS
 
-Untuk sebarang kad UI atau model produk 3D:
+For UI cards and 3D device geometry:
 
-1. **Key Light (Lampu Utama):** Sudut 45 darjah dari atas kiri, putih terang `rgba(255, 255, 255, 0.95)` memberikan bentuk dan kontur.
-2. **Fill Light (Lampu Isian):** Sudut 45 darjah dari bawah kanan, warna komplementari lembut `rgba(80, 120, 255, 0.3)` mengelakkan bayang terlalu gelap.
-3. **Rim / Backlight (Lampu Belakang):** Dari belakang objek, warna aksen neon jenama (cyan/emas) untuk memisahkan objek daripada latar belakang hitam.
+1. **Key Light (Primary Focus):** Positioned 45 degrees top-left, clean white `rgba(255, 255, 255, 0.95)` defining surface contours.
+2. **Fill Light (Shadow Softener):** Positioned 45 degrees bottom-right, gentle complementary blue `rgba(80, 120, 255, 0.3)` eliminating harsh black cutoffs.
+3. **Rim / Backlight (Edge Separator):** Positioned directly behind the subject, bright neon brand accent (cyan/gold) establishing depth separation from dark canvas backgrounds.
 
 ```css
 .studio-lit-card {
@@ -24,9 +24,10 @@ Untuk sebarang kad UI atau model produk 3D:
 
 ---
 
-## 2. Volumetric Light Ray (God Rays)
+## 2. Volumetric Light Rays (God Rays)
 
-Sinar cahaya berhabuk yang bergerak di belakang teks judul:
+Atmospheric light cones sweeping behind hero typography:
+
 ```html
 <div class="light-cone" style="
   position: absolute;
@@ -57,6 +58,7 @@ tl.to('.light-cone', {
 ## 3. Color Grading & Film Grain Emulation
 
 ### A. Dark Tone Film Vignette
+
 ```css
 #vignette-overlay {
   position: fixed;
@@ -67,8 +69,10 @@ tl.to('.light-cone', {
 }
 ```
 
-### B. High-Frequency Micro-Grain (Zero External Image)
-Gunakan SVG `feTurbulence` untuk menghasilkan tekstur analog:
+### B. High-Frequency Micro-Grain (Zero External Images)
+
+Generate tactile analog grain using an inline SVG `feTurbulence` filter:
+
 ```html
 <svg style="position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.04; mix-blend-mode: overlay;">
   <filter id="noise">

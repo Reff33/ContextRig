@@ -1,20 +1,20 @@
 # 09 — Editing & Post-Production (KinetRig Engine)
 
-Penyuntingan video dalam kod (Code-Driven NLE). Struktur masa, pacing sinematik, speed ramping, dan pengoptimuman eksport 144 FPS tanpa kehilangan kualiti.
+Code-driven Non-Linear Editing (Code-Driven NLE). Rhythm structures, cinematic speed ramping, and 144 FPS lossless export optimization.
 
 ---
 
-## 1. Speed Ramping (Manipulasi Kelajuan Masa)
+## 1. Speed Ramping (Temporal Velocity Manipulation)
 
-Speed ramping ialah teknik mempercepatkan pergerakan di tengah shot dan memperlahankannya tepat pada detik klimaks:
+Speed ramping accelerates through transitional movements and brakes precisely on climax frames:
 
 ```javascript
-// Menggunakan CustomEase atau cubic-bezier dalam GSAP
-// Cepat semasa transisi (0.2s), perlahan semasa membaca teks (1.5s)
+// Using custom bezier easing in GSAP
+// Fast during camera shift (0.2s), slow and deliberate during copy reading (1.5s)
 tl.to('#metric-reveal', {
   scale: 1,
   duration: 1.8,
-  ease: 'expo.out' // Pecutan segera lalu meluncur perlahan
+  ease: 'expo.out' // Immediate velocity snap followed by sustained glide
 });
 ```
 
@@ -22,7 +22,7 @@ tl.to('#metric-reveal', {
 
 ## 2. Kinetic Subtitle & Caption Stacker
 
-Sari kata (subtitles) moden yang menyala mengikut perkataan yang disebut (Karaoke Glow / Word Highlighting):
+Modern dynamic subtitles with real-time word highlighting (Karaoke Glow / Kinetic Word Stacker):
 
 ```html
 <div class="caption-container" style="display: flex; gap: 8px; justify-content: center; font-size: 36px; font-weight: 700;">
@@ -34,7 +34,7 @@ Sari kata (subtitles) moden yang menyala mengikut perkataan yang disebut (Karaok
 ```
 
 ```javascript
-// Sinkronkan penyerlah perkataan mengikut masa sebutan
+// Synchronize highlight state with narration timestamps
 function highlightWords(tl, wordTimings) {
   wordTimings.forEach(({ id, start, dur }) => {
     tl.to(id, { color: '#00f0ff', scale: 1.15, textShadow: '0 0 20px #00f0ff', duration: 0.15 }, start)
@@ -47,16 +47,18 @@ function highlightWords(tl, wordTimings) {
 
 ## 3. 144 FPS Export Pipeline & FFmpeg Optimization
 
-### Studio Master MP4 Render Command:
+### Studio Master MP4 Render Pipeline
+
 ```bash
-# Langkah 1: Ekstrak frame 144 FPS tanpa hilang bingkai
+# Step 1: Headless extraction of every 144 FPS frame with zero frame loss
 node rigtools/kinet_rig/scripts/export-frames.mjs
 
-# Langkah 2: Gabung frame PNG ke MP4 H.264 kualiti tinggi (CRF 14)
+# Step 2: Assemble PNG frames into high-profile H.264 MP4 (CRF 14)
 ffmpeg -framerate 144 -i frames/f%05d.png -c:v libx264 -pix_fmt yuv420p -crf 14 -preset slow output_144fps.mp4
 ```
 
-### Parameter Eksport Utama:
-- **Framerate:** 144 FPS (memberikan kelicinan maksimum pada monitor gaming & ProMotion skrin Apple).
-- **Pixel Format:** `yuv420p` (keserasian 100% dengan Twitter/X, YouTube, TikTok, dan QuickTime).
-- **CRF (Constant Rate Factor):** `14` (hampir tanpa kehilangan / visually lossless).
+### Essential Export Parameters
+
+- **Framerate:** 144 FPS (smoothness on ProMotion Apple displays and gaming panels).
+- **Pixel Format:** `yuv420p` (100% universal compatibility across Twitter/X, YouTube, TikTok, and QuickTime).
+- **CRF (Constant Rate Factor):** `14` (visually lossless delivery).

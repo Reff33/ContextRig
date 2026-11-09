@@ -1,15 +1,16 @@
 # 05 — Visual Effects & Particle Systems (KinetRig Engine)
 
-Kesan visual sinematik tanpa berat enjin Remotion atau plugin After Effects berbayar. Dibina atas HTML5 Canvas deterministik, SVG filter matrix, dan CSS backdrop-filter.
+Cinematic visual effects without the overhead of heavy WebGL frameworks or paid After Effects plugins. Built entirely on deterministic HTML5 Canvas, SVG filter matrices, and CSS backdrop-filters.
 
 ---
 
 ## 1. Deterministic Particle Field (Zero Math.random())
 
-Semasa rendering 144 FPS offline, zarah (dust, sparks, grid stars) **wajib deterministik** supaya `tl.time(t)` menghasilkan bingkai yang sama persis setiap kali di-scrub.
+During 144 FPS offline frame export, particles (dust, sparks, grid stars) **must be deterministic** so that seeking `tl.time(t)` renders identical frames every run.
 
-### Formula Zarah Deterministik:
-Gunakan formula Pseudo-Random (PRNG) atau trigonometri berkala berasaskan indeks:
+### Deterministic Particle Formula
+
+Utilize index-based trigonometric pseudo-randomness (PRNG):
 
 ```javascript
 class ParticleSystem {
@@ -26,7 +27,7 @@ class ParticleSystem {
     }));
   }
 
-  // Dipanggil terus oleh timeline GSAP melalui tl.eventCallback('onUpdate')
+  // Driven deterministically by GSAP timeline via tl.eventCallback('onUpdate')
   renderAtTime(time) {
     this.ctx.clearRect(0, 0, 1920, 1080);
     this.ctx.fillStyle = '#ffffff';
@@ -47,7 +48,8 @@ class ParticleSystem {
 
 ## 2. Neon Rim Light & Volumetric Bloom
 
-Cahaya tepi sinematik (Rim Lighting) tanpa rendering WebGL berat:
+Cinematic rim lighting without expensive post-processing shaders:
+
 ```css
 .neon-glow {
   box-shadow: 
@@ -58,7 +60,8 @@ Cahaya tepi sinematik (Rim Lighting) tanpa rendering WebGL berat:
 }
 ```
 
-Semasa hentaman beat muzik, cerahkan pendaran (bloom pulse):
+On beat impacts, intensify bloom with a momentary pulse:
+
 ```javascript
 tl.fromTo('.neon-glow', 
   { filter: 'brightness(2.2) drop-shadow(0 0 35px #00f0ff)' },
@@ -70,14 +73,15 @@ tl.fromTo('.neon-glow',
 
 ## 3. High-Tech Glassmorphism & Caustic Reflection
 
-Untuk kad perisian premium (SaaS, FinTech, AI Core):
+For premium software cards (SaaS, FinTech, AI Core):
+
 ```css
 .glass-panel {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-top: 1px solid rgba(255, 255, 255, 0.35); /* Cahaya pantulan atas */
+  border-top: 1px solid rgba(255, 255, 255, 0.35); /* Top specular highlight */
   border-radius: 20px;
 }
 ```
@@ -86,7 +90,8 @@ Untuk kad perisian premium (SaaS, FinTech, AI Core):
 
 ## 4. Digital RGB Chromatic Aberration & Glitch
 
-Gunakan SVG `<feColorMatrix>` atau satah berasingan bergeser (offset layers):
+Utilize SVG `<feColorMatrix>` or lateral RGB offset layers:
+
 ```javascript
 function triggerGlitch(tl, target, at = '>') {
   tl.to(target, {

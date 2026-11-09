@@ -1,12 +1,12 @@
 # 08 — 3D Motion & Spatial Design (KinetRig Engine)
 
-KinetRig menggunakan gabungan Three.js ringan (untuk pencahayaan dan geometri 3D sebenar) dan CSS 3D Transforms (untuk rendering teks hiper-tajam tanpa beban tekstur WebGL).
+KinetRig pairs lightweight Three.js (for genuine 3D lighting and geometry) with CSS 3D Transforms (for razor-sharp vector typography without WebGL texture overhead).
 
 ---
 
-## 1. Zero-Dependency CSS 3D Device Mockup (Laptop & Mobile)
+## 1. Zero-Dependency CSS 3D Device Mockups (Laptop & Mobile)
 
-Membina bingkai peranti komputer riba (laptop) tulen tanpa memuat turun model 3D OBJ/GLTF berat:
+Construct authentic device viewports without downloading heavy GLTF or OBJ models:
 
 ```html
 <div class="laptop-chassis" style="
@@ -20,14 +20,15 @@ Membina bingkai peranti komputer riba (laptop) tulen tanpa memuat turun model 3D
   overflow: hidden;
   position: relative;
 ">
-  <!-- Skrin aplikasi sebenar -->
+  <!-- Actual software screen content -->
   <div class="screen-content" style="width: 100%; height: 100%; background: #0c0d14;">
-    <!-- Render UI di sini -->
+    <!-- Render live vector UI here -->
   </div>
 </div>
 ```
 
-### 3D Card Tumble Reveal:
+### 3D Card Tumble Reveal
+
 ```javascript
 tl.fromTo('.laptop-chassis',
   {
@@ -53,10 +54,10 @@ tl.fromTo('.laptop-chassis',
 
 ## 2. Three.js Lightweight Particle Helix / Grid
 
-Bagi tema AI / Web3 / Data, suntikkan Three.js kanvas latar:
+For AI, infrastructure, and data themes, inject a background Three.js canvas:
 
 ```javascript
-// Kanvas Three.js deterministik
+// Deterministic Three.js canvas setup
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, 1920 / 1080, 0.1, 1000);
 camera.position.z = 5;
@@ -71,7 +72,7 @@ const mat = new THREE.PointsMaterial({ size: 0.04, color: 0x00f0ff, transparent:
 const points = new THREE.Points(geo, mat);
 scene.add(points);
 
-// Dikawal oleh seek(t) KinetRig:
+// Linked directly to KinetRig timeline clock:
 window.seekThreeJs = (time) => {
   points.rotation.y = time * 0.2;
   points.rotation.x = time * 0.1;
@@ -81,9 +82,10 @@ window.seekThreeJs = (time) => {
 
 ---
 
-## 3. 3D Floating Typography with Depth Shadows
+## 3. 3D Floating Typography with Layered Shadows
 
-Lapisan teks 3D sebenar dengan `translateZ` berperingkat untuk menonjol daripada latar:
+Layer text with staggered `translateZ` offsets to create physical separation from the background:
+
 ```css
 .title-3d {
   transform: translateZ(120px);

@@ -4,16 +4,16 @@
 
 # KinetRig
 
-**Zero-dependency 144 FPS kinetic motion graphics & video engine built for AI coding agents.**<br>
-Openers, promos, product demos, kinetic typography, and explainers — built as a single `index.html` with deterministic 144 FPS rendering and zero dropped frames.
+**Zero-dependency Ultra-HFR kinetic motion graphics & video engine (Up to 240 FPS) built for AI coding agents.**<br>
+Openers, promos, product demos, kinetic typography, and explainers — built as a single `index.html` with deterministic offline rendering up to 240 FPS (60 / 120 / 144 / 240 FPS presets) and zero dropped frames.
 
-[![Version](https://img.shields.io/badge/version-1.0.0-2f6fd6?style=flat-square)](README.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-2f6fd6?style=flat-square)](README.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](LICENSE)
-[![Frame Rate](https://img.shields.io/badge/framerate-144%20FPS-8a2be2?style=flat-square)](#export--rendering-144-fps-engine)
+[![Frame Rate](https://img.shields.io/badge/framerate-Up%20to%20240%20FPS-8a2be2?style=flat-square)](#export--rendering-ultra-hfr-engine)
 [![Vector Quality](https://img.shields.io/badge/vectors-100%25%20Inline%20SVG-00c853?style=flat-square)](#core-motion-laws-anti-powerpoint)
 [![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20Codex%20%C2%B7%20Gemini-7a5af5?style=flat-square)](#quick-install)
 
-[Why](#why) · [What you can make](#what-you-can-make) · [The menus behind the looks](#the-menus-behind-the-looks) · [Workflow](#recommended-workflow) · [Curated starters](#-curated-starters-assets) · [Export & rendering](#export--rendering-144-fps-engine) · [FAQ](#faq)
+[Why](#why) · [Showroom](#interactive-showroom) · [What you can make](#what-you-can-make) · [The menus behind the looks](#the-menus-behind-the-looks) · [Workflow](#recommended-workflow) · [Curated starters](#-curated-starters-assets) · [Export & rendering](#export--rendering-ultra-hfr-engine) · [FAQ](#faq)
 
 </div>
 
@@ -69,6 +69,18 @@ Every deliverable is a single self-contained `index.html`: double-click to play,
 | **8. 3D Spatial Design** | Device mockups, 3D card tumbles, Three.js scenes | Zero-dependency 3D laptop/mobile chassis, floating 3D typography with depth drop-shadows |
 | **9. Editing & Post-Production** | Code-driven NLE, speed ramping, subtitles | Kinetic karaoke subtitles, speed ramping curve, 144 FPS CRF 14 lossless studio render |
 | **10. AI Production Intelligence** | Visual QA scorecard, storyboard generation | 6-metric QA check (zero emojis, typography scale), headless keyframe snapshot inspection |
+
+</details>
+
+<details>
+<summary><b>4 production workbenches</b> — recipes, blueprints, aesthetic audit & 3D mockups</summary>
+
+| Workbench | File Path | What it provides |
+|---|---|---|
+| **Shot Recipe Library** | `references/shots.md` | Modular code recipes for FPV push-in, 2.5D horizon orbit, dutch tilt whip, rack focus, and specular light sweeps |
+| **Storyboard Sequences** | `references/sequences.md` | Pre-engineered timing blueprints for SaaS Launch (30s), Dev Tool CLI (30s), Manifesto (45s), and Milestone (20s) |
+| **Visual QA Scorecard** | `references/aesthetic-qa.md` | 10-point frame quality gate, focal point eye-tracking rules, typography density laws, and headless verification |
+| **Dynamic 3D Mockups** | `references/mockups.md` | Zero-dependency pure CSS 3D aluminum laptop unibody, dynamic island smartphone, and macOS browser window |
 
 </details>
 
@@ -196,26 +208,51 @@ git clone https://github.com/Reff33/KinetRig.git
 
 ---
 
-## 🎥 Export & Rendering (144 FPS Engine)
+## 🕹️ Interactive Showroom
 
-### Option A: Clean In-Browser Capture (Instant WebM)
-Every starter includes a floating top-bar **`Download Video (144 FPS)`** button.
-- When clicked, `body.clean-capture` auto-hides all UI buttons, HUD scrubbers, and passes `cursor: 'never'` to `getDisplayMedia`.
-- Records at 144 FPS and 40 Mbps bitrate (`videoBitsPerSecond: 40000000`).
-
-### Option B: Studio Offline Render (Zero Drops Guaranteed)
+Preview all 10 presets, toggle 3D device frames (Laptop, Mobile, Browser), and test procedural audio SFX live in your browser:
+Double-click `preview.html` or launch locally:
 ```bash
-# 1. Start local server
 npx serve . -p 5178
+# Open http://localhost:5178/preview.html
+```
 
-# 2. Render clean frames frame-by-frame (default 144 FPS)
+---
+
+## 🎥 Export & Rendering (Ultra-HFR Engine)
+
+### Option A: All-in-One Studio Render (Ultra-HFR up to 240 FPS + Audio Muxing)
+
+Automatically captures frames frame-by-frame and encodes visually lossless MP4 with synchronized audio via FFmpeg in a single CLI command:
+
+```bash
+# Render video only (or auto-discover adjacent audio.mp3)
+node scripts/render.mjs assets/kinet-opener.html output_240fps.mp4 240
+
+# Render with explicit music/VO audio track
+node scripts/render.mjs assets/kinet-opener.html output_240fps.mp4 240 --audio=assets/audio.mp3
+```
+
+### Option B: Clean In-Browser Capture (Instant Video + Procedural Audio)
+
+Every starter includes a floating top-bar **`Download Video`** button.
+
+- When clicked, `body.clean-capture` auto-hides all UI buttons, HUD scrubbers, and passes `cursor: 'never'` to `getDisplayMedia`.
+- Automatically combines visual canvas/screen stream with procedural Web Audio API synth (`audioCtx.createMediaStreamDestination()`), delivering video with synchronized sound effects.
+- Records at high framerate and 40 Mbps bitrate (`videoBitsPerSecond: 40000000`).
+
+### Option C: Manual Studio Offline Render
+
+```bash
+# 1. Render clean frames frame-by-frame (default 144 FPS)
 node scripts/export-frames.mjs
 
-# 3. Assemble lossless MP4 with ffmpeg
+# 2. Assemble lossless MP4 with ffmpeg
 ffmpeg -framerate 144 -i frames/f%05d.png -c:v libx264 -pix_fmt yuv420p -crf 14 output_144fps.mp4
 ```
 
-### Option C: Visual Keyframe Snapshot (Quick AI Inspection)
+### Option D: Visual Keyframe Snapshot (Quick AI Inspection)
+
 ```bash
 # Snapshot critical seconds without full render
 node scripts/snap.mjs shots 1 3.5 8 12 18

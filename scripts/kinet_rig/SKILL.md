@@ -34,7 +34,7 @@ Identify:
 ### Phase 2: Style Brief (Three Candidates, One Pick)
 DO NOT write code yet. Inspect project context (README, package.json, tech stack, domain) and propose 3 concept candidates:
 - **Concept:** Pick from:
-  1. **Opener Concepts (19 Variants in `references/opener-konsep.md`):** One continuous shot, pure typography, problem -> gone, before/after, journey inside UI, product macro, object metaphor, living number, one feature demo, diegetic Q&A, rhythmic collage, logo as stage, object relay, brand showcase, claim -> how -> result, living UI ecosystem, flat pop, through gradient shapes, product tour. Starter: `kinet-opener.html`.
+  1. **Opener Concepts (19 Variants in `references/opener-concepts.md`):** One continuous shot, pure typography, problem -> gone, before/after, journey inside UI, product macro, object metaphor, living number, one feature demo, diegetic Q&A, rhythmic collage, logo as stage, object relay, brand showcase, claim -> how -> result, living UI ecosystem, flat pop, through gradient shapes, product tour. Starter: `kinet-opener.html`.
   2. **Explainer Styles (6 Starters in `references/explainer.md`):**
      - Continuous Action Flow: `kinet-flow.html`
      - Paper & Print Collage: `kinet-collage.html`
@@ -98,3 +98,11 @@ Consult these technical guides during production:
 9. `09-editing-post-production.md`: Speed ramping, kinetic karaoke subtitles, 144 FPS CRF 14 studio render pipeline.
 10. `10-ai-production-intelligence.md`: Visual QA scorecard, storyboard generation protocol, headless keyframe snapshot inspection.
 
+---
+
+## Production Workbenches (`references/`)
+
+- `shots.md`: Ready-to-use GSAP recipe cards (FPV push-in, 2.5D horizon orbit, dutch whip, specular light sweep, neon flare).
+- `sequences.md`: Complete storyboard blueprints (SaaS Launch 30s, Dev Tool CLI 30s, Product Manifesto 45s, Metric Milestone 20s).
+- `aesthetic-qa.md`: 10-point visual quality scorecard and focal point eye-tracking rules.
+- `mockups.md`: Zero-dependency CSS 3D mockups (unibody laptop, dynamic island smartphone, browser chrome window).

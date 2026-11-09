@@ -1,27 +1,27 @@
 # 10 — AI Production Intelligence (KinetRig Engine)
 
-Lapisan orkestrasi kecerdasan buatan (AI Intelligence) yang memastikan model AI (Claude Code, Cursor, Copilot) tidak mereka-reka slaid kaku atau kod rapuh.
+The orchestration layer ensuring AI models (Claude Code, Cursor, Copilot, ChatGPT) consistently produce cinema-grade motion code instead of rigid PowerPoint slides.
 
 ---
 
-## 1. Visual QA Scorecard (Pemeriksaan Kualiti Sebelum Eksport)
+## 1. Visual QA Scorecard (Pre-Export Quality Gate)
 
-Setiap ejen AI **wajib** memeriksa 6 metrik ini sebelum mengisytiharkan kod siap:
+Every AI coding agent **must** verify these 6 quality gates before delivering code:
 
-| Kriteria | Standard Kelulusan | Kesilapan Kerap AI |
+| Metric | Approval Standard | Common AI Anti-Pattern |
 |---|---|---|
-| **Zero Emojis** | 100% Inline SVG Vector (`<svg>`) | Masih copy-paste 🤖, ⚡, 🐙, 🚀 |
-| **Typography Scale** | Judul ≥ 48px, Penjelasan ≥ 30px | Teks terlalu halus (< 20px pada 1080p) |
-| **Hierarchy Law** | Maksimum 2 peringkat teks per adegan | Meletakkan perenggan artikel panjang |
-| **Continuous Travel** | Tiada slide deck opacity fade | Menghilangkan elemen A sebelum elemen B muncul |
-| **Deterministic Seek** | `window.OPENER.seek(t)` berfungsi tepat | Animasi bergantung pada `Date.now()` |
-| **Safe Margins** | Semua teks berada dalam lingkungan 120px dari bingkai | Teks terpotong di tepi bezel telefon pintar |
+| **Zero Emojis** | 100% Inline SVG Vectors (`<svg>`) | Pasting OS emojis (🤖, ⚡, 🐙, 🚀) |
+| **Typography Scale** | Title ≥ 48px, Subtitle ≥ 30px | Tiny illegible fonts (< 20px on 1080p) |
+| **Hierarchy Law** | Maximum 2 text levels per scene | Crowding the frame with article paragraphs |
+| **Continuous Travel** | Zero static slide deck fades | Cross-fading scene containers on spot |
+| **Deterministic Seek** | `window.OPENER.seek(t)` frame-exact | Animating with `Date.now()` or random ticks |
+| **Safe Margins** | All core copy within 120px perimeter | Text cropped against phone screen edges |
 
 ---
 
 ## 2. Dynamic Storyboard Generator Protocol
 
-Sebelum menulis kod HTML/CSS, ejen AI mesti menghasilkan **Rancangan Adegan (Scene Flow)** berstruktur:
+Before writing HTML or CSS, the AI agent must outline a structured **Scene Flow Plan**:
 
 ```markdown
 [0.0s - 3.0s] Shot 1: The Problem Slam
@@ -31,19 +31,19 @@ Sebelum menulis kod HTML/CSS, ejen AI mesti menghasilkan **Rancangan Adegan (Sce
 
 [3.0s - 8.5s] Shot 2: The UI Revolution (Persistent Subject)
 - Camera: Level orbit to the right ry: -25 deg.
-- Visual: "SLOW DEPLOYMENTS" hancur berkecai, mendedahkan dashboard metrik 144 FPS.
-- Motion: Counter nombor berpusing dari 0 ke 99.8%.
-- Audio: Riser elektronik menyala ke Beat drop.
+- Visual: "SLOW DEPLOYMENTS" shatters outward, revealing 144 FPS metric dashboard.
+- Motion: Numeric counter rolling from 0 to 99.8%.
+- Audio: Electronic riser building to beat drop.
 ```
 
 ---
 
-## 3. Headless Keyframe Verification (AI Self-Inspection)
+## 3. Headless Keyframe Verification (Agent Self-Inspection)
 
-Untuk memastikan tiada pertindihan teks (text collision), ejen AI menjalankan:
+To ensure zero text collisions or overlapping layers:
 
 ```bash
 node rigtools/kinet_rig/scripts/snap.mjs shots 1.0 4.5 9.0 16.0
 ```
 
-AI memeriksa imej tangkapan skrin yang dihasilkan dalam folder `shots/` untuk mengesahkan kontras warna, penjajaran teks, dan pencahayaan sebelum membentangkan kepada pengguna.
+The AI inspects generated PNG keyframes in `shots/` to verify color contrast, text alignment, and lighting before delivering the final video.

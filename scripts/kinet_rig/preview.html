@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KinetRig Showroom — Ultra-HFR Motion Engine</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: #12141c;
+      --border: rgba(255, 255, 255, 0.1);
+      --accent: #00f0ff;
+      --text: #f0f2f8;
+      --text-dim: #8a8f9d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation */
+    header {
+      background: rgba(18, 20, 28, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+    }
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    select, button {
+      background: #1a1c26;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+    select:hover, button:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+    }
+    button.active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+      border-color: var(--accent);
+    }
+
+    /* Main Stage */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .stage-wrapper {
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Device Mockup Shells */
+    .mockup-none iframe {
+      width: 1280px;
+      height: 720px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+    }
+
+    .mockup-laptop {
+      width: 1100px;
+      height: 680px;
+      background: #181920;
+      border-radius: 24px 24px 6px 6px;
+      border: 3px solid #333644;
+      padding: 24px 24px 10px 24px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+      position: relative;
+    }
+    .mockup-laptop iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+    }
+    .mockup-laptop::after {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      left: -4%;
+      width: 108%;
+      height: 16px;
+      background: #2a2c38;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.9);
+    }
+
+    .mockup-phone {
+      width: 400px;
+      height: 820px;
+      background: #111218;
+      border-radius: 52px;
+      border: 4px solid #2e3140;
+      padding: 50px 16px 20px 16px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+      position: relative;
+    }
+    .mockup-phone iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 36px;
+    }
+
+    .mockup-browser {
+      width: 1200px;
+      height: 740px;
+      background: #161722;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 35px 90px rgba(0,0,0,0.9);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .browser-header {
+      height: 40px;
+      background: #1c1e2b;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+    .browser-url {
+      flex: 1;
+      max-width: 480px;
+      margin-left: 16px;
+      height: 24px;
+      background: #11121a;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: monospace;
+    }
+    .mockup-browser iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
+
+    /* Footer Telemetry */
+    footer {
+      background: #12141c;
+      border-top: 1px solid var(--border);
+      padding: 12px 24px;
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <img src="assets/image/KinetRig%20Icon.png" alt="KinetRig">
+      <h1>KinetRig Showroom</h1>
+      <span class="badge">Ultra-HFR: Up to 240 FPS</span>
+    </div>
+
+    <div class="controls">
+      <label style="font-size: 12px; color: var(--text-dim);">Preset:</label>
+      <select id="presetSelect" onchange="changePreset(this.value)">
+        <option value="assets/kinet-opener.html">1. Brand Opener (kinet-opener.html)</option>
+        <option value="assets/kinet-flow.html">2. Continuous Flow (kinet-flow.html)</option>
+        <option value="assets/kinet-collage.html">3. Paper & Print Collage (kinet-collage.html)</option>
+        <option value="assets/kinet-editorial.html">4. Visual Editorial Dossier (kinet-editorial.html)</option>
+        <option value="assets/kinet-catalog.html">5. Minimalist Studio Catalog (kinet-catalog.html)</option>
+        <option value="assets/kinet-stage.html">6. Proscenium Theatre Stage (kinet-stage.html)</option>
+        <option value="assets/kinet-engraving.html">7. Vintage Blueprint Sketch (kinet-engraving.html)</option>
+        <option value="assets/kinet-metrics.html">8. Data & Dynamic Charts (kinet-metrics.html)</option>
+        <option value="assets/kinet-showcase.html">9. 3D Product Showcase (kinet-showcase.html)</option>
+        <option value="assets/kinet-dialogue.html">10. Diegetic Chat Simulation (kinet-dialogue.html)</option>
+      </select>
+
+      <label style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Frame:</label>
+      <button class="active" onclick="setMockup('none', this)">None</button>
+      <button onclick="setMockup('laptop', this)">Laptop</button>
+      <button onclick="setMockup('phone', this)">Mobile</button>
+      <button onclick="setMockup('browser', this)">Browser</button>
+
+      <button style="border-color: var(--accent); color: var(--accent);" onclick="playSfx()">🔊 Test SFX</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="stageContainer" class="stage-wrapper mockup-none">
+      <iframe id="previewIframe" src="assets/kinet-opener.html"></iframe>
+    </div>
+  </main>
+
+  <footer>
+    <span>Zero-dependency 144–240 FPS kinetic motion graphics & video engine.</span>
+    <span>Source: <a href="https://github.com/Reff33/KinetRig" target="_blank" style="color: var(--accent); text-decoration: none;">github.com/Reff33/KinetRig</a></span>
+  </footer>
+
+  <script>
+    const iframe = document.getElementById('previewIframe');
+    const container = document.getElementById('stageContainer');
+
+    function unlockChildAudio() {
+      try {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage('UNLOCK_AUDIO', '*');
+        }
+      } catch (e) {}
+    }
+
+    window.addEventListener('click', unlockChildAudio);
+
+    function changePreset(path) {
+      iframe.src = path;
+      iframe.onload = () => {
+        setTimeout(unlockChildAudio, 120);
+      };
+    }
+
+    function setMockup(type, btn) {
+      unlockChildAudio();
+      document.querySelectorAll('.controls button').forEach(b => {
+        if (b.innerText !== '🔊 Test SFX') b.classList.remove('active');
+      });
+      btn.classList.add('active');
+
+      container.className = 'stage-wrapper mockup-' + type;
+      if (type === 'browser') {
+        if (!container.querySelector('.browser-header')) {
+          const header = document.createElement('div');
+          header.className = 'browser-header';
+          header.innerHTML = `
+            <div class="dot dot-r"></div>
+            <div class="dot dot-y"></div>
+            <div class="dot dot-g"></div>
+            <div class="browser-url">https://kinetrig.dev/${document.getElementById('presetSelect').value.split('/').pop()}</div>
+          `;
+          container.prepend(header);
+        }
+      } else {
+        const header = container.querySelector('.browser-header');
+        if (header) header.remove();
+      }
+    }
+
+    // Procedural Web Audio API Synthesizer (Sleek, velvety, non-harsh UI design)
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playSfx() {
+      const ctx = getAudioContext();
+      unlockChildAudio();
+      const now = ctx.currentTime;
+
+      // 1. Warm rounded body (smooth sine, 220Hz -> 60Hz, 15ms soft attack to prevent click)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.35);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.35, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.4);
+
+      // 2. Subtle glass sheen (adds presence on small speakers without harshness)
+      const sheen = ctx.createOscillator();
+      const sheenGain = ctx.createGain();
+      sheen.type = 'sine';
+      sheen.frequency.setValueAtTime(520, now);
+      sheen.frequency.exponentialRampToValueAtTime(320, now + 0.12);
+
+      sheenGain.gain.setValueAtTime(0.0001, now);
+      sheenGain.gain.linearRampToValueAtTime(0.08, now + 0.008);
+      sheenGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+
+      sheen.connect(sheenGain);
+      sheenGain.connect(ctx.destination);
+      sheen.start(now);
+      sheen.stop(now + 0.16);
+    }
+  </script>
+</body>
+</html>

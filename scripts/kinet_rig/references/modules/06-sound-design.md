@@ -1,12 +1,12 @@
 # 06 — Sound Design & Audio Engineering (KinetRig Engine)
 
-Pergerakan visual yang menakjubkan menjadi hambar jika audio tidak mempunyai berat dan sinkronisasi tepat.
+Visual motion becomes dull when audio lacks mechanical weight and precise mathematical synchronization.
 
 ---
 
 ## 1. Zero-Dependency HTML5 Audio Trigger System
 
-KinetRig menggunakan penanda masa deterministik pada timeline GSAP untuk memicu audio SFX dan muzik latar secara serentak:
+KinetRig pairs deterministic timeline triggers with the Web Audio API to synthesize SFX and sync soundtrack cues without external asset bloat:
 
 ```javascript
 class AudioManager {
@@ -21,7 +21,7 @@ class AudioManager {
     }
   }
 
-  // Sintesis bunyi impak bass tanpa fail audio luaran (Zero Asset Bloat!)
+  // Synthesize a punchy sub-bass impact without external audio files
   playImpact(time = 0) {
     if (!this.audioCtx) return;
     const osc = this.audioCtx.createOscillator();
@@ -39,7 +39,7 @@ class AudioManager {
     osc.stop(this.audioCtx.currentTime + 0.45);
   }
 
-  // Sintesis whoosh pantas
+  // Synthesize directional high-velocity whoosh
   playWhoosh() {
     if (!this.audioCtx) return;
     const node = this.audioCtx.createBufferSource();
@@ -65,22 +65,23 @@ class AudioManager {
 
 ## 2. Beat-Sync Math & Time Alignment
 
-Kunci sinkronisasi adalah mengunci potongan adegan (scene cut) terus kepada kiraan BPM (Beats Per Minute) lagu:
+Lock scene cuts and major visual impacts directly to BPM (Beats Per Minute):
 
 $$ \text{Seconds Per Beat} = \frac{60}{\text{BPM}} $$
 $$ \text{Bar Duration (4 beats)} = \frac{240}{\text{BPM}} $$
 
-### Jadual Sinkronisasi Popular:
-- **120 BPM (House / Tech):** 1 Beat = 0.500s | 1 Bar = 2.000s
-- **128 BPM (EDM / High Energy):** 1 Beat = 0.468s | 1 Bar = 1.875s
-- **140 BPM (Dubstep / Trap):** 1 Beat = 0.428s | 1 Bar = 1.714s
+### Common BPM Reference Table
+
+- **120 BPM (Tech / House):** 1 Beat = 0.500s | 1 Bar = 2.000s
+- **128 BPM (EDM / High Velocity):** 1 Beat = 0.468s | 1 Bar = 1.875s
+- **140 BPM (Trap / Dubstep):** 1 Beat = 0.428s | 1 Bar = 1.714s
 
 ```javascript
 const BPM = 124;
 const BEAT = 60 / BPM; // 0.4838s
 const BAR = BEAT * 4;  // 1.935s
 
-// Potong bab tepat pada Beat ke-4 bar pertama
+// Cut scenes exactly on beat 4 of the first bar
 tl.to('#scene-1', { opacity: 0, duration: 0.1 }, BAR - 0.1)
   .from('#scene-2', { scale: 1.15, opacity: 0, duration: BEAT }, BAR);
 ```
@@ -89,7 +90,8 @@ tl.to('#scene-1', { opacity: 0, duration: 0.1 }, BAR - 0.1)
 
 ## 3. Audio Ducking Protocol
 
-Apabila suara latar (Voice-Over) muncul:
-1. Turunkan kelantangan muzik latar sebanyak -12dB hingga -16dB dalam masa 0.3s.
-2. Kekalkan kelantangan SFX mikro (UI click, typewriter).
-3. Naikkan semula kelantangan muzik selepas voice-over selesai (fade-up 0.6s).
+When voiceover narration enters the timeline:
+
+1. Reduce background music volume by -12dB to -16dB over 0.3s.
+2. Retain full presence for micro-SFX (UI clicks, impacts, tactile ticks).
+3. Smoothly restore music level once voiceover finishes (0.6s release curve).

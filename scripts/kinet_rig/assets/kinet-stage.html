@@ -1,19 +1,19 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <!-- KinetRig v1.0.0 by Reff33 - Starter Explainer: Cartoon Stage (MIT) - https://github.com/Reff33/KinetRig -->
 <head>
 <meta charset="utf-8">
 <title>KinetRig — Theatre Stage (144 FPS)</title>
 <!--
-  Gaya 6: kartun panggung (references/kartun-panggung.md).
-    - SATU PANGGUNG PER ADEGAN seukuran frame; kamera per panggung, zoom 1,08–1,95, tidak pernah wide.
-    - Kontinu di dalam panggung (isinya beraksi), CUT atau GESER 96/72 px + blur ≤10 di antaranya.
-    - Rig sendi: transform ditulis manual lewat J() — JANGAN pakai transformOrigin/rotation GSAP pada sendi,
-      JANGAN tween x/y GSAP pada grup yang punya translate (grup penempatan ≠ grup yang dianimasikan).
-    - Nol caption; teks hanya diegetik (plat, papan). Palet flat cerah, tanpa kertas/grain.
-    - character(): tubuh vektor + kepala vektor sederhana; ganti ke kepala raster (HEADS + IMG) bila ada.
-  Contoh: 2 panggung, 12 dtk, tanpa VO. Ganti isi panggung dan koreografinya; pertahankan polanya.
-  Autoplay + loop TANPA player; ?debug=1 panel scrub; ?clean=1 tahan untuk export; suara: isi src #vo.
+  Style 6: Cartoon Stage (references/cartoon-stage.md).
+    - ONE STAGE PER SCENE sized to the frame; camera per stage, zoom 1.08–1.95, never wide.
+    - Continuous motion within stage, CUT or SLIDE 96/72 px + blur <= 10 between scenes.
+    - Joint rig: transform written manually via J() — DO NOT use GSAP transformOrigin/rotation on joints,
+      DO NOT tween GSAP x/y on groups with translate (placement group != animated group).
+    - Zero captions; text is strictly diegetic (signs, plaques). Flat bright palette, no paper/grain.
+    - character(): vector body + simple vector head; swap to raster head (HEADS + IMG) when available.
+    - Example: 2 stages, 12s, VO-ready. Adapt stage contents and choreography while preserving patterns.
+  Autoplay + loop WITHOUT player; ?debug=1 scrub panel; ?clean=1 hold for export; voice: supply src to #vo.
 -->
 <style>
 html,body{margin:0;height:100%;background:#1D303C;overflow:hidden}

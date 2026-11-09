@@ -1,13 +1,14 @@
 # 02 — Advanced Motion Graphics (KinetRig Engine)
 
-Grafik bergerak berkualiti tinggi yang memberikan ilusi berat, dinamisme, dan interaksi perkakasan berteknologi tinggi.
+High-end kinetic graphics providing an illusion of physical weight, high velocity, and responsive tech hardware interaction.
 
 ---
 
-## 1. Kinetic Typography (Teks Hidup & Bertenaga)
+## 1. Kinetic Typography (Live, High-Energy Text)
 
 ### A. Word Split & Stagger Slam
-Pecahkan teks kepada `span` perkataan atau huruf untuk kesan impak sinematik:
+
+Split copy into isolated `span` tokens for tactile impact:
 
 ```javascript
 // HTML: <h1 class="split-text">REVOLUTIONIZE YOUR WORKFLOW</h1>
@@ -25,7 +26,9 @@ tl.from('.word .inner', {
 ```
 
 ### B. Masked Hairline Reveal
-Garis aksen nipis (hairline) membesar sambil teks menembusi mask:
+
+Accent hairlines slice across the frame while title text unmasks:
+
 ```javascript
 tl.fromTo('#accent-line', { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'expo.inOut' })
   .from('#hero-title', { y: 60, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.2');
@@ -35,8 +38,9 @@ tl.fromTo('#accent-line', { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'expo
 
 ## 2. Logo & Brand Reveal Formulas
 
-1. **Light Sweep / Shimmer:** SVG linearGradient melintasi bentuk logo.
-2. **Path Stroke Draw:** SVG `stroke-dasharray` & `stroke-dashoffset` mendedahkan garis luar logo sebelum warna pepejal mengisi (fill fade).
+1. **Light Sweep / Shimmer:** SVG linearGradient sweeps across logo vectors.
+2. **Path Stroke Draw:** SVG `stroke-dasharray` and `stroke-dashoffset` outline the mark before solid color fill fades in:
+
 ```javascript
 const path = document.querySelector('#logo-path');
 const length = path.getTotalLength();
@@ -50,9 +54,11 @@ tl.to(path, { strokeDashoffset: 0, duration: 1.2, ease: 'power2.inOut' })
 
 ## 3. UI & Dashboard Simulation Animation
 
-Animasi antaramuka perisian sebenar:
-- **Cursor Pointer Click:** SVG penunjuk tetikus bergerak ke butang, skala 0.9 (tekan), kemudian mencetuskan riak (ripple effect).
-- **Tabular Data Counter:** Metrik nombor yang berpusing secara deterministik:
+Simulating authentic application workflows:
+
+- **Cursor Pointer Click:** An SVG mouse pointer glides to target, compresses to `scale: 0.9` (press), and triggers a radial pulse.
+- **Tabular Data Counter:** Numbers rolling with deterministic frame precision:
+
 ```javascript
 const counter = { val: 0 };
 tl.to(counter, {
@@ -67,11 +73,11 @@ tl.to(counter, {
 
 ---
 
-## 4. SVG Morphing & Shape Morph
+## 4. Geometric & SVG Morphing
 
-Transformasi bentuk geometri (contoh: Butang bulat mengembang menjadi kad modal):
+Shape transformation without layout breakage:
+
 ```javascript
-// Menggunakan CSS clip-path atau morphSVG
 tl.to('#morph-card', {
   borderRadius: '24px',
   width: '800px',
@@ -85,7 +91,8 @@ tl.to('#morph-card', {
 
 ## 5. Staggered Grid & Multi-Element Cascade
 
-Apabila menampilkan pelbagai kad fitur atau ikon ekosistem:
+Showcasing feature ecosystems or bento grids:
+
 ```javascript
 tl.from('.feature-card', {
   scale: 0.8,
