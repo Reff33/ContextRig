@@ -84,7 +84,7 @@ ContextRig inspects the target folder before writing anything:
 | **Web Scraper** | `rigtools/scraper.py` | Enables the AI agent to fetch clean text content from external web URLs or documentation directly from the terminal. |
 | **Playwright** | `rigtools/playwright_runner.js` | Headless Chromium runner for E2E testing, visual UI verification, and console error inspection. Claude slash command: `/playwright`. |
 | **DB Inspector** | `rigtools/db_inspector.js` | Inspects local SQLite databases and `.env` profiles, generating clean markdown schemas in `docs/db_schema.md` for accurate queries and models. |
-| **Git Workflow** | *(System Rules)* | Enforces Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`) and pre-commit status validation. |
+| **Git Workflow** | *(System Rules & Command)* | Enforces Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`), diff volume metrics, secret leak guards, and explicit commit approval. Claude slash command: `/commit`. |
 
 ---
 

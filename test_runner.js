@@ -191,6 +191,13 @@ async function runTests() {
   assert(aggregateGitIgnorePatterns([bangMotionSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
   console.log('✔ Test 7e: Bang Motion skill definition and gitignore verified.');
 
+  // Test 7f: Git Workflow skill definition and slash command verification
+  const gitWorkflowSkill = skills.find((s) => s.id === 'git_workflow');
+  assert(gitWorkflowSkill, 'git_workflow skill should exist');
+  assert.strictEqual(gitWorkflowSkill.claude_command?.name, 'commit', 'git_workflow slash command should be /commit');
+  assert(gitWorkflowSkill.ai_instructions.includes('Change Detection & Metrics'), 'git_workflow should include metrics instructions');
+  console.log('✔ Test 7f: Git Workflow skill definition and /commit slash command verified.');
+
   // Test 8: Skill update detection & sync
   // Simulate an outdated version of scraper.py in the target project
   await fs.writeFile(copiedToolPath, '# outdated version\nprint("old")', 'utf8');
