@@ -305,11 +305,19 @@ export async function runSyncWorkflow(inputTargetDir = null) {
 
   for (const s of checkedSkills) {
     if (s.hasUpdate) {
-      const filesInfo = s.outdatedFiles.length > 0 ? ` (${s.outdatedFiles.join(', ')})` : '';
-      console.log(chalk.bold.yellow(`  ▲ [UPDATE AVAILABLE] ${s.name}${filesInfo}`));
+      const count = s.outdatedFiles.length;
+      let filesBadge = '';
+      if (count === 1) {
+        filesBadge = ` ${chalk.dim(`(${s.outdatedFiles[0]})`)}`;
+      } else if (count <= 2) {
+        filesBadge = ` ${chalk.dim(`(${s.outdatedFiles.join(', ')})`)}`;
+      } else {
+        filesBadge = ` ${chalk.cyan(`[${count} files to update]`)}`;
+      }
+      console.log(`${chalk.bold.yellow('  ▲ [UPDATE AVAILABLE]')} ${chalk.white(s.name)}${filesBadge}`);
       outdatedSkills.push(s);
     } else {
-      console.log(chalk.green(`  ✔  [UP TO DATE] ${s.name}`));
+      console.log(`${chalk.green('  ✔  [UP TO DATE]')}      ${chalk.dim(s.name)}`);
     }
   }
 
@@ -321,16 +329,57 @@ export async function runSyncWorkflow(inputTargetDir = null) {
   }
 
   logger.divider();
-  const { shouldUpdate } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'shouldUpdate',
-      message: `Found ${outdatedSkills.length} outdated skill(s). Do you want to apply updates now?`,
-      default: true
-    }
-  ]);
 
-  if (!shouldUpdate) {
+  let proceedWithUpdate = false;
+  while (true) {
+    const totalFilesCount = outdatedSkills.reduce((acc, s) => acc + s.outdatedFiles.length, 0);
+    const { action } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'action',
+        message: `Found ${outdatedSkills.length} outdated skill(s) (${totalFilesCount} total files). Choose action:`,
+        choices: [
+          {
+            name: `${chalk.bold.green('Apply All Updates')} ${chalk.dim(`(${outdatedSkills.length} skill(s), ${totalFilesCount} files)`)} ${chalk.green('[Recommended]')}`,
+            value: 'apply'
+          },
+          {
+            name: `${chalk.cyan('Inspect Update Details')} ${chalk.dim('View full list of changed files per skill')}`,
+            value: 'inspect'
+          },
+          new inquirer.Separator(),
+          {
+            name: chalk.yellow('← Cancel & Return to Main Menu'),
+            value: 'cancel'
+          }
+        ]
+      }
+    ]);
+
+    if (action === 'apply') {
+      proceedWithUpdate = true;
+      break;
+    } else if (action === 'inspect') {
+      console.log();
+      logger.divider();
+      logger.step('Update Details & File Breakdown:');
+      console.log();
+      for (const s of outdatedSkills) {
+        console.log(`  ${chalk.bold.yellow('●')} ${chalk.bold.white(s.name)} ${chalk.dim(`(${s.outdatedFiles.length} file(s))`)}:`);
+        for (const file of s.outdatedFiles) {
+          console.log(`    ${chalk.dim('↳')} ${chalk.cyan(file)}`);
+        }
+        console.log();
+      }
+      logger.divider();
+      console.log();
+    } else {
+      proceedWithUpdate = false;
+      break;
+    }
+  }
+
+  if (!proceedWithUpdate) {
     logger.info('Skill update cancelled.');
     return;
   }
