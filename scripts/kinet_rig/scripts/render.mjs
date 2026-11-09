@@ -79,10 +79,11 @@ await page.waitForFunction('window.OPENER && window.OPENER.ready', { timeout: 12
 await page.evaluate(() => document.fonts.ready);
 await page.evaluate(() => { if (window.OPENER.tl) window.OPENER.tl.pause(0); });
 
-const { W, H, DURATION } = await page.evaluate(() => ({
+const { W, H, DURATION, audioManifest } = await page.evaluate(() => ({
   W: window.OPENER.W || 1920,
   H: window.OPENER.H || 1080,
-  DURATION: window.OPENER.DURATION || 20
+  DURATION: window.OPENER.DURATION || 20,
+  audioManifest: window.OPENER.audioManifest || null
 }));
 
 await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
@@ -119,6 +120,18 @@ await browser.close();
 console.log(`\n\n✔ All ${totalFrames} frames rendered deterministically.`);
 
 console.log(`[3/3] Encoding MP4 with FFmpeg...`);
+if (!audioFile && audioManifest) {
+  try {
+    const { synthesizeManifest } = await import('./audio-synth.mjs');
+    const autoAudio = resolve(tempDir, 'procedural_audio.wav');
+    synthesizeManifest(audioManifest, autoAudio);
+    audioFile = autoAudio;
+    console.log(`   Procedural Audio: Synthesized ${audioManifest.events?.length || 0} timeline SFX events via audio-synth.mjs`);
+  } catch (err) {
+    console.warn(`   ⚠️ Procedural audio synthesis skipped: ${err.message}`);
+  }
+}
+
 if (audioFile && existsSync(audioFile)) {
   console.log(`   Audio Track: ${audioFile}`);
 } else if (audioFlag) {

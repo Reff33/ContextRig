@@ -74,13 +74,19 @@ Adapt the chosen starter template from `assets/` into a single self-contained `i
 - Max 2 text levels per scene (min 30px font on 1080p).
 - 1 shot = 1 statement (≤ 5 words per beat).
 
-### Phase 6: Clean 144 FPS Export
+### Phase 6: Clean Ultra-HFR Export & AI Audio Intelligence
 - Autoplay, loop, and `?debug=1` timeline scrubber.
-- One-Click In-Browser Capture: floating 'Download Video' button with inline camera SVG vector (`<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`) recording at 144 FPS, 40 Mbps bitrate with `body.clean-capture`. Zero OS emojis in HUD or buttons.
-- Headless Studio Render:
+- One-Click In-Browser Capture: floating 'Download Video' button with inline camera SVG vector (`<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`) recording at up to 240 FPS, 40 Mbps bitrate with `body.clean-capture` and combined Web Audio stream. Zero OS emojis in HUD or buttons.
+- AI Audio Intelligence Toolchain:
   ```bash
-  node scripts/export-frames.mjs
-  ffmpeg -framerate 144 -i frames/f%05d.png -c:v libx264 -pix_fmt yuv420p -crf 14 output_144fps.mp4
+  # 1. Extract motion telemetry to Audio Manifest
+  node scripts/parse-timeline.mjs assets/kinet-opener.html manifest.json
+
+  # 2. Synthesize lossless PCM WAV SFX track
+  node scripts/audio-synth.mjs manifest.json audio.wav
+
+  # 3. All-in-one studio render with auto audio muxing
+  node scripts/render.mjs assets/kinet-opener.html output_240fps.mp4 240
   ```
 
 ---

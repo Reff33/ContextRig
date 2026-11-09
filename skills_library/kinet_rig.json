@@ -195,6 +195,16 @@
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/snap.mjs"
     },
     {
+      "source": "scripts/kinet_rig/scripts/audio-synth.mjs",
+      "destination": "rigtools/kinet_rig/scripts/audio-synth.mjs",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/audio-synth.mjs"
+    },
+    {
+      "source": "scripts/kinet_rig/scripts/parse-timeline.mjs",
+      "destination": "rigtools/kinet_rig/scripts/parse-timeline.mjs",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/scripts/parse-timeline.mjs"
+    },
+    {
       "source": "scripts/kinet_rig/preview.html",
       "destination": "rigtools/kinet_rig/preview.html",
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/main/preview.html"

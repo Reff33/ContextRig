@@ -125,3 +125,43 @@ tl.call(playWhoosh, null, 4.8);             // Camera traveling through 3D space
 tl.call(playImpact, null, 5.2);             // Scene 2 hero slam
 tl.call(playTerminalChirp, null, 6.0);      // CLI code box reveal
 ```
+
+---
+
+## 5. AI Audio Intelligence & Headless Synthesis Engine
+
+To bridge browser Web Audio with headless video rendering, KinetRig uses a code-first Intermediate Representation (`AudioManifest`):
+
+```json
+{
+  "duration": 10.0,
+  "events": [
+    { "time": 0.20, "type": "impact", "gain": 0.8 },
+    { "time": 0.80, "type": "sub_reveal", "gain": 0.5 },
+    { "time": 1.40, "type": "card_pop", "pitch": 520, "gain": 0.5 },
+    { "time": 4.80, "type": "whoosh", "gain": 0.6 }
+  ]
+}
+```
+
+### Automation Toolchain
+
+1. **Extract Motion Telemetry to Audio Manifest:**
+
+   ```bash
+   node scripts/parse-timeline.mjs assets/kinet-opener.html sfx-manifest.json
+   ```
+
+2. **Synthesize Lossless PCM WAV Audio:**
+
+   ```bash
+   node scripts/audio-synth.mjs sfx-manifest.json output_audio.wav
+   ```
+
+3. **All-in-One Studio Render with Automatic Audio Muxing:**
+
+   ```bash
+   node scripts/render.mjs assets/kinet-opener.html output_240fps.mp4 240
+   ```
+
+   If no external `--audio` file is provided, `render.mjs` automatically reads `window.OPENER.audioManifest`, synthesizes the WAV via `audio-synth.mjs`, and muxes high-fidelity audio into the MP4 with `-c:a aac -b:a 320k`.

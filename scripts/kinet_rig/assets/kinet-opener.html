@@ -479,7 +479,24 @@ const seek = t => {
   if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
   render(t);
 };
-window.OPENER = { tl, DURATION, seek, ready: false };
+
+const audioManifest = {
+  duration: DURATION,
+  events: [
+    { time: 0.20, type: 'impact', gain: 0.8 },
+    { time: 0.80, type: 'sub_reveal', gain: 0.5 },
+    { time: 1.40, type: 'card_pop', gain: 0.5, pitch: 520 },
+    { time: 1.55, type: 'card_pop', gain: 0.5, pitch: 640 },
+    { time: 1.70, type: 'card_pop', gain: 0.5, pitch: 780 },
+    { time: 4.40, type: 'exit_sweep', gain: 0.4 },
+    { time: 4.80, type: 'whoosh', gain: 0.6 },
+    { time: 5.20, type: 'impact', gain: 0.8 },
+    { time: 6.00, type: 'terminal_chirp', gain: 0.5 },
+    { time: 9.40, type: 'exit_sweep', gain: 0.3 }
+  ]
+};
+
+window.OPENER = { tl, DURATION, seek, ready: false, audioManifest };
 
 document.fonts.ready.then(() => {
   window.OPENER.ready = true;
