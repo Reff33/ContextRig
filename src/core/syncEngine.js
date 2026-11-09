@@ -10,6 +10,7 @@ import { setupTargetProject, sanitizePath } from './projectSetup.js';
 import { injectTemplate } from './fileInjector.js';
 import { handleDependencies } from './dependencyInstaller.js';
 import { handleGitIgnore } from './gitIgnoreManager.js';
+import { detectInstalledSkills } from './skillUpdater.js';
 import { logger } from '../utils/logger.js';
 
 const CACHE_FILE_NAME = '.contextrig_cache.json';
@@ -206,6 +207,25 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
     }
   }
 
+  // Also check if Claude slash command needs update or is missing
+  if (skill.claude_command?.name && skill.claude_command?.content) {
+    const cmdPath = path.join(targetDir, '.claude', 'commands', `${skill.claude_command.name}.md`);
+    const expectedCmd = skill.claude_command.content.trim() + '\n';
+    try {
+      const existingCmd = await fs.readFile(cmdPath, 'utf8');
+      if (calculateHash(existingCmd) !== calculateHash(expectedCmd)) {
+        hasUpdate = true;
+        outdatedFiles.push(`.claude/commands/${skill.claude_command.name}.md`);
+        stagedContent[`.claude/commands/${skill.claude_command.name}.md`] = expectedCmd;
+      }
+    } catch {
+      // Command file missing in project
+      hasUpdate = true;
+      outdatedFiles.push(`.claude/commands/${skill.claude_command.name}.md`);
+      stagedContent[`.claude/commands/${skill.claude_command.name}.md`] = expectedCmd;
+    }
+  }
+
   return {
     ...skill,
     hasUpdate,
@@ -251,21 +271,8 @@ export async function runSyncWorkflow(inputTargetDir = null) {
 
   const availableSkills = await loadAvailableSkills();
 
-  // Detect which skills are currently present in the target project
-  const toolsDir = path.join(fullPath, 'tools');
-  let toolFiles = [];
-  try {
-    toolFiles = await fs.readdir(toolsDir);
-  } catch {
-    toolFiles = [];
-  }
-
-  const installedSkills = availableSkills.filter((skill) => {
-    if (skill.files_to_copy?.length) {
-      return skill.files_to_copy.some((f) => toolFiles.includes(path.basename(f.destination)));
-    }
-    return false;
-  });
+  // Detect all installed skills using standardized detection (scans rigtools, tools, and rules files)
+  const installedSkills = await detectInstalledSkills(fullPath, availableSkills);
 
   if (installedSkills.length === 0) {
     logger.warn(`No ContextRig skills detected in ${fullPath}. Use [1] Inject Skills to Project instead.`);

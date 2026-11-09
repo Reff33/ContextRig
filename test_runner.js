@@ -235,7 +235,11 @@ async function runTests() {
   });
   const loadedCache = await loadCache(fullPath);
   assert(loadedCache.etags['web_scraper:tools/scraper.py'] === '"test-etag-123"', 'Cache ETag must persist');
-  console.log('✔ Test 10b: SyncEngine ETag caching & hash calculations verified.');
+
+  const { checkSingleSkillUpdate } = await import('./src/core/syncEngine.js');
+  const checkedGit = await checkSingleSkillUpdate(fullPath, gitWorkflowSkill, loadedCache, null);
+  assert.strictEqual(checkedGit.id, 'git_workflow');
+  console.log('✔ Test 10b: SyncEngine ETag caching, hash calculations & multi-skill checks verified.');
 
   // Test 10c: Skill removal and artifact cleanup workflow
   const fakePromoDir = path.join(fullPath, 'promo-video');
