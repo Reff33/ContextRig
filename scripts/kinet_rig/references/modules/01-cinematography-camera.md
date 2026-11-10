@@ -85,6 +85,40 @@ tl.to('#camera', {
 tl.to('#camera', { y: -600, duration: 1.5, ease: 'expo.out' });
 ```
 
+### D. Dolly Zoom (Vertigo Effect / Hitchcock Zoom)
+
+Counter-balances Z-axis camera dolly with inverse foreground scaling:
+```javascript
+// Dolly camera forward while scaling hero element down to preserve subject framing
+tl.to('#camera', {
+  z: 600,
+  duration: 1.8,
+  ease: 'power2.inOut'
+}, 'vertigo')
+.to('#hero-subject', {
+  scale: 0.65, // Inverse scale locks foreground perceived size
+  duration: 1.8,
+  ease: 'power2.inOut'
+}, 'vertigo')
+.to('#background-plane', {
+  scale: 1.8, // Background dramatically stretches and compresses
+  duration: 1.8,
+  ease: 'power2.inOut'
+}, 'vertigo');
+```
+
+### E. 360-Degree Continuous Orbit
+
+Rotates around a center subject in 3D coordinate space:
+```javascript
+tl.to('#camera', {
+  rotationY: 360,
+  duration: 4.0,
+  ease: 'none',
+  transformOrigin: '50% 50% -400px'
+});
+```
+
 ---
 
 ## 4. Lens Depth & Optical Simulation (Rack Focus & Parallax)

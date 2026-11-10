@@ -36,6 +36,31 @@ html,body{margin:0;height:100%;background:#1D303C;overflow:hidden}
 
 body.clean-capture .top-bar,body.clean-capture #dbg,body.clean-mode .top-bar,body.clean-mode #dbg{display:none!important;opacity:0!important;visibility:hidden!important}
 body.clean-capture,body.clean-mode{cursor:none!important}
+
+/* Export Dropdown & FPS Menu */
+.export-dropdown { position: relative; }
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(0,245,255,0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+}
+.fps-item:hover {
+  background: rgba(0, 245, 255, 0.2); color: #00F5FF; transform: translateX(2px);
+}
+.fps-item.danger:hover {
+  background: rgba(239, 68, 68, 0.2); color: #F87171;
+}
+
 </style>
 </head>
 <body>
@@ -44,12 +69,43 @@ body.clean-capture,body.clean-mode{cursor:none!important}
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>HUD (H)</span>
   </button>
-  <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
-  </button>
+    <div class="export-dropdown" style="position: relative;">
+    <button class="btn-action" id="btn-export" title="Select Framerate & Export Video">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary, #00F5FF);background:rgba(0,245,255,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
-<div id="stage"><div id="world"><svg id="scene" width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0" font-family="system-ui,sans-serif"></svg></div></div>
+<div id="stage">
+  <div id="world"><svg id="scene" width="1920" height="1080" viewBox="0 0 1920 1080" style="position:absolute;inset:0" font-family="system-ui,sans-serif"></svg></div>
+  <!-- Theatrical Proscenium Curtains & Stage Lighting -->
+  <div id="curtains" style="position:absolute;inset:0;pointer-events:none;z-index:20;display:flex;overflow:hidden;">
+    <div id="curtainL" style="width:50%;height:100%;background:linear-gradient(90deg, #1A0B14 0%, #3B1224 40%, #5B1832 75%, #300C1B 100%);box-shadow:inset -10px 0 25px rgba(0,0,0,0.6), 15px 0 30px rgba(0,0,0,0.5);transform-origin:left center;"></div>
+    <div id="curtainR" style="width:50%;height:100%;background:linear-gradient(270deg, #1A0B14 0%, #3B1224 40%, #5B1832 75%, #300C1B 100%);box-shadow:inset 10px 0 25px rgba(0,0,0,0.6), -15px 0 30px rgba(0,0,0,0.5);transform-origin:right center;"></div>
+  </div>
+</div>
 <div id="dbg">
   <button id="dPlay">Pause</button>
   <button id="btn-audio" title="Mute/Unmute Audio (M)">
@@ -84,9 +140,16 @@ const G=(a={},p=S)=>N('g',a,p),R=(x,y,w,h,f,rx=0,p=S,a={})=>N('rect',{x,y,width:
   sh=(hex,f)=>{const n=parseInt(hex.slice(1),16);const r=Math.round(((n>>16)&255)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);};
 /* SENDI: transform manual → sumbu putar = titik asal lokal (bukan bbox) */
 function J(el,tx=0,ty=0){const j={el,tx,ty,x:0,y:0,r:0,sx:1,sy:1,apply(){el.setAttribute('transform',`translate(${j.tx+j.x},${j.ty+j.y}) rotate(${j.r}) scale(${j.sx},${j.sy})`);}};j.apply();return j;}
-const defsS=N('defs',{},S),grad=N('linearGradient',{id:'skyG',x1:0,y1:0,x2:0,y2:1},defsS);N('stop',{offset:0,'stop-color':C.skyA},grad);N('stop',{offset:1,'stop-color':C.skyB},grad);
+// Gradient defs for sky and automotive headlights
+const defsS=N('defs',{},S);
+const grad=N('linearGradient',{id:'skyG',x1:0,y1:0,x2:0,y2:1},defsS);
+N('stop',{offset:0,'stop-color':C.skyA},grad);
+N('stop',{offset:1,'stop-color':C.skyB},grad);
+const hGrad=N('linearGradient',{id:'headlightGrad',x1:0,y1:0,x2:1,y2:0},defsS);
+N('stop',{offset:'0%','stop-color':'#F4BC52','stop-opacity':0.85},hGrad);
+N('stop',{offset:'100%','stop-color':'#F4BC52','stop-opacity':0},hGrad);
 
-/* ---------- panggung: satu frame per adegan, kamera sendiri ---------- */
+/* ---------- STAGES: One frame per scene with dedicated camera ---------- */
 const scenes=[];
 function scene(name){const g=G({'data-name':name},S);g.style.display='none';const sc={name,g,cam:{x:960,y:540,z:1.1,ox:0,oy:0},
   apply(){const c=sc.cam;g.setAttribute('transform',`translate(${960-(c.x+c.ox)*c.z},${540-(c.y+c.oy)*c.z}) scale(${c.z})`);}};sc.apply();scenes.push(sc);return sc;}
@@ -94,109 +157,632 @@ const skyOf=(p,y0=-1400,y1=1080)=>R(-600,y0,3200,y1-y0,'url(#skyG)',0,p);
 const hillsOf=(p,b)=>PA(`M-600 ${b} L-200 ${b-140} L300 ${b-60} L800 ${b-200} L1300 ${b-90} L1800 ${b-180} L2500 ${b-70} L2500 1400 L-600 1400 Z`,C.hill,p);
 const groundOf=(p,gy)=>{R(-600,gy+18,3200,600,C.sand,0,p);R(-600,gy,3200,26,C.grass2,0,p);R(-600,gy-6,3200,14,C.grass,0,p);};
 
-/* ---------- KARAKTER: rig sendi (kaki di y=0) ---------- */
-const HEADS={};   // isi bila punya kepala raster: {pria:{bbox:[x0,y0,x1,y1]}} + berkas karakter/<who>-<ekspresi>[-kedip].png
-function character(p,x,ground,scale,{who='vektor',shirt=C.teal,pants=C.cream,shoes='#2C2A2E',hair=C.ink}={}){
+/* ---------- CHARACTER: Rigged joints & Anatomical Lip-Sync Rig ---------- */
+const VISEME_DEFS={
+  rest: { isOpen:false, line:'M -14 -44 C -5 -36 5 -36 14 -44', cavity:'M -14 -44 C -5 -40 5 -40 14 -44 C 5 -40 -5 -40 -14 -44 Z' },
+  MBP:  { isOpen:false, line:'M -14 -43 C -5 -43 5 -43 14 -43', cavity:'M -14 -43 C -5 -43 5 -43 14 -43 C 5 -43 -5 -43 -14 -43 Z' },
+  A:    { isOpen:true,  cavity:'M -15 -46 C -6 -47 6 -47 15 -46 C 14 -28 -14 -28 -15 -46 Z', teethY:-46, teethScale:1, teethOpacity:1, tongueY:-32, tongueScale:1, tongueOpacity:1 },
+  E:    { isOpen:true,  cavity:'M -16 -45 C -6 -46 6 -46 16 -45 C 15 -35 -15 -35 -16 -45 Z', teethY:-45, teethScale:1.15, teethOpacity:1, tongueY:-34, tongueScale:0.8, tongueOpacity:0.7 },
+  O:    { isOpen:true,  cavity:'M -9 -48 C -3 -50 3 -50 9 -48 C 10 -32 -10 -32 -9 -48 Z', teethY:-48, teethScale:0.65, teethOpacity:0.8, tongueY:-36, tongueScale:0.7, tongueOpacity:0.9 },
+  L:    { isOpen:true,  cavity:'M -14 -46 C -5 -47 5 -47 14 -46 C 13 -32 -13 -32 -14 -46 Z', teethY:-46, teethScale:0.9, teethOpacity:1, tongueY:-40, tongueScale:0.85, tongueOpacity:1 }
+};
+const HEADS={};
+function character(p,x,ground,scale,{who='female',shirt=C.coral,pants=C.navy,shoes=C.white,hair='#22171E'}={}){
   const sd=shadow(x,ground+4,72*scale,p),place=G({transform:`translate(${x},${ground}) scale(${scale})`},p),rootEl=G({},place),root=J(rootEl),ref={root,place,who,scale,sd};
-  for(const side of ['R','L']){const sx=side==='L'?-26:26,dk=side==='R'?.86:1;
-    const tEl=G({},rootEl),thigh=J(tEl,sx,-214);R(-24,-10,48,118,sh(pants,dk),21,tEl);
-    const sEl=G({},tEl),shin=J(sEl,0,102);R(-21,-8,42,108,sh(pants,dk),18,sEl);
-    const fEl=G({},sEl),foot=J(fEl,0,96);PA('M -24 -10 L 16 -10 C 24 4 46 4 50 16 L 50 26 L -26 26 Z',sh(shoes,dk),fEl);
+  for(const side of ['R','L']){const sx=side==='L'?-24:24,dk=side==='R'?.86:1;
+    const tEl=G({},rootEl),thigh=J(tEl,sx,-214);R(-22,-10,44,118,sh(pants,dk),19,tEl);
+    const sEl=G({},tEl),shin=J(sEl,0,102);R(-19,-8,38,108,sh(pants,dk),17,sEl);
+    const fEl=G({},sEl),foot=J(fEl,0,96);
+    PA('M -22 -10 L 14 -10 C 22 4 44 4 48 16 L 48 26 L -24 26 Z',sh(shoes,dk),fEl);
+    R(-24,20,72,6,C.gold,2,fEl); // Gold sole accent
     ref[side+'thigh']=thigh;ref[side+'shin']=shin;ref[side+'foot']=foot;}
   const tEl=G({},rootEl),torso=J(tEl,0,-214);ref.torso=torso;
-  const arm=(side,front)=>{const s=side==='L'?-1:1,aEl=G({},tEl),a=J(aEl,50*s,-126);R(-17,-16,34,98,front?shirt:sh(shirt,.86),16,aEl);
-    const fEl=G({},aEl),f=J(fEl,0,78);R(-15,-12,30,90,front?C.skin:sh(C.skin,.9),14,fEl);const hEl=G({},fEl),h=J(hEl,0,74);EL(0,4,17,21,front?C.skin:sh(C.skin,.9),hEl);
+  const arm=(side,front)=>{const s=side==='L'?-1:1,aEl=G({},tEl),a=J(aEl,48*s,-126);R(-16,-16,32,98,front?shirt:sh(shirt,.86),15,aEl);
+    const fEl=G({},aEl),f=J(fEl,0,78);R(-14,-12,28,90,front?C.skin:sh(C.skin,.9),14,fEl);const hEl=G({},fEl),h=J(hEl,0,74);EL(0,4,16,20,front?C.skin:sh(C.skin,.9),hEl);
     ref[side+'arm']=a;ref[side+'fore']=f;ref[side+'hand']=h;};
   arm('R',false);
-  PA('M -48 -152 C -64 -144 -70 -112 -66 -76 L -58 8 C -28 22 32 22 60 8 L 67 -76 C 71 -112 60 -144 45 -152 Z',shirt,tEl);
-  PA('M 46 -146 C 64 -130 68 -100 64 -62 L 57 8 L 36 12 L 40 -140 Z',sh(shirt,.88),tEl);R(-15,-178,30,40,C.skin,12,tEl);R(-58,-2,117,22,sh(shirt,.82),9,tEl);
+  // Female tailored silhouette top
+  PA('M -44 -152 C -60 -144 -66 -112 -62 -76 L -54 8 C -26 20 28 20 54 8 L 62 -76 C 66 -112 56 -144 42 -152 Z',shirt,tEl);
+  PA('M 42 -146 C 58 -130 62 -100 58 -62 L 52 8 L 32 12 L 36 -140 Z',sh(shirt,.88),tEl);
+  PA('M -20 -152 Q 0 -134 20 -152 Q 0 -144 -20 -152 Z',C.gold,tEl); // Gold collar accent
+  R(-14,-178,28,40,C.skin,12,tEl);
+  R(-52,-2,106,20,sh(shirt,.82),8,tEl);
   arm('L',true);
   const hEl=G({},tEl),head=J(hEl,0,-160);ref.head=head;ref.faces={};
-  if(HEADS[who]){const hb=HEADS[who].bbox,hw=hb[2]-hb[0],cx=(hb[0]+hb[2])/2,cy=hb[3],hs=150/hw,hg=G({transform:`translate(${-cx*hs},${-cy*hs+14}) scale(${hs})`},hEl);
-    for(const e of ['senang','cemas','kaget']){const g=G({opacity:e==='senang'?1:0},hg);IMG(`karakter/${who}-${e}.png`,0,0,1024,1024,g);const b=IMG(`karakter/${who}-${e}-kedip.png`,0,0,1024,1024,g,{opacity:0});ref.faces[e]={g,blink:b};}}
-  else{ /* kepala vektor sederhana: kulit, siluet rambut, dua titik mata, mulut */
-    EL(-72,-70,13,20,C.skin,hEl);EL(72,-70,13,20,C.skin,hEl);PA('M -74 -120 C -74 -180 74 -180 74 -120 L 74 -60 C 74 -6 -74 -6 -74 -60 Z',C.skin,hEl);
-    PA('M -76 -110 C -80 -175 80 -175 76 -110 L 62 -104 C 20 -130 -10 -120 -50 -108 Z',hair,hEl);
-    const eyes=G({},hEl),ej=J(eyes,0,-86);ref.eyes=ej;CI(-28,0,7,C.ink,eyes);CI(28,0,7,C.ink,eyes);
-    LN('M -40 -104 C -33 -110 -22 -110 -16 -106',C.ink,4,hEl);LN('M 16 -106 C 22 -110 33 -110 40 -104',C.ink,4,hEl);
-    ref.mouth=LN('M -16 -46 C -6 -36 6 -36 16 -46',C.ink,5,hEl);}
+
+  // Flowing ponytail behind head
+  const ponyEl=G({},hEl),pony=J(ponyEl,32,-138);ref.ponytail=pony;
+  CI(0,0,10,C.gold,ponyEl); // Hairband
+  PA('M 0 -8 C 45 -25 95 -10 100 45 C 98 85 75 75 55 45 C 38 18 20 5 0 8 Z',hair,ponyEl);
+
+  // Ears & gold earrings
+  EL(-70,-70,12,18,C.skin,hEl);EL(70,-70,12,18,C.skin,hEl);
+  CI(-70,-62,3.5,C.gold,hEl);CI(70,-62,3.5,C.gold,hEl);
+
+  // Head base
+  PA('M -72 -120 C -72 -176 72 -176 72 -120 L 72 -60 C 72 -4 -72 -4 -72 -60 Z',C.skin,hEl);
+
+  // Rosy cheeks
+  EL(-42,-56,11,6,C.coral,hEl,{opacity:.32});
+  EL(42,-56,11,6,C.coral,hEl,{opacity:.32});
+
+  // Front hair silhouette with modern bangs and tendrils
+  PA('M -74 -95 C -78 -178 78 -178 74 -95 C 64 -115 42 -105 22 -124 C 0 -112 -38 -128 -74 -95 Z',hair,hEl);
+  PA('M -74 -95 C -78 -65 -68 -45 -64 -35 C -62 -48 -66 -70 -66 -90 Z',hair,hEl);
+  PA('M 74 -95 C 78 -65 68 -45 64 -35 C 62 -48 66 -70 66 -90 Z',hair,hEl);
+
+  // Eyes with gentle eyelashes & specular sparkle
+  const eyes=G({},hEl),ej=J(eyes,0,-84);ref.eyes=ej;
+  CI(-28,0,6.5,C.ink,eyes);CI(28,0,6.5,C.ink,eyes);
+  CI(-26,-2.5,2.2,C.white,eyes);CI(30,-2.5,2.2,C.white,eyes);
+  LN('M -36 -4 L -24 0',C.ink,3.5,eyes);LN('M 36 -4 L 24 0',C.ink,3.5,eyes);
+
+  // Curved eyebrows
+  LN('M -40 -102 C -32 -110 -18 -110 -14 -105',C.ink,3.5,hEl);
+  LN('M 14 -105 C 18 -110 32 -110 40 -102',C.ink,3.5,hEl);
+
+  // Natural Anatomical Mouth Rig with Strict SVG ClipPath Containment (Anti-Protruding Tongue)
+  let charMouthCount = (window._charMouthCount = (window._charMouthCount || 0) + 1);
+  const clipId = `mouth-clip-${charMouthCount}`;
+  const clipEl = N('clipPath', { id: clipId }, defsS);
+  const mClipPath = PA(VISEME_DEFS.rest.cavity, '#fff', clipEl);
+
+  const mg = G({ 'data-name': 'mouth' }, hEl);
+  const mCavity = PA(VISEME_DEFS.rest.cavity, '#38131B', mg, { stroke: C.ink, 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: 0 });
+  const innerG = G({ 'clip-path': `url(#${clipId})` }, mg);
+  const mTeeth = R(-10, -48, 20, 6, C.white, 3, innerG, { opacity: 0 });
+  const mTongue = EL(0, -32, 10, 6.5, '#DE6476', innerG, { opacity: 0 });
+  const mLine = LN(VISEME_DEFS.rest.line, C.ink, 3.5, mg);
+  ref.mouth = { group: mg, cavity: mCavity, clipPath: mClipPath, teeth: mTeeth, tongue: mTongue, line: mLine };
   return ref;}
 
-/* ---------- mesin animasi ---------- */
+/* ---------- ANIMATION ENGINE ---------- */
 const tl=gsap.timeline({paused:true}),world=$('#world');
 const show=(t,at,d=.5)=>tl.fromTo(t,{opacity:0},{opacity:1,duration:d,ease:'power2.out',immediateRender:false},at),hide=(t,at,d=.4)=>tl.to(t,{opacity:0,duration:d,ease:'power2.in'},at);
 const rot=(j,at,v,dur,ease='power2.inOut')=>tl.to(j,{r:v,duration:dur,ease,onUpdate:j.apply},at);
 const sway=(j,at,v,dur)=>tl.to(j,{r:v,duration:dur,ease:'sine.inOut',yoyo:true,repeat:Math.max(1,Math.ceil((DUR-at)/dur)),onUpdate:j.apply},at);
 const spin=(j,at,period)=>tl.fromTo(j,{r:0},{r:360,duration:period,ease:'none',repeat:Math.max(1,Math.ceil((DUR-at)/period)),onUpdate:j.apply,immediateRender:false},at);
-/* partikel: satu tween gerak + satu tween opacity berkeyframe (dua tween opacity tak-hingga saling menimpa) */
+/* Particles: motion + opacity keyframes */
 const drift=(el,at,{y=-200,scale=null,dur=3,peak=.8}={})=>{const rep=Math.max(1,Math.ceil((DUR-at)/dur));const to={y,duration:dur,ease:'sine.out',repeat:rep,immediateRender:false};if(scale!=null)to.scale=scale;
   tl.fromTo(el,{y:0,scale:scale!=null?.5:1,transformOrigin:'50% 50%'},to,at);tl.to(el,{keyframes:{opacity:[0,peak,peak,0],easeEach:'none'},duration:dur,repeat:rep,ease:'none'},at);};
-/* tetes mengikuti jalur pipa (parametrik) */
+/* Fluid drops along pipe */
 function flowAlong(drops,pathD,at,period){const rep=Math.max(1,Math.ceil((DUR-at)/period)),p=N('path',{d:pathD},defsS),L=p.getTotalLength();drops.forEach((d,i)=>{const o={q:i/drops.length};tl.set(d,{opacity:1},at);
   tl.to(o,{q:i/drops.length+1,duration:period,ease:'none',repeat:rep,onUpdate(){const pt=p.getPointAtLength((o.q%1)*L);d.setAttribute('cx',pt.x);d.setAttribute('cy',pt.y);}},at);});}
-/* kamera: tahan → satu gerak per beat → tahan; zoom 1,08–1,95 */
+/* Camera: hold -> one motion -> hold; zoom 1.08–1.95 */
 const cam=(sc,at,x,y,z,dur=1.6,ease='sine.inOut')=>tl.to(sc.cam,{x,y,z,duration:dur,ease,onUpdate:sc.apply},at);
-/* pergantian panggung */
+/* Stage transition */
 function cut(at,from,to){tl.set(from.g,{display:'none'},at);tl.set(to.g,{display:'block'},at);}
 function slide(at,from,to,axis='x',dist=96){const o=axis==='x'?'ox':'oy';
-  tl.to(from.cam,{[o]:-dist,duration:.28,ease:'power2.in',onUpdate:from.apply},at);tl.set(to.cam,{[o]:dist},at+.28);cut(at+.28,from,to);
-  tl.to(to.cam,{[o]:0,duration:.42,ease:'power3.out',onUpdate:to.apply},at+.28);
-  const b={v:0};tl.to(b,{v:10,duration:.28,ease:'power2.in',onUpdate(){world.style.filter=`blur(${b.v}px)`}},at);
-  tl.to(b,{v:0,duration:.42,ease:'power3.out',onUpdate(){world.style.filter=b.v>.05?`blur(${b.v}px)`:'none'}},at+.28);}
-/* karakter: idle (napas, kedip tiap ≈3,5 dtk), ekspresi, jalan */
-function idle(ch,from){sway(ch.torso,from,1.1,1.7);sway(ch.head,from+.3,-1.7,2.3);sway(ch.Rarm,from+.5,-1.5,1.9);
+  tl.fromTo(from.cam,{[o]:0},{[o]:-dist,duration:.28,ease:'power2.in',onUpdate:from.apply},at);
+  tl.set(to.cam,{[o]:dist,onUpdate:to.apply},at+.28);
+  cut(at+.28,from,to);
+  tl.fromTo(to.cam,{[o]:dist},{[o]:0,duration:.42,ease:'power3.out',onUpdate:to.apply},at+.28);
+  tl.fromTo(world,{filter:'none'},{filter:'blur(10px)',duration:.28,ease:'power2.in'},at);
+  tl.fromTo(world,{filter:'blur(10px)'},{filter:'none',duration:.42,ease:'power3.out'},at+.28);}
+/* Character: idle, expressions, walk */
+function idle(ch,from){sway(ch.torso,from,1.1,1.7);sway(ch.head,from+.3,-1.7,2.3);sway(ch.Rarm,from+.5,-1.5,1.9);if(ch.ponytail)sway(ch.ponytail,from+.4,6,1.8);
   const rep=Math.max(1,Math.ceil((DUR-from)/3.5));
   const kf=[{duration:3.3+ch.who.length*.11},{duration:.01},{duration:.13},{duration:.01}];
   if(ch.eyes)tl.to(ch.eyes,{keyframes:kf.map((k,i)=>({sy:i===1||i===2?.06:1,...k})),repeat:rep,ease:'none',onUpdate:ch.eyes.apply},from);
   for(const e in ch.faces)tl.to(ch.faces[e].blink,{keyframes:kf.map((k,i)=>({opacity:i===1||i===2?1:0,...k})),repeat:rep,ease:'none'},from);}
-const face=(ch,e,at)=>{for(const k in ch.faces)tl.to(ch.faces[k].g,{opacity:k===e?1:0,duration:.08},at);
-  if(ch.mouth)tl.to(ch.mouth,{attr:{d:e==='cemas'?'M -16 -36 C -6 -46 6 -46 16 -36':e==='kaget'?'M -8 -46 C -8 -30 8 -30 8 -46 Z':'M -16 -46 C -6 -36 6 -36 16 -46'},duration:.1},at);};
+const viseme=(ch,phoneme,at,dur=0.12)=>{
+  if(!ch||!ch.mouth)return;
+  const def=VISEME_DEFS[phoneme]||VISEME_DEFS.rest;
+  const m=ch.mouth;
+  const cavTargets = m.clipPath ? [m.cavity, m.clipPath] : m.cavity;
+  if(!def.isOpen){
+    tl.to(m.line,{attr:{d:def.line},opacity:1,duration:dur,ease:'power2.out'},at);
+    tl.to(cavTargets,{attr:{d:def.cavity},opacity:0,duration:dur,ease:'power2.out'},at);
+    tl.to(m.teeth,{opacity:0,duration:dur*0.7,ease:'power1.out'},at);
+    tl.to(m.tongue,{opacity:0,duration:dur*0.7,ease:'power1.out'},at);
+  }else{
+    tl.to(m.line,{opacity:0,duration:dur*0.4,ease:'power1.in'},at);
+    tl.to(cavTargets,{attr:{d:def.cavity},opacity:1,duration:dur,ease:'power2.out'},at);
+    tl.to(m.teeth,{y:def.teethY+48,scaleX:def.teethScale||1,opacity:def.teethOpacity,duration:dur,ease:'power2.out'},at);
+    tl.to(m.tongue,{y:def.tongueY+32,scaleX:def.tongueScale||1,opacity:def.tongueOpacity,duration:dur,ease:'power2.out'},at);
+  }
+};
+const lipSync=(ch,seq,startAt)=>{
+  let t=startAt;for(const [ph,dur] of seq){viseme(ch,ph,t,dur);t+=dur;}viseme(ch,'rest',t,0.15);
+};
+const face=(ch,e,at)=>{
+  for(const k in ch.faces)tl.to(ch.faces[k].g,{opacity:k===e?1:0,duration:.08},at);
+  if(ch.mouth){
+    if(e==='surprised'||e==='kaget'){
+      viseme(ch,'O',at,0.18);
+    }else if(e==='worried'||e==='cemas'){
+      tl.to(ch.mouth.line,{attr:{d:'M -14 -38 C -5 -44 5 -44 14 -38'},opacity:1,duration:.15},at);
+      const cavTargets = ch.mouth.clipPath ? [ch.mouth.cavity, ch.mouth.clipPath] : ch.mouth.cavity;
+      tl.to(cavTargets,{attr:{d:VISEME_DEFS.rest.cavity},opacity:0,duration:.1},at);
+      tl.to(ch.mouth.teeth,{opacity:0,duration:.1},at);
+      tl.to(ch.mouth.tongue,{opacity:0,duration:.1},at);
+    }else{
+      viseme(ch,'rest',at,0.15);
+    }
+  }
+};
 function walk(ch,at,dur,dx){const n=Math.max(1,Math.round(dur/.39));
-  tl.to(ch.root,{x:'+='+dx,duration:dur,ease:'none',onUpdate:ch.root.apply},at);tl.to(ch.sd,{x:'+='+dx*ch.scale,duration:dur,ease:'none'},at);
+  tl.fromTo(ch.root,{x:0},{x:dx,duration:dur,ease:'none',onUpdate:ch.root.apply},at);
+  tl.fromTo(ch.sd,{x:0},{x:dx*ch.scale,duration:dur,ease:'none'},at);
   const leg=(j,a,b)=>tl.fromTo(j,{r:a},{r:b,duration:.39,ease:'sine.inOut',yoyo:true,repeat:n-1,onUpdate:j.apply,immediateRender:false},at);
   leg(ch.Lthigh,-15,15);leg(ch.Rthigh,15,-15);leg(ch.Lshin,0,18);leg(ch.Rshin,18,0);leg(ch.Larm,12,-12);
+  if(ch.ponytail)tl.fromTo(ch.ponytail,{r:-5},{r:8,duration:.39,ease:'sine.inOut',yoyo:true,repeat:n-1,onUpdate:ch.ponytail.apply},at);
   tl.fromTo(ch.root,{y:0},{y:-4,duration:.195,ease:'sine.inOut',yoyo:true,repeat:n*2-1,onUpdate:ch.root.apply,immediateRender:false},at);
   [ch.Lthigh,ch.Rthigh,ch.Lshin,ch.Rshin,ch.Larm].forEach(j=>rot(j,at+dur,0,.3));}
 
-/* ================= PANGGUNG 1 — halaman: tokoh menunjuk, jemuran, ayam ================= */
-const P1=scene('halaman');{const p=P1.g,gy=1000;skyOf(p);hillsOf(p,760);groundOf(p,gy);
+/* ================= STAGE 1 — Courtyard: Character, Clothesline, Chick ================= */
+const P1=scene('courtyard');{const p=P1.g,gy=1000;skyOf(p);hillsOf(p,760);groundOf(p,gy);
   const h=G({transform:`translate(-80,${gy})`},p);R(0,-560,900,560,C.wall,0,h);PA('M -34 -560 L 450 -780 L 934 -560 Z',C.coral,h);R(150,-400,210,210,C.blue,6,h);R(560,-390,210,390,C.navy,6,h);
   const lg=G({transform:`translate(1180,${gy})`},p);R(-6,-260,12,262,'#8A6A4A',4,lg);R(214,-260,12,262,'#8A6A4A',4,lg);LN('M0 -250 L220 -250',C.deep,4,lg);
   P1.clothes=[[20,C.gold],[90,C.blue],[160,C.coral]].map(([x,f])=>{const c=G({},lg);R(-25,0,50,70,f,8,c);return J(c,x+25,-248);});
   const cp=G({transform:`translate(1520,${gy})`},p),cb=G({},cp);P1.chick=cb;EL(0,-28,26,18,C.cream,cb);CI(20,-44,12,C.cream,cb);PA('M30 -44 L42 -40 L30 -36 Z',C.gold,cb);CI(24,-47,2.5,C.ink,cb);
   const legs=G({},cb);P1.legs=J(legs,0,-12);LN('M-6 0 L-6 14',C.gold,3,legs);LN('M8 0 L8 14',C.gold,3,legs);
-  P1.w=character(p,760,gy,1.0);
-  const sg=G({transform:'translate(1300,700)'},p),sign=G({},sg);R(-6,0,12,300,'#8A6A4A',4,sign);R(-110,-50,220,90,C.cream,10,sign);R(-110,-50,220,90,'none',10,sign,{stroke:C.navy,'stroke-width':6});TX(0,10,'GANTI',40,C.navy,sign,{'letter-spacing':3});}
+  P1.w=character(p,760,gy,1.0,{who:'female',shirt:C.coral,pants:C.navy,shoes:C.white,hair:'#22171E'});
+  const sg=G({transform:'translate(1300,700)'},p),sign=G({},sg);
+  R(-6,0,12,300,'#8A6A4A',4,sign);R(-110,-50,220,90,C.cream,10,sign);R(-110,-50,220,90,'none',10,sign,{stroke:C.navy,'stroke-width':6});
+  TX(0,10,'UPGRADE',36,C.navy,sign,{'letter-spacing':3});
+  P1.sign=sg;}
 
-/* ================= PANGGUNG 2 — ruang mesin: dinding terangkat, lampu, kipas, tetes di pipa ================= */
-const P2=scene('mesin');{const p=P2.g,gy=920;skyOf(p);hillsOf(p,740);groundOf(p,gy);
+/* ================= STAGE 2 — Tech Garage: Hydraulic Lift, Cyber Roadster, Neon Sign ================= */
+const P2=scene('garage');{const p=P2.g,gy=920;skyOf(p);hillsOf(p,740);groundOf(p,gy);
   const b=G({transform:`translate(260,${gy})`},p);shadow(700,4,600,b);R(0,-600,1400,600,C.wall,0,b);R(0,-600,1400,26,C.wall2,0,b);
-  P2.racks=G({opacity:0},b);R(20,-570,1360,530,'#DDE4DE',0,P2.racks);P2.lights=[];P2.fans=[];
-  for(let r=0;r<6;r++){const bx=80+r*190;R(bx,-540,150,460,C.navy,10,P2.racks);R(bx+14,-524,122,428,C.deep,0,P2.racks);
-    for(let i=0;i<10;i++)P2.lights.push(R(bx+24,-512+i*36,34,13,i%3?C.mint:C.gold,6,P2.racks,{opacity:0}));
-    const fg=G({transform:`translate(${bx+75},-110)`},P2.racks);CI(0,0,22,'#0F2A33',fg);const bl=G({},fg);for(let k=0;k<3;k++)R(-20,-5,40,10,C.mint,5,bl,{transform:`rotate(${k*60})`});P2.fans.push(J(bl));}
-  P2.wall=G({},b);R(0,-574,1400,534,C.wall,0,P2.wall);[.35,.5,.65].forEach(f=>R(30,-600*f,1340,12,C.wall2,6,P2.wall));
-  R(570,-252,260,64,C.navy,12,P2.wall);TX(700,-208,'PLAT NAMA',34,C.cream,P2.wall,{'letter-spacing':4});
-  P2.feedPath='M100 60 L100 -700 L400 -700';LN(P2.feedPath,C.navy,22,b);LN(P2.feedPath,C.blue,10,b);P2.drops=[];for(let i=0;i<7;i++)P2.drops.push(CI(0,0,7,C.cream,b,{opacity:0}));
-  const u=G({transform:'translate(600,-680)'},b);R(0,0,100,70,C.metal,10,u);CI(50,34,26,C.deep,u);const bl=G({},u);P2.roofFan=J(bl,50,34);for(let k=0;k<3;k++)R(-22,-5,44,10,C.cream,5,bl,{transform:`rotate(${k*60})`});
+
+  // Interior Garage Content (Revealed when shutter rises)
+  P2.interior=G({opacity:0},b);
+  R(20,-574,1360,534,'#1E2A32',0,P2.interior); // Dark garage interior
+  for(let y=-520;y<-60;y+=75) LN(`M 20 ${y} L 1380 ${y}`,'#273641',2,P2.interior); // Paneling
+
+  // 1. Tool Pegboard (Left side)
+  const pb=G({transform:'translate(50,-490)'},P2.interior);
+  R(0,0,280,260,'#2D3E4A',8,pb);R(0,0,280,260,'none',8,pb,{stroke:'#3C5262','stroke-width':4});
+  TX(140,32,'WORKSHOP',18,C.gold,pb,{'letter-spacing':3});
+  PA('M 40 60 L 70 90 L 60 100 L 30 70 Z',C.metal,pb);CI(50,70,8,'#2D3E4A',pb);
+  CI(140,80,22,C.metal,pb);CI(140,80,10,'#2D3E4A',pb);
+  R(210,60,30,50,C.coral,4,pb);R(220,50,10,10,C.metal,2,pb);
+  // Workbench & tool chest
+  R(40,-220,300,140,'#152129',6,P2.interior);R(70,-210,120,70,C.coral,4,P2.interior);
+  R(75,-185,110,8,C.gold,2,P2.interior);R(75,-165,110,8,C.gold,2,P2.interior);
+
+  // 2. High-Tech Neon Sign ("GARAGE 01")
+  const neonG=G({transform:'translate(700,-480)'},P2.interior);P2.neon=neonG;
+  R(-220,-40,440,80,'#0D161C',10,neonG,{stroke:C.blue,'stroke-width':3});
+  TX(0,16,'GARAGE 01',42,C.blue,neonG,{'letter-spacing':8,filter:'drop-shadow(0 0 12px #5AABB8)'});
+  CI(180,0,8,C.mint,neonG,{filter:'drop-shadow(0 0 8px #8DD3C3)'});
+
+  // 3. Dual Industrial Wall Fans
+  P2.fans=[];
+  [-240,240].forEach(ox=>{
+    const fg=G({transform:`translate(${700+ox},-360)`},P2.interior);
+    CI(0,0,34,'#131E26',fg,{stroke:'#334856','stroke-width':4});
+    const bl=G({},fg);for(let k=0;k<4;k++)R(-24,-6,48,12,C.mint,4,bl,{transform:`rotate(${k*45})`});
+    P2.fans.push(J(bl));
+  });
+
+  // 4. Hydraulic Service Lift & Stylized Cyber Roadster
+  const liftG=G({transform:'translate(700,-40)'},P2.interior);
+  P2.lift=J(liftG,0,0);
+  R(-320,-18,640,18,C.navy,4,liftG); // Platform
+  R(-220,0,36,120,'#101A20',0,liftG);R(184,0,36,120,'#101A20',0,liftG); // Pistons
+  LN('M -280 0 L 280 0',C.gold,6,liftG); // Warning stripes
+
+  // Low-poly Cyber Roadster
+  const carG=G({transform:'translate(0,-18)'},liftG);P2.car=carG;
+  EL(0,-6,260,14,'#080E13',carG,{opacity:.6}); // Shadow
+  PA('M -240 -30 L -210 -70 L -120 -85 L -30 -130 L 110 -130 L 190 -75 L 240 -50 L 250 -25 L -240 -25 Z',C.coral,carG); // Body
+  PA('M -100 -85 L -20 -124 L 95 -124 L 155 -75 Z',C.navy,carG); // Windshield
+  PA('M -15 -120 L 90 -120 L 140 -78 L -15 -78 Z',C.mint,carG,{opacity:.45}); // Glare
+  PA('M -240 -75 L -200 -75 L -210 -55 L -250 -55 Z',C.deep,carG); // Spoiler
+  R(-230,-55,12,28,C.deep,0,carG);
+  [[-150,-22],[150,-22]].forEach(([wx,wy])=>{
+    CI(wx,wy,34,'#111920',carG);CI(wx,wy,22,C.metal,carG);CI(wx,wy,10,C.gold,carG); // Wheels
+  });
+  // Headlight beam cones
+  P2.headlights=G({opacity:0},carG);
+  PA('M 245 -45 L 620 -120 L 620 40 L 245 -25 Z','url(#headlightGrad)',P2.headlights,{opacity:.75});
+  CI(244,-36,9,C.gold,carG,{filter:'drop-shadow(0 0 10px #F4BC52)'});
+
+  // Secondary Character: Chief Lab Engineer & Mechanic Companion
+  P2.w2=character(P2.interior,380,-40,0.74,{who:'mechanic',shirt:C.teal,pants:'#17252F',shoes:C.metal,hair:'#9C4128'});
+
+  // 5. Exterior Shutter Door (Lifts to reveal garage)
+  P2.wall=G({},b);
+  R(0,-574,1400,534,C.wall,0,P2.wall);
+  for(let f=.15;f<.95;f+=.12) R(24,-574+(534*f),1352,10,C.wall2,4,P2.wall); // Slats
+  R(24,-570,1352,36,'#263746',0,P2.wall); // Header
+  for(let k=40;k<1350;k+=80) PA(`M ${k} -570 L ${k+40} -534 L ${k+20} -534 L ${k-20} -570 Z`,C.gold,P2.wall); // Hazard stripes
+  R(540,-252,320,68,C.navy,14,P2.wall,{stroke:C.gold,'stroke-width':3});
+  TX(700,-206,'GARAGE LAB',36,C.cream,P2.wall,{'letter-spacing':5,'font-weight':800});
+
+  // Ventilation fan & steam puffs
+  const u=G({transform:'translate(600,-680)'},b);R(0,0,100,70,C.metal,10,u);CI(50,34,26,C.deep,u);
+  const bl=G({},u);P2.roofFan=J(bl,50,34);for(let k=0;k<3;k++)R(-22,-5,44,10,C.cream,5,bl,{transform:`rotate(${k*60})`});
   P2.puffs=[];for(let i=0;i<16;i++)P2.puffs.push(CI(650+((i*67)%100)-50,-720,30+((i*29)%30),C.steam,b,{opacity:0}));}
 
-/* ================= KOREOGRAFI (contoh 12 dtk; saat dipakai, kunci ke jeda VO) ================= */
-tl.set(P1.g,{display:'block'},0);P1.cam.x=820;P1.cam.y=640;P1.cam.z=1.75;P1.apply();
-idle(P1.w,0);P1.clothes.forEach((c,i)=>sway(c,i*.2,6,1.3+i*.15));
-tl.to(P1.chick,{x:180,duration:4,ease:'none',yoyo:true,repeat:2},0);sway(P1.legs,0,12,.18);tl.to(P1.chick,{y:-3,duration:.18,yoyo:true,repeat:66,ease:'sine.inOut'},0);
-rot(P1.w.Rarm,.6,-72,.7);rot(P1.w.Rfore,.7,-18,.8);rot(P1.w.head,.6,7,.8);         // menunjuk ke papan
-cam(P1,.5,900,640,1.4,2.2,'power2.inOut');                                              // tahan → satu gerak → tahan
-walk(P1.w,3.2,1.56,220);face(P1.w,'kaget',4.9);
-slide(5.8,P1,P2,'x',96);                                                                 // geser 96 px ke panggung 2
-P2.cam.x=960;P2.cam.y=520;P2.cam.z=1.1;P2.apply();spin(P2.roofFan,5.8,1.1);flowAlong(P2.drops,P2.feedPath,5.8,2.2);
-P2.puffs.forEach((p,i)=>drift(p,5.8+((i*.29)%1)*4,{y:-420,scale:1.5,dur:4,peak:.85}));
-cam(P2,6.6,960,660,1.42,1.6,'power2.inOut');tl.set(P2.racks,{opacity:1},7.2);tl.to(P2.wall,{y:-560,duration:.9,ease:'power3.inOut'},7.2);
-P2.lights.forEach((l,i)=>{const at=7.8+i*.035;tl.to(l,{opacity:1,duration:.1,ease:'none'},at);tl.to(l,{keyframes:{opacity:[1,.3,1,.55,1],easeEach:'none'},duration:1.5,repeat:2,ease:'none'},at+.1);});
-P2.fans.forEach((f,i)=>spin(f,8.0+i*.08,.85));
+/* ================= CHOREOGRAPHY (THEATRICAL STAGING & HIGH-ENERGY PUPPETRY) ================= */
+// Universal State Reset at 0.00s for 100% Deterministic Timeline Looping & Rewind
+tl.set('#curtainL', { xPercent: 0 }, 0);
+tl.set('#curtainR', { xPercent: 0 }, 0);
+tl.set(P1.g, { display: 'block' }, 0);
+tl.set(P2.g, { display: 'none' }, 0);
+tl.set(world, { filter: 'none' }, 0);
+tl.set(P1.cam, { x: 820, y: 640, z: 1.75, ox: 0, oy: 0, onUpdate: P1.apply }, 0);
+tl.set(P2.cam, { x: 960, y: 520, z: 1.1, ox: 0, oy: 0, onUpdate: P2.apply }, 0);
+tl.set(P1.w.root, { x: 0, y: 0, r: 0, sx: 1, sy: 1, onUpdate: P1.w.root.apply }, 0);
+tl.set(P1.w.sd, { x: 0, scaleX: 1, opacity: 0.13 }, 0);
+tl.set(P2.w2.root, { x: 0, y: 0, r: 0, sx: 1, sy: 1, onUpdate: P2.w2.root.apply }, 0);
+tl.set(P2.w2.sd, { x: 0, scaleX: 1, opacity: 0.13 }, 0);
+tl.set(P1.sign, { rotation: 0, transformOrigin: '0% 100%' }, 0);
+tl.set([P1.w.Rarm, P1.w.Rfore, P1.w.head, P1.w.ponytail], { r: 0, onUpdate() { P1.w.Rarm.apply(); P1.w.Rfore.apply(); P1.w.head.apply(); if (P1.w.ponytail) P1.w.ponytail.apply(); } }, 0);
+tl.set([P2.w2.Rarm, P2.w2.Rfore, P2.w2.head], { r: 0, onUpdate() { P2.w2.Rarm.apply(); P2.w2.Rfore.apply(); P2.w2.head.apply(); } }, 0);
+face(P1.w, 'happy', 0);
+face(P2.w2, 'happy', 0);
+viseme(P1.w, 'rest', 0, 0.01);
+viseme(P2.w2, 'rest', 0, 0.01);
+tl.set(P2.interior, { opacity: 0 }, 0);
+tl.set(P2.wall, { y: 0 }, 0);
+tl.set(P2.headlights, { opacity: 0 }, 0);
+tl.set(P2.lift, { y: 0, onUpdate: P2.lift.apply }, 0);
+tl.set(P2.neon, { opacity: 0.2 }, 0);
+
+// 0. Theatrical proscenium curtains part at 0.10s
+tl.to('#curtainL', { xPercent: -100, duration: 0.85, ease: 'power3.inOut' }, 0.10);
+tl.to('#curtainR', { xPercent: 100, duration: 0.85, ease: 'power3.inOut' }, 0.10);
+
+// 1. Female character drop-in entrance with squash & stretch (0.20s - 0.58s)
+tl.fromTo(P1.w.root, { y: -260, sx: 0.78, sy: 1.35 }, { y: 0, sx: 1.25, sy: 0.75, duration: 0.38, ease: 'power3.in', onUpdate: P1.w.root.apply }, 0.20);
+tl.to(P1.w.root, { sx: 1, sy: 1, duration: 0.45, ease: 'elastic.out(1.5, 0.35)', onUpdate: P1.w.root.apply }, 0.58);
+tl.fromTo(P1.w.sd, { scaleX: 0.2, opacity: 0 }, { scaleX: 1, opacity: 0.13, duration: 0.38, ease: 'power3.in' }, 0.20);
+tl.call(() => triggerSfx('foley-card-touch', () => playFootstep(0.9, 'grass'), 0.55), null, 0.58);
+
+idle(P1.w, 0.6);
+P1.clothes.forEach((c, i) => sway(c, i * 0.2, 6, 1.3 + i * 0.15));
+tl.fromTo(P1.chick, { x: 0 }, { x: 180, duration: 4, ease: 'none', yoyo: true, repeat: 2 }, 0);
+sway(P1.legs, 0, 12, 0.18);
+tl.fromTo(P1.chick, { y: 0 }, { y: -3, duration: 0.18, yoyo: true, repeat: 66, ease: 'sine.inOut' }, 0);
+
+// 2. Pointing gesture with sign reaction spring bounce & SVG phoneme lip-sync
+rot(P1.w.Rarm, 0.6, -72, 0.7);
+rot(P1.w.Rfore, 0.7, -18, 0.8);
+rot(P1.w.head, 0.6, 7, 0.8);
+tl.fromTo(P1.sign, { rotation: 0 }, { rotation: -7, duration: 0.12, yoyo: true, repeat: 3, ease: 'power1.inOut' }, 0.70);
+tl.call(() => triggerSfx('click-snap-soft', playClick, 0.50), null, 0.60);
+lipSync(P1.w, [['MBP', 0.14], ['E', 0.16], ['A', 0.22], ['O', 0.18], ['rest', 0.10], ['L', 0.16], ['A', 0.20], ['rest', 0.20]], 0.75);
+
+cam(P1, 0.5, 900, 640, 1.4, 2.2, 'power2.inOut');
+
+// 3. Surface-aware walking cadence
+walk(P1.w, 3.2, 1.56, 220);
+face(P1.w, 'surprised', 4.9);
+for (let step = 0; step < 4; step++) {
+  const stepTime = +(3.20 + (step * 0.39)).toFixed(2);
+  const isRight = step % 2 === 0;
+  const pFactor = isRight ? 1.03 : 0.97;
+  const gain = isRight ? 0.35 : 0.32;
+  tl.call(() => triggerSfx('foley-card-touch', () => playFootstep(pFactor, 'grass'), gain), null, stepTime);
+}
+tl.call(() => triggerSfx('digital-blip-clear', playBlip, 0.45), null, 4.90);
+
+// 4. Slide to Stage 2 with theatrical blur
+slide(5.8, P1, P2, 'x', 96);
+tl.call(() => triggerSfx('whoosh-medium-soft', playWhoosh, 0.65), null, 5.75);
+spin(P2.roofFan, 5.8, 1.1);
+P2.puffs.forEach((p, i) => drift(p, 5.8 + ((i * 0.29) % 1) * 4, { y: -420, scale: 1.5, dur: 4, peak: 0.85 }));
+cam(P2, 6.6, 960, 660, 1.42, 1.6, 'power2.inOut');
+
+// 5. Tech Garage shutter reveal with heavy mechanical lift
+tl.set(P2.interior, { opacity: 1 }, 7.20);
+tl.fromTo(P2.wall, { y: 0 }, { y: -580, duration: 0.95, ease: 'back.out(1.2)' }, 7.20);
+tl.call(() => triggerSfx('impact-medium-firm', playImpact, 0.70), null, 7.15);
+
+// 6. Neon sign powers up & flickers to life
+tl.fromTo(P2.neon, { opacity: 0.2 }, {
+  keyframes: { opacity: [0.2, 1, 0.4, 1, 0.7, 1], easeEach: 'none' },
+  duration: 0.45,
+  ease: 'none'
+}, 7.45);
+tl.call(() => triggerSfx('digital-blip-clear', playBlip, 0.45), null, 7.45);
+
+// 7. Cyber Roadster headlights flash ON
+tl.fromTo(P2.headlights, { opacity: 0 }, { opacity: 0.85, duration: 0.18, ease: 'power2.out' }, 7.70);
+tl.call(() => triggerSfx('click-snap-soft', playClick, 0.50), null, 7.70);
+
+// 8. Hydraulic service lift raises the car & Mechanic greets viewer
+tl.to(P2.lift, { y: -45, duration: 0.85, ease: 'back.out(1.6)', onUpdate: P2.lift.apply }, 7.85);
+tl.call(() => triggerSfx('whoosh-medium-soft', playWhoosh, 0.55), null, 7.85);
+
+idle(P2.w2, 7.30);
+rot(P2.w2.Rarm, 7.50, -68, 0.55);
+rot(P2.w2.Rfore, 7.60, -32, 0.55);
+rot(P2.w2.head, 7.45, -7, 0.6);
+face(P2.w2, 'happy', 7.40);
+lipSync(P2.w2, [['MBP', 0.14], ['E', 0.16], ['L', 0.14], ['A', 0.18], ['rest', 0.10], ['O', 0.18], ['A', 0.16], ['rest', 0.20]], 7.55);
+
+// 9. Industrial fans spin
+P2.fans.forEach((f, i) => spin(f, 7.6 + i * 0.1, 0.85));
+tl.call(() => triggerSfx('riser-1s-soft', playWhoosh, 0.35), null, 11.00);
 tl.to({},{duration:.01},DUR);
 
-/* ---------- kontrol: autoplay + auto-loop; audio toggle; ?clean=1 export ---------- */
+/* ============ HYBRID AUDIO SYNTHESIS & MOTIVATED SFX ============ */
+let audioCtx = null, audioDest = null, ambientMaster = null;
+let mainMasterGain = null;
+const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+const STUDIO_SFX = {
+  'click-snap-soft': 'sounds/interface/click-tap-soft.wav',
+  'foley-card-touch': 'sounds/foley/foley-card-touch.wav',
+  'digital-blip-clear': 'sounds/digital/digital-blip-clear.wav',
+  'whoosh-medium-soft': 'sounds/whooshes/whoosh-medium-soft.wav',
+  'impact-medium-firm': 'sounds/impacts/impact-medium-firm.wav',
+  'riser-1s-soft': 'sounds/risers-and-fallers/riser-1s-soft.wav'
+};
+const sfxAudioBuffers = {};
+const sfxRawBuffers = {};
+let ambientStarted = false;
+
+async function fetchSfxArrayBuffer(rel) {
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? [`../sfx/${rel}`, `sfx/${rel}`, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+  });
+}
+
+function startAmbientBed() {
+  if (ambientStarted || !audioCtx || audioCtx.state !== 'running') return;
+  ambientStarted = true;
+  try {
+    ambientMaster = audioCtx.createGain();
+    ambientMaster.gain.setValueAtTime(0.045, audioCtx.currentTime);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(55, audioCtx.currentTime);
+
+    const bufLen = Math.floor(audioCtx.sampleRate * 2);
+    const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0, b1 = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99 * b0 + white * 0.01;
+      b1 = 0.95 * b1 + white * 0.05;
+      data[i] = (b0 + b1) * 0.28;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buf;
+    noise.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(260, audioCtx.currentTime);
+
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    osc.connect(oscGain);
+    oscGain.connect(ambientMaster);
+
+    noise.connect(filter);
+    filter.connect(ambientMaster);
+
+    ambientMaster.connect(mainMasterGain || audioCtx.destination);
+    if (audioDest && !mainMasterGain) ambientMaster.connect(audioDest);
+
+    osc.start();
+    noise.start();
+  } catch (e) {}
+}
+
+const initAudio = () => {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+    }
+  }
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+    startAmbientBed();
+  }
+  return audioCtx;
+};
+window.addEventListener('click', initAudio);
+window.addEventListener('keydown', initAudio);
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
+    initAudio();
+  }
+});
+
+function triggerSfx(sfxId, fallbackFn, gain = 0.5) {
+  const ctx = initAudio();
+  if (ctx && sfxAudioBuffers[sfxId]) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = sfxAudioBuffers[sfxId];
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn();
+}
+
+function playClick() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(900, now);
+    osc.frequency.exponentialRampToValueAtTime(300, now + 0.04);
+    g.gain.setValueAtTime(0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.06);
+  } catch (e) {}
+}
+
+function playFootstep(pitchMod = 1.0, surface = 'grass') {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    // 1. Damped ground body (85Hz down to 28Hz)
+    const osc = ctx.createOscillator();
+    const gOsc = ctx.createGain();
+    osc.type = 'sine';
+    const baseF = surface === 'wood' ? 140 : 85;
+    osc.frequency.setValueAtTime(baseF * pitchMod, now);
+    osc.frequency.exponentialRampToValueAtTime(28, now + 0.08);
+    gOsc.gain.setValueAtTime(0.24, now);
+    gOsc.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+    osc.connect(gOsc); gOsc.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gOsc.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.10);
+
+    // 2. Fibrous surface texture layer (filtered noise)
+    const bufLen = Math.floor(ctx.sampleRate * 0.07);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = surface === 'wood' ? 'bandpass' : 'lowpass';
+    filter.frequency.setValueAtTime((surface === 'wood' ? 680 : 420) * pitchMod, now);
+    const gNoise = ctx.createGain();
+    gNoise.gain.setValueAtTime(surface === 'grass' ? 0.16 : 0.12, now);
+    gNoise.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    noise.connect(filter); filter.connect(gNoise); gNoise.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) gNoise.connect(audioDest);
+    noise.start(now);
+  } catch (e) {}
+}
+
+function playBlip() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1400, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
+    g.gain.setValueAtTime(0.22, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.07);
+  } catch (e) {}
+}
+
+function playImpact() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(36, now + 0.28);
+    g.gain.setValueAtTime(0.35, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.30);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.32);
+  } catch (e) {}
+}
+
+function playWhoosh() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const bufLen = Math.floor(ctx.sampleRate * 0.45);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      const env = Math.sin((i / bufLen) * Math.PI);
+      data[i] = (Math.random() * 2 - 1) * env * 1.2;
+    }
+    const node = ctx.createBufferSource();
+    node.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(500, now);
+    filter.frequency.exponentialRampToValueAtTime(1200, now + 0.22);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.22, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+    node.connect(filter); filter.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    node.start(now);
+  } catch (e) {}
+}
+
+/* ============ AUDIO MANIFEST INTERMEDIATE REPRESENTATION ============ */
+const audioManifest = {
+  duration: DUR,
+  ambientBed: { type: 'cartoon_stage', baseFreq: 55, filterCutoff: 260, gain: 0.045 },
+  events: [
+    { time: 0.60, type: 'gesture_point', sfx_id: 'click-snap-soft', gain: 0.50 },
+    { time: 3.20, type: 'footstep_grass_R', sfx_id: 'foley-card-touch', gain: 0.35, material: 'organic_grass' },
+    { time: 3.59, type: 'footstep_grass_L', sfx_id: 'foley-card-touch', gain: 0.32, material: 'organic_grass' },
+    { time: 3.98, type: 'footstep_grass_R', sfx_id: 'foley-card-touch', gain: 0.35, material: 'organic_grass' },
+    { time: 4.37, type: 'footstep_grass_L', sfx_id: 'foley-card-touch', gain: 0.32, material: 'organic_grass' },
+    { time: 4.90, type: 'face_react', sfx_id: 'digital-blip-clear', gain: 0.45 },
+    { time: 5.75, type: 'stage_slide', sfx_id: 'whoosh-medium-soft', gain: 0.65 },
+    { time: 7.15, type: 'garage_door_lift', sfx_id: 'impact-medium-firm', gain: 0.70 },
+    { time: 7.45, type: 'neon_sign_on', sfx_id: 'digital-blip-clear', gain: 0.45 },
+    { time: 7.70, type: 'headlights_flash', sfx_id: 'click-snap-soft', gain: 0.50 },
+    { time: 7.85, type: 'hydraulic_lift_raise', sfx_id: 'whoosh-medium-soft', gain: 0.55 },
+    { time: 11.00, type: 'exit_riser', sfx_id: 'riser-1s-soft', gain: 0.35 }
+  ]
+};
+
+/* ---------- CONTROLS: Autoplay + Auto-Loop; Audio Toggle; ?clean=1 Export ---------- */
 const q=new URLSearchParams(location.search),vo=$('#vo'),hasVO=!!vo.getAttribute('src');
 let audioOn=false, isAudioMuted=false;
 const btnAudio=$('#btn-audio'), iconAudioOn=$('#icon-audio-on'), iconAudioOff=$('#icon-audio-off');
@@ -210,13 +796,20 @@ function toggleAudio(){
     btnAudio.title = isAudioMuted ? 'Unmute Audio (M)' : 'Mute Audio (M)';
   }
   if (hasVO && vo) vo.muted = isAudioMuted;
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
 }
 if (btnAudio) btnAudio.onclick = toggleAudio;
 
 function applyAll(){scenes.forEach(s=>s.apply());}
 function start(){
   tl.pause(0);
+  P1.cam.x = 820; P1.cam.y = 640; P1.cam.z = 1.75; P1.cam.ox = 0; P1.cam.oy = 0;
+  P2.cam.x = 960; P2.cam.y = 520; P2.cam.z = 1.1; P2.cam.ox = 0; P2.cam.oy = 0;
+  applyAll();
   tl.play(0);
+  initAudio();
   if(hasVO){
     vo.muted = isAudioMuted;
     vo.currentTime = 0;
@@ -225,7 +818,7 @@ function start(){
 }
 tl.eventCallback('onComplete', () => { if (!isRecording) start(); });
 
-window.OPENER={W,H,DURATION:DUR,tl,ready:false,seek(t){tl.pause(t,false);applyAll();if(gsap.ticker.tick)gsap.ticker.tick();},play:start};
+window.OPENER={W,H,DURATION:DUR,tl,ready:false,seek(t){tl.pause(t,false);applyAll();if(gsap.ticker.tick)gsap.ticker.tick();},play:start,audioManifest};
 /* ================= FOOTAGE — layer video yang terikat timeline ================= */
 var CLIPS = CLIPS || [];
 function clip(el, o){ o = o || {}; el.muted = true; el.playsInline = true; el.preload = 'auto'; el.loop = false;
@@ -274,13 +867,13 @@ const sc = $('#dScrub'), ck = $('#dClock');
 let drag = false;
 gsap.ticker.add(() => {
   const curT = tl.time();
-  if (curT >= DUR) {
+  if (!drag) sc.value = String(curT / DUR * 1000);
+  const curDisplay = Math.min(curT, DUR); ck.textContent = curDisplay.toFixed(2) + 's';
+  $('#dPlay').textContent = tl.paused() ? 'Play' : 'Pause';
+  if (!isRecording && !q.has('clean') && curT >= DUR) {
     start();
     return;
   }
-  if (!drag) sc.value = String(curT / DUR * 1000);
-  ck.textContent = curT.toFixed(2) + 's';
-  $('#dPlay').textContent = tl.paused() ? 'Play' : 'Pause';
   if (!audioOn || tl.paused() || !hasVO) return;
   if (Math.abs(vo.currentTime - curT) > .12) vo.currentTime = curT;
 });
@@ -301,121 +894,307 @@ document.fonts.ready.then(() => {
 });
 
 /* Ultra-HFR Clean Video Exporter (Up to 240 FPS) */
+/* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
 const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
 const btnExport = $('#btn-export');
 const btnExportLabel = $('#btn-export-text');
+const fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group');
+const renderControlsGroup = $('#render-controls-group');
+const btnRenderPause = $('#btn-render-pause');
+const btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause');
+const iconResume = $('#icon-resume');
 
-if (btnExport) {
-  btnExport.onclick = async () => {
-    if (isRecording) return;
-    try {
-      isRecording = true;
-      btnExportLabel.textContent = 'Preparing Capture...';
-      document.body.classList.add('clean-capture');
+let isExporting = false;
+let isRenderPaused = false;
+let currentAbortController = null;
+let currentEvtSource = null;
 
-      const captureAudio = !isAudioMuted;
-      let stream;
-      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-        if (captureAudio) {
-          try {
-            stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
-              audio: true,
-              preferCurrentTab: true
-            });
-          } catch {
-            try {
-              stream = await navigator.mediaDevices.getDisplayMedia({
-                video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
-                preferCurrentTab: true
-              });
-            } catch (e) {
-              document.body.classList.remove('clean-capture');
-              btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-              isRecording = false;
-              return;
-            }
-          }
+function setExportUiState(exporting) {
+  isExporting = exporting;
+  if (fpsOptionsGroup && renderControlsGroup) {
+    fpsOptionsGroup.style.display = exporting ? 'none' : 'block';
+    renderControlsGroup.style.display = exporting ? 'block' : 'none';
+  }
+  if (!exporting) {
+    isRenderPaused = false;
+    updatePauseButtonUi(false);
+  }
+}
+
+function updatePauseButtonUi(paused) {
+  if (labelRenderPause) labelRenderPause.textContent = paused ? 'Resume Render' : 'Pause Render';
+  if (iconPause) iconPause.style.display = paused ? 'none' : 'inline-block';
+  if (iconResume) iconResume.style.display = paused ? 'inline-block' : 'none';
+}
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = (e) => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', (e) => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+
+  if (fpsOptionsGroup) {
+    const items = fpsOptionsGroup.querySelectorAll('.fps-item');
+    items.forEach(item => {
+      item.onclick = (e) => {
+        e.stopPropagation();
+        fpsMenu.classList.remove('open');
+        const chosenFps = Number(item.dataset.fps) || 240;
+        startExport(chosenFps);
+      };
+    });
+  }
+
+  if (btnRenderPause) {
+    btnRenderPause.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        if (!isRenderPaused) {
+          await fetch('http://127.0.0.1:4004/api/pause');
+          isRenderPaused = true;
+          updatePauseButtonUi(true);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Rendering', 'Paused');
         } else {
-          // Explicitly muted: capture video-only without sound
+          await fetch('http://127.0.0.1:4004/api/resume');
+          isRenderPaused = false;
+          updatePauseButtonUi(false);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Paused', 'Rendering');
+        }
+      } catch (err) {
+        console.warn('[Pause/Resume Error]', err);
+      }
+    };
+  }
+
+  if (btnRenderCancel) {
+    btnRenderCancel.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        await fetch('http://127.0.0.1:4004/api/cancel');
+      } catch {}
+      if (currentEvtSource) {
+        currentEvtSource.close();
+        currentEvtSource = null;
+      }
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      btnExportLabel.textContent = 'Cancelled';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 1500);
+    };
+  }
+}
+
+async function startExport(targetFps = 240) {
+  if (isExporting || isRecording) return;
+  if (typeof markUserInteracted === 'function') markUserInteracted();
+
+  // 1. Studio Local Bridge Attempt (Deterministic 60–240 FPS Headless Render)
+  let bridgeAvailable = false;
+  try {
+    const healthRes = await fetch('http://127.0.0.1:4004/api/health', { signal: AbortSignal.timeout(800) });
+    if (healthRes.ok) bridgeAvailable = true;
+  } catch {}
+
+  if (bridgeAvailable) {
+    try {
+      setExportUiState(true);
+      currentAbortController = new AbortController();
+      btnExportLabel.textContent = `Connecting Studio...`;
+
+      try {
+        currentEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
+        currentEvtSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.status === 'rendering' && !isRenderPaused) {
+              btnExportLabel.textContent = `Rendering ${data.percent || 0}% (${targetFps} FPS)`;
+            } else if (data.status === 'paused') {
+              btnExportLabel.textContent = `Paused ${data.percent || 0}% (${targetFps} FPS)`;
+            }
+          } catch {}
+        };
+      } catch {}
+
+      const templatePath = location.pathname.includes('assets/')
+        ? location.pathname.substring(location.pathname.indexOf('assets/'))
+        : 'assets/kinet-stage.html';
+
+      const renderRes = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
+        signal: currentAbortController.signal
+      });
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+
+      if (!renderRes.ok) throw new Error(await renderRes.text());
+
+      btnExportLabel.textContent = 'Saving MP4...';
+      const blob = await renderRes.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const baseName = templatePath.split('/').pop().replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      btnExportLabel.textContent = 'Downloaded!';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 2000);
+      return;
+    } catch (bridgeErr) {
+      if (bridgeErr.name === 'AbortError') {
+        return; // User clicked Cancel Render
+      }
+      console.warn('[Studio Bridge Error, falling back to browser capture]', bridgeErr);
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+      setExportUiState(false);
+    }
+  }
+
+  // 2. Studio Bridge is offline:
+  const isFileOrigin = typeof location !== 'undefined' && location.protocol === 'file:';
+  if (isFileOrigin || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    alert(`[KinetRig Studio Bridge Offline]\n\nUntuk muat turun video ${targetFps} FPS MP4 secara automatik melalui pelayar, sila jalankan arahan ini dalam terminal:\n\nnode scripts/server.mjs\n\nKemudian klik semula Download, atau buka:\nhttp://127.0.0.1:4004`);
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    setExportUiState(false);
+    return;
+  }
+
+  // 3. Standalone In-Browser Clean Screen Recording
+  try {
+    isRecording = true;
+    setExportUiState(true);
+    btnExportLabel.textContent = `Recording ${targetFps} FPS...`;
+    document.body.classList.add('clean-capture');
+
+    if (typeof initAudio === 'function') initAudio();
+    const captureAudio = typeof isAudioMuted !== 'undefined' ? !isAudioMuted : true;
+    let stream;
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      if (captureAudio) {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: true, preferCurrentTab: true
+          });
+        } catch {
           try {
             stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
-              audio: false,
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
               preferCurrentTab: true
             });
-          } catch {
-            try {
-              stream = await navigator.mediaDevices.getDisplayMedia({
-                video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
-                preferCurrentTab: true
-              });
-            } catch (e) {
-              document.body.classList.remove('clean-capture');
-              btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-              isRecording = false;
-              return;
-            }
-          }
-          if (stream) {
-            stream.getAudioTracks().forEach(t => {
-              t.stop();
-              stream.removeTrack(t);
-            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; setExportUiState(false); return;
           }
         }
       } else {
-        alert('Browser tidak menyokong rakaman skrin langsung. Sila buka melalui Chrome/Edge di localhost atau guna eksport CLI: node scripts/export-frames.mjs');
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false;
-        return;
-      }
-
-      if (!stream) {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false;
-        return;
-      }
-
-      const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
-        ? 'video/mp4; codecs="avc1.42E01E"'
-        : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
-
-      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 40000000 });
-      const chunks = [];
-      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-      recorder.onstop = () => {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false;
-        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-        const blob = new Blob(chunks, { type: mimeType });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `KinetRig-Stage.${ext}`;
-        a.click();
-        stream.getTracks().forEach(t => t.stop());
-        start();
-      };
-
-      tl.pause(0);
-      recorder.start();
-      tl.play();
-      btnExportLabel.textContent = 'Recording 240 FPS...';
-      setTimeout(() => {
-        if (recorder.state === 'recording') {
-          tl.pause();
-          recorder.stop();
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: false, preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; setExportUiState(false); return;
+          }
         }
-      }, DUR * 1000);
-    } catch {
+      }
+    } else {
       document.body.classList.remove('clean-capture');
       btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-      isRecording = false;
+      isRecording = false; setExportUiState(false); return;
     }
-  };
+
+    if (!stream) {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false); return;
+    }
+
+    const tracks = [...stream.getVideoTracks()];
+    if (captureAudio) {
+      if (typeof audioDest !== 'undefined' && audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
+        tracks.push(audioDest.stream.getAudioTracks()[0]);
+      } else if (stream.getAudioTracks().length > 0) {
+        tracks.push(stream.getAudioTracks()[0]);
+      }
+    } else {
+      if (stream && stream.getAudioTracks) {
+        stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
+      }
+    }
+    const combinedStream = new MediaStream(tracks);
+
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+      ? 'video/mp4; codecs="avc1.42E01E"'
+      : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const baseName = (location.pathname.split('/').pop() || 'kinet-stage.html').replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.${ext}`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false);
+      if (typeof tl !== 'undefined' && tl.play) tl.play();
+    };
+
+    if (typeof tl !== 'undefined' && tl.pause) {
+      tl.pause(0);
+      tl.play();
+    }
+    recorder.start(100);
+
+    const durSeconds = typeof DURATION !== 'undefined' ? DURATION : (typeof DUR !== 'undefined' ? DUR : 8.0);
+    setTimeout(() => {
+      if (recorder.state === 'recording') recorder.stop();
+    }, (durSeconds * 1000) + 400);
+
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    isRecording = false; setExportUiState(false);
+  }
 }
 </script>
 </body>

@@ -92,6 +92,15 @@
       font-weight: 600;
       border-color: var(--accent);
     }
+    .preview-fps-item {
+      background: transparent; border: none; color: var(--text);
+      font-size: 12px; font-weight: 600; padding: 8px 10px; border-radius: 6px;
+      text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+      transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+    }
+    .preview-fps-item:hover {
+      background: rgba(0, 240, 255, 0.18); color: var(--accent); transform: translateX(2px);
+    }
 
     /* Main Stage */
     main {
@@ -244,6 +253,11 @@
         <option value="assets/kinet-metrics.html">8. Data & Dynamic Charts (kinet-metrics.html)</option>
         <option value="assets/kinet-showcase.html">9. 3D Product Showcase (kinet-showcase.html)</option>
         <option value="assets/kinet-dialogue.html">10. Diegetic Chat Simulation (kinet-dialogue.html)</option>
+        <option value="assets/kinet-reel-hook.html">11. Viral Reel Hook (kinet-reel-hook.html)</option>
+        <option value="assets/kinet-saas-macro.html">12. SaaS Macro 3D Tour (kinet-saas-macro.html)</option>
+        <option value="assets/kinet-bento-grid.html">13. Modern Bento Grid (kinet-bento-grid.html)</option>
+        <option value="assets/kinet-hud-scifi.html">14. Sci-Fi Telemetry HUD (kinet-hud-scifi.html)</option>
+        <option value="assets/kinet-split-tiktok.html">15. Split Screen Reaction (kinet-split-tiktok.html)</option>
       </select>
 
       <label style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Frame:</label>
@@ -253,6 +267,35 @@
       <button onclick="setMockup('browser', this)">Browser</button>
 
       <button style="border-color: var(--accent); color: var(--accent);" onclick="playSfx()">🔊 Test SFX</button>
+
+      <div class="export-dropdown" style="position: relative; margin-left: 10px;">
+        <button id="btnStudioExport" style="background:var(--accent);color:#000;font-weight:700;border:none;display:inline-flex;align-items:center;gap:6px;" onclick="togglePreviewFpsMenu(event)">
+          <svg style="width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span id="btnExportLabel" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+          <svg style="width:10px;height:10px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="previewFpsMenu" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:rgba(18,20,28,0.96); border:1px solid var(--accent); border-radius:10px; backdrop-filter:blur(16px); box-shadow:0 10px 30px rgba(0,0,0,0.7); padding:6px; min-width:170px; z-index:150; flex-direction:column; gap:4px;">
+          <div id="preview-fps-options-group">
+            <div style="font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; padding: 4px 8px 6px; border-bottom: 1px solid var(--border);">Select Framerate</div>
+            <button class="preview-fps-item" onclick="exportCurrentPreset(240)"><span>240 FPS (Studio)</span></button>
+            <button class="preview-fps-item" onclick="exportCurrentPreset(144)"><span>144 FPS</span></button>
+            <button class="preview-fps-item" onclick="exportCurrentPreset(120)"><span>120 FPS</span></button>
+            <button class="preview-fps-item" onclick="exportCurrentPreset(60)"><span>60 FPS (Fast)</span></button>
+          </div>
+          <div id="preview-render-controls-group" style="display: none;">
+            <div style="font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; padding: 4px 8px 6px; border-bottom: 1px solid var(--border);">Render Controls</div>
+            <button class="preview-fps-item" id="btnPreviewPause" onclick="togglePreviewPause(event)">
+              <svg id="iconPreviewPause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <svg id="iconPreviewResume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+              <span id="labelPreviewPause">Pause Render</span>
+            </button>
+            <button class="preview-fps-item danger" id="btnPreviewCancel" style="color: #f87171;" onclick="cancelPreviewRender(event)">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span>Cancel Render</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -283,6 +326,10 @@
 
     function changePreset(path) {
       iframe.src = path;
+      const browserUrl = container.querySelector('.browser-url');
+      if (browserUrl) {
+        browserUrl.textContent = `https://kinetrig.dev/${path.split('/').pop()}`;
+      }
       iframe.onload = () => {
         setTimeout(unlockChildAudio, 120);
       };
@@ -314,6 +361,183 @@
       }
     }
 
+    function togglePreviewFpsMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('previewFpsMenu');
+      if (menu) menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('previewFpsMenu');
+      const btn = document.getElementById('btnStudioExport');
+      if (menu && !menu.contains(e.target) && e.target !== btn) {
+        menu.style.display = 'none';
+      }
+    });
+
+    let isPreviewExporting = false;
+    let isPreviewPaused = false;
+    let currentPreviewAbortController = null;
+    let currentPreviewEvtSource = null;
+
+    function setPreviewExportUiState(exporting) {
+      isPreviewExporting = exporting;
+      const optsGroup = document.getElementById('preview-fps-options-group');
+      const ctrlGroup = document.getElementById('preview-render-controls-group');
+      if (optsGroup && ctrlGroup) {
+        optsGroup.style.display = exporting ? 'none' : 'block';
+        ctrlGroup.style.display = exporting ? 'block' : 'none';
+      }
+      if (!exporting) {
+        isPreviewPaused = false;
+        updatePreviewPauseUi(false);
+      }
+    }
+
+    function updatePreviewPauseUi(paused) {
+      const lbl = document.getElementById('labelPreviewPause');
+      const iconP = document.getElementById('iconPreviewPause');
+      const iconR = document.getElementById('iconPreviewResume');
+      if (lbl) lbl.textContent = paused ? 'Resume Render' : 'Pause Render';
+      if (iconP) iconP.style.display = paused ? 'none' : 'inline-block';
+      if (iconR) iconR.style.display = paused ? 'inline-block' : 'none';
+    }
+
+    async function togglePreviewPause(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('previewFpsMenu');
+      if (menu) menu.style.display = 'none';
+      if (!isPreviewExporting) return;
+      const label = document.getElementById('btnExportLabel');
+      try {
+        if (!isPreviewPaused) {
+          await fetch('http://127.0.0.1:4004/api/pause');
+          isPreviewPaused = true;
+          updatePreviewPauseUi(true);
+          if (label) label.textContent = label.textContent.replace('Rendering', 'Paused');
+        } else {
+          await fetch('http://127.0.0.1:4004/api/resume');
+          isPreviewPaused = false;
+          updatePreviewPauseUi(false);
+          if (label) label.textContent = label.textContent.replace('Paused', 'Rendering');
+        }
+      } catch (err) {
+        console.warn('[Preview Pause Error]', err);
+      }
+    }
+
+    async function cancelPreviewRender(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('previewFpsMenu');
+      if (menu) menu.style.display = 'none';
+      if (!isPreviewExporting) return;
+      try {
+        await fetch('http://127.0.0.1:4004/api/cancel');
+      } catch {}
+      if (currentPreviewEvtSource) {
+        currentPreviewEvtSource.close();
+        currentPreviewEvtSource = null;
+      }
+      if (currentPreviewAbortController) {
+        currentPreviewAbortController.abort();
+        currentPreviewAbortController = null;
+      }
+      const label = document.getElementById('btnExportLabel');
+      const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+      if (label) label.textContent = 'Cancelled';
+      setTimeout(() => {
+        if (label) label.innerHTML = EXPORT_DEFAULT_HTML;
+        setPreviewExportUiState(false);
+      }, 1500);
+    }
+
+    async function exportCurrentPreset(fps = 240) {
+      if (isPreviewExporting) return;
+      const menu = document.getElementById('previewFpsMenu');
+      if (menu) menu.style.display = 'none';
+
+      const btn = document.getElementById('btnStudioExport');
+      const label = document.getElementById('btnExportLabel');
+      const presetPath = document.getElementById('presetSelect').value;
+      const baseName = presetPath.split('/').pop().replace('.html', '');
+
+      // Check if studio bridge server is running
+      const isStudio = (typeof location !== 'undefined') && (
+        location.port === '4004' ||
+        location.host.includes('4004')
+      );
+
+      let isBridgeOnline = false;
+      if (isStudio) {
+        try {
+          const ping = await fetch('/api/health', { signal: AbortSignal.timeout(600) });
+          if (ping.ok) isBridgeOnline = true;
+        } catch {}
+      }
+
+      if (!isBridgeOnline) {
+        alert("KinetRig Studio Bridge is offline.\n\nTo download true deterministic 240 FPS MP4 video directly through the browser, run in your terminal:\n\nnode scripts/server.mjs\n\nThen open: http://127.0.0.1:4004\n\n(The server runs 100% locally on your machine with 0 cost)");
+        return;
+      }
+
+      setPreviewExportUiState(true);
+      currentPreviewAbortController = new AbortController();
+      label.textContent = `Connecting Studio...`;
+
+      try {
+        currentPreviewEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
+        currentPreviewEvtSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.status === 'rendering' && !isPreviewPaused) {
+              label.textContent = `Rendering: ${data.percent || 0}% (${fps} FPS)`;
+            } else if (data.status === 'paused') {
+              label.textContent = `Paused: ${data.percent || 0}% (${fps} FPS)`;
+            }
+          } catch {}
+        };
+      } catch {}
+
+      try {
+        const res = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(presetPath)}&fps=${fps}`, {
+          signal: currentPreviewAbortController.signal
+        });
+        if (currentPreviewEvtSource) {
+          currentPreviewEvtSource.close();
+          currentPreviewEvtSource = null;
+        }
+        if (!res.ok) throw new Error(await res.text());
+
+        label.textContent = 'Saving MP4...';
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${baseName}_${fps}fps.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+        label.textContent = 'Downloaded!';
+        setTimeout(() => {
+          label.innerHTML = EXPORT_DEFAULT_HTML;
+          setPreviewExportUiState(false);
+        }, 2000);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+        if (currentPreviewEvtSource) {
+          currentPreviewEvtSource.close();
+          currentPreviewEvtSource = null;
+        }
+        alert(`Export failed: ${err.message}`);
+        label.innerHTML = EXPORT_DEFAULT_HTML;
+        setPreviewExportUiState(false);
+      }
+    }
+
     // Studio SFX-Kit + Procedural Web Audio API Synthesizer
     let audioCtx = null;
     let studioTestBuffer = null;
@@ -325,11 +549,15 @@
     }
 
     async function preloadTestSfx() {
-      const tryUrls = [
-        'sfx/sounds/impacts/impact-deep-soft.wav',
-        '../sfx/sounds/impacts/impact-deep-soft.wav',
-        'https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main/sounds/impacts/impact-deep-soft.wav'
-      ];
+      const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+      if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      const tryUrls = isHttp
+        ? [
+            'sfx/sounds/impacts/impact-deep-soft.wav',
+            '../sfx/sounds/impacts/impact-deep-soft.wav',
+            'https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main/sounds/impacts/impact-deep-soft.wav'
+          ]
+        : ['https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main/sounds/impacts/impact-deep-soft.wav'];
       for (const u of tryUrls) {
         try {
           const r = await fetch(u);

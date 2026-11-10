@@ -32,5 +32,8 @@
     "cheerio": "^1.2.0",
     "handlebars": "^4.7.8",
     "inquirer": "^12.4.2"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.16.0"
   }
 }

@@ -112,3 +112,72 @@ function triggerGlitch(tl, target, at = '>') {
   });
 }
 ```
+
+---
+
+## 5. Full-Scene RGB Split & Chromatic Glitch Shader Pass
+
+For whole-screen glitch hits (game intro, cyber diagnostic alert, beat drop):
+
+```html
+<svg style="position: absolute; width: 0; height: 0;">
+  <defs>
+    <filter id="rgb-split">
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red"/>
+      <feOffset in="red" dx="8" dy="0" result="red-shift"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue"/>
+      <feOffset in="blue" dx="-8" dy="0" result="blue-shift"/>
+      <feBlend in="red-shift" in2="green" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="blue-shift" mode="screen"/>
+    </filter>
+  </defs>
+</svg>
+```
+
+```javascript
+// Trigger full-frame deterministic chromatic flash
+function triggerSceneChromaticHit(tl, containerSelector, at = '>') {
+  tl.fromTo(containerSelector,
+    { filter: 'url(#rgb-split) contrast(1.4)' },
+    { filter: 'none contrast(1.0)', duration: 0.14, ease: 'power2.out' },
+    at
+  );
+}
+```
+
+---
+
+## 6. Deterministic Liquid Mesh & Fluid Dynamics (SVG Displacement)
+
+Organic liquid waves without external physics engines:
+
+```html
+<svg style="position: absolute; width: 0; height: 0;">
+  <defs>
+    <filter id="liquid-filter">
+      <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.03 0.015" numOctaves="2" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="32" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>
+```
+
+```javascript
+// Drive turbulence deterministically via timeline time
+function driveLiquidTimeline(tl, at = 0) {
+  const turb = document.querySelector('#turb');
+  if (!turb) return;
+  tl.to({ val: 0 }, {
+    val: 1,
+    duration: 8.0,
+    ease: 'none',
+    onUpdate() {
+      const t = tl.time();
+      const fx = 0.03 + Math.sin(t * 1.5) * 0.01;
+      const fy = 0.015 + Math.cos(t * 1.2) * 0.008;
+      turb.setAttribute('baseFrequency', `${fx.toFixed(4)} ${fy.toFixed(4)}`);
+    }
+  }, at);
+}
+```

@@ -3,7 +3,7 @@
 <!-- KinetRig v1.0.0 by Reff33 - Diegetic Dialogue Simulation (MIT) -->
 <head>
 <meta charset="utf-8">
-<title>KinetRig — Diegetic Dialogue (144 FPS)</title>
+<title>KinetRig — Diegetic Dialogue</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <style>
@@ -23,50 +23,169 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   transform: translate(-50%, -50%) scale(1);
   background: radial-gradient(circle at 50% 30%, #0F172A, var(--bg) 80%);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: background 0.4s ease;
 }
 
 .chat-device {
-  width: 720px; border-radius: 28px; background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(255,255,255,0.12); padding: 36px 40px;
+  width: 780px; border-radius: 28px; background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255,255,255,0.12); padding: 32px 36px 24px;
   box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(56, 189, 248, 0.15);
   backdrop-filter: blur(24px);
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  will-change: transform;
 }
 .chat-header {
   display: flex; align-items: center; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding-bottom: 24px; margin-bottom: 28px;
+  padding-bottom: 20px; margin-bottom: 18px; position: relative; z-index: 10;
 }
 .avatar {
   width: 52px; height: 52px; border-radius: 50%; background: #0284C7;
   display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
 }
 .avatar svg { width: 28px; height: 28px; stroke: #FFF; stroke-width: 2; fill: none; }
 .header-info h2 { font-size: 20px; font-weight: 700; }
-.header-info p { font-size: 13px; color: #38BDF8; font-family: var(--font-mono); }
+.header-info p { font-size: 13px; color: #38BDF8; font-family: var(--font-mono); display: flex; align-items: center; gap: 6px; }
+.live-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #10B981; box-shadow: 0 0 10px #10B981;
+}
+.header-badge {
+  margin-left: auto; font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  color: var(--primary); background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35); padding: 4px 12px; border-radius: 9999px;
+  letter-spacing: 0.08em;
+}
 
-.chat-stream { display: flex; flex-direction: column; gap: 18px; min-height: 320px; }
+/* Chat Viewport: Strictly clips overflowing messages to prevent header overlap */
+.chat-viewport {
+  height: 420px; overflow: hidden; position: relative; border-radius: 16px;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
+}
+.chat-stream {
+  display: flex; flex-direction: column; gap: 16px; position: relative;
+  padding-top: 6px; will-change: transform;
+}
+
 .msg {
-  max-width: 80%; padding: 18px 24px; border-radius: 20px; font-size: 20px;
-  line-height: 1.5; opacity: 0; transform: translateY(20px) scale(0.95);
+  position: relative; max-width: 82%; width: fit-content; padding: 16px 22px; border-radius: 20px; font-size: 19px;
+  line-height: 1.5; opacity: 0; transform: translateY(20px) scale(0.95); will-change: transform, opacity;
+  word-break: break-word;
 }
 .msg.user {
   align-self: flex-end; background: var(--bubble-user); border-bottom-right-radius: 4px;
+  box-shadow: 0 10px 25px rgba(2, 132, 199, 0.25);
 }
 .msg.ai {
   align-self: flex-start; background: var(--bubble-ai); border-bottom-left-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
+.msg.msg-terminal {
+  max-width: 100%; width: 100%; padding: 0; background: transparent; border: none; box-shadow: none;
+}
+
+.reaction-pill {
+  position: absolute; bottom: -12px; right: 16px;
+  background: #090D16; border: 1px solid var(--primary); color: var(--primary);
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 9999px; display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6); transform: scale(0);
+}
+.reaction-pill svg { width: 12px; height: 12px; fill: var(--primary); stroke: none; }
+
+.terminal-card {
+  width: 100%; background: #090D16; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px;
+  overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.7), 0 0 20px rgba(56, 189, 248, 0.1);
+}
+.terminal-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(255, 255, 255, 0.04); padding: 10px 16px;
+  font-family: var(--font-mono); font-size: 11px; color: #94A3B8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.terminal-status {
+  padding: 2px 8px; border-radius: 4px; font-size: 10px; letter-spacing: 0.05em; font-weight: 700;
+  transition: all 0.25s ease;
+}
+.terminal-status.init {
+  color: #F59E0B; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.terminal-status.ready {
+  color: #10B981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+}
+.terminal-card code {
+  display: block; padding: 14px 18px; font-size: 14px; line-height: 1.4; color: #38BDF8; font-family: var(--font-mono);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.terminal-card[data-theme="tokyo-night"] { background: #1a1b26; border-color: #7aa2f7; }
+.terminal-card[data-theme="tokyo-night"] code { color: #7dcfff; }
+.terminal-card[data-theme="monokai"] { background: #272822; border-color: #f92672; }
+.terminal-card[data-theme="monokai"] code { color: #a6e22e; }
+
+/* Voice Memo Audio Visualizer */
+.voice-memo-card {
+  display: flex; align-items: center; gap: 12px; margin-top: 10px;
+  background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px; padding: 8px 14px;
+}
+.voice-play-btn {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--primary);
+  display: flex; align-items: center; justify-content: center; border: none; flex-shrink: 0;
+}
+.voice-play-btn svg { width: 12px; height: 12px; fill: #000; }
+.waveform-bars { display: flex; align-items: center; gap: 3px; height: 24px; flex: 1; }
+.waveform-bars span {
+  width: 3px; border-radius: 2px; background: #38BDF8;
+  height: var(--h, 8px); transition: height 0.15s ease;
+}
+.voice-dur { font-family: var(--font-mono); font-size: 11px; color: #94A3B8; }
+
 .typing-dots {
-  display: inline-flex; gap: 6px; align-items: center; padding: 14px 22px;
+  display: inline-flex; gap: 6px; align-items: center; padding: 12px 20px;
   background: var(--bubble-ai); border-radius: 999px; align-self: flex-start;
-  opacity: 0;
+  opacity: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 .typing-dots span {
   width: 8px; height: 8px; border-radius: 50%; background: #94A3B8;
-  animation: blink 1.2s infinite both;
 }
-.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+.chat-input-bar {
+  display: flex; align-items: center; gap: 12px; margin-top: 16px;
+  padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); position: relative; z-index: 10;
+}
+.input-field {
+  flex: 1; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px; padding: 11px 20px; font-size: 15px; color: #94A3B8;
+  display: flex; align-items: center; font-family: inherit; position: relative;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-field.active {
+  border-color: rgba(56, 189, 248, 0.5); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+.input-placeholder {
+  color: #64748B; position: absolute; left: 20px; pointer-events: none;
+}
+.typed-text {
+  color: #F8FAFC; font-weight: 500; display: inline-block; min-height: 20px; z-index: 2;
+}
+.input-caret {
+  display: inline-block; width: 2px; height: 18px; background: var(--primary);
+  margin-left: 3px; vertical-align: middle; box-shadow: 0 0 8px var(--primary);
+}
+.btn-send {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s;
+}
+.btn-send svg {
+  width: 18px; height: 18px; stroke: #090E1A; stroke-width: 2.2; fill: none;
+  transform: translate(1px, -1px);
+}
 
 .top-bar { position: fixed; top: 20px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 100; }
 .btn-action {
@@ -115,14 +234,10 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 }
 #ui button:active { transform: translateY(0) scale(0.96); background: rgba(56, 189, 248, 0.35); }
 #ui button#btn-audio {
-  padding: 6px 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  padding: 6px 10px; display: inline-flex; align-items: center; justify-content: center;
 }
 #ui button#btn-audio.muted {
-  color: #94a3b8;
-  border-color: rgba(239, 68, 68, 0.4);
+  color: #94a3b8; border-color: rgba(239, 68, 68, 0.4);
 }
 #scrub { width: 340px; height: 6px; accent-color: var(--primary); border-radius: 3px; cursor: pointer; background: rgba(255, 255, 255, 0.18); outline: none; }
 #clock { font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; color: #E2E8F0; font-weight: 600; }
@@ -130,6 +245,31 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 body.clean-capture .top-bar, body.clean-capture #ui,
 body.clean-mode .top-bar, body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 body.clean-capture, body.clean-mode { cursor: none !important; }
+
+/* Export Dropdown & FPS Menu */
+.export-dropdown { position: relative; }
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(0,245,255,0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+}
+.fps-item:hover {
+  background: rgba(0, 245, 255, 0.2); color: #00F5FF; transform: translateX(2px);
+}
+.fps-item.danger:hover {
+  background: rgba(239, 68, 68, 0.2); color: #F87171;
+}
+
 </style>
 </head>
 <body>
@@ -139,30 +279,101 @@ body.clean-capture, body.clean-mode { cursor: none !important; }
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>HUD (H)</span>
   </button>
-  <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
-  </button>
+    <div class="export-dropdown" style="position: relative;">
+    <button class="btn-action" id="btn-export" title="Select Framerate & Export Video">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary, #00F5FF);background:rgba(0,245,255,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="stage">
-  <div class="chat-device">
+  <div class="chat-device" id="chatDevice">
     <div class="chat-header">
-      <div class="avatar">
+      <div class="avatar" id="avatarBox">
         <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
       </div>
       <div class="header-info">
         <h2>KinetRig Assistant</h2>
-        <p>● Active 144 FPS Engine</p>
+        <p><span class="live-dot" id="liveDot"></span> Active Motion Engine</p>
+      </div>
+      <div class="header-badge" id="headerBadge">LOSSLESS 240</div>
+    </div>
+
+    <!-- Strictly contained viewport to eliminate header collisions -->
+    <div class="chat-viewport" id="chatViewport">
+      <div class="chat-stream" id="chatStream">
+        <div class="msg user" id="m1">
+          Can you turn our product launch into a cinematic trailer?
+        </div>
+        <div class="typing-dots" id="dots"><span></span><span></span><span></span></div>
+        <div class="msg ai" id="m2">
+          Already done. Full camera traveling, procedural sound design, and studio clean export.
+          <div class="voice-memo-card" id="voiceMemo">
+            <button class="voice-play-btn" id="btnMemoPlay">
+              <svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+            </button>
+            <div class="waveform-bars" id="waveform">
+              <span style="--h: 6px;"></span><span style="--h: 14px;"></span><span style="--h: 22px;"></span>
+              <span style="--h: 12px;"></span><span style="--h: 18px;"></span><span style="--h: 24px;"></span>
+              <span style="--h: 16px;"></span><span style="--h: 20px;"></span><span style="--h: 10px;"></span>
+              <span style="--h: 18px;"></span><span style="--h: 24px;"></span><span style="--h: 14px;"></span>
+              <span style="--h: 8px;"></span><span style="--h: 16px;"></span><span style="--h: 22px;"></span>
+            </div>
+            <span class="voice-dur">0:14</span>
+          </div>
+          <div class="reaction-pill" id="react1">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span>STUDIO READY</span>
+          </div>
+        </div>
+        <div class="msg user" id="m3">
+          How do I add this skill to my AI agent?
+        </div>
+        <div class="typing-dots" id="dots2"><span></span><span></span><span></span></div>
+        <div class="msg ai msg-terminal" id="m4">
+          <div class="terminal-card">
+            <div class="terminal-bar">
+              <span>TERMINAL</span>
+              <span class="terminal-status init" id="termStatus">INITIALIZING...</span>
+            </div>
+            <code id="termCode">npx -y skills@latest add https://github.com/Reff33/KinetRig</code>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="chat-stream">
-      <div class="msg user" id="m1">Can you animate our product launch at 144 FPS?</div>
-      <div class="typing-dots" id="dots"><span></span><span></span><span></span></div>
-      <div class="msg ai" id="m2">Already done. Pure browser native, zero dropped frames, and studio lossless MP4 export.</div>
-      <div class="msg user" id="m3">How do I install it into my project?</div>
-      <div class="msg ai" id="m4">Run <code>npx -y skills@latest add https://github.com/Reff33/KinetRig</code></div>
+    <div class="chat-input-bar" id="inputBar">
+      <div class="input-field" id="inputField">
+        <span class="input-placeholder" id="inputPlaceholder">Ask anything...</span>
+        <span class="typed-text" id="typedText"></span>
+        <span class="input-caret" id="inputCaret"></span>
+      </div>
+      <div class="btn-send" id="btnSend">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </div>
     </div>
   </div>
 </div>
@@ -179,9 +390,13 @@ body.clean-capture, body.clean-mode { cursor: none !important; }
 
 <script>
 const $ = s => document.querySelector(s);
+const Q = new URLSearchParams(location.search);
 let isRecording = false;
 const DURATION = 9.0;
 const tl = gsap.timeline({ paused: true });
+
+const selectedTheme = Q.get('theme') || 'tokyo-night';
+if ($('.terminal-card')) $('.terminal-card').setAttribute('data-theme', selectedTheme);
 
 /* ============ AUDIO SYNTHESIS & MOTIVATED CHAT SFX ============ */
 let audioCtx = null, audioDest = null;
@@ -203,6 +418,93 @@ function toggleAudio() {
 }
 if (btnAudio) btnAudio.onclick = toggleAudio;
 
+/* ============ ENTERPRISE HYBRID AI AUDIO INTELLIGENCE ARCHITECTURE ============ */
+const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+const STUDIO_SFX = {
+  msg_pop: 'sounds/foley/foley-card-touch.wav',
+  typing_blip: 'sounds/digital/digital-blip-clear.wav',
+  whoosh: 'sounds/whooshes/whoosh-medium-soft.wav',
+  sub_reveal: 'sounds/tones/tone-step-2.wav'
+};
+
+const sfxAudioBuffers = {};
+const sfxRawBuffers = {};
+let ambientStarted = false;
+let ambientMaster = null;
+
+async function fetchSfxArrayBuffer(rel) {
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? [`../sfx/${rel}`, `sfx/${rel}`, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+  });
+}
+
+function startAmbientBed() {
+  if (ambientStarted || !audioCtx || audioCtx.state !== 'running') return;
+  ambientStarted = true;
+  try {
+    ambientMaster = audioCtx.createGain();
+    ambientMaster.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(65, audioCtx.currentTime);
+
+    const bufLen = Math.floor(audioCtx.sampleRate * 2);
+    const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0, b1 = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.985 * b0 + white * 0.015;
+      b1 = 0.95 * b1 + white * 0.05;
+      data[i] = (b0 + b1) * 0.25;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buf;
+    noise.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(300, audioCtx.currentTime);
+
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    osc.connect(oscGain);
+    oscGain.connect(ambientMaster);
+
+    noise.connect(filter);
+    filter.connect(ambientMaster);
+
+    ambientMaster.connect(mainMasterGain || audioCtx.destination);
+    if (audioDest && !mainMasterGain) ambientMaster.connect(audioDest);
+
+    osc.start();
+    noise.start();
+  } catch (e) {}
+}
+
 const initAudio = () => {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -217,52 +519,113 @@ const initAudio = () => {
       } catch (e) {}
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+    startAmbientBed();
+  }
   return audioCtx;
 };
 window.addEventListener('click', initAudio);
 window.addEventListener('keydown', initAudio);
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
+    initAudio();
+  }
+});
+
+function triggerSfx(sfxId, fallbackFn, gain = 0.5, pitchRate = 1.0) {
+  const ctx = initAudio();
+  if (ctx && sfxAudioBuffers[sfxId]) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = sfxAudioBuffers[sfxId];
+      src.playbackRate.value = pitchRate;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn();
+}
 
 function playMessagePop(freq = 640) {
-  const ctx = initAudio();
-  if (!ctx || ctx.state !== 'running') return;
-  const now = ctx.currentTime;
-  try {
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, now);
-    osc.frequency.exponentialRampToValueAtTime(freq * 0.7, now + 0.08);
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.linearRampToValueAtTime(0.18, now + 0.005);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-    osc.connect(g);
-    g.connect(mainMasterGain || ctx.destination);
-    if (audioDest && !mainMasterGain) g.connect(audioDest);
-    osc.start(now);
-    osc.stop(now + 0.10);
-  } catch (e) {}
+  triggerSfx('msg_pop', () => {
+    const ctx = initAudio();
+    if (!ctx || ctx.state !== 'running') return;
+    const now = ctx.currentTime;
+    try {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.7, now + 0.08);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.18, now + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+      osc.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      osc.start(now);
+      osc.stop(now + 0.10);
+    } catch (e) {}
+  }, 0.55, freq / 600);
 }
 
 function playTypingBlip() {
-  const ctx = initAudio();
-  if (!ctx || ctx.state !== 'running') return;
-  const now = ctx.currentTime;
-  try {
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(880, now);
-    osc.frequency.exponentialRampToValueAtTime(1100, now + 0.04);
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.linearRampToValueAtTime(0.08, now + 0.004);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-    osc.connect(g);
-    g.connect(mainMasterGain || ctx.destination);
-    if (audioDest && !mainMasterGain) g.connect(audioDest);
-    osc.start(now);
-    osc.stop(now + 0.06);
-  } catch (e) {}
+  triggerSfx('typing_blip', () => {
+    const ctx = initAudio();
+    if (!ctx || ctx.state !== 'running') return;
+    const now = ctx.currentTime;
+    try {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(1100, now + 0.04);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.08, now + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      osc.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    } catch (e) {}
+  }, 0.35, 1.0);
+}
+
+function playChime() {
+  triggerSfx('sub_reveal', () => {
+    const ctx = initAudio();
+    if (!ctx || ctx.state !== 'running') return;
+    const now = ctx.currentTime;
+    try {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(1040, now + 0.15);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.25, now + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+      osc.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      osc.start(now);
+      osc.stop(now + 0.40);
+    } catch (e) {}
+  }, 0.65, 1.0);
 }
 
 const fit = () => {
@@ -271,54 +634,185 @@ const fit = () => {
 };
 addEventListener('resize', fit); fit();
 
-tl.fromTo('#m1', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 0.4);
-tl.call(() => playMessagePop(560), null, 0.40);
+/* ============ DYNAMIC DIEGETIC CHAT ANIMATION & MOTION LAWS ============ */
+const promptText1 = "Can you turn our product launch into a cinematic trailer?";
+const promptText2 = "How do I add this skill to my AI agent?";
 
-tl.to('#dots', { opacity: 1, duration: 0.3 }, 1.2);
-tl.call(playTypingBlip, null, 1.25);
-tl.to('#dots', { opacity: 0, duration: 0.2 }, 2.0);
+const typedObj1 = { len: 0 };
+const typedObj2 = { len: 0 };
 
-tl.fromTo('#m2', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 2.2);
-tl.call(() => playMessagePop(680), null, 2.20);
+const typedEl = $('#typedText');
+const inputPlaceholder = $('#inputPlaceholder');
+const inputField = $('#inputField');
+const termStatus = $('#termStatus');
+const chatStream = $('#chatStream');
 
-tl.fromTo('#m3', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 4.0);
-tl.call(() => playMessagePop(560), null, 4.00);
+// Universal Baseline State Reset at 0.00s for 100% Deterministic Looping
+tl.set(['#m1', '#m2', '#m3', '#m4'], { opacity: 0, y: 25, scale: 0.92 }, 0);
+tl.set(chatStream, { y: 0 }, 0);
+tl.set(['#dots', '#dots2'], { opacity: 0, scale: 0.5 }, 0);
+tl.set(['#dots span', '#dots2 span'], { y: 0 }, 0);
+tl.set('#avatarBox', { scale: 1 }, 0);
+tl.set('#react1', { scale: 0, rotation: -20 }, 0);
+tl.set('#btnSend', { scale: 1 }, 0);
+tl.set('#chatDevice', { rotateX: 4, rotateY: -3, y: 8, scale: 1 }, 0);
+tl.set(inputPlaceholder, { opacity: 0.6 }, 0);
+tl.set(inputField, { borderColor: 'rgba(255, 255, 255, 0.12)', boxShadow: 'none' }, 0);
+tl.set([typedObj1, typedObj2], { len: 0 }, 0);
 
-tl.fromTo('#m4', { opacity: 0, y: 20, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, 5.2);
-tl.call(() => playMessagePop(720), null, 5.20);
+tl.call(() => {
+  typedEl.textContent = '';
+  termStatus.className = 'terminal-status init';
+  termStatus.textContent = 'INITIALIZING...';
+}, null, 0);
 
+// 1. Diegetic Human Input Typing Simulation (0.10s - 0.76s)
+tl.to(inputPlaceholder, { opacity: 0, duration: 0.12 }, 0.10);
+tl.to(inputField, { borderColor: 'rgba(56, 189, 248, 0.5)', boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)', duration: 0.15 }, 0.10);
+tl.to('#chatDevice', { rotateX: 6, rotateY: -1, y: 14, duration: 0.65, ease: 'power2.out' }, 0.10);
+
+tl.to(typedObj1, {
+  len: promptText1.length,
+  duration: 0.56,
+  ease: 'none',
+  onUpdate() {
+    typedEl.textContent = promptText1.slice(0, Math.floor(typedObj1.len));
+  }
+}, 0.14);
+
+// Mechanical Typing Blips
+tl.call(playTypingBlip, null, 0.20);
+tl.call(playTypingBlip, null, 0.35);
+tl.call(playTypingBlip, null, 0.50);
+tl.call(playTypingBlip, null, 0.65);
+
+// Send Button Active Click & Message 1 Dispatch at 0.76s
+tl.to('#btnSend', { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 0.74);
+tl.call(() => { typedEl.textContent = ''; }, null, 0.78);
+tl.to(inputPlaceholder, { opacity: 0.6, duration: 0.15 }, 0.78);
+tl.to(inputField, { borderColor: 'rgba(255, 255, 255, 0.12)', boxShadow: 'none', duration: 0.2 }, 0.78);
+
+// Message 1 enters safely inside viewport (zero negative Y, zero header overlap)
+tl.fromTo('#m1',
+  { opacity: 0, y: 35, scale: 0.88 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.40, ease: 'back.out(1.8)' },
+  0.78
+);
+tl.call(() => playMessagePop(560), null, 0.78);
+
+// 2. Typing Dots Wave: AI is composing message (1.00s - 1.85s)
+tl.to('#chatDevice', { rotateX: -1, rotateY: 2, y: -4, duration: 0.85, ease: 'power2.inOut' }, 0.95);
+tl.fromTo('#dots',
+  { opacity: 0, scale: 0.5 },
+  { opacity: 1, scale: 1, duration: 0.22, ease: 'back.out(2)' },
+  1.00
+);
+tl.to('#dots span', { y: -8, duration: 0.18, stagger: 0.08, repeat: 2, yoyo: true, ease: 'sine.inOut' }, 1.05);
+tl.call(playTypingBlip, null, 1.10);
+tl.call(playTypingBlip, null, 1.35);
+
+// Typing dots vanish before message pop (pure reality chat logic)
+tl.to('#dots', { opacity: 0, scale: 0.6, duration: 0.15 }, 1.80);
+
+// 3. Message 2: Pops in directly fully formed! (1.88s)
+tl.to('#avatarBox', { scale: 1.25, duration: 0.2, yoyo: true, repeat: 1, ease: 'power2.out' }, 1.88);
+tl.fromTo('#m2',
+  { opacity: 0, y: 25, scale: 0.90 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: 'back.out(1.8)' },
+  1.88
+);
+tl.call(() => playMessagePop(700), null, 1.88);
+
+// Voice memo waveform reactive dance
+tl.fromTo('#waveform span',
+  { transformOrigin: 'center bottom', scaleY: 0.2 },
+  { scaleY: 1.4, duration: 0.22, stagger: { each: 0.03, yoyo: true, repeat: 3 }, ease: 'power1.inOut' },
+  1.95
+);
+
+// Reaction verification badge stamps on at 2.30s
+tl.fromTo('#react1',
+  { scale: 0, rotation: -20 },
+  { scale: 1, rotation: 0, duration: 0.38, ease: 'elastic.out(1.8, 0.4)' },
+  2.30
+);
+tl.call(playTypingBlip, null, 2.30);
+
+// 4. Question 2 Diegetic Human Typing (2.70s - 3.35s)
+tl.to('#chatDevice', { rotateX: 5, rotateY: -2, y: 10, duration: 0.55, ease: 'power2.out' }, 2.70);
+tl.to(inputPlaceholder, { opacity: 0, duration: 0.12 }, 2.70);
+tl.to(inputField, { borderColor: 'rgba(56, 189, 248, 0.5)', boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)', duration: 0.15 }, 2.70);
+
+tl.to(typedObj2, {
+  len: promptText2.length,
+  duration: 0.50,
+  ease: 'none',
+  onUpdate() {
+    typedEl.textContent = promptText2.slice(0, Math.floor(typedObj2.len));
+  }
+}, 2.75);
+
+tl.call(playTypingBlip, null, 2.80);
+tl.call(playTypingBlip, null, 3.00);
+tl.call(playTypingBlip, null, 3.20);
+
+// Send Question 2 at 3.32s
+tl.to('#btnSend', { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 3.30);
+tl.call(() => { typedEl.textContent = ''; }, null, 3.34);
+tl.to(inputPlaceholder, { opacity: 0.6, duration: 0.15 }, 3.34);
+tl.to(inputField, { borderColor: 'rgba(255, 255, 255, 0.12)', boxShadow: 'none', duration: 0.2 }, 3.34);
+
+// Message 3 lands inside viewport cleanly (3.35s)
+tl.fromTo('#m3',
+  { opacity: 0, y: 25, scale: 0.88 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.40, ease: 'back.out(2)' },
+  3.35
+);
+tl.call(() => playMessagePop(560), null, 3.35);
+
+// 5. Typing dots 2 (AI prepares terminal card) (3.65s - 4.35s)
+tl.fromTo('#dots2',
+  { opacity: 0, scale: 0.5 },
+  { opacity: 1, scale: 1, duration: 0.20, ease: 'back.out(2)' },
+  3.65
+);
+tl.to('#dots2 span', { y: -8, duration: 0.18, stagger: 0.08, repeat: 2, yoyo: true, ease: 'sine.inOut' }, 3.70);
+tl.call(playTypingBlip, null, 3.75);
+tl.call(playTypingBlip, null, 4.00);
+tl.to('#dots2', { opacity: 0, scale: 0.6, duration: 0.15 }, 4.35);
+
+// 6. Terminal Card Appears cleanly full-width without overflow (4.40s)
+tl.to('#chatDevice', { rotateX: 0, rotateY: 0, y: -4, scale: 1.01, duration: 0.65, ease: 'power2.inOut' }, 4.35);
+// Scroll internal stream track smoothly
+tl.to(chatStream, { y: -105, duration: 0.50, ease: 'power3.out' }, 4.38);
+
+tl.to('#avatarBox', { scale: 1.25, duration: 0.2, yoyo: true, repeat: 1, ease: 'power2.out' }, 4.40);
+tl.fromTo('#m4',
+  { opacity: 0, y: 25, scale: 0.92 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(1.8)' },
+  4.40
+);
+tl.call(() => playMessagePop(720), null, 4.40);
+
+// Terminal State Progression: INITIALIZING -> READY · DEPLOYED with Crystal Chime (4.90s)
+tl.call(() => {
+  termStatus.className = 'terminal-status ready';
+  termStatus.textContent = 'READY · DEPLOYED';
+}, null, 4.90);
+tl.fromTo('#termStatus',
+  { scale: 1.45 },
+  { scale: 1, duration: 0.35, ease: 'back.out(2.2)' },
+  4.90
+);
+tl.call(playChime, null, 4.90);
+
+// Exit hold until 9.0s
 tl.to({}, { duration: 0.01 }, DURATION);
 
-const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+/* ============ CONTROLS, KEYMAP & CLEAN EXPORT ============ */
+const btnHud = $('#btn-hud'), ui = $('#ui'), scrub = $('#scrub'), clock = $('#clock'), btnPlay = $('#btn-play');
 let scrubbing = false;
-(function frame() {
-  const t = tl.time();
-  clock.textContent = t.toFixed(2) + 's';
-  if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
-  if (!isRecording && !location.search.includes('clean') && t >= DURATION) {
-    tl.play(0);
-    return;
-  }
-  requestAnimationFrame(frame);
-})();
 
-const toggle = () => {
-  if (tl.paused() || tl.progress() >= 1) {
-    if (tl.progress() >= 1) tl.progress(0);
-    initAudio();
-    tl.play(); btnPlay.textContent = 'Pause';
-  } else {
-    tl.pause(); btnPlay.textContent = 'Play';
-  }
-};
-btnPlay.onclick = toggle;
-
-scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); btnPlay.textContent = 'Play'; });
-addEventListener('pointerup', () => scrubbing = false);
-scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
-
-const btnHud = $('#btn-hud');
-const ui = $('#ui');
 function toggleHud() {
   const isHidden = ui.classList.toggle('hidden');
   if (btnHud) btnHud.classList.toggle('active', !isHidden);
@@ -328,115 +822,353 @@ if (btnHud) btnHud.onclick = toggleHud;
 addEventListener('keydown', e => {
   if (e.code === 'Space') {
     e.preventDefault();
-    toggle();
-  } else if (e.key === 'h' || e.key === 'H') {
-    toggleHud();
-  } else if (e.key === 'm' || e.key === 'M') {
-    toggleAudio();
-  } else if (e.key === 'r' || e.key === 'R') {
-    tl.pause(0);
+    tl.paused() ? tl.play() : tl.pause();
+  }
+  if (e.key === 'h' || e.key === 'H') toggleHud();
+  if (e.key === 'm' || e.key === 'M') toggleAudio();
+  if (e.key === 'r' || e.key === 'R') {
+    tl.play(0);
     initAudio();
-    tl.play();
-    btnPlay.textContent = 'Pause';
   }
 });
 
-const seek = t => { tl.pause(); tl.time(t, false); };
-window.OPENER = { tl, DURATION, seek, ready: true };
+// Dual-Layer Auto-Loop Implementation
+tl.eventCallback('onComplete', () => {
+  if (!isRecording) tl.play(0);
+});
 
-if (!location.search.includes('clean')) {
-  tl.play(0);
-  tl.eventCallback('onComplete', () => { if (!isRecording) tl.play(0); });
-}
+(function frame() {
+  requestAnimationFrame(frame);
+  const t = tl.time();
+  const curDisplay = Math.min(t, DURATION); clock.textContent = curDisplay.toFixed(2) + 's';
+  if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
+  btnPlay.textContent = tl.paused() ? 'Play' : 'Pause';
+  if (!isRecording && !location.search.includes('clean') && t >= DURATION) {
+    tl.play(0);
+  }
+})();
+
+scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); });
+addEventListener('pointerup', () => { scrubbing = false; });
+scrub.addEventListener('input', () => {
+  tl.pause();
+  tl.time((scrub.value / 1000) * DURATION);
+});
+btnPlay.onclick = () => { tl.paused() ? tl.play() : tl.pause(); };
+
+window.OPENER = {
+  W: 1920, H: 1080, DURATION, tl, ready: false,
+  seek(t) { tl.pause(t, false); if (gsap.ticker.tick) gsap.ticker.tick(); },
+  play() { tl.play(0); initAudio(); }
+};
+
+document.fonts.ready.then(() => {
+  window.OPENER.ready = true;
+  if (!Q.has('clean')) tl.play(0);
+});
 
 /* Ultra-HFR Clean Video Exporter (Up to 240 FPS) */
+/* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
 const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
 const btnExport = $('#btn-export');
 const btnExportLabel = $('#btn-export-text');
+const fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group');
+const renderControlsGroup = $('#render-controls-group');
+const btnRenderPause = $('#btn-render-pause');
+const btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause');
+const iconResume = $('#icon-resume');
 
-if (btnExport) {
-  btnExport.onclick = async () => {
-    if (isRecording) return;
+let isExporting = false;
+let isRenderPaused = false;
+let currentAbortController = null;
+let currentEvtSource = null;
+
+function setExportUiState(exporting) {
+  isExporting = exporting;
+  if (fpsOptionsGroup && renderControlsGroup) {
+    fpsOptionsGroup.style.display = exporting ? 'none' : 'block';
+    renderControlsGroup.style.display = exporting ? 'block' : 'none';
+  }
+  if (!exporting) {
+    isRenderPaused = false;
+    updatePauseButtonUi(false);
+  }
+}
+
+function updatePauseButtonUi(paused) {
+  if (labelRenderPause) labelRenderPause.textContent = paused ? 'Resume Render' : 'Pause Render';
+  if (iconPause) iconPause.style.display = paused ? 'none' : 'inline-block';
+  if (iconResume) iconResume.style.display = paused ? 'inline-block' : 'none';
+}
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = (e) => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', (e) => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+
+  if (fpsOptionsGroup) {
+    const items = fpsOptionsGroup.querySelectorAll('.fps-item');
+    items.forEach(item => {
+      item.onclick = (e) => {
+        e.stopPropagation();
+        fpsMenu.classList.remove('open');
+        const chosenFps = Number(item.dataset.fps) || 240;
+        startExport(chosenFps);
+      };
+    });
+  }
+
+  if (btnRenderPause) {
+    btnRenderPause.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        if (!isRenderPaused) {
+          await fetch('http://127.0.0.1:4004/api/pause');
+          isRenderPaused = true;
+          updatePauseButtonUi(true);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Rendering', 'Paused');
+        } else {
+          await fetch('http://127.0.0.1:4004/api/resume');
+          isRenderPaused = false;
+          updatePauseButtonUi(false);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Paused', 'Rendering');
+        }
+      } catch (err) {
+        console.warn('[Pause/Resume Error]', err);
+      }
+    };
+  }
+
+  if (btnRenderCancel) {
+    btnRenderCancel.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        await fetch('http://127.0.0.1:4004/api/cancel');
+      } catch {}
+      if (currentEvtSource) {
+        currentEvtSource.close();
+        currentEvtSource = null;
+      }
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      btnExportLabel.textContent = 'Cancelled';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 1500);
+    };
+  }
+}
+
+async function startExport(targetFps = 240) {
+  if (isExporting || isRecording) return;
+  if (typeof markUserInteracted === 'function') markUserInteracted();
+
+  // 1. Studio Local Bridge Attempt (Deterministic 60–240 FPS Headless Render)
+  let bridgeAvailable = false;
+  try {
+    const healthRes = await fetch('http://127.0.0.1:4004/api/health', { signal: AbortSignal.timeout(800) });
+    if (healthRes.ok) bridgeAvailable = true;
+  } catch {}
+
+  if (bridgeAvailable) {
     try {
-      isRecording = true;
-      btnExportLabel.textContent = 'Preparing Capture...';
-      document.body.classList.add('clean-capture');
-      initAudio();
+      setExportUiState(true);
+      currentAbortController = new AbortController();
+      btnExportLabel.textContent = `Connecting Studio...`;
 
-      let stream;
-      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      try {
+        currentEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
+        currentEvtSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.status === 'rendering' && !isRenderPaused) {
+              btnExportLabel.textContent = `Rendering ${data.percent || 0}% (${targetFps} FPS)`;
+            } else if (data.status === 'paused') {
+              btnExportLabel.textContent = `Paused ${data.percent || 0}% (${targetFps} FPS)`;
+            }
+          } catch {}
+        };
+      } catch {}
+
+      const templatePath = location.pathname.includes('assets/')
+        ? location.pathname.substring(location.pathname.indexOf('assets/'))
+        : 'assets/kinet-dialogue.html';
+
+      const renderRes = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
+        signal: currentAbortController.signal
+      });
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+
+      if (!renderRes.ok) throw new Error(await renderRes.text());
+
+      btnExportLabel.textContent = 'Saving MP4...';
+      const blob = await renderRes.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const baseName = templatePath.split('/').pop().replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      btnExportLabel.textContent = 'Downloaded!';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 2000);
+      return;
+    } catch (bridgeErr) {
+      if (bridgeErr.name === 'AbortError') {
+        return; // User clicked Cancel Render
+      }
+      console.warn('[Studio Bridge Error, falling back to browser capture]', bridgeErr);
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+      setExportUiState(false);
+    }
+  }
+
+  // 2. Studio Bridge is offline:
+  const isFileOrigin = typeof location !== 'undefined' && location.protocol === 'file:';
+  if (isFileOrigin || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    alert(`[KinetRig Studio Bridge Offline]\n\nUntuk muat turun video ${targetFps} FPS MP4 secara automatik melalui pelayar, sila jalankan arahan ini dalam terminal:\n\nnode scripts/server.mjs\n\nKemudian klik semula Download, atau buka:\nhttp://127.0.0.1:4004`);
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    setExportUiState(false);
+    return;
+  }
+
+  // 3. Standalone In-Browser Clean Screen Recording
+  try {
+    isRecording = true;
+    setExportUiState(true);
+    btnExportLabel.textContent = `Recording ${targetFps} FPS...`;
+    document.body.classList.add('clean-capture');
+
+    if (typeof initAudio === 'function') initAudio();
+    const captureAudio = typeof isAudioMuted !== 'undefined' ? !isAudioMuted : true;
+    let stream;
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      if (captureAudio) {
         try {
           stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
-            audio: !isAudioMuted, preferCurrentTab: true
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: true, preferCurrentTab: true
           });
         } catch {
           try {
             stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
               preferCurrentTab: true
             });
           } catch (e) {
             document.body.classList.remove('clean-capture');
             btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-            isRecording = false; return;
+            isRecording = false; setExportUiState(false); return;
+          }
+        }
+      } else {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: false, preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; setExportUiState(false); return;
           }
         }
       }
-
-      if (!stream) {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false; return;
-      }
-
-      const tracks = [...stream.getVideoTracks()];
-      if (!isAudioMuted) {
-        if (audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
-          tracks.push(audioDest.stream.getAudioTracks()[0]);
-        } else if (stream.getAudioTracks().length > 0) {
-          tracks.push(stream.getAudioTracks()[0]);
-        }
-      } else {
-        if (stream && stream.getAudioTracks) {
-          stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
-        }
-      }
-      const combinedStream = new MediaStream(tracks);
-
-      const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
-        ? 'video/mp4; codecs="avc1.42E01E"'
-        : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
-
-      const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
-      const chunks = [];
-      recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.onstop = () => {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false;
-        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-        const blob = new Blob(chunks, { type: mimeType });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `KinetRig-Dialogue.${ext}`; a.click();
-        stream.getTracks().forEach(t => t.stop());
-        tl.play();
-      };
-      tl.pause(0); recorder.start(); tl.play();
-      const check = setInterval(() => {
-        const cur = tl.time();
-        if (cur >= DURATION - 0.05 || tl.progress() >= 0.999) {
-          clearInterval(check);
-          tl.pause();
-          if (recorder.state === 'recording') recorder.stop();
-        }
-      }, 100);
-    } catch {
+    } else {
       document.body.classList.remove('clean-capture');
       btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-      isRecording = false;
+      isRecording = false; setExportUiState(false); return;
     }
-  };
+
+    if (!stream) {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false); return;
+    }
+
+    const tracks = [...stream.getVideoTracks()];
+    if (captureAudio) {
+      if (typeof audioDest !== 'undefined' && audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
+        tracks.push(audioDest.stream.getAudioTracks()[0]);
+      } else if (stream.getAudioTracks().length > 0) {
+        tracks.push(stream.getAudioTracks()[0]);
+      }
+    } else {
+      if (stream && stream.getAudioTracks) {
+        stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
+      }
+    }
+    const combinedStream = new MediaStream(tracks);
+
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+      ? 'video/mp4; codecs="avc1.42E01E"'
+      : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const baseName = (location.pathname.split('/').pop() || 'kinet-dialogue.html').replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.${ext}`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false);
+      if (typeof tl !== 'undefined' && tl.play) tl.play();
+    };
+
+    if (typeof tl !== 'undefined' && tl.pause) {
+      tl.pause(0);
+      tl.play();
+    }
+    recorder.start(100);
+
+    const durSeconds = typeof DURATION !== 'undefined' ? DURATION : (typeof DUR !== 'undefined' ? DUR : 8.0);
+    setTimeout(() => {
+      if (recorder.state === 'recording') recorder.stop();
+    }, (durSeconds * 1000) + 400);
+
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    isRecording = false; setExportUiState(false);
+  }
 }
 </script>
 </body>

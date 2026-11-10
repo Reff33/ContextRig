@@ -160,6 +160,31 @@ html, body { margin: 0; height: 100%; background: #050B14; overflow: hidden; fon
 body.clean-capture .top-bar, body.clean-capture #ui,
 body.clean-mode .top-bar, body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
 body.clean-capture, body.clean-mode { cursor: none !important; }
+
+/* Export Dropdown & FPS Menu */
+.export-dropdown { position: relative; }
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(0,245,255,0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+}
+.fps-item:hover {
+  background: rgba(0, 245, 255, 0.2); color: #00F5FF; transform: translateX(2px);
+}
+.fps-item.danger:hover {
+  background: rgba(239, 68, 68, 0.2); color: #F87171;
+}
+
 </style>
 </head>
 <body>
@@ -169,10 +194,34 @@ body.clean-capture, body.clean-mode { cursor: none !important; }
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>HUD (H)</span>
   </button>
-  <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
-  </button>
+    <div class="export-dropdown" style="position: relative;">
+    <button class="btn-action" id="btn-export" title="Select Framerate & Export Video">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary, #00F5FF);background:rgba(0,245,255,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="stage">
@@ -284,10 +333,95 @@ const DURATION = 9.0;
 const tl = gsap.timeline({ paused: true });
 
 /* ============ AUDIO SYNTHESIS & DRAFTING SFX ============ */
-let audioCtx = null, audioDest = null;
+let audioCtx = null, audioDest = null, ambientMaster = null;
 let isAudioMuted = false;
 let mainMasterGain = null;
+const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+const STUDIO_SFX = {
+  'impact-deep-soft': 'sounds/impacts/impact-deep-soft.wav',
+  'foley-paper-slide': 'sounds/foley/foley-paper-slide.wav',
+  'click-snap-soft': 'sounds/interface/click-tap-soft.wav',
+  'digital-blip-clear': 'sounds/digital/digital-blip-clear.wav',
+  'impact-medium-firm': 'sounds/impacts/impact-medium-firm.wav',
+  'whoosh-medium-soft': 'sounds/whooshes/whoosh-medium-soft.wav',
+  'riser-1s-soft': 'sounds/risers-and-fallers/riser-1s-soft.wav'
+};
 const sfxAudioBuffers = {};
+const sfxRawBuffers = {};
+let ambientStarted = false;
+
+async function fetchSfxArrayBuffer(rel) {
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? [`../sfx/${rel}`, `sfx/${rel}`, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+  });
+}
+
+function startAmbientBed() {
+  if (ambientStarted || !audioCtx || audioCtx.state !== 'running') return;
+  ambientStarted = true;
+  try {
+    ambientMaster = audioCtx.createGain();
+    ambientMaster.gain.setValueAtTime(0.045, audioCtx.currentTime);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(48, audioCtx.currentTime);
+
+    const bufLen = Math.floor(audioCtx.sampleRate * 2);
+    const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0 = 0, b1 = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99 * b0 + white * 0.01;
+      b1 = 0.95 * b1 + white * 0.05;
+      data[i] = (b0 + b1) * 0.28;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buf;
+    noise.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(210, audioCtx.currentTime);
+
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    osc.connect(oscGain);
+    oscGain.connect(ambientMaster);
+
+    noise.connect(filter);
+    filter.connect(ambientMaster);
+
+    ambientMaster.connect(mainMasterGain || audioCtx.destination);
+    if (audioDest && !mainMasterGain) ambientMaster.connect(audioDest);
+
+    osc.start();
+    noise.start();
+  } catch (e) {}
+}
 
 const btnAudio = $('#btn-audio'), iconAudioOn = $('#icon-audio-on'), iconAudioOff = $('#icon-audio-off');
 function toggleAudio() {
@@ -318,7 +452,17 @@ const initAudio = () => {
       } catch (e) {}
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+    startAmbientBed();
+  }
   return audioCtx;
 };
 window.addEventListener('click', initAudio);
@@ -523,6 +667,7 @@ tl.to({}, { duration: 0.01 }, DURATION);
 /* ============ AUDIO MANIFEST INTERMEDIATE REPRESENTATION ============ */
 const audioManifest = {
   duration: DURATION,
+  ambientBed: { type: 'vintage_blueprint', baseFreq: 48, filterCutoff: 210, gain: 0.045 },
   events: [
     { time: 0.22, type: 'blueprint_drop', sfx_id: 'impact-deep-soft', gain: 0.70 },
     { time: 0.62, type: 'compass_stroke', sfx_id: 'foley-paper-slide', gain: 0.50 },
@@ -546,14 +691,13 @@ addEventListener('resize', fit); fit();
 const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
 let scrubbing = false;
 (function frame() {
+  requestAnimationFrame(frame);
   const t = tl.time();
-  clock.textContent = t.toFixed(2) + 's';
+  const curDisplay = Math.min(t, DURATION); clock.textContent = curDisplay.toFixed(2) + 's';
   if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
   if (!isRecording && !Q.has('clean') && t >= DURATION) {
     tl.play(0);
-    return;
   }
-  requestAnimationFrame(frame);
 })();
 
 const toggle = () => {
@@ -610,108 +754,307 @@ if (!Q.has('clean')) {
   tl.eventCallback('onComplete', () => { if (!isRecording) tl.play(0); });
 }
 
-/* Ultra-HFR Clean Video Exporter (Up to 240 FPS with Audio Muxing) */
+/* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
+const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
 const btnExport = $('#btn-export');
 const btnExportLabel = $('#btn-export-text');
+const fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group');
+const renderControlsGroup = $('#render-controls-group');
+const btnRenderPause = $('#btn-render-pause');
+const btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause');
+const iconResume = $('#icon-resume');
 
-if (btnExport) {
-  btnExport.onclick = async () => {
-    if (isRecording) return;
+let isExporting = false;
+let isRenderPaused = false;
+let currentAbortController = null;
+let currentEvtSource = null;
+
+function setExportUiState(exporting) {
+  isExporting = exporting;
+  if (fpsOptionsGroup && renderControlsGroup) {
+    fpsOptionsGroup.style.display = exporting ? 'none' : 'block';
+    renderControlsGroup.style.display = exporting ? 'block' : 'none';
+  }
+  if (!exporting) {
+    isRenderPaused = false;
+    updatePauseButtonUi(false);
+  }
+}
+
+function updatePauseButtonUi(paused) {
+  if (labelRenderPause) labelRenderPause.textContent = paused ? 'Resume Render' : 'Pause Render';
+  if (iconPause) iconPause.style.display = paused ? 'none' : 'inline-block';
+  if (iconResume) iconResume.style.display = paused ? 'inline-block' : 'none';
+}
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = (e) => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', (e) => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+
+  if (fpsOptionsGroup) {
+    const items = fpsOptionsGroup.querySelectorAll('.fps-item');
+    items.forEach(item => {
+      item.onclick = (e) => {
+        e.stopPropagation();
+        fpsMenu.classList.remove('open');
+        const chosenFps = Number(item.dataset.fps) || 240;
+        startExport(chosenFps);
+      };
+    });
+  }
+
+  if (btnRenderPause) {
+    btnRenderPause.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        if (!isRenderPaused) {
+          await fetch('http://127.0.0.1:4004/api/pause');
+          isRenderPaused = true;
+          updatePauseButtonUi(true);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Rendering', 'Paused');
+        } else {
+          await fetch('http://127.0.0.1:4004/api/resume');
+          isRenderPaused = false;
+          updatePauseButtonUi(false);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Paused', 'Rendering');
+        }
+      } catch (err) {
+        console.warn('[Pause/Resume Error]', err);
+      }
+    };
+  }
+
+  if (btnRenderCancel) {
+    btnRenderCancel.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        await fetch('http://127.0.0.1:4004/api/cancel');
+      } catch {}
+      if (currentEvtSource) {
+        currentEvtSource.close();
+        currentEvtSource = null;
+      }
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      btnExportLabel.textContent = 'Cancelled';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 1500);
+    };
+  }
+}
+
+async function startExport(targetFps = 240) {
+  if (isExporting || isRecording) return;
+  if (typeof markUserInteracted === 'function') markUserInteracted();
+
+  // 1. Studio Local Bridge Attempt (Deterministic 60–240 FPS Headless Render)
+  let bridgeAvailable = false;
+  try {
+    const healthRes = await fetch('http://127.0.0.1:4004/api/health', { signal: AbortSignal.timeout(800) });
+    if (healthRes.ok) bridgeAvailable = true;
+  } catch {}
+
+  if (bridgeAvailable) {
     try {
-      isRecording = true;
-      btnExportLabel.textContent = 'Preparing Capture...';
-      const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
-      document.body.classList.add('clean-capture');
-      btnExportLabel.textContent = 'Recording 240 FPS...';
-      initAudio();
+      setExportUiState(true);
+      currentAbortController = new AbortController();
+      btnExportLabel.textContent = `Connecting Studio...`;
 
-      let stream;
-      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      try {
+        currentEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
+        currentEvtSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.status === 'rendering' && !isRenderPaused) {
+              btnExportLabel.textContent = `Rendering ${data.percent || 0}% (${targetFps} FPS)`;
+            } else if (data.status === 'paused') {
+              btnExportLabel.textContent = `Paused ${data.percent || 0}% (${targetFps} FPS)`;
+            }
+          } catch {}
+        };
+      } catch {}
+
+      const templatePath = location.pathname.includes('assets/')
+        ? location.pathname.substring(location.pathname.indexOf('assets/'))
+        : 'assets/kinet-engraving.html';
+
+      const renderRes = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
+        signal: currentAbortController.signal
+      });
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+
+      if (!renderRes.ok) throw new Error(await renderRes.text());
+
+      btnExportLabel.textContent = 'Saving MP4...';
+      const blob = await renderRes.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const baseName = templatePath.split('/').pop().replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      btnExportLabel.textContent = 'Downloaded!';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 2000);
+      return;
+    } catch (bridgeErr) {
+      if (bridgeErr.name === 'AbortError') {
+        return; // User clicked Cancel Render
+      }
+      console.warn('[Studio Bridge Error, falling back to browser capture]', bridgeErr);
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+      setExportUiState(false);
+    }
+  }
+
+  // 2. Studio Bridge is offline:
+  const isFileOrigin = typeof location !== 'undefined' && location.protocol === 'file:';
+  if (isFileOrigin || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    alert(`[KinetRig Studio Bridge Offline]\n\nUntuk muat turun video ${targetFps} FPS MP4 secara automatik melalui pelayar, sila jalankan arahan ini dalam terminal:\n\nnode scripts/server.mjs\n\nKemudian klik semula Download, atau buka:\nhttp://127.0.0.1:4004`);
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    setExportUiState(false);
+    return;
+  }
+
+  // 3. Standalone In-Browser Clean Screen Recording
+  try {
+    isRecording = true;
+    setExportUiState(true);
+    btnExportLabel.textContent = `Recording ${targetFps} FPS...`;
+    document.body.classList.add('clean-capture');
+
+    if (typeof initAudio === 'function') initAudio();
+    const captureAudio = typeof isAudioMuted !== 'undefined' ? !isAudioMuted : true;
+    let stream;
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      if (captureAudio) {
         try {
           stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
-            audio: !isAudioMuted,
-            preferCurrentTab: true
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: true, preferCurrentTab: true
           });
         } catch {
           try {
             stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
               preferCurrentTab: true
             });
           } catch (e) {
             document.body.classList.remove('clean-capture');
             btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-            isRecording = false;
-            return;
+            isRecording = false; setExportUiState(false); return;
           }
         }
       } else {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false;
-        return;
-      }
-
-      if (!stream) {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false;
-        return;
-      }
-
-      const tracks = [...stream.getVideoTracks()];
-      if (!isAudioMuted) {
-        if (audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
-          tracks.push(audioDest.stream.getAudioTracks()[0]);
-        } else if (stream.getAudioTracks().length > 0) {
-          tracks.push(stream.getAudioTracks()[0]);
-        }
-      } else {
-        if (stream && stream.getAudioTracks) {
-          stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: false, preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; setExportUiState(false); return;
+          }
         }
       }
-      const combinedStream = new MediaStream(tracks);
-
-      const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
-        ? 'video/mp4; codecs="avc1.42E01E"'
-        : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
-
-      const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
-      const chunks = [];
-      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-      recorder.onstop = () => {
-        document.body.classList.remove('clean-capture');
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        isRecording = false;
-        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-        const blob = new Blob(chunks, { type: mimeType });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `KinetRig-Blueprint.${ext}`;
-        a.click();
-        if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
-        tl.play();
-      };
-
-      tl.pause(0);
-      recorder.start();
-      tl.play();
-      const check = setInterval(() => {
-        const cur = tl.time();
-        if (cur >= DURATION - 0.05 || tl.progress() >= 0.999) {
-          clearInterval(check);
-          tl.pause();
-          if (recorder.state === 'recording') recorder.stop();
-        }
-      }, 100);
-    } catch (e) {
+    } else {
       document.body.classList.remove('clean-capture');
-      btnExportLabel.innerHTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
-      isRecording = false;
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false); return;
     }
-  };
+
+    if (!stream) {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false); return;
+    }
+
+    const tracks = [...stream.getVideoTracks()];
+    if (captureAudio) {
+      if (typeof audioDest !== 'undefined' && audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
+        tracks.push(audioDest.stream.getAudioTracks()[0]);
+      } else if (stream.getAudioTracks().length > 0) {
+        tracks.push(stream.getAudioTracks()[0]);
+      }
+    } else {
+      if (stream && stream.getAudioTracks) {
+        stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
+      }
+    }
+    const combinedStream = new MediaStream(tracks);
+
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+      ? 'video/mp4; codecs="avc1.42E01E"'
+      : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const baseName = (location.pathname.split('/').pop() || 'kinet-engraving.html').replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.${ext}`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false);
+      if (typeof tl !== 'undefined' && tl.play) tl.play();
+    };
+
+    if (typeof tl !== 'undefined' && tl.pause) {
+      tl.pause(0);
+      tl.play();
+    }
+    recorder.start(100);
+
+    const durSeconds = typeof DURATION !== 'undefined' ? DURATION : (typeof DUR !== 'undefined' ? DUR : 8.0);
+    setTimeout(() => {
+      if (recorder.state === 'recording') recorder.stop();
+    }, (durSeconds * 1000) + 400);
+
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    isRecording = false; setExportUiState(false);
+  }
 }
 </script>
 </body>

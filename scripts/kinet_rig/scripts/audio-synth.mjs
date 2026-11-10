@@ -1,14 +1,17 @@
 /* =========================================================
    KinetRig Audio Synthesizer & Studio SFX Mixer (Headless Node.js)
    Zero-dependency PCM WAV generator for KinetRig timelines.
-   Supports hybrid rendering:
-     1. Studio WAV mixing from wyzowl/sfx-kit (with sync.at transient alignment)
-     2. Zero-dependency procedural synthesis fallback
+   Enterprise AI Audio Intelligence Features:
+     1. Universal 3-Layer Acoustic Sandwich (ambient room bed, micro-foley, hero impact)
+     2. Studio WAV mixing from wyzowl/sfx-kit (with transient alignment & pitch resampling)
+     3. Procedural synthesis fallback with micro-pitch & timing jitter
+     4. Soft-knee peak limiting
    ========================================================= */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SFX_DIR = resolve(__dirname, '../sfx');
@@ -150,12 +153,34 @@ export function synthesizeManifest(manifest, outputPath) {
   const left = new Float32Array(totalSamples);
   const right = new Float32Array(totalSamples);
 
+  // 1. LAYER 1: Ambient Bed Synthesis (-26dB to -22dB room tone / sub-drone)
+  const bedConfig = manifest.ambientBed || { type: 'warm_room_tone', baseFreq: 52, gain: 0.045 };
+  const bedGain = Number(bedConfig.gain) || 0.045;
+  const baseFreq = Number(bedConfig.baseFreq) || 52;
+  let bedB0 = 0, bedB1 = 0;
+
+  for (let i = 0; i < totalSamples; i++) {
+    const t = i / SAMPLE_RATE;
+    // Sub harmonic resonance
+    const sub = Math.sin(2 * Math.PI * baseFreq * t) * 0.35;
+    // Pink/Brown acoustic room texture
+    const white = (Math.sin(i * 12.9898 + 78.233) * 43758.5453 - Math.floor(Math.sin(i * 12.9898 + 78.233) * 43758.5453)) * 2 - 1;
+    bedB0 = 0.992 * bedB0 + white * 0.008;
+    bedB1 = 0.96 * bedB1 + white * 0.04;
+    const noise = (bedB0 + bedB1) * 0.4;
+
+    const sample = (sub + noise) * bedGain;
+    left[i] += sample;
+    right[i] += sample;
+  }
+
   const events = manifest.events || [];
   const sfxIndex = loadSfxIndex();
   let studioSamplesMixed = 0;
 
   for (const ev of events) {
     const gain = Number(ev.gain) || 0.5;
+    const pitchFactor = ev.jitter?.pitchFactor || 1.0;
     let mixedStudio = false;
 
     // Check for sfx-kit match
@@ -173,11 +198,22 @@ export function synthesizeManifest(manifest, outputPath) {
               const actualStartTime = Math.max(0, (ev.time || 0) - syncOffset);
               const startSample = Math.floor(actualStartTime * SAMPLE_RATE);
 
-              for (let i = 0; i < decoded.left.length; i++) {
+              const maxOutSamples = Math.floor(decoded.left.length / pitchFactor);
+              for (let i = 0; i < maxOutSamples; i++) {
                 const targetIdx = startSample + i;
                 if (targetIdx >= totalSamples) break;
-                left[targetIdx] += decoded.left[i] * gain;
-                right[targetIdx] += decoded.right[i] * gain;
+
+                // Linear interpolation for pitch resampling
+                const srcPos = i * pitchFactor;
+                const idx0 = Math.floor(srcPos);
+                const idx1 = Math.min(decoded.left.length - 1, idx0 + 1);
+                const frac = srcPos - idx0;
+
+                const sL = decoded.left[idx0] * (1 - frac) + decoded.left[idx1] * frac;
+                const sR = decoded.right[idx0] * (1 - frac) + decoded.right[idx1] * frac;
+
+                left[targetIdx] += sL * gain;
+                right[targetIdx] += sR * gain;
               }
               mixedStudio = true;
               studioSamplesMixed++;
@@ -189,24 +225,26 @@ export function synthesizeManifest(manifest, outputPath) {
 
     if (mixedStudio) continue;
 
-    // Procedural synthesis fallback
+    // Procedural synthesis fallback with micro-pitch & jitter
     const startSample = Math.floor((ev.time || 0) * SAMPLE_RATE);
     switch (ev.type) {
       case 'impact': {
-        const len = Math.floor(0.4 * SAMPLE_RATE);
+        const len = Math.floor(0.42 * SAMPLE_RATE);
+        const baseF = 220 * pitchFactor;
+        const lowF = 58 * pitchFactor;
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
           const t = i / SAMPLE_RATE;
-          const f = 220 * Math.pow(60 / 220, t / 0.35);
+          const f = baseF * Math.pow(lowF / baseF, t / 0.35);
           const phase = 2 * Math.PI * f * t;
           let env = t < 0.015 ? t / 0.015 : Math.exp(-(t - 0.015) * 12);
 
-          const fSheen = 520 * Math.pow(320 / 520, t / 0.12);
+          const fSheen = 520 * pitchFactor * Math.pow(320 / 520, t / 0.12);
           const phaseSheen = 2 * Math.PI * fSheen * t;
           let envSheen = t < 0.008 ? t / 0.008 : Math.exp(-(t - 0.008) * 25);
 
-          const sample = (Math.sin(phase) * 0.7 * env + Math.sin(phaseSheen) * 0.15 * envSheen) * gain;
+          const sample = (Math.sin(phase) * 0.72 * env + Math.sin(phaseSheen) * 0.16 * envSheen) * gain;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -214,15 +252,17 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'sub_reveal': {
-        const len = Math.floor(0.15 * SAMPLE_RATE);
+        const len = Math.floor(0.16 * SAMPLE_RATE);
+        const f0 = 420 * pitchFactor;
+        const f1 = 560 * pitchFactor;
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
           const t = i / SAMPLE_RATE;
-          const f = 420 + (560 - 420) * (t / 0.12);
+          const f = f0 + (f1 - f0) * (t / 0.12);
           const phase = 2 * Math.PI * f * t;
           const env = t < 0.01 ? t / 0.01 : Math.exp(-(t - 0.01) * 20);
-          const sample = Math.sin(phase) * env * gain * 0.4;
+          const sample = Math.sin(phase) * env * gain * 0.42;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -230,8 +270,8 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'card_pop': {
-        const freq = Number(ev.pitch) || 520;
-        const len = Math.floor(0.12 * SAMPLE_RATE);
+        const freq = (Number(ev.pitch) || 520) * pitchFactor;
+        const len = Math.floor(0.13 * SAMPLE_RATE);
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
@@ -239,7 +279,7 @@ export function synthesizeManifest(manifest, outputPath) {
           const f = freq * Math.pow(0.7, t / 0.09);
           const phase = 2 * Math.PI * f * t;
           const env = t < 0.006 ? t / 0.006 : Math.exp(-(t - 0.006) * 35);
-          const sample = Math.sin(phase) * env * gain * 0.45;
+          const sample = Math.sin(phase) * env * gain * 0.48;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -247,15 +287,17 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'exit_sweep': {
-        const len = Math.floor(0.25 * SAMPLE_RATE);
+        const len = Math.floor(0.26 * SAMPLE_RATE);
+        const f0 = 180 * pitchFactor;
+        const f1 = 490 * pitchFactor;
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
           const t = i / SAMPLE_RATE;
-          const f = 180 + (480 - 180) * (t / 0.22);
+          const f = f0 + (f1 - f0) * (t / 0.22);
           const phase = 2 * Math.PI * f * t;
           const env = t < 0.02 ? t / 0.02 : Math.exp(-(t - 0.02) * 16);
-          const sample = Math.sin(phase) * env * gain * 0.35;
+          const sample = Math.sin(phase) * env * gain * 0.38;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -263,17 +305,18 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'whoosh': {
-        const len = Math.floor(0.3 * SAMPLE_RATE);
+        const len = Math.floor(0.32 * SAMPLE_RATE);
         let b0 = 0, b1 = 0;
+        const cutoffAlpha = Math.min(0.15, 0.05 * pitchFactor);
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
-          const white = (Math.random() * 2 - 1);
-          b0 = 0.95 * b0 + white * 0.05;
+          const white = (Math.sin(i * 17.13 + 43.19) * 43758.5453 - Math.floor(Math.sin(i * 17.13 + 43.19) * 43758.5453)) * 2 - 1;
+          b0 = (1 - cutoffAlpha) * b0 + white * cutoffAlpha;
           b1 = 0.9 * b1 + white * 0.1;
           const t = i / len;
           const env = Math.sin(t * Math.PI);
-          const sample = (b0 + b1) * env * gain * 0.5;
+          const sample = (b0 + b1) * env * gain * 0.52;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -284,14 +327,15 @@ export function synthesizeManifest(manifest, outputPath) {
       case 'card_slide': {
         const len = Math.floor(0.24 * SAMPLE_RATE);
         let b0 = 0;
+        const filterWeight = Math.min(0.2, 0.12 * pitchFactor);
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
-          const white = (Math.random() * 2 - 1);
-          b0 = 0.88 * b0 + white * 0.12;
+          const white = (Math.sin(i * 9.17 + 82.31) * 43758.5453 - Math.floor(Math.sin(i * 9.17 + 82.31) * 43758.5453)) * 2 - 1;
+          b0 = (1 - filterWeight) * b0 + white * filterWeight;
           const t = i / len;
           const env = Math.sin(t * Math.PI);
-          const sample = b0 * env * gain * 0.35;
+          const sample = b0 * env * gain * 0.36;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -301,14 +345,15 @@ export function synthesizeManifest(manifest, outputPath) {
       case 'paper_touch':
       case 'soft_tap': {
         const len = Math.floor(0.08 * SAMPLE_RATE);
+        const baseF = 160 * pitchFactor;
         for (let i = 0; i < len; i++) {
           const idx = startSample + i;
           if (idx >= totalSamples) break;
           const t = i / SAMPLE_RATE;
-          const f = 160 * Math.exp(-t * 35);
+          const f = baseF * Math.exp(-t * 35);
           const phase = 2 * Math.PI * f * t;
           const env = Math.exp(-t * 50);
-          const sample = Math.sin(phase) * env * gain * 0.4;
+          const sample = Math.sin(phase) * env * gain * 0.42;
           left[idx] += sample;
           right[idx] += sample;
         }
@@ -316,7 +361,7 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'terminal_chirp': {
-        [840, 1120].forEach((freq, chordIdx) => {
+        [840 * pitchFactor, 1120 * pitchFactor].forEach((freq, chordIdx) => {
           const chirpStart = startSample + Math.floor(chordIdx * 0.04 * SAMPLE_RATE);
           const len = Math.floor(0.1 * SAMPLE_RATE);
           for (let i = 0; i < len; i++) {
@@ -333,10 +378,52 @@ export function synthesizeManifest(manifest, outputPath) {
         });
         break;
       }
+
+      case 'footstep':
+      case 'footstep_grass':
+      case 'footstep_grass_R':
+      case 'footstep_grass_L':
+      case 'footstep_wood':
+      case 'footstep_stone': {
+        const isWood = ev.type.includes('wood') || ev.surface === 'wood';
+        const isStone = ev.type.includes('stone') || ev.surface === 'stone';
+        const len = Math.floor(0.10 * SAMPLE_RATE);
+        const baseF = (isWood ? 140 : isStone ? 190 : 85) * pitchFactor;
+        const lowF = 28 * pitchFactor;
+
+        // 1. Damped ground body
+        for (let i = 0; i < len; i++) {
+          const idx = startSample + i;
+          if (idx >= totalSamples) break;
+          const t = i / SAMPLE_RATE;
+          const f = baseF * Math.pow(lowF / baseF, t / 0.08);
+          const phase = 2 * Math.PI * f * t;
+          const env = Math.exp(-t * 30);
+          const sample = Math.sin(phase) * env * gain * 0.45;
+          left[idx] += sample;
+          right[idx] += sample;
+        }
+
+        // 2. Fibrous surface texture layer (filtered noise)
+        const noiseLen = Math.floor(0.07 * SAMPLE_RATE);
+        let b0 = 0;
+        const alpha = isWood ? 0.15 : 0.08;
+        for (let i = 0; i < noiseLen; i++) {
+          const idx = startSample + i;
+          if (idx >= totalSamples) break;
+          const white = (Math.sin(i * 13.37 + 51.19) * 43758.5453 - Math.floor(Math.sin(i * 13.37 + 51.19) * 43758.5453)) * 2 - 1;
+          b0 = (1 - alpha) * b0 + white * alpha;
+          const envNoise = Math.exp(-(i / SAMPLE_RATE) * 45);
+          const sampleNoise = b0 * envNoise * gain * 0.35;
+          left[idx] += sampleNoise;
+          right[idx] += sampleNoise;
+        }
+        break;
+      }
     }
   }
 
-  // Soft peak limiter
+  // Soft peak limiter (prevents digital clipping)
   let maxPeak = 0;
   for (let i = 0; i < totalSamples; i++) {
     const peak = Math.max(Math.abs(left[i]), Math.abs(right[i]));
@@ -359,10 +446,23 @@ export function synthesizeManifest(manifest, outputPath) {
 
 // CLI direct run test
 if (process.argv[2]) {
-  const manifestPath = process.argv[2];
+  const inputPath = process.argv[2];
   const outPath = process.argv[3] || 'audio.wav';
-  const raw = readFileSync(manifestPath, 'utf8');
-  const manifest = JSON.parse(raw);
+  let manifest;
+
+  if (inputPath.endsWith('.html')) {
+    const tmpJson = resolve(__dirname, `.tmp_${Date.now()}_manifest.json`);
+    try {
+      execSync(`node "${resolve(__dirname, 'parse-timeline.mjs')}" "${inputPath}" "${tmpJson}"`, { stdio: 'pipe' });
+      manifest = JSON.parse(readFileSync(tmpJson, 'utf8'));
+    } finally {
+      if (existsSync(tmpJson)) unlinkSync(tmpJson);
+    }
+  } else {
+    const raw = readFileSync(inputPath, 'utf8');
+    manifest = JSON.parse(raw);
+  }
+
   const res = synthesizeManifest(manifest, outPath);
   console.log(`✔ Audio rendered: ${outPath} (${manifest.duration || 10}s) — [${res.studioSamplesMixed}/${res.totalEvents} studio WAVs mixed]`);
 }

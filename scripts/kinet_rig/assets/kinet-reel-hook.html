@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - Viral Reel Hook (16:9 Standard Starter with Smooth Chromatic Transition) (MIT) -->
+<head>
+<meta charset="utf-8">
+<title>KinetRig — Reel Hook (240 FPS)</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root {
+  --primary: #FF2E93;
+  --primary-glow: rgba(255, 46, 147, 0.45);
+  --accent: #FFE600;
+  --urgent-red: #FF1E40;
+  --urgent-glow: rgba(255, 30, 64, 0.45);
+  --bg: #0A0A12;
+  --font-main: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:var(--font-main); color:#FFF; }
+
+#stage {
+  position: fixed; left:50%; top:50%; width:1920px; height:1080px;
+  transform: translate(-50%, -50%) scale(1);
+  background: #060408;
+  overflow: hidden;
+}
+
+#ambientGlow {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 45%, #250810 0%, #0A0407 65%, #050204 100%);
+  pointer-events: none;
+  transition: background 0.8s ease;
+}
+
+#bloomWave {
+  position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%) scale(0.4);
+  width: 1200px; height: 1200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 46, 147, 0.35) 0%, rgba(255, 230, 0, 0.15) 40%, transparent 70%);
+  pointer-events: none; opacity: 0;
+}
+
+.hook-container {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 1540px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; z-index: 2;
+}
+
+.hook-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(255, 30, 64, 0.16); border: 1.5px solid var(--urgent-red);
+  color: var(--urgent-red); font-family: var(--font-mono); font-size: 18px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.14em; padding: 10px 26px; border-radius: 9999px;
+  box-shadow: 0 0 24px var(--urgent-glow); margin-bottom: 28px; opacity: 0; transform: scale(0.85);
+  transition: border-color 0.6s ease, color 0.6s ease, box-shadow 0.6s ease, background 0.6s ease;
+}
+.hook-badge svg { width: 20px; height: 20px; stroke: var(--urgent-red); stroke-width: 2.5; fill: none; transition: stroke 0.6s ease; }
+
+.hook-title {
+  font-size: 96px; font-weight: 900; line-height: 1.05; letter-spacing: -0.03em;
+  margin-bottom: 38px; text-transform: uppercase;
+}
+.hook-title .word {
+  display: inline-block; opacity: 0; transform: translateY(40px) scale(0.9);
+}
+.hook-title .word.hook-urgent {
+  color: var(--urgent-red);
+  text-shadow: 0 0 32px var(--urgent-glow);
+}
+.hook-title .hl {
+  color: var(--accent); text-shadow: 0 0 35px rgba(255, 230, 0, 0.45);
+}
+
+.lower-deck {
+  display: flex; align-items: center; justify-content: center; gap: 32px; width: 100%;
+}
+
+.stat-card {
+  width: 580px; background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 28px;
+  padding: 32px 36px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.6); opacity: 0; transform: translateY(40px);
+  text-align: left;
+}
+.stat-num {
+  font-family: var(--font-mono); font-size: 84px; font-weight: 800;
+  color: #FFF; line-height: 1; margin-bottom: 8px;
+}
+.stat-label {
+  font-size: 20px; color: #94A3B8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+.sticker-column {
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sticker {
+  background: var(--primary); color: #FFF; font-family: var(--font-mono);
+  font-size: 18px; font-weight: 800; padding: 14px 24px; border-radius: 18px;
+  box-shadow: 0 10px 30px var(--primary-glow); opacity: 0; transform: scale(0) rotate(-4deg);
+  white-space: nowrap;
+}
+.sticker.alt { background: var(--accent); color: #000; transform: scale(0) rotate(5deg); }
+
+/* SVG Chromatic Filter */
+svg.fx-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
+
+/* 240 FPS Export & HUD Controls */
+.top-bar { position: fixed; top: 20px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 100; }
+.btn-action {
+  background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(255, 46, 147, 0.35);
+  color: #FFF; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  padding: 8px 16px; border-radius: 9999px; cursor: pointer;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4); display: inline-flex; align-items: center; gap: 8px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action:hover { border-color: var(--primary); box-shadow: 0 0 16px var(--primary-glow); transform: translateY(-1px); }
+.btn-action.active { background: rgba(255, 46, 147, 0.22); border-color: var(--primary); }
+.btn-action svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+#ui {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: clamp(6px, 1.5vw, 12px); padding: 6px clamp(10px, 2vw, 18px);
+  border-radius: 9999px; background: rgba(9, 14, 26, 0.90);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 46, 147, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 46, 147, 0.15);
+  font-family: var(--font-mono); font-size: 13px; color: #94A3B8; z-index: 90;
+  max-width: calc(100vw - 24px); box-sizing: border-box;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ui.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, 14px); }
+#ui button {
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #F8FAFC; font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 9999px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1); letter-spacing: 0.02em;
+}
+#ui button:hover { background: rgba(255, 46, 147, 0.2); border-color: var(--primary); color: #FFF; box-shadow: 0 0 14px var(--primary-glow); transform: translateY(-1px); }
+#ui button:active { transform: translateY(0) scale(0.96); }
+#ui button#btn-audio { padding: 6px 10px; }
+#ui button.muted { opacity: 0.6; color: #94A3B8; }
+#scrub { width: clamp(80px, 26vw, 340px); height: 6px; accent-color: var(--primary); border-radius: 3px; cursor: pointer; background: rgba(255, 255, 255, 0.18); outline: none; flex-shrink: 1; }
+#clock { font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; color: #E2E8F0; font-weight: 600; }
+
+@media (max-width: 480px) {
+  #ui { gap: 8px; padding: 6px 12px; bottom: 12px; max-width: calc(100vw - 16px); }
+  #ui button { padding: 5px 10px; font-size: 11px; }
+  #ui button#btn-audio { padding: 5px 8px; }
+  #scrub { width: clamp(70px, 24vw, 140px); height: 5px; }
+  #clock { font-size: 11px; min-width: 44px; }
+  .top-bar { top: 12px; right: 12px; gap: 6px; }
+  .top-bar .btn-action { padding: 6px 10px; font-size: 11px; }
+}
+
+body.clean-capture .top-bar, body.clean-capture #ui,
+body.clean-mode .top-bar, body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+body.clean-capture, body.clean-mode { cursor: none !important; }
+
+/* Export Dropdown & FPS Menu */
+.export-dropdown { position: relative; }
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(0,245,255,0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+}
+.fps-item:hover {
+  background: rgba(0, 245, 255, 0.2); color: #00F5FF; transform: translateX(2px);
+}
+.fps-item.danger:hover {
+  background: rgba(239, 68, 68, 0.2); color: #F87171;
+}
+
+</style>
+</head>
+<body>
+
+<svg class="fx-defs">
+  <defs>
+    <filter id="rgb-glitch">
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red"/>
+      <feOffset in="red" dx="10" dy="0" result="red-shift"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue"/>
+      <feOffset in="blue" dx="-10" dy="0" result="blue-shift"/>
+      <feBlend in="red-shift" in2="green" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="blue-shift" mode="screen"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="top-bar">
+  <button class="btn-action active" id="btn-hud" title="Toggle HUD (H)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>HUD (H)</span>
+  </button>
+    <div class="export-dropdown" style="position: relative;">
+    <button class="btn-action" id="btn-export" title="Select Framerate & Export Video">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary, #00F5FF);background:rgba(0,245,255,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stage">
+  <div id="ambientGlow"></div>
+  <div id="bloomWave"></div>
+
+  <div class="hook-container" id="content">
+    <div class="hook-badge" id="badge">
+      <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span>Viral Retention Hook</span>
+    </div>
+
+    <h1 class="hook-title" id="title">
+      <span class="word hook-urgent">Stop</span> <span class="word hook-urgent">Scrolling.</span><br>
+      <span class="word hook-urgent">Watch</span> <span class="word hl">This</span> <span class="word">Move.</span>
+    </h1>
+
+    <div class="lower-deck">
+      <div class="stat-card" id="card">
+        <div class="stat-num" id="counter">0M</div>
+        <div class="stat-label">Organic Video Impressions</div>
+      </div>
+
+      <div class="sticker-column" id="stickers">
+        <div class="sticker">100% RETENTION</div>
+        <div class="sticker alt">240 FPS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ui">
+  <button id="btn-play">Pause</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
+let isRecording = false;
+
+const DURATION = 6.0;
+const tl = gsap.timeline({ paused: true });
+
+/* ============ AUDIO SYNTHESIS & MOTIVATED SFX ============ */
+let audioCtx = null, audioDest = null, mainMasterGain = null;
+let isAudioMuted = false;
+
+const btnAudio = $('#btn-audio'), iconAudioOn = $('#icon-audio-on'), iconAudioOff = $('#icon-audio-off');
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  if (iconAudioOn) iconAudioOn.style.display = isAudioMuted ? 'none' : 'block';
+  if (iconAudioOff) iconAudioOff.style.display = isAudioMuted ? 'block' : 'none';
+  if (btnAudio) btnAudio.classList.toggle('muted', isAudioMuted);
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+if (btnAudio) btnAudio.onclick = toggleAudio;
+
+function initAudio() {
+  if (!audioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      audioCtx = new AudioCtx();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playImpact() {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(0.35, now + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.40);
+    osc.connect(g);
+    g.connect(mainMasterGain || ctx.destination);
+    osc.start(now); osc.stop(now + 0.42);
+  } catch (e) {}
+}
+
+function playPop(pitch = 600) {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  try {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(pitch, now);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 1.5, now + 0.05);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(0.18, now + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+    osc.connect(g);
+    g.connect(mainMasterGain || ctx.destination);
+    osc.start(now); osc.stop(now + 0.10);
+  } catch (e) {}
+}
+
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit); fit();
+
+/* ============ TIMELINE CHOREOGRAPHY ============ */
+// 1. Initial State Setup
+tl.set('.hook-urgent', { color: '#FF1E40' }, 0);
+tl.set('#badge', {
+  borderColor: '#FF1E40',
+  color: '#FF1E40',
+  backgroundColor: 'rgba(255, 30, 64, 0.16)',
+  boxShadow: '0 0 24px rgba(255, 30, 64, 0.45)'
+}, 0);
+tl.set('#badge svg', { stroke: '#FF1E40' }, 0);
+
+// 2. Urgent Badge Slam
+tl.fromTo('#badge',
+  { opacity: 0, scale: 0.6, y: -20 },
+  { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: 'back.out(1.8)' },
+  0.15
+);
+tl.call(() => playPop(720), null, 0.15);
+
+// 3. Kinetic Word Slam (Stop Scrolling. Watch)
+tl.fromTo($$('#title .word'),
+  { opacity: 0, y: 40, scale: 0.8 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.38, stagger: 0.08, ease: 'back.out(2)' },
+  0.35
+);
+tl.call(playImpact, null, 0.35);
+
+// 4. Smooth Chromatic & Mood Transition (Law 16: Anti-Abrupt Color Snapping)
+// Smooth continuous color tween from urgent hook red -> sleek neon magenta/white
+tl.to('.hook-urgent', {
+  color: '#FFFFFF',
+  textShadow: '0 0 24px rgba(255, 255, 255, 0.25)',
+  duration: 0.65,
+  ease: 'power2.inOut'
+}, 0.75);
+
+tl.to('#badge', {
+  borderColor: '#FF2E93',
+  color: '#FFFFFF',
+  backgroundColor: 'rgba(255, 46, 147, 0.16)',
+  boxShadow: '0 0 24px rgba(255, 46, 147, 0.45)',
+  duration: 0.65,
+  ease: 'power2.inOut'
+}, 0.75);
+
+tl.to('#badge svg', {
+  stroke: '#FFE600',
+  duration: 0.65,
+  ease: 'power2.inOut'
+}, 0.75);
+
+// Background ambient bloom expands smoothly from deep red to rich cyberpunk violet
+tl.to('#ambientGlow', {
+  background: 'radial-gradient(circle at 50% 45%, #1F0D2E 0%, #0D0A16 65%, #06050A 100%)',
+  duration: 0.85,
+  ease: 'power2.inOut'
+}, 0.70);
+
+// Radial bloom pulse wave expands smoothly across frame
+tl.fromTo('#bloomWave',
+  { opacity: 0, scale: 0.4 },
+  { opacity: 0.8, scale: 1.4, duration: 0.5, ease: 'power2.out' },
+  0.72
+);
+tl.to('#bloomWave',
+  { opacity: 0, scale: 1.9, duration: 0.45, ease: 'power2.in' },
+  1.15
+);
+
+// Decaying glitch pulse locked with the transition wave
+tl.fromTo('#stage',
+  { filter: 'url(#rgb-glitch) contrast(1.15)' },
+  { filter: 'none', duration: 0.24, ease: 'power2.out' },
+  0.78
+);
+
+// 5. Stat Card drop-in
+tl.fromTo('#card',
+  { opacity: 0, y: 50, scale: 0.9 },
+  { opacity: 1, y: 0, scale: 1, duration: 0.65, ease: 'power3.out' },
+  0.95
+);
+tl.call(() => playPop(540), null, 0.95);
+
+// 6. Animated counter
+const counterObj = { val: 0 };
+tl.to(counterObj, {
+  val: 18.5,
+  duration: 1.8,
+  ease: 'power2.out',
+  onUpdate() {
+    $('#counter').textContent = `${counterObj.val.toFixed(1)}M+`;
+  }
+}, 1.05);
+
+// 7. Stickers pop-in
+tl.fromTo($$('#stickers .sticker'),
+  { opacity: 0, scale: 0 },
+  { opacity: 1, scale: 1, duration: 0.45, stagger: 0.14, ease: 'back.out(2.2)' },
+  1.45
+);
+tl.call(() => playPop(880), null, 1.45);
+tl.call(() => playPop(1040), null, 1.59);
+
+tl.to({}, { duration: 0.01 }, DURATION);
+
+/* ============ CONTROLS & AUTO-LOOP ============ */
+const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+let scrubbing = false;
+
+(function frame() {
+  requestAnimationFrame(frame);
+  const t = tl.time();
+  const curDisplay = Math.min(t, DURATION);
+  if (clock) clock.textContent = curDisplay.toFixed(2) + 's';
+  if (!scrubbing && scrub) scrub.value = String((curDisplay / DURATION) * 1000);
+  if (btnPlay) btnPlay.textContent = tl.paused() ? 'Play' : 'Pause';
+  if (!isRecording && !location.search.includes('clean') && (t >= DURATION || tl.progress() >= 1)) {
+    tl.pause(0);
+    tl.play(0);
+  }
+})();
+
+const toggle = () => {
+  if (tl.paused() || tl.progress() >= 1) {
+    if (tl.progress() >= 1) tl.progress(0);
+    initAudio();
+    tl.play();
+    if (btnPlay) btnPlay.textContent = 'Pause';
+  } else {
+    tl.pause();
+    if (btnPlay) btnPlay.textContent = 'Play';
+  }
+};
+if (btnPlay) btnPlay.onclick = toggle;
+
+if (scrub) {
+  scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); if (btnPlay) btnPlay.textContent = 'Play'; });
+  addEventListener('pointerup', () => scrubbing = false);
+  scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
+}
+
+const btnHud = $('#btn-hud'), ui = $('#ui');
+function toggleHud() {
+  const isHidden = ui.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !isHidden);
+}
+if (btnHud) btnHud.onclick = toggleHud;
+
+addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); toggle(); }
+  else if (e.key === 'h' || e.key === 'H') toggleHud();
+  else if (e.key === 'm' || e.key === 'M') toggleAudio();
+  else if (e.key === 'r' || e.key === 'R') { tl.pause(0); initAudio(); tl.play(); if (btnPlay) btnPlay.textContent = 'Pause'; }
+});
+
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
+    initAudio();
+  }
+});
+
+const seek = t => {
+  tl.pause();
+  tl.time(t, false);
+  if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+};
+
+window.OPENER = {
+  W: 1920, H: 1080, DURATION, tl, ready: false, seek,
+  play() { tl.play(0); initAudio(); }
+};
+
+const startPlayback = () => {
+  window.OPENER.ready = true;
+  if (!location.search.includes('clean')) {
+    tl.play(0);
+    if (btnPlay) btnPlay.textContent = 'Pause';
+    tl.eventCallback('onComplete', () => {
+      if (!isRecording && !location.search.includes('clean')) {
+        tl.pause(0);
+        tl.play(0);
+      }
+    });
+  }
+};
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(startPlayback).catch(startPlayback);
+} else {
+  startPlayback();
+}
+
+/* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
+const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+const btnExport = $('#btn-export');
+const btnExportLabel = $('#btn-export-text');
+const fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group');
+const renderControlsGroup = $('#render-controls-group');
+const btnRenderPause = $('#btn-render-pause');
+const btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause');
+const iconResume = $('#icon-resume');
+
+let isExporting = false;
+let isRenderPaused = false;
+let currentAbortController = null;
+let currentEvtSource = null;
+
+function setExportUiState(exporting) {
+  isExporting = exporting;
+  if (fpsOptionsGroup && renderControlsGroup) {
+    fpsOptionsGroup.style.display = exporting ? 'none' : 'block';
+    renderControlsGroup.style.display = exporting ? 'block' : 'none';
+  }
+  if (!exporting) {
+    isRenderPaused = false;
+    updatePauseButtonUi(false);
+  }
+}
+
+function updatePauseButtonUi(paused) {
+  if (labelRenderPause) labelRenderPause.textContent = paused ? 'Resume Render' : 'Pause Render';
+  if (iconPause) iconPause.style.display = paused ? 'none' : 'inline-block';
+  if (iconResume) iconResume.style.display = paused ? 'inline-block' : 'none';
+}
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = (e) => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', (e) => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+
+  if (fpsOptionsGroup) {
+    const items = fpsOptionsGroup.querySelectorAll('.fps-item');
+    items.forEach(item => {
+      item.onclick = (e) => {
+        e.stopPropagation();
+        fpsMenu.classList.remove('open');
+        const chosenFps = Number(item.dataset.fps) || 240;
+        startExport(chosenFps);
+      };
+    });
+  }
+
+  if (btnRenderPause) {
+    btnRenderPause.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        if (!isRenderPaused) {
+          await fetch('http://127.0.0.1:4004/api/pause');
+          isRenderPaused = true;
+          updatePauseButtonUi(true);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Rendering', 'Paused');
+        } else {
+          await fetch('http://127.0.0.1:4004/api/resume');
+          isRenderPaused = false;
+          updatePauseButtonUi(false);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Paused', 'Rendering');
+        }
+      } catch (err) {
+        console.warn('[Pause/Resume Error]', err);
+      }
+    };
+  }
+
+  if (btnRenderCancel) {
+    btnRenderCancel.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        await fetch('http://127.0.0.1:4004/api/cancel');
+      } catch {}
+      if (currentEvtSource) {
+        currentEvtSource.close();
+        currentEvtSource = null;
+      }
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      btnExportLabel.textContent = 'Cancelled';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 1500);
+    };
+  }
+}
+
+async function startExport(targetFps = 240) {
+  if (isExporting || isRecording) return;
+  if (typeof markUserInteracted === 'function') markUserInteracted();
+
+  // 1. Studio Local Bridge Attempt (Deterministic 60–240 FPS Headless Render)
+  let bridgeAvailable = false;
+  try {
+    const healthRes = await fetch('http://127.0.0.1:4004/api/health', { signal: AbortSignal.timeout(800) });
+    if (healthRes.ok) bridgeAvailable = true;
+  } catch {}
+
+  if (bridgeAvailable) {
+    try {
+      setExportUiState(true);
+      currentAbortController = new AbortController();
+      btnExportLabel.textContent = `Connecting Studio...`;
+
+      try {
+        currentEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
+        currentEvtSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.status === 'rendering' && !isRenderPaused) {
+              btnExportLabel.textContent = `Rendering ${data.percent || 0}% (${targetFps} FPS)`;
+            } else if (data.status === 'paused') {
+              btnExportLabel.textContent = `Paused ${data.percent || 0}% (${targetFps} FPS)`;
+            }
+          } catch {}
+        };
+      } catch {}
+
+      const templatePath = location.pathname.includes('assets/')
+        ? location.pathname.substring(location.pathname.indexOf('assets/'))
+        : 'assets/kinet-reel-hook.html';
+
+      const renderRes = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
+        signal: currentAbortController.signal
+      });
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+
+      if (!renderRes.ok) throw new Error(await renderRes.text());
+
+      btnExportLabel.textContent = 'Saving MP4...';
+      const blob = await renderRes.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const baseName = templatePath.split('/').pop().replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      btnExportLabel.textContent = 'Downloaded!';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 2000);
+      return;
+    } catch (bridgeErr) {
+      if (bridgeErr.name === 'AbortError') {
+        return; // User clicked Cancel Render
+      }
+      console.warn('[Studio Bridge Error, falling back to browser capture]', bridgeErr);
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+      setExportUiState(false);
+    }
+  }
+
+  // 2. Studio Bridge is offline:
+  const isFileOrigin = typeof location !== 'undefined' && location.protocol === 'file:';
+  if (isFileOrigin || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    alert(`[KinetRig Studio Bridge Offline]\n\nUntuk muat turun video ${targetFps} FPS MP4 secara automatik melalui pelayar, sila jalankan arahan ini dalam terminal:\n\nnode scripts/server.mjs\n\nKemudian klik semula Download, atau buka:\nhttp://127.0.0.1:4004`);
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    setExportUiState(false);
+    return;
+  }
+
+  // 3. Standalone In-Browser Clean Screen Recording
+  try {
+    isRecording = true;
+    setExportUiState(true);
+    btnExportLabel.textContent = `Recording ${targetFps} FPS...`;
+    document.body.classList.add('clean-capture');
+
+    if (typeof initAudio === 'function') initAudio();
+    const captureAudio = typeof isAudioMuted !== 'undefined' ? !isAudioMuted : true;
+    let stream;
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      if (captureAudio) {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: true, preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; setExportUiState(false); return;
+          }
+        }
+      } else {
+        try {
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+            audio: false, preferCurrentTab: true
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
+              preferCurrentTab: true
+            });
+          } catch (e) {
+            document.body.classList.remove('clean-capture');
+            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+            isRecording = false; setExportUiState(false); return;
+          }
+        }
+      }
+    } else {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false); return;
+    }
+
+    if (!stream) {
+      document.body.classList.remove('clean-capture');
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false); return;
+    }
+
+    const tracks = [...stream.getVideoTracks()];
+    if (captureAudio) {
+      if (typeof audioDest !== 'undefined' && audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
+        tracks.push(audioDest.stream.getAudioTracks()[0]);
+      } else if (stream.getAudioTracks().length > 0) {
+        tracks.push(stream.getAudioTracks()[0]);
+      }
+    } else {
+      if (stream && stream.getAudioTracks) {
+        stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
+      }
+    }
+    const combinedStream = new MediaStream(tracks);
+
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
+      ? 'video/mp4; codecs="avc1.42E01E"'
+      : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
+
+    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const baseName = (location.pathname.split('/').pop() || 'kinet-reel-hook.html').replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.${ext}`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      isRecording = false; setExportUiState(false);
+      if (typeof tl !== 'undefined' && tl.play) tl.play();
+    };
+
+    if (typeof tl !== 'undefined' && tl.pause) {
+      tl.pause(0);
+      tl.play();
+    }
+    recorder.start(100);
+
+    const durSeconds = typeof DURATION !== 'undefined' ? DURATION : (typeof DUR !== 'undefined' ? DUR : 8.0);
+    setTimeout(() => {
+      if (recorder.state === 'recording') recorder.stop();
+    }, (durSeconds * 1000) + 400);
+
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    isRecording = false; setExportUiState(false);
+  }
+}
+</script>
+</body>
+</html>

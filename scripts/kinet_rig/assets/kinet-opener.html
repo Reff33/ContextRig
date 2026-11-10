@@ -73,6 +73,25 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   filter: drop-shadow(0 0 8px var(--primary-glow));
 }
 
+/* 9:16 Vertical Safe-Zone Layout */
+#stage.ratio-9-16 {
+  width: 1080px; height: 1920px;
+}
+#stage.ratio-9-16 #gl {
+  width: 1080px; height: 1920px;
+}
+#stage.ratio-9-16 .hero {
+  font-size: 64px; max-width: 864px; padding: 0 24px;
+}
+#stage.ratio-9-16 .sub {
+  font-size: 22px; max-width: 780px; padding: 0 24px;
+}
+#stage.ratio-9-16 .card-row {
+  flex-direction: column; width: 85%; max-width: 580px;
+  gap: 16px; margin-top: 36px;
+}
+#stage.ratio-9-16 .vector-card { width: 100%; justify-content: flex-start; }
+
 /* 240 FPS Export & HUD Controls */
 .top-bar { position: fixed; top: 20px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 100; }
 .btn-action {
@@ -94,6 +113,24 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 }
 .btn-action svg {
   width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none;
+}
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 245, 255, 0.35);
+  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(0,245,255,0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease;
+}
+.fps-item:hover {
+  background: rgba(0, 245, 255, 0.2); color: #00F5FF; transform: translateX(2px);
 }
 #ui {
   position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
@@ -202,15 +239,53 @@ body.clean-capture, body.clean-mode { cursor: none !important; }
   </div>
 </div>
 
+<svg style="position: absolute; width: 0; height: 0; pointer-events: none;" aria-hidden="true">
+  <defs>
+    <filter id="rgb-split">
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red"/>
+      <feOffset in="red" dx="10" dy="0" result="red-shift"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue"/>
+      <feOffset in="blue" dx="-10" dy="0" result="blue-shift"/>
+      <feBlend in="red-shift" in2="green" mode="screen" result="rg"/>
+      <feBlend in="rg" in2="blue-shift" mode="screen"/>
+    </filter>
+  </defs>
+</svg>
+
 <div class="top-bar">
   <button class="btn-action active" id="btn-hud" title="Toggle HUD (H)">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>HUD (H)</span>
   </button>
-  <button class="btn-action" id="btn-export">
-    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
-  </button>
+  <div class="export-dropdown" style="position: relative;">
+    <button class="btn-action" id="btn-export" title="Select Framerate & Export Video">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary);background:rgba(0,245,255,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="ui">
@@ -229,7 +304,7 @@ import * as THREE from 'three';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const Q = new URLSearchParams(location.search);
-let isRecording = false;
+let isRecording = false, isExporting = false;
 
 /* ============ THREE.JS 144 FPS PARTICLES ============ */
 const canvas = $('#gl');
@@ -305,12 +380,11 @@ const sfxRawBuffers = {};
 const sfxAudioBuffers = {};
 
 async function fetchSfxArrayBuffer(rel) {
-  const tryUrls = [
-    '../sfx/' + rel,
-    '../../sfx/' + rel,
-    'sfx/' + rel,
-    `${SFX_CDN_BASE}/${rel}`
-  ];
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? ['../sfx/' + rel, '../../sfx/' + rel, 'sfx/' + rel, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
   for (const u of tryUrls) {
     try {
       const res = await fetch(u);
@@ -380,6 +454,24 @@ function startAmbientBed() {
   } catch (e) {}
 }
 
+let hasUserInteracted = false;
+function markUserInteracted() {
+  hasUserInteracted = true;
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().then(() => {
+      startAmbientBed();
+    }).catch(() => {});
+  }
+}
+window.addEventListener('pointerdown', markUserInteracted, { capture: true });
+window.addEventListener('keydown', markUserInteracted, { capture: true });
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
+    markUserInteracted();
+    initAudio();
+  }
+});
+
 const initAudio = () => {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -395,7 +487,11 @@ const initAudio = () => {
     }
   }
   if (audioCtx) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (hasUserInteracted && audioCtx.state === 'suspended') {
+      audioCtx.resume().then(() => {
+        startAmbientBed();
+      }).catch(() => {});
+    }
     for (const [id, ab] of Object.entries(sfxRawBuffers)) {
       if (!sfxAudioBuffers[id]) {
         audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
@@ -403,22 +499,17 @@ const initAudio = () => {
         }).catch(() => {});
       }
     }
-    startAmbientBed();
+    if (audioCtx.state === 'running') {
+      startAmbientBed();
+    }
   }
   return audioCtx;
 };
 
-window.addEventListener('click', initAudio);
-window.addEventListener('keydown', initAudio);
-window.addEventListener('message', e => {
-  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
-    initAudio();
-  }
-});
-
 function triggerSfx(sfxId, fallbackFn, gain = 0.5) {
+  if (!hasUserInteracted && (!audioCtx || audioCtx.state !== 'running')) return;
   const ctx = initAudio();
-  if (ctx && sfxAudioBuffers[sfxId]) {
+  if (ctx && ctx.state === 'running' && sfxAudioBuffers[sfxId]) {
     try {
       const src = ctx.createBufferSource();
       src.buffer = sfxAudioBuffers[sfxId];
@@ -431,7 +522,7 @@ function triggerSfx(sfxId, fallbackFn, gain = 0.5) {
       return;
     } catch (e) {}
   }
-  if (typeof fallbackFn === 'function') fallbackFn();
+  if (ctx && ctx.state === 'running' && typeof fallbackFn === 'function') fallbackFn();
 }
 
 /* ============ ZERO-DEPENDENCY PROCEDURAL FALLBACK SYNTHESIZERS ============ */
@@ -615,6 +706,7 @@ tl.to(S, { camZ: 11, duration: 4.8, ease: 'none' }, 0);
 
 // 1. Headline 1 slam (snappy 0.45s deceleration matching 350ms sub-bass decay)
 tl.fromTo('#h1-sc1', { opacity: 0, scale: 0.85, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: 'expo.out' }, 0.2);
+tl.fromTo('#world', { filter: 'url(#rgb-split) contrast(1.3)' }, { filter: 'none', duration: 0.14, ease: 'power2.out' }, 0.20);
 tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.85), null, 0.20);
 
 // 2. Subtitle upward glide (smooth 0.5s reveal)
@@ -648,6 +740,7 @@ tl.set('#sc2', { autoAlpha: 1 }, 5.0);
 
 // 7. Hero Headline 2 slam (snappy 0.45s deceleration locking to 5.20s sub-bass impact)
 tl.fromTo('#h1-sc2', { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'expo.out' }, 5.2);
+tl.fromTo('#world', { filter: 'url(#rgb-split) contrast(1.3)' }, { filter: 'none', duration: 0.14, ease: 'power2.out' }, 5.20);
 tl.call(() => triggerSfx('impact-deep-soft', playImpact, 0.85), null, 5.20);
 
 // 8. Scene 2 CLI subtitle box reveal (J-cut 50ms ahead of ease)
@@ -683,8 +776,18 @@ const audioManifest = {
 
 /* ============ STAGE FIT & CONTROLS ============ */
 const stage = $('#stage');
+if (Q.get('ratio') === '9:16') {
+  stage.classList.add('ratio-9-16');
+}
+
 const fit = () => {
-  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  const isV = stage.classList.contains('ratio-9-16');
+  const bw = isV ? 1080 : 1920;
+  const bh = isV ? 1920 : 1080;
+  renderer.setSize(bw, bh);
+  camera.aspect = bw / bh;
+  if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
+  const s = Math.min(innerWidth / bw, innerHeight / bh);
   stage.style.transform = `translate(-50%, -50%) scale(${s})`;
 };
 addEventListener('resize', fit); fit();
@@ -692,16 +795,16 @@ addEventListener('resize', fit); fit();
 const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
 let scrubbing = false;
 (function frame() {
+  requestAnimationFrame(frame);
   const t = tl.time();
-  if (!isRecording && !Q.has('clean') && t >= DURATION) {
+  if (!isRecording && !Q.has('clean') && (t >= DURATION || tl.progress() >= 1)) {
     tl.pause(0);
     tl.play(0);
-    return requestAnimationFrame(frame);
   }
   render(t);
-  clock.textContent = t.toFixed(2) + 's';
-  if (!scrubbing) scrub.value = String((t / DURATION) * 1000);
-  requestAnimationFrame(frame);
+  const curDisplay = Math.min(t, DURATION);
+  clock.textContent = curDisplay.toFixed(2) + 's';
+  if (!scrubbing) scrub.value = String((curDisplay / DURATION) * 1000);
 })();
 
 const toggle = () => {
@@ -762,19 +865,204 @@ document.fonts.ready.then(() => {
   window.OPENER.ready = true;
   if (!Q.has('clean')) {
     tl.play(0);
-    tl.eventCallback('onComplete', () => { if (!isRecording) tl.play(0); });
+    tl.eventCallback('onComplete', () => {
+      if (!isRecording) {
+        tl.pause(0);
+        tl.play(0);
+      }
+    });
   }
 });
 
-/* ============ 144 FPS CLEAN VIDEO EXPORTER ============ */
+/* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
 const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
 const btnExport = $('#btn-export');
 const btnExportLabel = $('#btn-export-text');
-btnExport.onclick = async () => {
-  if (isRecording) return;
+const fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group');
+const renderControlsGroup = $('#render-controls-group');
+const btnRenderPause = $('#btn-render-pause');
+const btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause');
+const iconResume = $('#icon-resume');
+
+let isRenderPaused = false;
+let currentAbortController = null;
+let currentEvtSource = null;
+
+function setExportUiState(exporting) {
+  isExporting = exporting;
+  if (fpsOptionsGroup && renderControlsGroup) {
+    fpsOptionsGroup.style.display = exporting ? 'none' : 'block';
+    renderControlsGroup.style.display = exporting ? 'block' : 'none';
+  }
+  if (!exporting) {
+    isRenderPaused = false;
+    updatePauseButtonUi(false);
+  }
+}
+
+function updatePauseButtonUi(paused) {
+  if (labelRenderPause) labelRenderPause.textContent = paused ? 'Resume Render' : 'Pause Render';
+  if (iconPause) iconPause.style.display = paused ? 'none' : 'inline-block';
+  if (iconResume) iconResume.style.display = paused ? 'inline-block' : 'none';
+}
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = (e) => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+
+  document.addEventListener('click', (e) => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+
+  $$('#fps-options-group .fps-item').forEach(item => {
+    item.onclick = (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      const chosenFps = Number(item.dataset.fps) || 240;
+      startExport(chosenFps);
+    };
+  });
+
+  if (btnRenderPause) {
+    btnRenderPause.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        if (!isRenderPaused) {
+          await fetch('http://127.0.0.1:4004/api/pause');
+          isRenderPaused = true;
+          updatePauseButtonUi(true);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Rendering', 'Paused');
+        } else {
+          await fetch('http://127.0.0.1:4004/api/resume');
+          isRenderPaused = false;
+          updatePauseButtonUi(false);
+          btnExportLabel.textContent = btnExportLabel.textContent.replace('Paused', 'Rendering');
+        }
+      } catch (err) {
+        console.warn('[Pause/Resume Error]', err);
+      }
+    };
+  }
+
+  if (btnRenderCancel) {
+    btnRenderCancel.onclick = async (e) => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      if (!isExporting) return;
+      try {
+        await fetch('http://127.0.0.1:4004/api/cancel');
+      } catch {}
+      if (currentEvtSource) {
+        currentEvtSource.close();
+        currentEvtSource = null;
+      }
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      btnExportLabel.textContent = 'Cancelled';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 1500);
+    };
+  }
+}
+
+async function startExport(targetFps = 240) {
+  if (isExporting || isRecording) return;
+  markUserInteracted();
+
+  // 1. Studio Local Bridge Attempt (Deterministic 60–240 FPS Headless Render)
+  let bridgeAvailable = false;
+  try {
+    const healthRes = await fetch('http://127.0.0.1:4004/api/health', { signal: AbortSignal.timeout(800) });
+    if (healthRes.ok) bridgeAvailable = true;
+  } catch {}
+
+  if (bridgeAvailable) {
+    try {
+      setExportUiState(true);
+      currentAbortController = new AbortController();
+      btnExportLabel.textContent = `Connecting Studio...`;
+
+      try {
+        currentEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
+        currentEvtSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.status === 'rendering' && !isRenderPaused) {
+              btnExportLabel.textContent = `Rendering ${data.percent || 0}% (${targetFps} FPS)`;
+            } else if (data.status === 'paused') {
+              btnExportLabel.textContent = `Paused ${data.percent || 0}% (${targetFps} FPS)`;
+            }
+          } catch {}
+        };
+      } catch {}
+
+      const templatePath = location.pathname.includes('assets/')
+        ? location.pathname.substring(location.pathname.indexOf('assets/'))
+        : 'assets/kinet-opener.html';
+
+      const renderRes = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
+        signal: currentAbortController.signal
+      });
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+
+      if (!renderRes.ok) throw new Error(await renderRes.text());
+
+      btnExportLabel.textContent = 'Saving MP4...';
+      const blob = await renderRes.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const baseName = templatePath.split('/').pop().replace('.html', '');
+      a.download = `${baseName}_${targetFps}fps.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      btnExportLabel.textContent = 'Downloaded!';
+      setTimeout(() => {
+        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+        setExportUiState(false);
+      }, 2000);
+      return;
+    } catch (bridgeErr) {
+      if (bridgeErr.name === 'AbortError') {
+        return; // User clicked Cancel Render
+      }
+      console.warn('[Studio Bridge Error, falling back to browser capture]', bridgeErr);
+      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
+      setExportUiState(false);
+    }
+  }
+
+  // 2. Studio Bridge is offline:
+  // In file:/// protocol, browser screen capture is physically restricted by browser security
+  const isFileOrigin = typeof location !== 'undefined' && location.protocol === 'file:';
+  if (isFileOrigin || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    alert(`[KinetRig Studio Bridge Offline]\n\nUntuk muat turun video ${targetFps} FPS MP4 secara automatik melalui pelayar, sila jalankan arahan ini dalam terminal:\n\nnode scripts/server.mjs\n\nKemudian klik semula Download, atau buka:\nhttp://127.0.0.1:4004`);
+    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+    setExportUiState(false);
+    return;
+  }
+
+  // 3. Standalone In-Browser Clean Screen Recording (Zero Server Dependency, Zero Console Errors)
   try {
     isRecording = true;
-    btnExportLabel.textContent = 'Recording 240 FPS...';
+    setExportUiState(true);
+    btnExportLabel.textContent = `Recording ${targetFps} FPS...`;
     document.body.classList.add('clean-capture');
 
     initAudio();
@@ -784,13 +1072,13 @@ btnExport.onclick = async () => {
       if (captureAudio) {
         try {
           stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
             audio: true, preferCurrentTab: true
           });
         } catch {
           try {
             stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
               preferCurrentTab: true
             });
           } catch (e) {
@@ -802,13 +1090,13 @@ btnExport.onclick = async () => {
       } else {
         try {
           stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
             audio: false, preferCurrentTab: true
           });
         } catch {
           try {
             stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: 240, min: 60 } },
+              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
               preferCurrentTab: true
             });
           } catch (e) {
@@ -825,7 +1113,7 @@ btnExport.onclick = async () => {
         }
       }
     } else {
-      stream = canvas.captureStream(240);
+      stream = canvas.captureStream(targetFps);
     }
 
     if (!stream) {
@@ -858,12 +1146,14 @@ btnExport.onclick = async () => {
       const blob = new Blob(chunks, { type: mimeType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `KinetRig-Opener.${ext}`;
+      a.href = url; a.download = `KinetRig-Opener_${targetFps}fps.${ext}`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
       btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-      isRecording = false; tl.play();
+      isRecording = false;
+      setExportUiState(false);
+      tl.play(0);
     };
 
     tl.pause(0); recorder.start(); tl.play();
@@ -878,8 +1168,9 @@ btnExport.onclick = async () => {
     document.body.classList.remove('clean-capture');
     btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
     isRecording = false;
+    setExportUiState(false);
   }
-};
+}
 </script>
 </body>
 </html>

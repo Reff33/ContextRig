@@ -131,13 +131,24 @@ In high-end studio motion graphics, visual movement without sound feels lifeless
    - **Whip-Pans & World Traveling (350–550ms whoosh):** Camera travel velocity apex must align with the whoosh transient peak. Travel duration MUST be snappy ($\Delta t = 0.9\text{s} - 1.2\text{s}$) with `power3.inOut` or `power4.inOut`—never a 2.0s sluggish crawl against a 0.4s whoosh.
    - **Risers & Exit Sweeps (600–1000ms):** Element exit acceleration must ramp exponentially (`power2.in` or `power3.in`) mirroring the frequency riser slope.
 
-### The 6 Motion Graphics Sound Archetypes
+6. **Law 6: Kinematic Surface-Aware Footstep Cadence Protocol:**
+   Character locomotion (walking/running) is never a static sound block. In studio production (Pixar, Disney, AAA game cinematic engines), character movement is synchronized to discrete foot-plants:
+   - **Cadence Subdivision:** Divide duration by step period $T_{\text{step}} = 0.39\text{s}$:
+     $$N_{\text{steps}} = \left\lfloor \frac{T_{\text{walk}}}{0.39} \right\rfloor, \quad T_k = T_{\text{start}} + k \times 0.39\text{s}$$
+   - **Alternating Micro-Pitch Modulation:** Alternate foot pitches ($\pm 3\%$, Left foot $\times 0.97$, Right foot $\times 1.03$) to eliminate mechanical repetition.
+   - **Surface Material Acoustics:**
+     - **Grass / Lawn / Turf:** Damped ground body (85Hz ramping exponentially to 28Hz over 80ms) + 420Hz lowpass filtered fibrous noise.
+     - **Wood / Parquet / Stage:** Resonant hollow impact (140Hz decaying to 40Hz) + 680Hz bandpass mechanical friction.
+     - **Stone / Concrete:** High-density transient tap (190Hz body) + highpass grit tap (1200Hz).
+
+### The 7 Motion Graphics Sound Archetypes
 
 | Visual Movement | Sound Archetype | Acoustic Recipe |
 | --- | --- | --- |
 | **Hero Statement Slam** | `playImpact()` | Pure sine 220Hz -> 60Hz + 15ms soft attack + subtle 520Hz glass sheen |
 | **Tactile Card Landing** | `playCardPop()` | Soft felt paper touch / tap (`foley-card-touch`, `click-tap-soft`) |
 | **Paper / Card Slide** | `playPaperSlide()` | Velvety fibrous friction sweep (`foley-paper-slide`) |
+| **Character Footstep** | `playFootstep(pitch, surface)` | Low damped body (85Hz/140Hz) + surface texture noise (420Hz/680Hz) |
 | **Element Exit / Vanish** | `playExitSweep()` | Motivated upward sine lift 180Hz -> 480Hz |
 | **3D Camera Traveling / Push** | `playWhoosh()` | J-cut velvet pink-noise bandpass filter sweep 350Hz -> 1100Hz |
 | **CLI / Code Box Reveal** | `playTerminalChirp()` | Tactile dual-tone crystal chime 840Hz + 1120Hz |
@@ -214,3 +225,27 @@ For studio deliverables, KinetRig bridges the open CC0 `wyzowl/sfx-kit` library 
 3. **Zero-Dependency Fallback:**
    If `sfx/` is not present, `audio-synth.mjs` seamlessly falls back to pure mathematical procedural Web Audio synthesis with 0 dropped frames.
 
+---
+
+## 7. Enterprise AI Audio Intelligence Architecture (The 5-Layer Engine)
+
+To match the audio production quality of enterprise motion engines (Runway, Remotion, Apple product films), KinetRig incorporates an automated 5-layer intelligence pipeline:
+
+1. **Layer 1: Semantic Scene Classifier:**
+   Parses on-screen DOM text, headings, and tags (`<h1>`, `<p>`, `<code>`, `.pill`) using semantic keyword dictionaries to classify the video into one of 10 archetype universes (`tech_cli`, `metrics_data`, `editorial_paper`, `showcase_glass`, `chat_dialogue`, `cinema_space`, `vintage_engraving`, `stage_theatre`, `collage_pop`, `flow_action`).
+
+2. **Layer 2: Dynamic Motion Telemetry ($v = \frac{dx}{dt}$):**
+   Calculates tween velocity from spatial displacement ($\Delta x, \Delta y$), camera depth ($\Delta z$), and easing curves. High-velocity transitions automatically apply J-Cut anticipation ($t - 0.04\text{s}$), while decelerating landings trigger on physical surface contact.
+
+3. **Layer 3: Material-to-Sound Ontology:**
+   Maps visual DOM selectors to tactile physical materials:
+   - Paper / Cards / Vellum $\to$ Velvet paper slides, fibrous drops.
+   - Glass / Lens / Mirrors $\to$ Crystalline tintinnabulation, high-frequency pings.
+   - Heavy Metal / Chassis $\to$ Dense sub-bass thuds, mechanical clatters.
+   - Digital / Pixels / Terminal $\to$ Dual-tone chimes, snappy square blips.
+
+4. **Layer 4: Organic Micro-Jitter Engine (Anti-Machine-Gun):**
+   Repeated triggers apply deterministic pseudo-random modulation ($\pm 4\%$ pitch, $\pm 80\text{Hz}$ filter cutoff, $\pm 8\text{ms}$ timing jitter) to completely eradicate mechanical artificiality.
+
+5. **Layer 5: Continuous Acoustic Sandwich:**
+   Eliminates digital dead silence by laying a subtle continuous room tone / sub-drone bed at $-26\text{dB}$ beneath Layer 2 tactile micro-foley ($-10\text{dB}$) and Layer 3 hero impacts ($0\text{dB}$).
