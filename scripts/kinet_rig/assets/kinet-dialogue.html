@@ -420,11 +420,11 @@ if (btnAudio) btnAudio.onclick = toggleAudio;
 
 /* ============ ENTERPRISE HYBRID AI AUDIO INTELLIGENCE ARCHITECTURE ============ */
 const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+// Only the long musical cues use kit WAVs. Chat micro-SFX are synthesized so
+// typing / send / receive / waiting each get a clearly different timbre.
 const STUDIO_SFX = {
-  msg_pop: 'sounds/foley/foley-card-touch.wav',
-  typing_blip: 'sounds/digital/digital-blip-clear.wav',
   whoosh: 'sounds/whooshes/whoosh-medium-soft.wav',
-  sub_reveal: 'sounds/tones/tone-step-2.wav'
+  sub_reveal: 'sounds/tones/tone-ding-mid.wav'
 };
 
 const sfxAudioBuffers = {};
@@ -559,8 +559,9 @@ function triggerSfx(sfxId, fallbackFn, gain = 0.5, pitchRate = 1.0) {
   if (typeof fallbackFn === 'function') fallbackFn();
 }
 
-function playMessagePop(freq = 640) {
-  triggerSfx('msg_pop', () => {
+/* --- SEND: short upward bubble "bloop" (outgoing) --- */
+function playSendPop() {
+  triggerSfx('send_pop', () => {
     const ctx = initAudio();
     if (!ctx || ctx.state !== 'running') return;
     const now = ctx.currentTime;
@@ -568,22 +569,23 @@ function playMessagePop(freq = 640) {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-      osc.frequency.exponentialRampToValueAtTime(freq * 0.7, now + 0.08);
+      osc.frequency.setValueAtTime(420, now);
+      osc.frequency.exponentialRampToValueAtTime(760, now + 0.055);
       g.gain.setValueAtTime(0.0001, now);
-      g.gain.linearRampToValueAtTime(0.18, now + 0.005);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+      g.gain.linearRampToValueAtTime(0.26, now + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
       osc.connect(g);
       g.connect(mainMasterGain || ctx.destination);
       if (audioDest && !mainMasterGain) g.connect(audioDest);
       osc.start(now);
-      osc.stop(now + 0.10);
+      osc.stop(now + 0.13);
     } catch (e) {}
-  }, 0.55, freq / 600);
+  }, 0.62, 1.0);
 }
 
-function playTypingBlip() {
-  triggerSfx('typing_blip', () => {
+/* --- RECEIVE: downward bubble "bloop" (incoming, lower & softer) --- */
+function playReceivePop() {
+  triggerSfx('receive_pop', () => {
     const ctx = initAudio();
     if (!ctx || ctx.state !== 'running') return;
     const now = ctx.currentTime;
@@ -591,18 +593,77 @@ function playTypingBlip() {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(880, now);
-      osc.frequency.exponentialRampToValueAtTime(1100, now + 0.04);
+      osc.frequency.setValueAtTime(680, now);
+      osc.frequency.exponentialRampToValueAtTime(430, now + 0.06);
       g.gain.setValueAtTime(0.0001, now);
-      g.gain.linearRampToValueAtTime(0.08, now + 0.004);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      g.gain.linearRampToValueAtTime(0.18, now + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
       osc.connect(g);
       g.connect(mainMasterGain || ctx.destination);
       if (audioDest && !mainMasterGain) g.connect(audioDest);
       osc.start(now);
-      osc.stop(now + 0.06);
+      osc.stop(now + 0.14);
     } catch (e) {}
-  }, 0.35, 1.0);
+  }, 0.50, 1.0);
+}
+
+/* --- TYPING: dry high-frequency key click (noise burst, no pitch) --- */
+function playTypingTap() {
+  triggerSfx('typing_tap', () => {
+    const ctx = initAudio();
+    if (!ctx || ctx.state !== 'running') return;
+    const now = ctx.currentTime;
+    try {
+      const len = Math.floor(ctx.sampleRate * 0.018);
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(2200 + Math.random() * 700, now);
+      bp.Q.value = 1.6;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.13, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+      src.connect(bp); bp.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start(now);
+    } catch (e) {}
+  }, 0.10, 0.94 + Math.random() * 0.12);
+}
+
+/* --- WAITING: soft low "processing" swell (distinct from pops: low, slow, no click) --- */
+function playThinkingPulse() {
+  triggerSfx('thinking_pulse', () => {
+    const ctx = initAudio();
+    if (!ctx || ctx.state !== 'running') return;
+    const now = ctx.currentTime;
+    try {
+      // Low sine swell + gentle tremolo: reads as "thinking", not a notification
+      const osc = ctx.createOscillator();
+      const trem = ctx.createOscillator();
+      const tremGain = ctx.createGain();
+      const g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(330, now);
+      osc.frequency.linearRampToValueAtTime(392, now + 0.26);
+      trem.type = 'sine';
+      trem.frequency.setValueAtTime(14, now);
+      tremGain.gain.setValueAtTime(0.02, now);
+      trem.connect(tremGain); tremGain.connect(g.gain);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.10, now + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+      osc.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      osc.start(now); trem.start(now);
+      osc.stop(now + 0.30); trem.stop(now + 0.30);
+    } catch (e) {}
+  }, 0.16, 1.0);
 }
 
 function playChime() {
@@ -611,21 +672,24 @@ function playChime() {
     if (!ctx || ctx.state !== 'running') return;
     const now = ctx.currentTime;
     try {
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(520, now);
-      osc.frequency.exponentialRampToValueAtTime(1040, now + 0.15);
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.linearRampToValueAtTime(0.25, now + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-      osc.connect(g);
-      g.connect(mainMasterGain || ctx.destination);
-      if (audioDest && !mainMasterGain) g.connect(audioDest);
-      osc.start(now);
-      osc.stop(now + 0.40);
+      // Soft notification chime: two-note ascending ding
+      const notes = [[523.25, 0], [783.99, 0.12]];
+      for (const [f, dt] of notes) {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + dt);
+        g.gain.setValueAtTime(0.0001, now + dt);
+        g.gain.linearRampToValueAtTime(0.16, now + dt + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + dt + 0.30);
+        osc.connect(g);
+        g.connect(mainMasterGain || ctx.destination);
+        if (audioDest && !mainMasterGain) g.connect(audioDest);
+        osc.start(now + dt);
+        osc.stop(now + dt + 0.32);
+      }
     } catch (e) {}
-  }, 0.65, 1.0);
+  }, 0.55, 1.0);
 }
 
 const fit = () => {
@@ -680,11 +744,11 @@ tl.to(typedObj1, {
   }
 }, 0.14);
 
-// Mechanical Typing Blips
-tl.call(playTypingBlip, null, 0.20);
-tl.call(playTypingBlip, null, 0.35);
-tl.call(playTypingBlip, null, 0.50);
-tl.call(playTypingBlip, null, 0.65);
+// Mechanical Typing Taps (dry key clicks)
+tl.call(playTypingTap, null, 0.20);
+tl.call(playTypingTap, null, 0.35);
+tl.call(playTypingTap, null, 0.50);
+tl.call(playTypingTap, null, 0.65);
 
 // Send Button Active Click & Message 1 Dispatch at 0.76s
 tl.to('#btnSend', { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 0.74);
@@ -698,7 +762,7 @@ tl.fromTo('#m1',
   { opacity: 1, y: 0, scale: 1, duration: 0.40, ease: 'back.out(1.8)' },
   0.78
 );
-tl.call(() => playMessagePop(560), null, 0.78);
+tl.call(playSendPop, null, 0.78);
 
 // 2. Typing Dots Wave: AI is composing message (1.00s - 1.85s)
 tl.to('#chatDevice', { rotateX: -1, rotateY: 2, y: -4, duration: 0.85, ease: 'power2.inOut' }, 0.95);
@@ -708,8 +772,8 @@ tl.fromTo('#dots',
   1.00
 );
 tl.to('#dots span', { y: -8, duration: 0.18, stagger: 0.08, repeat: 2, yoyo: true, ease: 'sine.inOut' }, 1.05);
-tl.call(playTypingBlip, null, 1.10);
-tl.call(playTypingBlip, null, 1.35);
+tl.call(playThinkingPulse, null, 1.10);
+tl.call(playThinkingPulse, null, 1.35);
 
 // Typing dots vanish before message pop (pure reality chat logic)
 tl.to('#dots', { opacity: 0, scale: 0.6, duration: 0.15 }, 1.80);
@@ -721,7 +785,7 @@ tl.fromTo('#m2',
   { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: 'back.out(1.8)' },
   1.88
 );
-tl.call(() => playMessagePop(700), null, 1.88);
+tl.call(playReceivePop, null, 1.88);
 
 // Voice memo waveform reactive dance
 tl.fromTo('#waveform span',
@@ -736,7 +800,7 @@ tl.fromTo('#react1',
   { scale: 1, rotation: 0, duration: 0.38, ease: 'elastic.out(1.8, 0.4)' },
   2.30
 );
-tl.call(playTypingBlip, null, 2.30);
+tl.call(playTypingTap, null, 2.30);
 
 // 4. Question 2 Diegetic Human Typing (2.70s - 3.35s)
 tl.to('#chatDevice', { rotateX: 5, rotateY: -2, y: 10, duration: 0.55, ease: 'power2.out' }, 2.70);
@@ -752,9 +816,9 @@ tl.to(typedObj2, {
   }
 }, 2.75);
 
-tl.call(playTypingBlip, null, 2.80);
-tl.call(playTypingBlip, null, 3.00);
-tl.call(playTypingBlip, null, 3.20);
+tl.call(playTypingTap, null, 2.80);
+tl.call(playTypingTap, null, 3.00);
+tl.call(playTypingTap, null, 3.20);
 
 // Send Question 2 at 3.32s
 tl.to('#btnSend', { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1 }, 3.30);
@@ -768,7 +832,7 @@ tl.fromTo('#m3',
   { opacity: 1, y: 0, scale: 1, duration: 0.40, ease: 'back.out(2)' },
   3.35
 );
-tl.call(() => playMessagePop(560), null, 3.35);
+tl.call(playSendPop, null, 3.35);
 
 // 5. Typing dots 2 (AI prepares terminal card) (3.65s - 4.35s)
 tl.fromTo('#dots2',
@@ -777,8 +841,8 @@ tl.fromTo('#dots2',
   3.65
 );
 tl.to('#dots2 span', { y: -8, duration: 0.18, stagger: 0.08, repeat: 2, yoyo: true, ease: 'sine.inOut' }, 3.70);
-tl.call(playTypingBlip, null, 3.75);
-tl.call(playTypingBlip, null, 4.00);
+tl.call(playThinkingPulse, null, 3.75);
+tl.call(playThinkingPulse, null, 4.00);
 tl.to('#dots2', { opacity: 0, scale: 0.6, duration: 0.15 }, 4.35);
 
 // 6. Terminal Card Appears cleanly full-width without overflow (4.40s)
@@ -792,7 +856,7 @@ tl.fromTo('#m4',
   { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(1.8)' },
   4.40
 );
-tl.call(() => playMessagePop(720), null, 4.40);
+tl.call(playReceivePop, null, 4.40);
 
 // Terminal State Progression: INITIALIZING -> READY · DEPLOYED with Crystal Chime (4.90s)
 tl.call(() => {

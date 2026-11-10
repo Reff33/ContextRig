@@ -432,7 +432,7 @@ tl.to('#curtainR', { xPercent: 100, duration: 0.85, ease: 'power3.inOut' }, 0.10
 tl.fromTo(P1.w.root, { y: -260, sx: 0.78, sy: 1.35 }, { y: 0, sx: 1.25, sy: 0.75, duration: 0.38, ease: 'power3.in', onUpdate: P1.w.root.apply }, 0.20);
 tl.to(P1.w.root, { sx: 1, sy: 1, duration: 0.45, ease: 'elastic.out(1.5, 0.35)', onUpdate: P1.w.root.apply }, 0.58);
 tl.fromTo(P1.w.sd, { scaleX: 0.2, opacity: 0 }, { scaleX: 1, opacity: 0.13, duration: 0.38, ease: 'power3.in' }, 0.20);
-tl.call(() => triggerSfx('foley-card-touch', () => playFootstep(0.9, 'grass'), 0.55), null, 0.58);
+tl.call(() => playFootstep(0.9, 'grass'), null, 0.58);
 
 idle(P1.w, 0.6);
 P1.clothes.forEach((c, i) => sway(c, i * 0.2, 6, 1.3 + i * 0.15));
@@ -456,9 +456,8 @@ face(P1.w, 'surprised', 4.9);
 for (let step = 0; step < 4; step++) {
   const stepTime = +(3.20 + (step * 0.39)).toFixed(2);
   const isRight = step % 2 === 0;
-  const pFactor = isRight ? 1.03 : 0.97;
-  const gain = isRight ? 0.35 : 0.32;
-  tl.call(() => triggerSfx('foley-card-touch', () => playFootstep(pFactor, 'grass'), gain), null, stepTime);
+  const pFactor = isRight ? 1.05 : 0.95;
+  tl.call(() => playFootstep(pFactor, 'grass'), null, stepTime);
 }
 tl.call(() => triggerSfx('digital-blip-clear', playBlip, 0.45), null, 4.90);
 
@@ -667,35 +666,37 @@ function playFootstep(pitchMod = 1.0, surface = 'grass') {
   if (!ctx || ctx.state !== 'running') return;
   const now = ctx.currentTime;
   try {
-    // 1. Damped ground body (85Hz down to 28Hz)
+    // 1. Heel transient: damped thud (95Hz -> 30Hz)
     const osc = ctx.createOscillator();
     const gOsc = ctx.createGain();
     osc.type = 'sine';
-    const baseF = surface === 'wood' ? 140 : 85;
+    const baseF = surface === 'wood' ? 150 : 95;
     osc.frequency.setValueAtTime(baseF * pitchMod, now);
-    osc.frequency.exponentialRampToValueAtTime(28, now + 0.08);
-    gOsc.gain.setValueAtTime(0.24, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.07);
+    gOsc.gain.setValueAtTime(0.28, now);
     gOsc.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
     osc.connect(gOsc); gOsc.connect(mainMasterGain || ctx.destination);
     if (audioDest && !mainMasterGain) gOsc.connect(audioDest);
     osc.start(now); osc.stop(now + 0.10);
 
-    // 2. Fibrous surface texture layer (filtered noise)
-    const bufLen = Math.floor(ctx.sampleRate * 0.07);
+    // 2. Toe-off scuff: fibrous brush 55ms after heel strike
+    const scuffDelay = now + 0.055;
+    const bufLen = Math.floor(ctx.sampleRate * 0.09);
     const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
     const data = buf.getChannelData(0);
-    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufLen, 2);
     const noise = ctx.createBufferSource();
     noise.buffer = buf;
     const filter = ctx.createBiquadFilter();
-    filter.type = surface === 'wood' ? 'bandpass' : 'lowpass';
-    filter.frequency.setValueAtTime((surface === 'wood' ? 680 : 420) * pitchMod, now);
+    filter.type = surface === 'wood' ? 'bandpass' : 'bandpass';
+    filter.frequency.setValueAtTime((surface === 'wood' ? 900 : 550) * pitchMod, scuffDelay);
+    filter.Q.value = 0.8;
     const gNoise = ctx.createGain();
-    gNoise.gain.setValueAtTime(surface === 'grass' ? 0.16 : 0.12, now);
-    gNoise.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    gNoise.gain.setValueAtTime(surface === 'grass' ? 0.20 : 0.14, scuffDelay);
+    gNoise.gain.exponentialRampToValueAtTime(0.0001, scuffDelay + 0.085);
     noise.connect(filter); filter.connect(gNoise); gNoise.connect(mainMasterGain || ctx.destination);
     if (audioDest && !mainMasterGain) gNoise.connect(audioDest);
-    noise.start(now);
+    noise.start(scuffDelay);
   } catch (e) {}
 }
 

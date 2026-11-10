@@ -13,7 +13,7 @@
 
 import http from 'node:http';
 import fs from 'node:fs';
-import { resolve, join, extname, basename } from 'node:path';
+import { resolve, join, extname, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderTimeline } from './render.mjs';
 
@@ -216,8 +216,35 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 4. Static file serving (e.g. preview.html, assets/*)
+  // 4. JIT On-Demand Audio Auto-Download & Cache (wyzowl/sfx-kit)
+  if (pathname.includes('/sounds/') || pathname.endsWith('.wav')) {
+    const relMatch = pathname.match(/sounds\/[^\s\?#]+/);
+    if (relMatch) {
+      const relPath = relMatch[0];
+      const localSfxPath = resolve(ROOT_DIR, 'sfx', relPath);
+      if (!fs.existsSync(localSfxPath)) {
+        const remoteUrl = `https://raw.githubusercontent.com/wyzowl/sfx-kit/main/${relPath}`;
+        try {
+          console.log(`[Studio Bridge] JIT auto-downloading on-demand SFX: ${relPath}...`);
+          const fetchRes = await fetch(remoteUrl);
+          if (fetchRes.ok) {
+            const ab = await fetchRes.arrayBuffer();
+            fs.mkdirSync(dirname(localSfxPath), { recursive: true });
+            fs.writeFileSync(localSfxPath, Buffer.from(ab));
+            console.log(`[Studio Bridge] Successfully cached to disk: ${relPath}`);
+          }
+        } catch (err) {
+          console.warn(`[Studio Bridge] Failed to auto-download ${remoteUrl}:`, err.message);
+        }
+      }
+    }
+  }
+
+  // 5. Static file serving (e.g. preview.html, assets/*)
   let staticPath = resolve(ROOT_DIR, pathname === '/' ? 'preview.html' : pathname.replace(/^\/+/, ''));
+  if (!fs.existsSync(staticPath)) {
+    staticPath = resolve(ROOT_DIR, 'sfx', pathname.replace(/^\/+/, ''));
+  }
   if (!fs.existsSync(staticPath)) {
     staticPath = resolve(process.cwd(), pathname.replace(/^\/+/, ''));
   }

@@ -216,7 +216,32 @@ function createMockEnvironment() {
       return { add: () => {}, rotation: { x: 0, y: 0, z: 0 }, position: { set: () => {} } };
     },
     BoxGeometry: function() {},
+    IcosahedronGeometry: function() {
+      const dummyAttr = {
+        count: 0,
+        getX: () => 0,
+        getY: () => 0,
+        getZ: () => 0,
+        setXYZ: () => {},
+        clone: function() { return this; }
+      };
+      return {
+        attributes: {
+          position: dummyAttr
+        },
+        computeVertexNormals: () => {}
+      };
+    },
+    SphereGeometry: function() {},
+    TorusGeometry: function() {},
+    RingGeometry: function() {
+      return { attributes: {} };
+    },
+    PointLight: function() { return { position: { set: () => {} } }; },
     MeshStandardMaterial: function() {},
+    MeshPhysicalMaterial: function() {},
+    MeshBasicMaterial: function() {},
+    Color: function() {},
     Mesh: function() {
       return { rotation: { x: 0, y: 0, z: 0 }, scale: { set: () => {} } };
     }

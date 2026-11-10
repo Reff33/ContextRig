@@ -54,8 +54,13 @@ DO NOT write code yet. Inspect project context (README, package.json, tech stack
   6. **Short-Form & TikTok High-Retention Hooks:** `kinet-reel-hook.html`
   7. **B2B SaaS Macro Product Tour:** `kinet-saas-macro.html`
   8. **Modern Bento Grid Architecture:** `kinet-bento-grid.html`
-  9. **Cyber Diagnostic FUI & HUD:** `kinet-hud-scifi.html`
+  9. **Velocity Tunnel — Warp Kinetic Type:** `kinet-hud-scifi.html`
   10. **Vertical Multi-Message Split:** `kinet-split-tiktok.html`
+  11. **iOS Spatial Liquid Glass & Orb:** `kinet-ios-liquid-glass.html`
+  12. **Radial Audio Visualizer:** `kinet-audio-visualizer.html`
+  13. **Swiss Typographic Montage:** `kinet-typographic-montage.html`
+  14. **3D Refractive Glass Orb:** `kinet-liquid-orb.html`
+  15. **Decrypt Glitch Terminal:** `kinet-glitch-terminal.html`
 - **Style Direction (10 Directions):**
   1. *Cinematic Dark* (near-black, neon bloom, bold grotesk | gaming, creative tools, dev)
   2. *Poster Color-Block* (solid color fields, giant cropped letters | consumer apps, events)
@@ -159,6 +164,12 @@ Adapt the chosen starter template from `assets/` into a single self-contained `i
           - Pops: `sounds/pops/pop-small-in.wav`
        3. Omission of the `sounds/` top-level directory or invalid category aliases produces 404 Not Found errors on both local disk and CDN.
      - **Zero-Dependency Procedural Fallback Law:** Every audio event triggered via `triggerSfx(sfxId, fallbackFn, gain)` MUST carry a functional mathematical procedural synthesizer fallback (`fallbackFn`). When external WAV files are unreachable (offline `file://` usage, CDN down, or network drop), the procedural Web Audio oscillator/noise synthesizer immediately executes. The animation maintains 100% audio choreography with zero audible silence and zero console errors.
+     - **JIT On-Demand Audio Auto-Download Law (Zero Manual Downloads):**
+       AI agents and users do NOT need to manually download or pre-install the 67MB library. KinetRig features automatic Just-In-Time (JIT) audio downloading:
+       1. **Studio Bridge Auto-Caching (`server.mjs`):** When templates request `/sfx/sounds/...`, if the WAV file is not yet cached on disk, the local bridge automatically streams the file from GitHub, caches it permanently to `sfx/sounds/...`, and serves it with HTTP 200.
+       2. **Headless Render Auto-Prefetch (`audio-synth.mjs`):** Before offline MP4 muxing, `prefetchManifestSounds(audioManifest)` verifies required sounds and downloads missing WAVs directly into `sfx/sounds/`.
+       3. **In-Browser CDN Fallback:** If standalone without bridge, `fetchSfxArrayBuffer()` directly streams the sound from the CORS-enabled GitHub/jsDelivr CDN.
+       Result: The local `sfx/` library grows automatically based on whatever sounds each animation needs, with zero bloat and zero manual commands.
      - **Local Offline WAV Playback via Studio Bridge:** To load uncompressed local WAV sound effects without internet, always serve the project through the local studio bridge (`node scripts/server.mjs` on `http://127.0.0.1:4004`), which serves all static audio assets with `Access-Control-Allow-Origin: *` and proper `audio/wav` headers.
   19. **Law 19: Dual-Mode Zero-Refusal Export Architecture (Anti-`ERR_CONNECTION_REFUSED`):**
      - **Root Cause of Port 4004 Connection Refusal:** Blindly calling `fetch('http://127.0.0.1:4004/api/health')` when a template is opened standalone (e.g. `file:///` or standard dev servers without `server.mjs` running) causes the OS TCP stack to reject the handshake with RST, forcing Chromium to dump red `net::ERR_CONNECTION_REFUSED` errors into DevTools for every framerate selection.

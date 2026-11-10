@@ -1,195 +1,185 @@
 <!doctype html>
 <html lang="en">
-<!-- KinetRig v1.0.0 by Reff33 - Sci-Fi Diagnostic Telemetry HUD (MIT) -->
+<!-- KinetRig v1.0.0 by Reff33 - Velocity Tunnel (MIT) -->
 <head>
 <meta charset="utf-8">
-<title>KinetRig — Sci-Fi HUD (240 FPS)</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KinetRig — Velocity Tunnel (240 FPS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <style>
 :root {
-  --primary: #00F5FF;
-  --primary-glow: rgba(0, 245, 255, 0.45);
-  --accent: #FFB800;
-  --bg: #03060B;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-main: "Plus Jakarta Sans", sans-serif;
+  --void: #05030C;
+  --violet: #8B5CF6;
+  --rose: #FB3D6E;
+  --ice: #A5F3FC;
+  --gold: #FCD34D;
+  --font-display: 'Anton', 'Impact', sans-serif;
+  --font-ui: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:var(--font-mono); color:#FFF; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+html, body { width:100%; height:100%; background:#000; color:#fff; font-family:var(--font-ui); overflow:hidden; user-select:none; }
 
+/* Master Fixed 1920x1080 Stage */
 #stage {
   position: fixed; left:50%; top:50%; width:1920px; height:1080px;
   transform: translate(-50%, -50%) scale(1);
-  background: radial-gradient(circle at 50% 50%, #071520 0%, var(--bg) 80%);
-  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 50%, #120726 0%, var(--void) 78%);
+  overflow: hidden;
 }
 
-.hud-grid {
-  position: absolute; inset: 0; pointer-events: none; opacity: 0.18;
-  background-size: 60px 60px;
-  background-image:
-    linear-gradient(to right, rgba(0, 245, 255, 0.2) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 245, 255, 0.2) 1px, transparent 1px);
+#fx { position:absolute; inset:0; width:1920px; height:1080px; pointer-events:none; z-index:2; }
+
+/* Atmosphere overlays (pure CSS, zero per-frame cost) */
+.vignette {
+  position:absolute; inset:0; z-index:6; pointer-events:none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 42%, rgba(3,1,8,0.55) 78%, rgba(3,1,8,0.92) 100%);
+}
+.scanlines {
+  position:absolute; inset:0; z-index:7; pointer-events:none; opacity:0.07;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,0.9) 0px, rgba(255,255,255,0.9) 1px, transparent 1px, transparent 3px);
+}
+.grain {
+  position:absolute; inset:0; z-index:8; pointer-events:none; opacity:0.12; mix-blend-mode:overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
 }
 
-.hud-core {
-  position: relative; width: 700px; height: 700px;
-  display: flex; align-items: center; justify-content: center;
+/* Kinetic Type Layer */
+#typeLayer {
+  position:absolute; inset:0; z-index:20; pointer-events:none;
+  perspective: 1200px; perspective-origin: 50% 50%;
+}
+.word {
+  position:absolute; left:50%; top:50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.92;
+  text-align: center;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 0 42px rgba(139, 92, 246, 0.55), 0 0 90px rgba(251, 61, 110, 0.28);
+  will-change: transform, opacity, filter;
+}
+.word .ch { display:inline-block; will-change: transform, opacity; }
+#w1 { font-size: 172px; letter-spacing: -0.005em; }
+#w2 { font-size: 190px; letter-spacing: 0.005em; }
+#w3 { font-size: 138px; letter-spacing: 0.01em; }
+#w4 { font-size: 300px; letter-spacing: -0.01em; color:#fff; text-shadow: 0 0 60px rgba(165,243,252,0.65), 0 0 140px rgba(251,61,110,0.45); }
+#w5 { font-size: 152px; letter-spacing: 0.03em; }
+
+.beat-label {
+  position:absolute; left:50%; top: calc(50% + 168px);
+  transform: translate(-50%, 0);
+  font-family: var(--font-mono); font-size: 15px; font-weight: 700;
+  letter-spacing: 0.42em; text-transform: uppercase;
+  color: var(--ice); opacity: 0; will-change: transform, opacity;
+  text-shadow: 0 0 20px rgba(165,243,252,0.6);
+}
+.word-sub {
+  position:absolute; left:50%; top: calc(50% + 130px);
+  transform: translate(-50%, 0);
+  font-family: var(--font-mono); font-size: 16px; font-weight: 500;
+  letter-spacing: 0.52em; text-transform: uppercase;
+  color: rgba(255,255,255,0.62); opacity: 0; will-change: transform, opacity;
 }
 
-.reticle-ring {
-  position: absolute; border-radius: 50%; border: 1px dashed rgba(0, 245, 255, 0.35);
-  pointer-events: none;
-}
-.ring-outer { width: 620px; height: 620px; border: 1.5px solid rgba(0, 245, 255, 0.4); border-top-color: transparent; }
-.ring-mid { width: 440px; height: 440px; border: 2px dashed rgba(0, 245, 255, 0.5); }
-.ring-inner { width: 280px; height: 280px; border: 1px solid rgba(255, 184, 0, 0.5); border-left-color: transparent; }
-
-.target-cross {
-  position: absolute; width: 100%; height: 100%; pointer-events: none;
-}
-.target-cross::before {
-  content: ""; position: absolute; left: 50%; top: 40px; bottom: 40px; width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(0, 245, 255, 0.4), transparent);
-}
-.target-cross::after {
-  content: ""; position: absolute; top: 50%; left: 40px; right: 40px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.4), transparent);
-}
-
-.hud-center-data {
-  text-align: center; z-index: 5;
-}
-.hud-status-badge {
-  display: inline-block; background: rgba(0, 245, 255, 0.15); border: 1px solid var(--primary);
-  color: var(--primary); font-size: 14px; font-weight: 800; padding: 4px 14px; border-radius: 4px;
-  letter-spacing: 0.14em; margin-bottom: 12px; box-shadow: 0 0 16px var(--primary-glow);
-}
-.hud-big-num {
-  font-size: 72px; font-weight: 800; color: #FFF; line-height: 1; letter-spacing: -0.02em;
-  text-shadow: 0 0 24px var(--primary-glow);
-}
-.hud-sub-label {
-  font-size: 14px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.2em; margin-top: 8px;
-}
-
-/* Flanking Telemetry Panels */
-.telemetry-left, .telemetry-right {
-  position: absolute; top: 50%; transform: translateY(-50%); width: 380px;
-  display: flex; flex-direction: column; gap: 16px;
-}
-.telemetry-left { left: 140px; }
-.telemetry-right { right: 140px; }
-
-.data-card {
-  background: rgba(10, 20, 32, 0.7); border: 1px solid rgba(0, 245, 255, 0.25);
-  border-left: 3px solid var(--primary); border-radius: 8px; padding: 18px 22px;
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5); opacity: 0; transform: translateX(-20px);
-}
-.telemetry-right .data-card { border-left: 1px solid rgba(0, 245, 255, 0.25); border-right: 3px solid var(--accent); transform: translateX(20px); }
-.data-card-title { font-size: 12px; color: #64748B; text-transform: uppercase; letter-spacing: 0.15em; }
-.data-card-val { font-size: 24px; font-weight: 700; color: #FFF; margin-top: 4px; }
-
-/* 240 FPS Export & HUD Controls */
-.top-bar { position: fixed; top: 20px; right: 24px; display: flex; align-items: center; gap: 10px; z-index: 100; }
+/* TOP-BAR & EXPORT DROPDOWN (fixed, outside stage) */
+.top-bar { position:fixed; top:20px; right:24px; display:flex; align-items:center; gap:10px; z-index:100; }
 .btn-action {
-  background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(0, 245, 255, 0.35);
-  color: #FFF; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
-  padding: 8px 16px; border-radius: 9999px; cursor: pointer;
+  height:38px; padding:0 16px; border-radius:9999px;
+  background: rgba(15, 10, 30, 0.88);
+  border: 1px solid rgba(139, 92, 246, 0.38);
+  color:#fff; font-family:var(--font-ui); font-size:13px; font-weight:600;
+  display:inline-flex; align-items:center; gap:8px; cursor:pointer;
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4); display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.btn-action:hover { border-color: var(--primary); box-shadow: 0 0 16px var(--primary-glow); transform: translateY(-1px); }
-.btn-action.active { background: rgba(0, 245, 255, 0.22); border-color: var(--primary); }
-.btn-action svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; }
+.btn-action:hover { border-color: var(--violet); box-shadow: 0 0 18px rgba(139,92,246,0.45); transform: translateY(-1px); }
+.btn-action.active { background: rgba(139,92,246,0.24); border-color: var(--violet); }
+.export-dropdown { position:relative; }
+.fps-menu {
+  display:none; position:absolute; top:calc(100% + 8px); right:0;
+  background: rgba(15, 10, 30, 0.96); border:1px solid rgba(139,92,246,0.38);
+  border-radius:12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 22px rgba(139,92,246,0.18);
+  padding:6px; min-width:180px; z-index:120; flex-direction:column; gap:3px;
+}
+.fps-menu.open { display:flex; }
+.fps-item {
+  background:transparent; border:none; color:#E2E8F0; font-family:inherit;
+  font-size:12px; font-weight:600; padding:8px 10px; border-radius:8px;
+  text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between;
+  transition: all 0.15s ease; width:100%;
+}
+.fps-item:hover { background: rgba(139,92,246,0.22); color:var(--violet); transform: translateX(2px); }
+.fps-item.danger:hover { background: rgba(239,68,68,0.2); color:#F87171; }
 
+/* HUD SCRUBBER */
 #ui {
-  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 12px; padding: 8px 18px;
-  border-radius: 9999px; background: rgba(9, 14, 26, 0.90);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 245, 255, 0.35);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 245, 255, 0.15);
-  font-family: var(--font-mono); font-size: 13px; color: #94A3B8; z-index: 90;
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+  display:flex; align-items:center; gap:14px;
+  background: rgba(12, 8, 24, 0.92); padding:8px 18px; border-radius:9999px;
+  border:1px solid rgba(139,92,246,0.32);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index:90;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(139,92,246,0.16);
+  font-family:var(--font-ui); font-size:13px; color:#94A3B8;
   transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
-#ui.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, 14px); }
+#ui.hidden { opacity:0; pointer-events:none; transform: translate(-50%, 14px); }
 #ui button {
-  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #F8FAFC; font-family: inherit; font-size: 12px; font-weight: 600;
-  padding: 6px 14px; border-radius: 9999px; cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center; outline: none;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1); letter-spacing: 0.02em;
+  background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);
+  color:#fff; font-family:inherit; font-size:12px; font-weight:600;
+  padding:6px 14px; border-radius:9999px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
-#ui button:hover { background: rgba(0, 245, 255, 0.2); border-color: var(--primary); color: #FFF; box-shadow: 0 0 14px var(--primary-glow); transform: translateY(-1px); }
-#ui button:active { transform: translateY(0) scale(0.96); }
-#ui button#btn-audio { padding: 6px 10px; }
-#ui button.muted { opacity: 0.6; color: #94A3B8; }
-#scrub { width: 340px; height: 6px; accent-color: var(--primary); border-radius: 3px; cursor: pointer; background: rgba(255, 255, 255, 0.18); outline: none; }
-#clock { font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; color: #E2E8F0; font-weight: 600; }
+#ui button:hover { background: rgba(139,92,246,0.28); border-color:var(--violet); color:#fff; }
+#ui button#btn-audio { padding:6px 10px; }
+#ui button.muted { opacity:0.6; color:#94A3B8; }
+#scrub { width:340px; height:6px; accent-color: var(--violet); cursor:pointer; border-radius:3px; }
+#clock { font-size:13px; font-weight:600; font-variant-numeric: tabular-nums; min-width:58px; text-align:right; color:#E2E8F0; }
 
-body.clean-capture .top-bar, body.clean-capture #ui,
-body.clean-mode .top-bar, body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
-body.clean-capture, body.clean-mode { cursor: none !important; }
-
-/* Export Dropdown & FPS Menu */
-.export-dropdown { position: relative; }
-.fps-menu {
-  display: none; position: absolute; top: calc(100% + 8px); right: 0;
-  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 245, 255, 0.35);
-  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(0,245,255,0.15);
-  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
-}
-.fps-menu.open { display: flex; }
-.fps-item {
-  background: transparent; border: none; color: #E2E8F0;
-  font-family: inherit; font-size: 12px; font-weight: 600;
-  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
-  display: flex; align-items: center; justify-content: space-between;
-  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
-}
-.fps-item:hover {
-  background: rgba(0, 245, 255, 0.2); color: #00F5FF; transform: translateX(2px);
-}
-.fps-item.danger:hover {
-  background: rgba(239, 68, 68, 0.2); color: #F87171;
-}
-
+body.clean-capture .top-bar,
+body.clean-capture #ui,
+body.clean-mode .top-bar,
+body.clean-mode #ui { display:none !important; opacity:0 !important; visibility:hidden !important; }
+body.clean-capture, body.clean-mode { cursor:none !important; }
 </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <button class="btn-action active" id="btn-hud" title="Toggle HUD (H)">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span>HUD (H)</span>
+  <button class="btn-action" id="btn-hud">
+    <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    HUD (H)
   </button>
-    <div class="export-dropdown" style="position: relative;">
-    <button class="btn-action" id="btn-export" title="Select Framerate & Export Video">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  <div class="export-dropdown">
+    <button class="btn-action" id="btn-export">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="19" x2="12" y2="5"/></svg>
       <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
       <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
     <div class="fps-menu" id="fps-menu">
       <div id="fps-options-group">
-        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
-        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary, #00F5FF);background:rgba(0,245,255,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <div style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;padding:4px 10px 6px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--violet);background:rgba(139,92,246,0.16);padding:2px 6px;border-radius:4px;">True HFR</span></button>
         <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
         <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
         <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
       </div>
-      <div id="render-controls-group" style="display: none;">
-        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+      <div id="render-controls-group" style="display:none;">
+        <div style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;padding:4px 10px 6px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">Render Controls</div>
         <button class="fps-item" id="btn-render-pause">
           <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
           <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
           <span id="label-render-pause">Pause Render</span>
         </button>
-        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+        <button class="fps-item danger" id="btn-render-cancel" style="color:#f87171;">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           <span>Cancel Render</span>
         </button>
@@ -199,49 +189,28 @@ body.clean-capture, body.clean-mode { cursor: none !important; }
 </div>
 
 <div id="stage">
-  <div class="hud-grid"></div>
+  <canvas id="fx" width="1920" height="1080"></canvas>
 
-  <div class="telemetry-left" id="t-left">
-    <div class="data-card">
-      <div class="data-card-title">Compute Cluster</div>
-      <div class="data-card-val">NODE-07 ACTIVE</div>
-    </div>
-    <div class="data-card">
-      <div class="data-card-title">Memory Bandwidth</div>
-      <div class="data-card-val">3.2 TB/s</div>
-    </div>
+  <div id="typeLayer">
+    <div class="beat-label" id="beatLabel">01 — IGNITION</div>
+    <div class="word" id="w1">INTO THE VOID</div>
+    <div class="word" id="w2">ACCELERATE</div>
+    <div class="word" id="w3">SHATTER THE FRAME</div>
+    <div class="word" id="w4">IMPACT</div>
+    <div class="word" id="w5">KINETIC RIG</div>
+    <div class="word-sub" id="wordSub">MOTION ENGINE</div>
   </div>
 
-  <div class="hud-core" id="core">
-    <div class="reticle-ring ring-outer" id="r-out"></div>
-    <div class="reticle-ring ring-mid" id="r-mid"></div>
-    <div class="reticle-ring ring-inner" id="r-in"></div>
-    <div class="target-cross"></div>
-
-    <div class="hud-center-data" id="center-data">
-      <div class="hud-status-badge">TARGET LOCKED</div>
-      <div class="hud-big-num" id="metric">0.24ms</div>
-      <div class="hud-sub-label">Dispatch Latency</div>
-    </div>
-  </div>
-
-  <div class="telemetry-right" id="t-right">
-    <div class="data-card">
-      <div class="data-card-title">Thermal Sensor</div>
-      <div class="data-card-val">42.8 °C</div>
-    </div>
-    <div class="data-card">
-      <div class="data-card-title">Security State</div>
-      <div class="data-card-val" style="color:var(--accent);">ENCLAVE SECURE</div>
-    </div>
-  </div>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
+  <div class="grain"></div>
 </div>
 
 <div id="ui">
   <button id="btn-play">Pause</button>
   <button id="btn-audio" title="Mute/Unmute Audio (M)">
-    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
   </button>
   <input type="range" id="scrub" min="0" max="1000" value="0">
   <span id="clock">0.00s</span>
@@ -249,27 +218,110 @@ body.clean-capture, body.clean-mode { cursor: none !important; }
 
 <script>
 const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
 let isRecording = false;
 
-const DURATION = 6.0;
+const DURATION = 15.0;
 const tl = gsap.timeline({ paused: true });
 
-/* ============ AUDIO SYNTHESIS & MOTIVATED SFX ============ */
-let audioCtx = null, audioDest = null, mainMasterGain = null;
-let isAudioMuted = false;
+/* ============ STAGE FIT ============ */
+const stage = $('#stage');
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit);
+fit();
 
-const btnAudio = $('#btn-audio'), iconAudioOn = $('#icon-audio-on'), iconAudioOff = $('#icon-audio-off');
-function toggleAudio() {
-  isAudioMuted = !isAudioMuted;
-  if (iconAudioOn) iconAudioOn.style.display = isAudioMuted ? 'none' : 'block';
-  if (iconAudioOff) iconAudioOff.style.display = isAudioMuted ? 'block' : 'none';
-  if (btnAudio) btnAudio.classList.toggle('muted', isAudioMuted);
-  if (mainMasterGain && audioCtx) {
-    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+/* ============ AUDIO MANIFEST (Headless render contract) ============ */
+const audioManifest = {
+  duration: DURATION,
+  sceneArchetype: 'velocity_tunnel',
+  semanticKeywords: ['tunnel', 'warp', 'velocity', 'impact', 'neon', 'kinetic', 'motion', 'space'],
+  ambientBed: { type: 'deep_drive', baseFreq: 48, filterCutoff: 340, gain: 0.045 },
+  events: [
+    { time: 0.15, type: 'impact', sfx_id: 'impact-deep-soft', file: 'sounds/impacts/impact-deep-soft.wav', gain: 0.85, material: 'physical_neutral', target: '#fx' },
+    { time: 0.60, type: 'sub_reveal', sfx_id: 'tone-step-1', file: 'sounds/tones/tone-step-1.wav', gain: 0.70, material: 'crystal_step', target: '#w1' },
+    { time: 1.05, type: 'whoosh', sfx_id: 'whoosh-medium-soft', file: 'sounds/whooshes/whoosh-medium-soft.wav', gain: 0.65, material: 'air_displacement', target: '#fx' },
+    { time: 2.50, type: 'whoosh', sfx_id: 'whoosh-fast-soft', file: 'sounds/whooshes/whoosh-fast-soft.wav', gain: 0.60, material: 'air_displacement', target: '#w1' },
+    { time: 2.85, type: 'sub_reveal', sfx_id: 'tone-step-2', file: 'sounds/tones/tone-step-2.wav', gain: 0.78, material: 'crystal_step', target: '#w2' },
+    { time: 4.45, type: 'whoosh', sfx_id: 'whoosh-fast-hard', file: 'sounds/whooshes/whoosh-fast-hard.wav', gain: 0.72, material: 'air_displacement', target: '#w2' },
+    { time: 5.28, type: 'impact', sfx_id: 'impact-medium-firm', file: 'sounds/impacts/impact-medium-firm.wav', gain: 0.75, material: 'physical_neutral', target: '#w3' },
+    { time: 5.35, type: 'sub_reveal', sfx_id: 'tone-step-3', file: 'sounds/tones/tone-step-3.wav', gain: 0.80, material: 'crystal_step', target: '#w3' },
+    { time: 7.40, type: 'exit_sweep', sfx_id: 'riser-1s-soft', file: 'sounds/risers-and-fallers/riser-1s-soft.wav', gain: 0.78, material: 'air_displacement', target: '#fx' },
+    { time: 7.95, type: 'impact', sfx_id: 'impact-deep-soft', file: 'sounds/impacts/impact-deep-soft.wav', gain: 0.90, material: 'physical_neutral', target: '#w4' },
+    { time: 8.05, type: 'card_pop', sfx_id: 'shimmer-long-soft', file: 'sounds/shimmers/shimmer-long-soft.wav', gain: 0.70, material: 'acrylic_glass', target: '#fx' },
+    { time: 8.60, type: 'soft_tap', sfx_id: 'digital-blip-clear', file: 'sounds/digital/digital-blip-clear.wav', gain: 0.50, material: 'tactile_switch', target: '#fx' },
+    { time: 10.20, type: 'exit_sweep', sfx_id: 'faller-1s-strong', file: 'sounds/risers-and-fallers/faller-1s-strong.wav', gain: 0.62, material: 'air_displacement', target: '#w4' },
+    { time: 12.85, type: 'sub_reveal', sfx_id: 'tone-ding-high', file: 'sounds/tones/tone-ding-high.wav', gain: 0.72, material: 'crystal_step', target: '#w5' },
+    { time: 13.40, type: 'card_pop', sfx_id: 'shimmer-long-sparkle', file: 'sounds/shimmers/shimmer-long-sparkle.wav', gain: 0.66, material: 'acrylic_glass', target: '#w5' },
+    { time: 14.55, type: 'whoosh', sfx_id: 'whoosh-slow-soft', file: 'sounds/whooshes/whoosh-slow-soft.wav', gain: 0.55, material: 'air_displacement', target: '#fx' }
+  ]
+};
+
+/* ============ AUDIO ENGINE ============ */
+const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+const STUDIO_SFX = {
+  impact_deep: 'sounds/impacts/impact-deep-soft.wav',
+  impact_firm: 'sounds/impacts/impact-medium-firm.wav',
+  tone1: 'sounds/tones/tone-step-1.wav',
+  tone2: 'sounds/tones/tone-step-2.wav',
+  tone3: 'sounds/tones/tone-step-3.wav',
+  tone_ding: 'sounds/tones/tone-ding-high.wav',
+  whoosh_soft: 'sounds/whooshes/whoosh-medium-soft.wav',
+  whoosh_fast: 'sounds/whooshes/whoosh-fast-soft.wav',
+  whoosh_hard: 'sounds/whooshes/whoosh-fast-hard.wav',
+  whoosh_slow: 'sounds/whooshes/whoosh-slow-soft.wav',
+  riser: 'sounds/risers-and-fallers/riser-1s-soft.wav',
+  faller: 'sounds/risers-and-fallers/faller-1s-strong.wav',
+  shimmer_soft: 'sounds/shimmers/shimmer-long-soft.wav',
+  shimmer_sparkle: 'sounds/shimmers/shimmer-long-sparkle.wav',
+  blip: 'sounds/digital/digital-blip-clear.wav'
+};
+
+const sfxRawBuffers = {};
+const sfxAudioBuffers = {};
+let audioCtx = null, audioDest = null, mainMasterGain = null;
+let isAudioMuted = false, hasUserInteracted = false;
+
+async function fetchSfxArrayBuffer(rel) {
+  if (typeof fetch !== 'function') return null;
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? ['../sfx/' + rel, '../../sfx/' + rel, 'sfx/' + rel, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
   }
+  return null;
 }
-if (btnAudio) btnAudio.onclick = toggleAudio;
+
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (!ab) return;
+    sfxRawBuffers[id] = ab;
+    if (audioCtx) {
+      audioCtx.decodeAudioData(ab.slice(0)).then(d => { sfxAudioBuffers[id] = d; }).catch(() => {});
+    }
+  });
+}
+
+function markUserInteracted() {
+  hasUserInteracted = true;
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+window.addEventListener('pointerdown', markUserInteracted, { capture: true });
+window.addEventListener('keydown', markUserInteracted, { capture: true });
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
+    markUserInteracted();
+    initAudio();
+  }
+});
 
 function initAudio() {
   if (!audioCtx) {
@@ -283,137 +335,483 @@ function initAudio() {
         audioDest = audioCtx.createMediaStreamDestination();
         mainMasterGain.connect(audioDest);
       } catch (e) {}
+
+      // Layer 1: continuous sub-bass drive bed
+      try {
+        const osc = audioCtx.createOscillator();
+        const lp = audioCtx.createBiquadFilter();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(48, audioCtx.currentTime);
+        lp.type = 'lowpass';
+        lp.frequency.setValueAtTime(340, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.045, audioCtx.currentTime);
+        osc.connect(lp); lp.connect(g); g.connect(mainMasterGain);
+        osc.start();
+      } catch (e) {}
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  if (audioCtx) {
+    if (hasUserInteracted && audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(d => { sfxAudioBuffers[id] = d; }).catch(() => {});
+      }
+    }
+  }
   return audioCtx;
 }
 
-function playRadarBeep(freq = 1200) {
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  $('#icon-audio-on').style.display = isAudioMuted ? 'none' : 'block';
+  $('#icon-audio-off').style.display = isAudioMuted ? 'block' : 'none';
+  $('#btn-audio').classList.toggle('muted', isAudioMuted);
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+$('#btn-audio').onclick = toggleAudio;
+
+function triggerSfx(id, fallbackFn, gain = 0.5, pitchRate = 1.0) {
   const ctx = initAudio();
-  if (!ctx || ctx.state !== 'running') return;
-  const now = ctx.currentTime;
+  if (!ctx || ctx.state !== 'running' || isAudioMuted) return;
+  const buf = sfxAudioBuffers[id];
+  if (buf) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.playbackRate.value = pitchRate;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn(ctx, gain, pitchRate);
+}
+
+/* --- procedural fallbacks (deterministic, no samples needed) --- */
+function toneFallback(ctx, g, rate) {
   try {
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(), amp = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, now);
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.linearRampToValueAtTime(0.2, now + 0.003);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
-    osc.start(now); osc.stop(now + 0.14);
+    osc.frequency.setValueAtTime(880 * rate, now);
+    osc.frequency.exponentialRampToValueAtTime(240 * rate, now + 0.34);
+    amp.gain.setValueAtTime(g * 0.42, now);
+    amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
+    osc.connect(amp); amp.connect(mainMasterGain || ctx.destination);
+    osc.start(now); osc.stop(now + 0.38);
+  } catch (e) {}
+}
+function impactFallback(ctx, g) {
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(), amp = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(32, now + 0.42);
+    amp.gain.setValueAtTime(g * 0.62, now);
+    amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.46);
+    osc.connect(amp); amp.connect(mainMasterGain || ctx.destination);
+    osc.start(now); osc.stop(now + 0.48);
+  } catch (e) {}
+}
+function whooshFallback(ctx, g) {
+  try {
+    const now = ctx.currentTime;
+    const len = Math.floor(ctx.sampleRate * 0.45);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      const env = Math.sin((i / len) * Math.PI);
+      d[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(320, now);
+    bp.frequency.exponentialRampToValueAtTime(2400, now + 0.40);
+    bp.Q.value = 1.1;
+    const amp = ctx.createGain();
+    amp.gain.setValueAtTime(g * 0.5, now);
+    amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+    src.connect(bp); bp.connect(amp); amp.connect(mainMasterGain || ctx.destination);
+    src.start(now);
   } catch (e) {}
 }
 
-const fit = () => {
-  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
-  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
-};
-addEventListener('resize', fit); fit();
+function sfxImpactDeep() { triggerSfx('impact_deep', impactFallback, 0.85); }
+function sfxImpactFirm() { triggerSfx('impact_firm', impactFallback, 0.72); }
+function sfxTone1() { triggerSfx('tone1', toneFallback, 0.70, 1.0); }
+function sfxTone2() { triggerSfx('tone2', toneFallback, 0.78, 1.0); }
+function sfxTone3() { triggerSfx('tone3', toneFallback, 0.80, 1.0); }
+function sfxToneDing() { triggerSfx('tone_ding', toneFallback, 0.72, 1.4); }
+function sfxWhooshSoft() { triggerSfx('whoosh_soft', whooshFallback, 0.62); }
+function sfxWhooshFast() { triggerSfx('whoosh_fast', whooshFallback, 0.60); }
+function sfxWhooshHard() { triggerSfx('whoosh_hard', whooshFallback, 0.70); }
+function sfxWhooshSlow() { triggerSfx('whoosh_slow', whooshFallback, 0.52); }
+function sfxRiser() { triggerSfx('riser', whooshFallback, 0.72); }
+function sfxFaller() { triggerSfx('faller', whooshFallback, 0.60); }
+function sfxShimmerSoft() { triggerSfx('shimmer_soft', toneFallback, 0.66, 1.2); }
+function sfxShimmerSparkle() { triggerSfx('shimmer_sparkle', toneFallback, 0.62, 1.6); }
+function sfxBlip() { triggerSfx('blip', toneFallback, 0.45, 2.2); }
 
-/* ============ HUD ROTATION & TELEMETRY TIMELINE ============ */
-tl.fromTo('#core',
-  { opacity: 0, scale: 0.7 },
-  { opacity: 1, scale: 1, duration: 0.9, ease: 'back.out(1.8)' },
-  0.20
-);
-tl.call(() => playRadarBeep(980), null, 0.20);
+/* ============ DETERMINISTIC FIELD MATH ============ */
+const cvs = $('#fx');
+const ctx = cvs && typeof cvs.getContext === 'function' ? cvs.getContext('2d') : null;
+const W = 1920, H = 1080;
 
-// Continuous deterministic rotation of reticles
-tl.to('#r-out', { rotate: 360, duration: 6.0, ease: 'none' }, 0);
-tl.to('#r-mid', { rotate: -360, duration: 4.5, ease: 'none' }, 0);
-tl.to('#r-in', { rotate: 360, duration: 3.0, ease: 'none' }, 0);
+let _seed = 20240517;
+function rnd() {
+  _seed = (_seed * 1664525 + 1013904223) >>> 0;
+  return _seed / 4294967296;
+}
 
-// Flanking telemetry entrance
-tl.fromTo($$('.telemetry-left .data-card'),
-  { opacity: 0, x: -30 },
-  { opacity: 1, x: 0, duration: 0.5, stagger: 0.15, ease: 'power2.out' },
-  0.60
-);
-tl.call(() => playRadarBeep(1400), null, 0.60);
+const STARS = Array.from({ length: 250 }, () => ({
+  a: rnd() * Math.PI * 2,
+  r: 0.05 + rnd() * 0.52,
+  z0: rnd(),
+  hue: rnd()
+}));
 
-tl.fromTo($$('.telemetry-right .data-card'),
-  { opacity: 0, x: 30 },
-  { opacity: 1, x: 0, duration: 0.5, stagger: 0.15, ease: 'power2.out' },
-  0.80
-);
-tl.call(() => playRadarBeep(1600), null, 0.80);
+const RINGS = 30;
 
-tl.to({}, { duration: 0.01 }, DURATION);
+/* Piecewise-linear speed curve, integrated exactly so travel is a pure function of t. */
+const SPEED_KEYS = [
+  [0.0, 0.02], [1.0, 0.55], [2.6, 1.10], [5.2, 1.45],
+  [7.6, 1.45], [8.2, 3.60], [10.6, 0.55], [12.8, 0.22], [15.0, 0.02]
+];
 
-/* ============ CONTROLS & AUTO-LOOP ============ */
+function travelAt(t) {
+  let d = 0;
+  for (let i = 0; i < SPEED_KEYS.length - 1; i++) {
+    const [t0, v0] = SPEED_KEYS[i];
+    const [t1, v1] = SPEED_KEYS[i + 1];
+    if (t <= t0) break;
+    const seg = Math.min(t, t1) - t0;
+    const vEnd = v0 + (v1 - v0) * (seg / (t1 - t0));
+    d += ((v0 + vEnd) / 2) * seg;
+  }
+  return d;
+}
+
+function burstLevel(t) {
+  if (t < 7.9 || t > 9.6) return 0;
+  return Math.max(0, Math.sin(((t - 7.9) / 1.7) * Math.PI));
+}
+
+function aberr(t) {
+  let a = 0;
+  if (t > 2.50 && t < 2.90) a += Math.sin(((t - 2.50) / 0.40) * Math.PI) * 6;
+  if (t > 4.90 && t < 5.60) a += Math.sin(((t - 4.90) / 0.70) * Math.PI) * 15;
+  if (t > 7.90 && t < 8.60) a += Math.sin(((t - 7.90) / 0.70) * Math.PI) * 24;
+  return a;
+}
+
+function rollAt(t) {
+  let r = 0;
+  if (t > 5.2 && t < 7.6) r += Math.sin(((t - 5.2) / 2.4) * Math.PI * 2) * 0.055;
+  if (t > 7.9 && t < 9.4) r += Math.sin(((t - 7.9) / 1.5) * Math.PI * 3) * 0.035;
+  return r;
+}
+
+/* ============ RENDER PASSES ============ */
+function drawRings(cx, cy, travel, t, rgb) {
+  ctx.lineWidth = 2;
+  for (let i = 0; i < RINGS; i++) {
+    const z = 1 - (((i / RINGS) + travel * 0.30) % 1);
+    if (z < 0.022) continue;
+    const rad = (760 / z) * 0.62;
+    if (rad > 2900) continue;
+    const a = Math.min(1, z * 3.6) * Math.min(1, (1 - z) * 3.4);
+    if (a < 0.01) continue;
+    if (rgb) {
+      ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a * 0.42})`;
+    } else {
+      const hue = 268 + Math.sin(t * 0.55 + i * 0.5) * 58;
+      ctx.strokeStyle = `hsla(${hue}, 100%, 66%, ${a * 0.55})`;
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+function drawStars(cx, cy, travel, speed) {
+  for (let i = 0; i < STARS.length; i++) {
+    const s = STARS[i];
+    const z = 1 - ((s.z0 + travel * 0.42) % 1);
+    if (z < 0.035) continue;
+    const k1 = 980 / z;
+    const k2 = 980 / Math.min(z + 0.09, 1.9);
+    const ca = Math.cos(s.a), sa = Math.sin(s.a);
+    const x1 = cx + ca * s.r * k1, y1 = cy + sa * s.r * k1;
+    const x2 = cx + ca * s.r * k2, y2 = cy + sa * s.r * k2;
+    const a = Math.min(1, z * 2.4) * (0.55 + Math.min(1, speed) * 0.35);
+    const h = s.hue < 0.35 ? 190 : (s.hue < 0.70 ? 300 : 44);
+    const l = s.hue < 0.35 ? 76 : 68;
+    ctx.strokeStyle = `hsla(${h}, 100%, ${l}%, ${a})`;
+    ctx.lineWidth = 1 + (1 - z) * 1.6;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  }
+}
+
+function drawShock(cx, cy, t) {
+  const waves = [[7.95, 9.70], [8.35, 10.00], [8.75, 10.30]];
+  for (let w = 0; w < waves.length; w++) {
+    const [t0, t1] = waves[w];
+    if (t < t0 || t > t1) continue;
+    const p = (t - t0) / (t1 - t0);
+    const rad = 60 + p * 1500;
+    ctx.strokeStyle = `rgba(255,255,255,${(1 - p) * 0.50})`;
+    ctx.lineWidth = 2 + (1 - p) * 10;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+function drawCore(cx, cy, t, burst) {
+  // Ignition bloom 0.15s–1.8s, burst 7.9s–9.6s, collapse 14.2s–15s
+  let core = 0;
+  if (t > 0.10 && t < 1.90) core = Math.max(core, Math.sin(((t - 0.10) / 1.80) * Math.PI) * 0.9);
+  core = Math.max(core, burst);
+  if (t > 14.10) core = Math.max(core, Math.min(1, (t - 14.10) / 0.55) * 0.85);
+  if (core <= 0.01) return;
+
+  const r = 120 + core * 420 + Math.sin(t * 6.2) * 14;
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  g.addColorStop(0, `rgba(255,255,255,${0.85 * core})`);
+  g.addColorStop(0.22, `rgba(196,181,253,${0.55 * core})`);
+  g.addColorStop(0.55, `rgba(139,92,246,${0.22 * core})`);
+  g.addColorStop(1, 'rgba(5,3,12,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function draw(t) {
+  if (!ctx) return;
+  const cx = W / 2 + Math.sin(t * 0.62) * 46 + Math.sin(t * 0.27 + 1.1) * 26;
+  const cy = H / 2 + Math.cos(t * 0.48) * 30;
+  const travel = travelAt(t);
+  const speed = Math.max(0, (travelAt(t + 1 / 60) - travel) * 60);
+  const burst = burstLevel(t);
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.clearRect(0, 0, W, H);
+
+  const roll = rollAt(t);
+  if (roll) {
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(roll);
+    ctx.translate(-W / 2, -H / 2);
+  }
+
+  // Deep space wash
+  const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 1250);
+  bg.addColorStop(0, `rgba(88, 28, 160, ${0.26 + burst * 0.40})`);
+  bg.addColorStop(0.42, `rgba(22, 8, 44, ${0.60 + burst * 0.15})`);
+  bg.addColorStop(1, 'rgba(5, 3, 12, 1)');
+  ctx.fillStyle = bg;
+  ctx.fillRect(-260, -260, W + 520, H + 520);
+
+  // Tunnel rings (chromatic split during glitch windows)
+  const ab = aberr(t);
+  if (ab > 0.4) {
+    ctx.globalCompositeOperation = 'lighter';
+    drawRings(cx - ab, cy, travel, t, [255, 64, 110]);
+    drawRings(cx + ab, cy, travel, t, [64, 224, 255]);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  drawRings(cx, cy, travel, t, null);
+
+  drawStars(cx, cy, travel, speed);
+  drawShock(cx, cy, t);
+  drawCore(cx, cy, t, burst);
+}
+
+/* ============ KINETIC TYPE ============ */
+const wordEls = [$('#w1'), $('#w2'), $('#w3'), $('#w4'), $('#w5')];
+const beatLabel = $('#beatLabel');
+const wordSub = $('#wordSub');
+
+function splitChars(el) {
+  const text = el.textContent;
+  el.textContent = '';
+  const out = [];
+  for (let i = 0; i < text.length; i++) {
+    const s = document.createElement('span');
+    s.className = 'ch';
+    s.textContent = text[i] === ' ' ? ' ' : text[i];
+    el.appendChild(s);
+    out.push(s);
+  }
+  return out;
+}
+
+const c1 = splitChars($('#w1'));
+const c2 = splitChars($('#w2'));
+const c3 = splitChars($('#w3'));
+const c4 = splitChars($('#w4'));
+const c5 = splitChars($('#w5'));
+
+const scatter = c3.map(() => ({
+  x: (rnd() * 2 - 1) * 620,
+  y: (rnd() * 2 - 1) * 340,
+  r: (rnd() * 2 - 1) * 80
+}));
+
+/* ---- baseline (clean rewind to 0.00s) ---- */
+tl.set('#typeLayer', { x: 0, y: 0 }, 0);
+tl.set(wordEls, { opacity: 0, xPercent: -50, yPercent: -50, scale: 1, filter: 'blur(0px)' }, 0);
+tl.set([beatLabel, wordSub], { opacity: 0, xPercent: -50 }, 0);
+tl.call(() => {
+  beatLabel.textContent = '01 — IGNITION';
+  wordSub.textContent = 'MOTION ENGINE';
+}, null, 0);
+
+/* ---- 01 IGNITION (0.15s – 2.70s) ---- */
+tl.call(sfxImpactDeep, null, 0.15);
+tl.call(sfxTone1, null, 0.60);
+tl.call(sfxWhooshSoft, null, 1.05);
+
+tl.fromTo(beatLabel, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.42, ease: 'power2.out' }, 1.00);
+tl.fromTo($('#w1'), { opacity: 0, scale: 1.55, filter: 'blur(22px)' },
+  { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.95, ease: 'power3.out' }, 1.05);
+tl.fromTo(c1, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.035, ease: 'power2.out' }, 1.15);
+tl.to($('#w1'), { opacity: 0, scale: 1.85, filter: 'blur(28px)', duration: 0.38, ease: 'power2.in' }, 2.32);
+tl.to(beatLabel, { opacity: 0, duration: 0.26 }, 2.28);
+
+/* ---- 02 ACCELERATE (2.85s – 4.80s) ---- */
+tl.call(sfxWhooshFast, null, 2.50);
+tl.call(sfxTone2, null, 2.85);
+tl.call(sfxWhooshHard, null, 4.45);
+
+tl.call(() => { beatLabel.textContent = '02 — VELOCITY'; }, null, 2.78);
+tl.fromTo(beatLabel, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.36, ease: 'power2.out' }, 2.80);
+tl.set($('#w2'), { opacity: 1 }, 2.85);
+tl.fromTo(c2, { opacity: 0, yPercent: 150, rotationX: -72 },
+  { opacity: 1, yPercent: 0, rotationX: 0, duration: 0.62, stagger: 0.032, ease: 'back.out(1.9)' }, 2.85);
+tl.to(c2, { opacity: 0, yPercent: -130, duration: 0.34, stagger: 0.016, ease: 'power2.in' }, 4.40);
+tl.to($('#w2'), { opacity: 0, duration: 0.26 }, 4.58);
+tl.to(beatLabel, { opacity: 0, duration: 0.24 }, 4.52);
+
+/* ---- 03 SHATTER THE FRAME (5.28s – 7.65s) ---- */
+tl.call(sfxImpactFirm, null, 5.28);
+tl.call(sfxTone3, null, 5.35);
+tl.call(sfxRiser, null, 7.40);
+
+tl.call(() => { beatLabel.textContent = '03 — FRACTURE'; }, null, 5.22);
+tl.fromTo(beatLabel, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.36, ease: 'power2.out' }, 5.24);
+tl.set($('#w3'), { opacity: 1, filter: 'blur(0px)', scale: 1 }, 5.28);
+tl.fromTo(c3,
+  { opacity: 0, x: i => scatter[i].x, y: i => scatter[i].y, rotation: i => scatter[i].r },
+  { opacity: 1, x: 0, y: 0, rotation: 0, duration: 0.85, stagger: 0.02, ease: 'power4.out' }, 5.30);
+tl.to($('#w3'), { opacity: 0, scale: 1.45, filter: 'blur(12px)', duration: 0.36, ease: 'power2.in' }, 7.26);
+tl.to(beatLabel, { opacity: 0, duration: 0.24 }, 7.20);
+
+/* ---- 04 IMPACT (7.95s – 10.55s) ---- */
+tl.call(sfxImpactDeep, null, 7.95);
+tl.call(sfxShimmerSoft, null, 8.05);
+tl.call(sfxBlip, null, 8.60);
+tl.call(sfxFaller, null, 10.20);
+
+tl.call(() => { beatLabel.textContent = '04 — IMPACT'; }, null, 7.90);
+tl.fromTo(beatLabel, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.30, ease: 'power2.out' }, 7.92);
+tl.set($('#w4'), { opacity: 1, scale: 1, filter: 'blur(0px)' }, 7.98);
+tl.fromTo($('#w4'), { opacity: 0, scale: 2.9, filter: 'blur(36px)' },
+  { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.50, ease: 'power4.out' }, 8.00);
+tl.fromTo(c4, { opacity: 0, scale: 1.7 }, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.03, ease: 'power3.out' }, 8.00);
+tl.to('#typeLayer', { keyframes: { x: [0, -14, 10, -8, 5, 0], y: [0, 10, -8, 6, -3, 0] }, duration: 0.42, ease: 'none' }, 8.00);
+tl.to('#typeLayer', { keyframes: { x: [0, 8, -5, 0], y: [0, -6, 4, 0] }, duration: 0.34, ease: 'none' }, 8.90);
+tl.to($('#w4'), { opacity: 0, scale: 0.84, filter: 'blur(18px)', duration: 0.40, ease: 'power2.in' }, 10.12);
+tl.to(beatLabel, { opacity: 0, duration: 0.26 }, 10.06);
+
+/* ---- 05 LOCKUP (12.85s – 15.00s) ---- */
+tl.call(sfxToneDing, null, 12.85);
+tl.call(sfxShimmerSparkle, null, 13.40);
+tl.call(sfxWhooshSlow, null, 14.55);
+
+tl.call(() => { beatLabel.textContent = '05 — LOCKUP'; }, null, 12.78);
+tl.fromTo(beatLabel, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.36, ease: 'power2.out' }, 12.80);
+tl.set($('#w5'), { opacity: 1, scale: 1, filter: 'blur(0px)' }, 12.84);
+tl.fromTo(c5, { opacity: 0, y: 56 }, { opacity: 1, y: 0, duration: 0.58, stagger: 0.045, ease: 'power3.out' }, 12.85);
+tl.fromTo(wordSub, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 13.40);
+tl.to(wordSub, { opacity: 0, duration: 0.40 }, 14.42);
+tl.to($('#w5'), { opacity: 0, filter: 'blur(10px)', duration: 0.52, ease: 'power2.in' }, 14.46);
+tl.to(beatLabel, { opacity: 0, duration: 0.30 }, 14.44);
+
+/* ============ FRAME LOOP ============ */
 const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
 let scrubbing = false;
 
 (function frame() {
   requestAnimationFrame(frame);
   const t = tl.time();
-  const curDisplay = Math.min(t, DURATION);
-  if (clock) clock.textContent = curDisplay.toFixed(2) + 's';
-  if (!scrubbing && scrub) scrub.value = String((curDisplay / DURATION) * 1000);
+  const shown = Math.min(t, DURATION);
+
+  if (clock) clock.textContent = shown.toFixed(2) + 's';
+  if (!scrubbing && scrub) scrub.value = String((shown / DURATION) * 1000);
   if (btnPlay) btnPlay.textContent = tl.paused() ? 'Play' : 'Pause';
+
+  draw(t);
+
   if (!isRecording && !location.search.includes('clean') && (t >= DURATION || tl.progress() >= 1)) {
     tl.pause(0);
     tl.play(0);
   }
 })();
 
+/* ============ HEADLESS OPENER CONTRACT ============ */
+window.OPENER = {
+  W: 1920, H: 1080, DURATION, tl, ready: false,
+  audioManifest,
+  seek(t) {
+    tl.pause();
+    tl.time(t, false);
+    draw(t);
+    if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+  },
+  play() { tl.play(0); initAudio(); }
+};
+
 const toggle = () => {
   if (tl.paused() || tl.progress() >= 1) {
     if (tl.progress() >= 1) tl.progress(0);
     initAudio();
     tl.play();
-    if (btnPlay) btnPlay.textContent = 'Pause';
   } else {
     tl.pause();
-    if (btnPlay) btnPlay.textContent = 'Play';
   }
 };
 if (btnPlay) btnPlay.onclick = toggle;
 
 if (scrub) {
-  scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); if (btnPlay) btnPlay.textContent = 'Play'; });
-  addEventListener('pointerup', () => scrubbing = false);
-  scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
+  scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); });
+  addEventListener('pointerup', () => { scrubbing = false; });
+  scrub.addEventListener('input', () => {
+    tl.pause();
+    const t = (scrub.value / 1000) * DURATION;
+    tl.time(t);
+    draw(t);
+  });
 }
-
-const btnHud = $('#btn-hud'), ui = $('#ui');
-function toggleHud() {
-  const isHidden = ui.classList.toggle('hidden');
-  if (btnHud) btnHud.classList.toggle('active', !isHidden);
-}
-if (btnHud) btnHud.onclick = toggleHud;
-
-addEventListener('keydown', e => {
-  if (e.code === 'Space') { e.preventDefault(); toggle(); }
-  else if (e.key === 'h' || e.key === 'H') toggleHud();
-  else if (e.key === 'm' || e.key === 'M') toggleAudio();
-  else if (e.key === 'r' || e.key === 'R') { tl.pause(0); initAudio(); tl.play(); if (btnPlay) btnPlay.textContent = 'Pause'; }
-});
-
-window.addEventListener('message', e => {
-  if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
-    initAudio();
-  }
-});
-
-const seek = t => {
-  tl.pause();
-  tl.time(t, false);
-  if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
-};
-
-window.OPENER = {
-  W: 1920, H: 1080, DURATION, tl, ready: false, seek,
-  play() { tl.play(0); initAudio(); }
-};
 
 const startPlayback = () => {
   window.OPENER.ready = true;
   if (!location.search.includes('clean')) {
     tl.play(0);
-    if (btnPlay) btnPlay.textContent = 'Pause';
     tl.eventCallback('onComplete', () => {
       if (!isRecording && !location.search.includes('clean')) {
         tl.pause(0);
@@ -429,306 +827,173 @@ if (document.fonts && document.fonts.ready) {
   startPlayback();
 }
 
-/* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
-const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
-const btnExport = $('#btn-export');
-const btnExportLabel = $('#btn-export-text');
-const fpsMenu = $('#fps-menu');
-const fpsOptionsGroup = $('#fps-options-group');
-const renderControlsGroup = $('#render-controls-group');
-const btnRenderPause = $('#btn-render-pause');
-const btnRenderCancel = $('#btn-render-cancel');
+/* ============ CONTROLS & EXPORT ============ */
+const btnHud = $('#btn-hud'), ui = $('#ui');
+function toggleHud() {
+  const hidden = ui.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !hidden);
+}
+if (btnHud && ui) btnHud.onclick = toggleHud;
+
+window.addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  const typing = tag && ['INPUT', 'TEXTAREA'].includes(tag.toUpperCase());
+  if (e.code === 'Space' && !typing) { e.preventDefault(); toggle(); }
+  else if (!typing && e.key.toLowerCase() === 'h') toggleHud();
+  else if (!typing && e.key.toLowerCase() === 'm') toggleAudio();
+  else if (!typing && e.key.toLowerCase() === 'r') { tl.pause(0); initAudio(); tl.play(); }
+});
+
+const btnExport = $('#btn-export'), fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group'), renderControlsGroup = $('#render-controls-group');
+const btnExportText = $('#btn-export-text');
+const btnRenderPause = $('#btn-render-pause'), btnRenderCancel = $('#btn-render-cancel');
 const labelRenderPause = $('#label-render-pause');
-const iconPause = $('#icon-pause');
-const iconResume = $('#icon-resume');
+const iconPause = $('#icon-pause'), iconResume = $('#icon-resume');
 
-let isExporting = false;
-let isRenderPaused = false;
-let currentAbortController = null;
-let currentEvtSource = null;
+const EXPORT_DEFAULT_HTML = `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240`;
 
-function setExportUiState(exporting) {
-  isExporting = exporting;
-  if (fpsOptionsGroup && renderControlsGroup) {
-    fpsOptionsGroup.style.display = exporting ? 'none' : 'block';
-    renderControlsGroup.style.display = exporting ? 'block' : 'none';
-  }
-  if (!exporting) {
-    isRenderPaused = false;
-    updatePauseButtonUi(false);
-  }
-}
-
-function updatePauseButtonUi(paused) {
-  if (labelRenderPause) labelRenderPause.textContent = paused ? 'Resume Render' : 'Pause Render';
-  if (iconPause) iconPause.style.display = paused ? 'none' : 'inline-block';
-  if (iconResume) iconResume.style.display = paused ? 'inline-block' : 'none';
-}
+let isExporting = false, abortController = null, sseSource = null;
 
 if (btnExport && fpsMenu) {
-  btnExport.onclick = (e) => {
-    e.stopPropagation();
-    fpsMenu.classList.toggle('open');
-  };
-
-  document.addEventListener('click', (e) => {
-    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
-      fpsMenu.classList.remove('open');
-    }
+  btnExport.onclick = e => { e.stopPropagation(); fpsMenu.classList.toggle('open'); };
+  document.addEventListener('click', e => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) fpsMenu.classList.remove('open');
   });
+}
 
-  if (fpsOptionsGroup) {
-    const items = fpsOptionsGroup.querySelectorAll('.fps-item');
-    items.forEach(item => {
-      item.onclick = (e) => {
-        e.stopPropagation();
-        fpsMenu.classList.remove('open');
-        const chosenFps = Number(item.dataset.fps) || 240;
-        startExport(chosenFps);
-      };
-    });
-  }
-
-  if (btnRenderPause) {
-    btnRenderPause.onclick = async (e) => {
-      e.stopPropagation();
-      fpsMenu.classList.remove('open');
-      if (!isExporting) return;
-      try {
-        if (!isRenderPaused) {
-          await fetch('http://127.0.0.1:4004/api/pause');
-          isRenderPaused = true;
-          updatePauseButtonUi(true);
-          btnExportLabel.textContent = btnExportLabel.textContent.replace('Rendering', 'Paused');
-        } else {
-          await fetch('http://127.0.0.1:4004/api/resume');
-          isRenderPaused = false;
-          updatePauseButtonUi(false);
-          btnExportLabel.textContent = btnExportLabel.textContent.replace('Paused', 'Rendering');
-        }
-      } catch (err) {
-        console.warn('[Pause/Resume Error]', err);
-      }
-    };
-  }
-
-  if (btnRenderCancel) {
-    btnRenderCancel.onclick = async (e) => {
-      e.stopPropagation();
-      fpsMenu.classList.remove('open');
-      if (!isExporting) return;
-      try {
-        await fetch('http://127.0.0.1:4004/api/cancel');
-      } catch {}
-      if (currentEvtSource) {
-        currentEvtSource.close();
-        currentEvtSource = null;
-      }
-      if (currentAbortController) {
-        currentAbortController.abort();
-        currentAbortController = null;
-      }
-      btnExportLabel.textContent = 'Cancelled';
-      setTimeout(() => {
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        setExportUiState(false);
-      }, 1500);
-    };
+function setExportingState(exporting) {
+  isExporting = exporting;
+  if (exporting) {
+    fpsOptionsGroup.style.display = 'none';
+    renderControlsGroup.style.display = 'block';
+  } else {
+    fpsOptionsGroup.style.display = 'block';
+    renderControlsGroup.style.display = 'none';
+    btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+    if (sseSource) { sseSource.close(); sseSource = null; }
   }
 }
 
-async function startExport(targetFps = 240) {
-  if (isExporting || isRecording) return;
-  if (typeof markUserInteracted === 'function') markUserInteracted();
+if (fpsOptionsGroup) {
+  fpsOptionsGroup.querySelectorAll('.fps-item').forEach(item => {
+    item.onclick = e => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      startExport(Number(item.dataset.fps) || 240);
+    };
+  });
+}
 
-  // 1. Studio Local Bridge Attempt (Deterministic 60–240 FPS Headless Render)
-  let bridgeAvailable = false;
-  try {
-    const healthRes = await fetch('http://127.0.0.1:4004/api/health', { signal: AbortSignal.timeout(800) });
-    if (healthRes.ok) bridgeAvailable = true;
-  } catch {}
-
-  if (bridgeAvailable) {
+if (btnRenderPause) {
+  btnRenderPause.onclick = async e => {
+    e.stopPropagation();
+    const paused = labelRenderPause.textContent.includes('Resume');
     try {
-      setExportUiState(true);
-      currentAbortController = new AbortController();
-      btnExportLabel.textContent = `Connecting Studio...`;
+      await fetch(paused ? '/api/resume' : '/api/pause');
+      labelRenderPause.textContent = paused ? 'Pause Render' : 'Resume Render';
+      iconPause.style.display = paused ? 'block' : 'none';
+      iconResume.style.display = paused ? 'none' : 'block';
+    } catch (err) {}
+  };
+}
 
-      try {
-        currentEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
-        currentEvtSource.onmessage = e => {
+if (btnRenderCancel) {
+  btnRenderCancel.onclick = async e => {
+    e.stopPropagation();
+    try { await fetch('/api/cancel'); } catch (err) {}
+    if (abortController) abortController.abort();
+    setExportingState(false);
+    fpsMenu.classList.remove('open');
+  };
+}
+
+async function startExport(targetFps) {
+  if (isExporting) return;
+  const isStudioServer = location.port === '4004' || location.host.includes('4004') || Q.has('studio');
+  if (isStudioServer) {
+    try {
+      const health = await fetch('/api/health');
+      if (health.ok) {
+        setExportingState(true);
+        btnExportText.textContent = `Rendering ${targetFps} FPS (0%)`;
+        abortController = new AbortController();
+        sseSource = new EventSource('/api/progress');
+        sseSource.onmessage = e => {
           try {
             const data = JSON.parse(e.data);
-            if (data.status === 'rendering' && !isRenderPaused) {
-              btnExportLabel.textContent = `Rendering ${data.percent || 0}% (${targetFps} FPS)`;
-            } else if (data.status === 'paused') {
-              btnExportLabel.textContent = `Paused ${data.percent || 0}% (${targetFps} FPS)`;
-            }
-          } catch {}
+            if (data.type === 'progress') btnExportText.textContent = `Rendering ${targetFps} FPS (${data.percent}%)`;
+            else if (data.type === 'complete') btnExportText.textContent = 'Finalizing MP4...';
+          } catch (err) {}
         };
-      } catch {}
-
-      const templatePath = location.pathname.includes('assets/')
-        ? location.pathname.substring(location.pathname.indexOf('assets/'))
-        : 'assets/kinet-hud-scifi.html';
-
-      const renderRes = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
-        signal: currentAbortController.signal
-      });
-      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
-
-      if (!renderRes.ok) throw new Error(await renderRes.text());
-
-      btnExportLabel.textContent = 'Saving MP4...';
-      const blob = await renderRes.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      const baseName = templatePath.split('/').pop().replace('.html', '');
-      a.download = `${baseName}_${targetFps}fps.mp4`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-
-      btnExportLabel.textContent = 'Downloaded!';
-      setTimeout(() => {
-        btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-        setExportUiState(false);
-      }, 2000);
-      return;
-    } catch (bridgeErr) {
-      if (bridgeErr.name === 'AbortError') {
-        return; // User clicked Cancel Render
+        const templatePath = location.pathname.replace(/^\//, '');
+        const res = await fetch('/api/render', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ template: templatePath, fps: targetFps }),
+          signal: abortController.signal
+        });
+        if (!res.ok) throw new Error(await res.text());
+        btnExportText.textContent = 'Saving MP4...';
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${templatePath.split('/').pop().replace('.html', '')}_${targetFps}fps.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        btnExportText.textContent = 'Downloaded!';
+        setTimeout(() => setExportingState(false), 2000);
+        return;
       }
-      console.warn('[Studio Bridge Error, falling back to browser capture]', bridgeErr);
-      if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
-      setExportUiState(false);
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      setExportingState(false);
     }
   }
 
-  // 2. Studio Bridge is offline:
-  const isFileOrigin = typeof location !== 'undefined' && location.protocol === 'file:';
-  if (isFileOrigin || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-    alert(`[KinetRig Studio Bridge Offline]\n\nUntuk muat turun video ${targetFps} FPS MP4 secara automatik melalui pelayar, sila jalankan arahan ini dalam terminal:\n\nnode scripts/server.mjs\n\nKemudian klik semula Download, atau buka:\nhttp://127.0.0.1:4004`);
-    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-    setExportUiState(false);
-    return;
-  }
-
-  // 3. Standalone In-Browser Clean Screen Recording
+  // Standalone in-browser capture fallback
   try {
     isRecording = true;
-    setExportUiState(true);
-    btnExportLabel.textContent = `Recording ${targetFps} FPS...`;
     document.body.classList.add('clean-capture');
-
-    if (typeof initAudio === 'function') initAudio();
-    const captureAudio = typeof isAudioMuted !== 'undefined' ? !isAudioMuted : true;
-    let stream;
-    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-      if (captureAudio) {
-        try {
-          stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
-            audio: true, preferCurrentTab: true
-          });
-        } catch {
-          try {
-            stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
-              preferCurrentTab: true
-            });
-          } catch (e) {
-            document.body.classList.remove('clean-capture');
-            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-            isRecording = false; setExportUiState(false); return;
-          }
-        }
-      } else {
-        try {
-          stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
-            audio: false, preferCurrentTab: true
-          });
-        } catch {
-          try {
-            stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { displaySurface: 'browser', cursor: 'never', frameRate: { ideal: targetFps, min: 60 } },
-              preferCurrentTab: true
-            });
-          } catch (e) {
-            document.body.classList.remove('clean-capture');
-            btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-            isRecording = false; setExportUiState(false); return;
-          }
-        }
-      }
-    } else {
-      document.body.classList.remove('clean-capture');
-      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-      isRecording = false; setExportUiState(false); return;
+    btnExportText.textContent = `Recording ${targetFps} FPS...`;
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { frameRate: targetFps, width: 1920, height: 1080, cursor: 'never' },
+      audio: true
+    });
+    let mixed = stream;
+    if (audioDest && !isAudioMuted && audioDest.stream.getAudioTracks().length > 0) {
+      mixed = new MediaStream([...stream.getVideoTracks(), ...audioDest.stream.getAudioTracks()]);
     }
-
-    if (!stream) {
-      document.body.classList.remove('clean-capture');
-      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-      isRecording = false; setExportUiState(false); return;
-    }
-
-    const tracks = [...stream.getVideoTracks()];
-    if (captureAudio) {
-      if (typeof audioDest !== 'undefined' && audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
-        tracks.push(audioDest.stream.getAudioTracks()[0]);
-      } else if (stream.getAudioTracks().length > 0) {
-        tracks.push(stream.getAudioTracks()[0]);
-      }
-    } else {
-      if (stream && stream.getAudioTracks) {
-        stream.getAudioTracks().forEach(t => { try { t.stop(); stream.removeTrack(t); } catch(e){} });
-      }
-    }
-    const combinedStream = new MediaStream(tracks);
-
-    const mimeType = MediaRecorder.isTypeSupported('video/mp4; codecs="avc1.42E01E"')
-      ? 'video/mp4; codecs="avc1.42E01E"'
-      : (MediaRecorder.isTypeSupported('video/webm; codecs=vp9') ? 'video/webm; codecs=vp9' : 'video/webm');
-
-    const recorder = new MediaRecorder(combinedStream, { mimeType, videoBitsPerSecond: 40000000 });
+    const recorder = new MediaRecorder(mixed, { mimeType: 'video/webm;codecs=vp9' });
     const chunks = [];
     recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
     recorder.onstop = () => {
       document.body.classList.remove('clean-capture');
-      const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-      const blob = new Blob(chunks, { type: mimeType });
+      isRecording = false;
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: 'video/webm' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const baseName = (location.pathname.split('/').pop() || 'kinet-hud-scifi.html').replace('.html', '');
-      a.download = `${baseName}_${targetFps}fps.${ext}`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      a.download = `kinet-velocity-tunnel_${targetFps}fps.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      if (stream && stream.getTracks) stream.getTracks().forEach(t => t.stop());
-      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-      isRecording = false; setExportUiState(false);
-      if (typeof tl !== 'undefined' && tl.play) tl.play();
+      btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
     };
-
-    if (typeof tl !== 'undefined' && tl.pause) {
-      tl.pause(0);
-      tl.play();
-    }
-    recorder.start(100);
-
-    const durSeconds = typeof DURATION !== 'undefined' ? DURATION : (typeof DUR !== 'undefined' ? DUR : 8.0);
-    setTimeout(() => {
-      if (recorder.state === 'recording') recorder.stop();
-    }, (durSeconds * 1000) + 400);
-
+    recorder.start();
+    tl.pause(0);
+    initAudio();
+    tl.play();
+    setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, DURATION * 1000 + 400);
   } catch (err) {
     document.body.classList.remove('clean-capture');
-    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-    isRecording = false; setExportUiState(false);
+    isRecording = false;
+    btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
   }
 }
 </script>

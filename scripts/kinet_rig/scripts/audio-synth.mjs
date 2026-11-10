@@ -8,7 +8,7 @@
      4. Soft-knee peak limiting
    ========================================================= */
 
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
@@ -442,6 +442,43 @@ export function synthesizeManifest(manifest, outputPath) {
     writeFileSync(outputPath, wavBuffer);
   }
   return { buffer: wavBuffer, studioSamplesMixed, totalEvents: events.length };
+}
+
+/**
+ * JIT auto-downloads missing studio sound effects from wyzowl/sfx-kit on-demand.
+ */
+export async function prefetchManifestSounds(manifest) {
+  if (!manifest || !manifest.events) return;
+  const sfxIndex = loadSfxIndex();
+  const RAW_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+
+  for (const ev of manifest.events) {
+    const targetSoundId = ev.sfx_id || ARCHETYPE_MAP[ev.type];
+    let relPath = null;
+    if (sfxIndex && targetSoundId && sfxIndex.sounds) {
+      const soundMeta = sfxIndex.sounds.find(s => s.id === targetSoundId);
+      if (soundMeta) relPath = soundMeta.file;
+    } else if (ev.file) {
+      relPath = ev.file;
+    }
+
+    if (relPath) {
+      const fullPath = resolve(SFX_DIR, relPath);
+      if (!existsSync(fullPath)) {
+        try {
+          const res = await fetch(`${RAW_BASE}/${relPath}`);
+          if (res.ok) {
+            const ab = await res.arrayBuffer();
+            mkdirSync(dirname(fullPath), { recursive: true });
+            writeFileSync(fullPath, Buffer.from(ab));
+            console.log(`[Audio Synth] JIT auto-downloaded sound: ${relPath}`);
+          }
+        } catch (e) {
+          console.warn(`[Audio Synth] Could not prefetch ${relPath}: ${e.message}`);
+        }
+      }
+    }
+  }
 }
 
 // CLI direct run test

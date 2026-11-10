@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - iOS 18 Spatial Liquid Glass & Dynamic Orb (MIT) -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KinetRig — iOS Spatial Liquid Glass & Dynamic Orb (240 FPS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<style>
+:root {
+  --ios-blue: #0A84FF;
+  --ios-purple: #BF5AF2;
+  --ios-pink: #FF375F;
+  --ios-cyan: #64D2FF;
+  --ios-green: #30D158;
+  --ios-amber: #FF9F0A;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --font-main: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-main);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Master Fixed 1920x1080 Stage */
+#stage {
+  position: fixed; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform: translate(-50%, -50%) scale(1);
+  background: radial-gradient(circle at 50% 38%, #141B2D 0%, #07090E 75%, #020305 100%);
+  overflow: hidden;
+}
+
+#world {
+  position: absolute; inset: 0;
+  width: 1920px; height: 1080px;
+  will-change: transform;
+}
+
+#three-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* iOS Spatial Ambient Aura */
+.ambient-aura {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(10, 132, 255, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 35% 40%, rgba(191, 90, 242, 0.14) 0%, transparent 48%),
+    radial-gradient(circle at 65% 55%, rgba(100, 210, 255, 0.12) 0%, transparent 48%);
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(40px);
+}
+
+/* Siri Intelligence Fluid Glow Border */
+.siri-glow-aura {
+  position: absolute; left: 50%; top: 50%;
+  width: 680px; height: 680px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #FF375F, #BF5AF2, #0A84FF, #64D2FF, #30D158, #FF9F0A, #FF375F);
+  filter: blur(65px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Top Dynamic Island */
+.island-wrap {
+  position: absolute; top: 44px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+}
+.dynamic-island {
+  position: relative;
+  width: 220px; height: 50px;
+  background: #000;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.04);
+  transform-origin: center top;
+  overflow: hidden;
+}
+.island-content-compact {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; font-size: 13px; font-weight: 600;
+}
+.island-badge {
+  display: flex; align-items: center; gap: 8px;
+}
+.island-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--ios-green);
+  box-shadow: 0 0 10px var(--ios-green);
+}
+.island-wave {
+  display: flex; align-items: center; gap: 3px; height: 16px;
+}
+.wave-bar {
+  width: 3px; height: 8px; background: var(--ios-green);
+  border-radius: 2px;
+}
+
+/* Expanded Dynamic Island Spatial Card (always laid out: opacity-only, no display flips) */
+.island-expanded {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px;
+  opacity: 0; pointer-events: none;
+  will-change: opacity;
+}
+.island-media-art {
+  width: 58px; height: 58px; border-radius: 14px;
+  background: linear-gradient(135deg, #FF375F, #BF5AF2);
+  box-shadow: 0 4px 16px rgba(255, 55, 95, 0.4);
+  display: flex; align-items: center; justify-content: center;
+}
+.island-media-art svg { width: 28px; height: 28px; fill: #fff; }
+.island-media-info {
+  display: flex; flex-direction: column; gap: 3px; text-align: left;
+}
+.island-media-title { font-size: 15px; font-weight: 700; color: #fff; }
+.island-media-sub { font-size: 12px; font-weight: 500; color: #8E8E93; }
+
+/* Left Spatial Glass Card */
+.spatial-card-left {
+  position: absolute; left: 80px; top: 50%;
+  transform: translateY(-50%) translateZ(0);
+  width: 380px; padding: 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+  z-index: 20; opacity: 0;
+}
+.card-header-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(10, 132, 255, 0.18);
+  border: 1px solid rgba(10, 132, 255, 0.35);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ios-blue); margin-bottom: 16px;
+}
+.card-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.card-subtitle { font-size: 13px; font-weight: 500; color: #8E8E93; margin-bottom: 22px; }
+.spatial-bar-track {
+  width: 100%; height: 8px; background: rgba(255,255,255,0.08);
+  border-radius: 9999px; overflow: hidden; margin-bottom: 10px;
+}
+.spatial-bar-fill {
+  width: 35%; height: 100%;
+  background: linear-gradient(90deg, var(--ios-blue), var(--ios-cyan));
+  border-radius: 9999px;
+}
+
+/* Right Spatial Glass Card */
+.spatial-card-right {
+  position: absolute; right: 80px; top: 50%;
+  transform: translateY(-50%) translateZ(0);
+  width: 380px; padding: 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+  z-index: 20; opacity: 0;
+}
+.metric-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-name { font-size: 13px; font-weight: 600; color: #8E8E93; }
+.metric-val { font-size: 14px; font-weight: 700; color: #fff; font-family: var(--font-mono); }
+
+/* Center Stage Typography & Biometric Ring */
+.center-text-wrap {
+  position: absolute; left: 50%; bottom: 100px;
+  transform: translateX(-50%);
+  text-align: center; z-index: 25; width: 1200px;
+}
+.hero-eyebrow {
+  font-size: 14px; font-weight: 700; letter-spacing: 0.28em;
+  color: var(--ios-blue); text-transform: uppercase; margin-bottom: 14px;
+}
+.hero-title {
+  font-size: 64px; font-weight: 800; letter-spacing: -0.03em;
+  line-height: 1.1; color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  min-height: 80px;
+}
+.hero-desc {
+  font-size: 17px; font-weight: 500; color: #8E8E93; margin-top: 10px;
+}
+
+/* Face ID Biometric Spatial Glyph */
+.face-id-ring {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  width: 260px; height: 260px;
+  border-radius: 48px;
+  border: 2px dashed rgba(100, 210, 255, 0.5);
+  box-shadow: 0 0 40px rgba(100, 210, 255, 0.25);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; z-index: 30;
+}
+.face-id-ring svg {
+  width: 96px; height: 96px; stroke: var(--ios-cyan); stroke-width: 2; fill: none;
+}
+
+/* TOP-BAR & DROPDOWN (Outside #stage, Fixed) */
+.top-bar {
+  position: fixed; top: 20px; right: 24px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 100;
+}
+.btn-action {
+  height: 38px; padding: 0 16px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff; font-family: var(--font-main);
+  font-size: 13px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 8px;
+  cursor: pointer; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action:hover {
+  border-color: var(--ios-blue);
+  box-shadow: 0 0 16px rgba(10, 132, 255, 0.4);
+  transform: translateY(-1px);
+}
+.btn-action.active {
+  background: rgba(10, 132, 255, 0.22);
+  border-color: var(--ios-blue);
+}
+.export-dropdown { position: relative; }
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(10, 132, 255, 0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+}
+.fps-item:hover {
+  background: rgba(10, 132, 255, 0.2); color: var(--ios-blue); transform: translateX(2px);
+}
+.fps-item.danger:hover {
+  background: rgba(239, 68, 68, 0.2); color: #F87171;
+}
+
+/* HUD SCRUBBER (Outside #stage, Fixed) */
+#ui {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(9, 14, 26, 0.92);
+  padding: 8px 18px; border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 90;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(10, 132, 255, 0.15);
+  font-family: var(--font-main); font-size: 13px; color: #94A3B8;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ui.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, 14px); }
+#ui button {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);
+  color: #fff; font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 9999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ui button:hover { background: rgba(10, 132, 255, 0.25); border-color: var(--ios-blue); color: #fff; }
+#ui button#btn-audio { padding: 6px 10px; }
+#ui button.muted { opacity: 0.6; color: #94A3B8; }
+#scrub { width: 340px; height: 6px; accent-color: var(--ios-blue); cursor: pointer; border-radius: 3px; }
+#clock { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 58px; text-align: right; color: #E2E8F0; }
+
+body.clean-capture .top-bar,
+body.clean-capture #ui,
+body.clean-mode .top-bar,
+body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+body.clean-capture, body.clean-mode { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="btn-action" id="btn-hud">
+    <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    HUD (H)
+  </button>
+  <div class="export-dropdown">
+    <button class="btn-action" id="btn-export">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="19" x2="12" y2="5"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--ios-blue);background:rgba(10,132,255,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stage">
+  <div class="ambient-aura"></div>
+  <div class="siri-glow-aura" id="siriAura"></div>
+
+  <div id="world">
+    <!-- WebGL Three.js Spatial Liquid Glass Orb Canvas -->
+    <canvas id="three-canvas"></canvas>
+
+    <!-- Top Dynamic Island Morphing Capsule -->
+    <div class="island-wrap">
+      <div class="dynamic-island" id="island">
+        <div class="island-content-compact" id="islandCompact">
+          <div class="island-badge">
+            <span class="island-dot"></span>
+            <span style="letter-spacing: 0.02em;">Spatial Fluid</span>
+          </div>
+          <div class="island-wave">
+            <span class="wave-bar" id="wb1"></span>
+            <span class="wave-bar" id="wb2"></span>
+            <span class="wave-bar" id="wb3"></span>
+            <span class="wave-bar" id="wb4"></span>
+          </div>
+        </div>
+
+        <div class="island-expanded" id="islandExpanded">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div class="island-media-art">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+            </div>
+            <div class="island-media-info">
+              <span class="island-media-title">Apple Spatial Audio</span>
+              <span class="island-media-sub">Dolby Atmos • Liquid Transmission</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span style="font-size:12px; font-weight:700; color:var(--ios-blue); background:rgba(10,132,255,0.18); padding:4px 10px; border-radius:9999px;">LOSSLESS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Left Spatial Glass Widget -->
+    <div class="spatial-card-left" id="cardLeft">
+      <div class="card-header-icon">
+        <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;stroke-width:2.2;fill:none;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      </div>
+      <div class="card-title">Spatial Audio Depth</div>
+      <div class="card-subtitle">Head-tracking acoustic wave field</div>
+      <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; font-weight:600; color:#8E8E93;">
+        <span>Resonance Level</span>
+        <span id="resonanceVal" style="color:#fff;">34%</span>
+      </div>
+      <div class="spatial-bar-track">
+        <div class="spatial-bar-fill" id="resonanceBar"></div>
+      </div>
+      <div style="font-size:12px; color:var(--ios-cyan); font-weight:600; margin-top:14px; display:flex; align-items:center; gap:6px;">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ios-cyan);"></span>
+        Dynamic Island Link: Active
+      </div>
+    </div>
+
+    <!-- Right Spatial Glass Widget -->
+    <div class="spatial-card-right" id="cardRight">
+      <div class="card-title" style="margin-bottom:4px;">Apple Intelligence</div>
+      <div class="card-subtitle" style="margin-bottom:16px;">On-Device Neural Engine v18</div>
+      <div class="metric-row">
+        <span class="metric-name">Refractive Transmission</span>
+        <span class="metric-val" id="transVal">96.4%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Chromatic Dispersion</span>
+        <span class="metric-val" id="dispVal">0.082</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Spatial Gyro Tensor</span>
+        <span class="metric-val" id="gyroVal">+1.42 G</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Haptic Core Clock</span>
+        <span class="metric-val" style="color:var(--ios-green);">240 Hz SYNC</span>
+      </div>
+    </div>
+
+    <!-- Face ID Biometric Spatial Ring -->
+    <div class="face-id-ring" id="faceIdRing">
+      <svg viewBox="0 0 24 24"><path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h.01M15 9h.01M10 14a3.5 3.5 0 0 0 4 0"/></svg>
+    </div>
+
+    <!-- Bottom Center Kinetic Typography -->
+    <div class="center-text-wrap">
+      <div class="hero-eyebrow" id="heroEyebrow">iOS 18 • SPATIAL LIQUID GLASS</div>
+      <div class="hero-title" id="heroTitle">Liquid Orb Fluidity</div>
+      <div class="hero-desc" id="heroDesc">Refractive transmission with Apple Intelligence chromatic aura</div>
+    </div>
+  </div>
+</div>
+
+<div id="ui">
+  <button id="btn-play">Pause</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
+let isRecording = false;
+
+const DURATION = 15.0;
+const tl = gsap.timeline({ paused: true });
+
+/* ============ STAGE FIT (Fixed 1920x1080 Responsive Fit) ============ */
+const stage = $('#stage');
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit);
+fit();
+
+/* ============ TOP-LEVEL AUDIO MANIFEST (AI Director 15s Choreography) ============ */
+const audioManifest = {
+  duration: DURATION,
+  sceneArchetype: 'showcase_glass',
+  semanticKeywords: ['apple', 'ios', 'glass', 'liquid', 'spatial', 'island', 'biometric', 'siri', 'neural'],
+  ambientBed: { type: 'crystal_drift', baseFreq: 65, filterCutoff: 420, gain: 0.04 },
+  events: [
+    { time: 0.20, type: 'sub_reveal', sfx_id: 'notification-alert-clear', file: 'sounds/notifications/notification-alert-clear.wav', gain: 0.85, material: 'acrylic_glass', target: '#island' },
+    { time: 1.10, type: 'impact', sfx_id: 'pop-large-bubble', file: 'sounds/pops/pop-large-bubble.wav', gain: 0.70, material: 'soft_bubble', target: '#three-canvas' },
+    { time: 3.20, type: 'whoosh', sfx_id: 'whoosh-medium-soft', file: 'sounds/whooshes/whoosh-medium-soft.wav', gain: 0.65, material: 'air_displacement', target: '#cardLeft' },
+    { time: 3.25, type: 'sub_reveal', sfx_id: 'tone-step-1', file: 'sounds/tones/tone-step-1.wav', gain: 0.75, material: 'crystal_step', target: '#cardLeft' },
+    { time: 4.80, type: 'soft_tap', sfx_id: 'click-snap-soft', file: 'sounds/interface/click-snap-soft.wav', gain: 0.50, material: 'tactile_switch', target: '#resonanceBar' },
+    { time: 6.60, type: 'exit_sweep', sfx_id: 'riser-1s-soft', file: 'sounds/risers-and-fallers/riser-1s-soft.wav', gain: 0.75, material: 'acrylic_glass', target: '#siriAura' },
+    { time: 6.80, type: 'sub_reveal', sfx_id: 'tone-step-2', file: 'sounds/tones/tone-step-2.wav', gain: 0.80, material: 'crystal_step', target: '#siriAura' },
+    { time: 7.20, type: 'card_pop', sfx_id: 'shimmer-long-soft', file: 'sounds/shimmers/shimmer-long-soft.wav', gain: 0.70, material: 'acrylic_glass', target: '#three-canvas' },
+    { time: 8.50, type: 'sub_reveal', sfx_id: 'tone-step-3', file: 'sounds/tones/tone-step-3.wav', gain: 0.80, material: 'crystal_step', target: '#island' },
+    { time: 10.30, type: 'soft_tap', sfx_id: 'click-tap-soft', file: 'sounds/interface/click-tap-soft.wav', gain: 0.70, material: 'tactile_switch', target: '#faceIdRing' },
+    { time: 10.35, type: 'impact', sfx_id: 'impact-deep-soft', file: 'sounds/impacts/impact-deep-soft.wav', gain: 0.75, material: 'physical_neutral', target: '#faceIdRing' },
+    { time: 12.00, type: 'card_pop', sfx_id: 'shimmer-long-sparkle', file: 'sounds/shimmers/shimmer-long-sparkle.wav', gain: 0.65, material: 'acrylic_glass', target: '#three-canvas' },
+    { time: 13.60, type: 'whoosh', sfx_id: 'whoosh-fast-soft', file: 'sounds/whooshes/whoosh-fast-soft.wav', gain: 0.70, material: 'air_displacement', target: '#island' }
+  ]
+};
+
+/* ============ FRESH ON-DEMAND SFX & WEB AUDIO SYSTEM ============ */
+const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+const STUDIO_SFX = {
+  alert_clear: 'sounds/notifications/notification-alert-clear.wav',
+  pop_bubble: 'sounds/pops/pop-large-bubble.wav',
+  whoosh_soft: 'sounds/whooshes/whoosh-medium-soft.wav',
+  whoosh_fast: 'sounds/whooshes/whoosh-fast-soft.wav',
+  tone_step1: 'sounds/tones/tone-step-1.wav',
+  tone_step2: 'sounds/tones/tone-step-2.wav',
+  tone_step3: 'sounds/tones/tone-step-3.wav',
+  click_snap: 'sounds/interface/click-snap-soft.wav',
+  click_tap: 'sounds/interface/click-tap-soft.wav',
+  riser_soft: 'sounds/risers-and-fallers/riser-1s-soft.wav',
+  shimmer_soft: 'sounds/shimmers/shimmer-long-soft.wav',
+  shimmer_sparkle: 'sounds/shimmers/shimmer-long-sparkle.wav',
+  sub_impact: 'sounds/impacts/impact-deep-soft.wav'
+};
+
+const sfxRawBuffers = {};
+const sfxAudioBuffers = {};
+
+async function fetchSfxArrayBuffer(rel) {
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? ['../sfx/' + rel, '../../sfx/' + rel, 'sfx/' + rel, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(dec => { sfxAudioBuffers[id] = dec; }).catch(() => {});
+      }
+    }
+  });
+}
+
+/* ============ AUDIO ROUTING & LAYER 1 AMBIENT BED ============ */
+let audioCtx = null, audioDest = null, mainMasterGain = null, ambientGain = null;
+let isAudioMuted = false, hasUserInteracted = false;
+
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  $('#icon-audio-on').style.display = isAudioMuted ? 'none' : 'block';
+  $('#icon-audio-off').style.display = isAudioMuted ? 'block' : 'none';
+  $('#btn-audio').classList.toggle('muted', isAudioMuted);
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+$('#btn-audio').onclick = toggleAudio;
+
+function markUserInteracted() {
+  hasUserInteracted = true;
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+window.addEventListener('pointerdown', markUserInteracted, { capture: true });
+window.addEventListener('keydown', markUserInteracted, { capture: true });
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || e.data?.type === 'UNLOCK_AUDIO') {
+    markUserInteracted();
+    initAudio();
+  }
+});
+
+function initAudio() {
+  if (!audioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      audioCtx = new AudioCtx();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+
+      // Layer 1: Ambient Spatial Shimmer Drone (Sine 65Hz + 420Hz filter)
+      try {
+        const droneOsc = audioCtx.createOscillator();
+        const droneFilter = audioCtx.createBiquadFilter();
+        ambientGain = audioCtx.createGain();
+        droneOsc.type = 'sine';
+        droneOsc.frequency.setValueAtTime(65, audioCtx.currentTime);
+        droneFilter.type = 'lowpass';
+        droneFilter.frequency.setValueAtTime(420, audioCtx.currentTime);
+        ambientGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        droneOsc.connect(droneFilter);
+        droneFilter.connect(ambientGain);
+        ambientGain.connect(mainMasterGain);
+        droneOsc.start();
+      } catch (err) {}
+    }
+  }
+  if (audioCtx) {
+    if (hasUserInteracted && audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(dec => { sfxAudioBuffers[id] = dec; }).catch(() => {});
+      }
+    }
+  }
+  return audioCtx;
+}
+
+function triggerSfx(id, fallbackFn, gain = 0.5, pitchRate = 1.0) {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running' || isAudioMuted) return;
+  const normId = id.replace(/-/g, '_');
+  const buf = sfxAudioBuffers[id] || sfxAudioBuffers[normId];
+  if (buf) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.playbackRate.value = pitchRate;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn(ctx, gain, pitchRate);
+}
+
+/* ============ PROCEDURAL FALLBACKS ============ */
+const playGlassChimeFallback = (ctx, gVal, pitchRate = 1.0) => {
+  try {
+    const osc = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime;
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880 * pitchRate, now);
+    osc.frequency.exponentialRampToValueAtTime(220 * pitchRate, now + 0.35);
+    g.gain.setValueAtTime(gVal * 0.4, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    osc.start(now); osc.stop(now + 0.40);
+  } catch (e) {}
+};
+
+const playSubImpactFallback = (ctx, gVal) => {
+  try {
+    const osc = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime;
+    osc.type = 'sine'; osc.frequency.setValueAtTime(130, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.45);
+    g.gain.setValueAtTime(gVal * 0.6, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.48);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    osc.start(now); osc.stop(now + 0.50);
+  } catch (e) {}
+};
+
+/* ============ NAMED TELEMETRY SFX FUNCTIONS ============ */
+function sfxAlertClear() { triggerSfx('alert_clear', playGlassChimeFallback, 0.85); }
+function sfxPopBubble() { triggerSfx('pop_bubble', playGlassChimeFallback, 0.70); }
+function sfxWhooshSoft() { triggerSfx('whoosh_soft', playGlassChimeFallback, 0.65); }
+function sfxWhooshFast() { triggerSfx('whoosh_fast', playGlassChimeFallback, 0.70); }
+function sfxTone1() { triggerSfx('tone_step1', playGlassChimeFallback, 0.75); }
+function sfxTone2() { triggerSfx('tone_step2', playGlassChimeFallback, 0.80); }
+function sfxTone3() { triggerSfx('tone_step3', playGlassChimeFallback, 0.80); }
+function sfxClickSnap() { triggerSfx('click_snap', playGlassChimeFallback, 0.50); }
+function sfxClickTap() { triggerSfx('click_tap', playGlassChimeFallback, 0.70); }
+function sfxRiserSoft() { triggerSfx('riser_soft', playGlassChimeFallback, 0.75); }
+function sfxShimmerSoft() { triggerSfx('shimmer_soft', playGlassChimeFallback, 0.70); }
+function sfxShimmerSparkle() { triggerSfx('shimmer_sparkle', playGlassChimeFallback, 0.65); }
+function sfxSubImpact() { triggerSfx('sub_impact', playSubImpactFallback, 0.75); }
+
+/* ============ THREE.JS SPATIAL LIQUID ORB ENGINE ============ */
+const canvas = $('#three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setSize(1920, 1080);
+renderer.setPixelRatio(1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1920 / 1080, 0.1, 100);
+camera.position.set(0, 0, 7.5);
+
+// Spatial Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const dirLight1 = new THREE.DirectionalLight(0x0A84FF, 3.5);
+dirLight1.position.set(5, 5, 4);
+scene.add(dirLight1);
+
+const dirLight2 = new THREE.DirectionalLight(0xFF375F, 2.8);
+dirLight2.position.set(-5, -3, 3);
+scene.add(dirLight2);
+
+const pointLight = new THREE.PointLight(0x64D2FF, 4, 15);
+pointLight.position.set(0, 0, 3.5);
+scene.add(pointLight);
+
+// Liquid Orb Mesh with Physical Glass Transmission
+const orbGeo = new THREE.IcosahedronGeometry(2.1, 48);
+const orbMat = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff,
+  metalness: 0.05,
+  roughness: 0.08,
+  transmission: 0.95,
+  ior: 1.48,
+  thickness: 2.2,
+  specularIntensity: 1.0,
+  specularColor: 0xffffff,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.05,
+  transparent: true,
+  opacity: 0.98
+});
+const orbMesh = new THREE.Mesh(orbGeo, orbMat);
+scene.add(orbMesh);
+
+// Concentric Spatial VisionOS Rings (tilted orbital ellipses)
+const ringMat = new THREE.MeshBasicMaterial({
+  color: 0x64D2FF,
+  transparent: true,
+  opacity: 0.28,
+  wireframe: true
+});
+const ringGeo1 = new THREE.RingGeometry(2.6, 2.64, 64);
+const ringMesh1 = new THREE.Mesh(ringGeo1, ringMat);
+ringMesh1.rotation.x = Math.PI / 2.4;
+scene.add(ringMesh1);
+
+const ringMat2 = new THREE.MeshBasicMaterial({
+  color: 0xBF5AF2,
+  transparent: true,
+  opacity: 0.20,
+  wireframe: true
+});
+const ringGeo2 = new THREE.RingGeometry(3.1, 3.14, 64);
+const ringMesh2 = new THREE.Mesh(ringGeo2, ringMat2);
+ringMesh2.rotation.x = Math.PI / 1.9;
+ringMesh2.rotation.y = Math.PI / 6;
+scene.add(ringMesh2);
+
+// Keep original vertex positions for fluid deformation
+const origPositions = orbGeo.attributes.position.clone();
+
+/* ============ TIMELINE & MOTION CHOREOGRAPHY ============ */
+const island = $('#island'), islandCompact = $('#islandCompact'), islandExpanded = $('#islandExpanded');
+const siriAura = $('#siriAura'), faceIdRing = $('#faceIdRing');
+const cardLeft = $('#cardLeft'), cardRight = $('#cardRight');
+const resonanceBar = $('#resonanceBar'), resonanceVal = $('#resonanceVal');
+const transVal = $('#transVal'), dispVal = $('#dispVal'), gyroVal = $('#gyroVal');
+const heroEyebrow = $('#heroEyebrow'), heroTitle = $('#heroTitle'), heroDesc = $('#heroDesc');
+
+// Baseline State (0.00s Deterministic Looping)
+tl.set('#world', { x: 0, y: 0, scale: 1 }, 0);
+tl.set(island, { width: 220, height: 50, borderRadius: 9999 }, 0);
+tl.set(islandCompact, { opacity: 1 }, 0);
+tl.set(islandExpanded, { opacity: 0 }, 0);
+tl.set(siriAura, { opacity: 0, scale: 0.6 }, 0);
+tl.set(faceIdRing, { opacity: 0, scale: 0.6 }, 0);
+tl.set([cardLeft, cardRight], { opacity: 0, y: 0 }, 0);
+tl.set(orbMesh.scale, { x: 0.001, y: 0.001, z: 0.001 }, 0);
+tl.set([ringMesh1.scale, ringMesh2.scale], { x: 0, y: 0, z: 0 }, 0);
+tl.set(camera.position, { x: 0, y: 0, z: 7.5 }, 0);
+
+tl.call(() => {
+  heroEyebrow.textContent = 'iOS 18 • SPATIAL LIQUID GLASS';
+  heroTitle.textContent = 'Liquid Orb Fluidity';
+  heroDesc.textContent = 'Refractive transmission with Apple Intelligence chromatic aura';
+  resonanceBar.style.width = '35%';
+  resonanceVal.textContent = '35%';
+  transVal.textContent = '96.4%';
+  dispVal.textContent = '0.082';
+  gyroVal.textContent = '+1.42 G';
+}, null, 0);
+
+/* ============ SCENE 1 (0.00s - 3.20s): DYNAMIC ISLAND AWAKEN & LIQUID EMERGENCE ============ */
+tl.call(sfxAlertClear, null, 0.20);
+tl.fromTo(island, { scaleY: 0.82 }, { scaleY: 1, duration: 0.22, ease: 'power3.out' }, 0.20);
+
+// Liquid Orb Pop & Drop from Island
+tl.call(sfxPopBubble, null, 1.10);
+tl.to(orbMesh.scale, { x: 1.0, y: 1.0, z: 1.0, duration: 1.2, ease: 'elastic.out(1, 0.55)' }, 1.10);
+tl.to([ringMesh1.scale, ringMesh2.scale], { x: 1.0, y: 1.0, z: 1.0, duration: 1.4, ease: 'power3.out' }, 1.30);
+
+/* ============ SCENE 2 (3.20s - 6.50s): SPATIAL GLASS WIDGETS UNFOLDING ============ */
+tl.call(sfxWhooshSoft, null, 3.20);
+tl.call(sfxTone1, null, 3.25);
+
+// Expand Island into Spatial Music Widget (opacity-only crossfade: no layout flip = no jank)
+tl.to(islandCompact, { opacity: 0, duration: 0.12 }, 3.15);
+tl.to(island, { width: 560, height: 86, borderRadius: 32, duration: 0.42, ease: 'power3.out' }, 3.16);
+tl.to(islandExpanded, { opacity: 1, duration: 0.30, ease: 'power2.out' }, 3.30);
+
+// Unfold Left & Right Spatial Cards
+tl.fromTo(cardLeft, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.85, ease: 'power3.out' }, 3.30);
+tl.fromTo(cardRight, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.85, ease: 'power3.out' }, 3.40);
+
+// Update Center Typography
+tl.call(() => {
+  heroEyebrow.textContent = 'VISIONOS & DYNAMIC ISLAND';
+  heroTitle.textContent = 'Spatial Audio Resonance';
+  heroDesc.textContent = 'Multi-channel Dolby Atmos acoustic wave propagation';
+}, null, 3.50);
+
+// Resonance Meter Haptic Snap
+tl.to(resonanceBar, { width: '84%', duration: 1.4, ease: 'power2.inOut', onUpdate: function() {
+  const v = Math.round(35 + this.progress() * 49);
+  resonanceVal.textContent = v + '%';
+} }, 4.40);
+tl.call(sfxClickSnap, null, 4.80);
+
+/* ============ SCENE 3 (6.50s - 10.20s): APPLE INTELLIGENCE SIRI AURA & FLUID PULSE ============ */
+tl.call(sfxRiserSoft, null, 6.60);
+tl.call(sfxTone2, null, 6.80);
+tl.call(sfxShimmerSoft, null, 7.20);
+
+// Camera push through spatial depth
+tl.to(camera.position, { z: 6.2, duration: 1.8, ease: 'power2.inOut' }, 6.60);
+
+// Siri Apple Intelligence Aura Expansion
+tl.to(siriAura, { opacity: 0.85, scale: 1.25, duration: 1.6, ease: 'power2.out' }, 6.70);
+
+tl.call(() => {
+  heroEyebrow.textContent = 'ON-DEVICE NEURAL RUNTIME';
+  heroTitle.textContent = 'Apple Intelligence Aura';
+  heroDesc.textContent = 'Dynamic iridescent surface distortion with real-time neural inference';
+  transVal.textContent = '99.2%';
+  dispVal.textContent = '0.145';
+  gyroVal.textContent = '+3.18 G';
+}, null, 7.00);
+
+tl.call(sfxTone3, null, 8.50);
+tl.to(orbMat, { roughness: 0.02, clearcoat: 1.0, duration: 1.2 }, 8.50);
+
+/* ============ SCENE 4 (10.20s - 13.50s): BIOMETRIC FACE ID SPATIAL LOCK ============ */
+tl.call(sfxClickTap, null, 10.30);
+tl.call(sfxSubImpact, null, 10.35);
+
+// Retract Siri Aura & Spawn Face ID Lock
+tl.to(siriAura, { opacity: 0.15, scale: 0.9, duration: 0.6 }, 10.20);
+tl.fromTo(faceIdRing, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1.05, duration: 0.5, ease: 'back.out(1.7)' }, 10.30);
+tl.to(faceIdRing, { scale: 1.0, duration: 0.2 }, 10.80);
+
+tl.call(() => {
+  heroEyebrow.textContent = 'BIOMETRIC SPATIAL SECURITY';
+  heroTitle.textContent = 'Face ID Authenticated';
+  heroDesc.textContent = 'Secure Enclave verified across quantum spatial coordinates';
+}, null, 10.50);
+
+tl.call(sfxShimmerSparkle, null, 12.00);
+
+// Camera pull back to hero stage
+tl.to(camera.position, { z: 7.5, duration: 1.4, ease: 'power2.inOut' }, 11.50);
+
+/* ============ SCENE 5 (13.50s - 15.00s): SEAMLESS ISLAND RETURN & LOOP PREPARATION ============ */
+tl.call(sfxWhooshFast, null, 13.60);
+
+// Retract spatial widgets & Face ID
+tl.to([cardLeft, cardRight, faceIdRing], { opacity: 0, duration: 0.7, ease: 'power2.in' }, 13.50);
+tl.to(islandExpanded, { opacity: 0, duration: 0.14 }, 13.70);
+tl.to(island, { width: 220, height: 50, borderRadius: 9999, duration: 0.30, ease: 'power3.inOut' }, 13.72);
+tl.to(islandCompact, { opacity: 1, duration: 0.22 }, 13.88);
+
+// Absorb liquid orb back into Island
+tl.to(orbMesh.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.9, ease: 'power3.in' }, 13.80);
+tl.to([ringMesh1.scale, ringMesh2.scale], { x: 0, y: 0, z: 0, duration: 0.7, ease: 'power3.in' }, 13.80);
+
+/* ============ DETERMINISTIC THREE.JS FLUID MESH TICKER ============ */
+const wb1 = $('#wb1'), wb2 = $('#wb2'), wb3 = $('#wb3'), wb4 = $('#wb4');
+
+function updateFluidMesh(t) {
+  const pos = orbGeo.attributes.position;
+  const count = pos.count;
+  const time = t * 2.5;
+
+  for (let i = 0; i < count; i++) {
+    const ox = origPositions.getX(i);
+    const oy = origPositions.getY(i);
+    const oz = origPositions.getZ(i);
+
+    // Physical fluid wave displacement formula (sinusoidal standing waves)
+    const wave1 = Math.sin(ox * 2.2 + time) * 0.16;
+    const wave2 = Math.cos(oy * 2.8 + time * 1.3) * 0.14;
+    const wave3 = Math.sin((ox + oz) * 1.8 + time * 0.9) * 0.12;
+    const displacement = 1.0 + wave1 + wave2 + wave3;
+
+    pos.setXYZ(i, ox * displacement, oy * displacement, oz * displacement);
+  }
+  pos.needsUpdate = true;
+  orbGeo.computeVertexNormals();
+
+  // Mesh spatial rotation
+  orbMesh.rotation.y = t * 0.35;
+  orbMesh.rotation.x = Math.sin(t * 0.25) * 0.2;
+
+  // Tilted orbital rings: slow precession on tilted plane (no camera-facing flatten)
+  ringMesh1.rotation.z = -t * 0.4;
+  ringMesh2.rotation.z = t * 0.25;
+  ringMesh2.rotation.x = Math.PI / 1.9 + Math.sin(t * 0.3) * 0.15;
+
+  // Animate compact Dynamic Island wave bars
+  if (wb1 && wb2 && wb3 && wb4) {
+    wb1.style.height = `${6 + Math.sin(t * 12) * 5}px`;
+    wb2.style.height = `${8 + Math.cos(t * 15) * 6}px`;
+    wb3.style.height = `${7 + Math.sin(t * 18 + 1) * 5}px`;
+    wb4.style.height = `${5 + Math.cos(t * 10 + 2) * 4}px`;
+  }
+}
+
+/* ============ RAF DETERMINISTIC FRAME LOOP ============ */
+const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+let scrubbing = false;
+
+(function frame() {
+  requestAnimationFrame(frame);
+  const t = tl.time();
+  const curDisplay = Math.min(t, DURATION);
+
+  if (clock) clock.textContent = curDisplay.toFixed(2) + 's';
+  if (!scrubbing && scrub) scrub.value = String((curDisplay / DURATION) * 1000);
+  if (btnPlay) btnPlay.textContent = tl.paused() ? 'Play' : 'Pause';
+
+  updateFluidMesh(t);
+  renderer.render(scene, camera);
+
+  if (!isRecording && !location.search.includes('clean') && (t >= DURATION || tl.progress() >= 1)) {
+    tl.pause(0);
+    tl.play(0);
+  }
+})();
+
+/* ============ HEADLESS OPENER CONTRACT ============ */
+window.OPENER = {
+  W: 1920, H: 1080, DURATION, tl, ready: false,
+  audioManifest,
+  seek(t) {
+    tl.pause();
+    tl.time(t, false);
+    updateFluidMesh(t);
+    renderer.render(scene, camera);
+    if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+  },
+  play() { tl.play(0); initAudio(); }
+};
+
+const toggle = () => {
+  if (tl.paused() || tl.progress() >= 1) {
+    if (tl.progress() >= 1) tl.progress(0);
+    initAudio();
+    tl.play();
+    if (btnPlay) btnPlay.textContent = 'Pause';
+  } else {
+    tl.pause();
+    if (btnPlay) btnPlay.textContent = 'Play';
+  }
+};
+if (btnPlay) btnPlay.onclick = toggle;
+
+if (scrub) {
+  scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); if (btnPlay) btnPlay.textContent = 'Play'; });
+  addEventListener('pointerup', () => scrubbing = false);
+  scrub.addEventListener('input', () => {
+    tl.pause();
+    const t = (scrub.value / 1000) * DURATION;
+    tl.time(t);
+    updateFluidMesh(t);
+    renderer.render(scene, camera);
+  });
+}
+
+const startPlayback = () => {
+  window.OPENER.ready = true;
+  if (!location.search.includes('clean')) {
+    tl.play(0);
+    if (btnPlay) btnPlay.textContent = 'Pause';
+    tl.eventCallback('onComplete', () => {
+      if (!isRecording && !location.search.includes('clean')) {
+        tl.pause(0);
+        tl.play(0);
+      }
+    });
+  }
+};
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(startPlayback).catch(startPlayback);
+} else {
+  startPlayback();
+}
+
+/* ============ TOP CONTROLS & EXPORT PIPELINE ============ */
+const btnHud = $('#btn-hud'), ui = $('#ui');
+function toggleHud() {
+  const isHidden = ui.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !isHidden);
+}
+if (btnHud && ui) btnHud.onclick = toggleHud;
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); toggle(); }
+  else if (e.key.toLowerCase() === 'h' && !['input','textarea'].includes(document.activeElement?.tagName?.toLowerCase())) toggleHud();
+  else if (e.key.toLowerCase() === 'm' && !['input','textarea'].includes(document.activeElement?.tagName?.toLowerCase())) toggleAudio();
+  else if (e.key.toLowerCase() === 'r' && !['input','textarea'].includes(document.activeElement?.tagName?.toLowerCase())) {
+    tl.pause(0); initAudio(); tl.play(); if (btnPlay) btnPlay.textContent = 'Pause';
+  }
+});
+
+const btnExport = $('#btn-export'), fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group'), renderControlsGroup = $('#render-controls-group');
+const btnExportText = $('#btn-export-text');
+const btnRenderPause = $('#btn-render-pause'), btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause'), iconResume = $('#icon-resume');
+
+const EXPORT_DEFAULT_HTML = `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240`;
+
+let isExporting = false, abortController = null, sseSource = null;
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = e => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+  document.addEventListener('click', e => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+}
+
+function setExportingState(exporting) {
+  isExporting = exporting;
+  if (exporting) {
+    fpsOptionsGroup.style.display = 'none';
+    renderControlsGroup.style.display = 'block';
+  } else {
+    fpsOptionsGroup.style.display = 'block';
+    renderControlsGroup.style.display = 'none';
+    btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+    if (sseSource) { sseSource.close(); sseSource = null; }
+  }
+}
+
+if (fpsOptionsGroup) {
+  fpsOptionsGroup.querySelectorAll('.fps-item').forEach(item => {
+    item.onclick = e => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      startExport(Number(item.dataset.fps) || 240);
+    };
+  });
+}
+
+if (btnRenderPause) {
+  btnRenderPause.onclick = async e => {
+    e.stopPropagation();
+    const isPaused = labelRenderPause.textContent.includes('Resume');
+    try {
+      const endpoint = isPaused ? '/api/resume' : '/api/pause';
+      await fetch(endpoint);
+      labelRenderPause.textContent = isPaused ? 'Pause Render' : 'Resume Render';
+      iconPause.style.display = isPaused ? 'block' : 'none';
+      iconResume.style.display = isPaused ? 'none' : 'block';
+    } catch (err) {}
+  };
+}
+
+if (btnRenderCancel) {
+  btnRenderCancel.onclick = async e => {
+    e.stopPropagation();
+    try { await fetch('/api/cancel'); } catch (err) {}
+    if (abortController) abortController.abort();
+    setExportingState(false);
+    fpsMenu.classList.remove('open');
+  };
+}
+
+async function startExport(targetFps) {
+  if (isExporting) return;
+  const isStudioServer = location.port === '4004' || location.host.includes('4004') || Q.has('studio');
+  if (isStudioServer) {
+    try {
+      const healthRes = await fetch('/api/health');
+      if (healthRes.ok) {
+        setExportingState(true);
+        btnExportText.textContent = `Rendering ${targetFps} FPS (0%)`;
+        abortController = new AbortController();
+        sseSource = new EventSource('/api/progress');
+        sseSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'progress') {
+              btnExportText.textContent = `Rendering ${targetFps} FPS (${data.percent}%)`;
+            } else if (data.type === 'complete') {
+              btnExportText.textContent = 'Finalizing MP4...';
+            }
+          } catch (err) {}
+        };
+        const templatePath = location.pathname.replace(/^\//, '');
+        const renderRes = await fetch('/api/render', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ template: templatePath, fps: targetFps }),
+          signal: abortController.signal
+        });
+        if (!renderRes.ok) throw new Error(await renderRes.text());
+        btnExportText.textContent = 'Saving MP4...';
+        const blob = await renderRes.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        const baseName = templatePath.split('/').pop().replace('.html', '');
+        a.download = `${baseName}_${targetFps}fps.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        btnExportText.textContent = 'Downloaded!';
+        setTimeout(() => setExportingState(false), 2000);
+        return;
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      setExportingState(false);
+    }
+  }
+
+  // Standalone Screen Capture Fallback
+  try {
+    isRecording = true;
+    document.body.classList.add('clean-capture');
+    btnExportText.textContent = `Recording ${targetFps} FPS...`;
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { frameRate: targetFps, width: 1920, height: 1080, cursor: 'never' },
+      audio: true
+    });
+    let mixedStream = stream;
+    if (audioDest && !isAudioMuted && audioDest.stream.getAudioTracks().length > 0) {
+      mixedStream = new MediaStream([
+        ...stream.getVideoTracks(),
+        ...audioDest.stream.getAudioTracks()
+      ]);
+    }
+    const recorder = new MediaRecorder(mixedStream, { mimeType: 'video/webm;codecs=vp9' });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      isRecording = false;
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kinet-ios-liquid-glass_${targetFps}fps.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+    };
+    recorder.start();
+    tl.pause(0);
+    initAudio();
+    tl.play();
+    setTimeout(() => {
+      if (recorder.state === 'recording') recorder.stop();
+    }, DURATION * 1000 + 400);
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    isRecording = false;
+    btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+  }
+}
+</script>
+</body>
+</html>

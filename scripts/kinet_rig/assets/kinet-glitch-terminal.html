@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- KinetRig v1.0.0 by Reff33 - Cyber Decrypt & Chromatic Glitch Terminal (MIT) -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KinetRig — Cyber Decrypt & Chromatic Terminal (240 FPS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root {
+  --primary: #10B981;
+  --primary-glow: rgba(16, 185, 129, 0.45);
+  --glitch-red: #EF4444;
+  --glitch-cyan: #06B6D4;
+  --glitch-amber: #F59E0B;
+  --bg: #040810;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-hero: 'Space Grotesk', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Master Stage (Fixed 1920x1080 Responsive Fit) */
+#stage {
+  position: fixed; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform: translate(-50%, -50%) scale(1);
+  background: radial-gradient(circle at 50% 50%, #081426 0%, var(--bg) 85%);
+  overflow: hidden;
+}
+#world {
+  position: absolute; inset: 0;
+  width: 1920px; height: 1080px;
+  will-change: transform, filter;
+}
+
+/* CRT Scanlines & Cyber Vignette */
+.crt-scanlines {
+  position: absolute; inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 30;
+  opacity: 0.65;
+}
+.vignette {
+  position: absolute; inset: 0;
+  box-shadow: inset 0 0 160px rgba(0,0,0,0.92);
+  pointer-events: none;
+  z-index: 31;
+}
+
+/* Background Cyber Grid */
+.grid-lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.7;
+}
+
+/* Full Bleed Top Header Bar */
+.top-header {
+  position: absolute; top: 0; left: 0; width: 100%; height: 60px;
+  background: rgba(8, 14, 24, 0.85);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  z-index: 10;
+}
+.header-brand {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.18em;
+  color: #94A3B8; text-transform: uppercase;
+}
+.header-dots {
+  display: flex; align-items: center; gap: 8px;
+}
+.h-dot { width: 10px; height: 10px; border-radius: 50%; }
+.h-dot.r { background: #EF4444; }
+.h-dot.y { background: #F59E0B; }
+.h-dot.g { background: #10B981; }
+.header-telemetry {
+  display: flex; align-items: center; gap: 28px;
+  font-size: 12px; color: #64748B; font-weight: 600;
+}
+.header-telemetry span b { color: var(--primary); font-weight: 700; }
+
+/* Left Hex Column Stream */
+.left-hex-col {
+  position: absolute; left: 48px; top: 96px; bottom: 80px; width: 220px;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  font-size: 12px; line-height: 2.0; color: rgba(16, 185, 129, 0.55);
+  z-index: 5;
+}
+.hex-title {
+  color: #94A3B8; font-weight: 700; font-size: 11px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  padding-bottom: 6px; margin-bottom: 12px;
+}
+.hex-line {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  transition: color 0.1s;
+}
+.hex-line.hi { color: var(--primary); font-weight: 700; }
+
+/* Right Telemetry Column */
+.right-telemetry-col {
+  position: absolute; right: 48px; top: 96px; bottom: 80px; width: 250px;
+  display: flex; flex-direction: column; gap: 16px;
+  z-index: 5;
+}
+.sys-card {
+  background: rgba(10, 18, 30, 0.75);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 10px; padding: 16px 18px;
+  backdrop-filter: blur(12px);
+}
+.sys-card-title {
+  font-size: 11px; font-weight: 700; color: #64748B;
+  letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px;
+}
+.sys-card-val {
+  font-size: 20px; font-weight: 800; color: #F8FAFC;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Center Kinetic Typography Arena */
+.center-arena {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1300px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 10;
+}
+.scramble-eyebrow {
+  font-size: 14px; font-weight: 700; letter-spacing: 0.35em;
+  color: var(--primary); text-transform: uppercase;
+  margin-bottom: 24px; display: inline-flex; align-items: center; gap: 12px;
+  transition: color 0.3s;
+}
+.scramble-eyebrow::before, .scramble-eyebrow::after {
+  content: ''; width: 36px; height: 1px; background: currentColor; opacity: 0.6;
+}
+
+.scramble-hero {
+  position: relative;
+  font-family: var(--font-hero);
+  font-size: 88px; font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: #F8FAFC;
+  min-height: 190px;
+  display: flex; align-items: center; justify-content: center;
+}
+.rgb-copy {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+}
+.rgb-red {
+  color: var(--glitch-red);
+  transform: translate(-12px, 0);
+  mix-blend-mode: screen;
+}
+.rgb-cyan {
+  color: var(--glitch-cyan);
+  transform: translate(12px, 0);
+  mix-blend-mode: screen;
+}
+
+.terminal-meta-row {
+  margin-top: 36px;
+  display: flex; align-items: center; gap: 20px;
+  font-size: 15px; color: #94A3B8;
+}
+.status-pill {
+  padding: 6px 16px; border-radius: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: var(--primary); font-weight: 700;
+  letter-spacing: 0.1em;
+  transition: all 0.25s ease;
+}
+.status-pill.danger {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #EF4444;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+}
+.status-pill.warning {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #F59E0B;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+}
+.cursor-caret {
+  display: inline-block; width: 12px; height: 22px;
+  background: var(--primary); vertical-align: middle;
+  animation: blink 0.8s infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Bottom Console Log Ticker */
+.bottom-console {
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 48px;
+  background: rgba(8, 14, 24, 0.9);
+  border-top: 1px solid rgba(16, 185, 129, 0.2);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; font-size: 12px; color: #64748B;
+  z-index: 10;
+}
+
+/* TOP-BAR & DROPDOWN (Outside #stage, Fixed) */
+.top-bar {
+  position: fixed; top: 20px; right: 24px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 100;
+}
+.btn-action {
+  height: 38px; padding: 0 16px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #fff; font-family: var(--font-mono);
+  font-size: 13px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 8px;
+  cursor: pointer; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 16px var(--primary-glow);
+  transform: translateY(-1px);
+}
+.btn-action.active {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: var(--primary);
+}
+.export-dropdown { position: relative; }
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(16, 185, 129, 0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+}
+.fps-item:hover {
+  background: rgba(16, 185, 129, 0.2); color: var(--primary); transform: translateX(2px);
+}
+.fps-item.danger:hover {
+  background: rgba(239, 68, 68, 0.2); color: #F87171;
+}
+
+/* HUD SCRUBBER (Outside #stage, Fixed) */
+#ui {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(9, 14, 26, 0.92);
+  padding: 8px 18px; border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 90;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(16, 185, 129, 0.15);
+  font-family: var(--font-mono); font-size: 13px; color: #94A3B8;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ui.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, 14px); }
+#ui button {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);
+  color: #fff; font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 9999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#ui button:hover { background: rgba(16,185,129,0.25); border-color: var(--primary); color: #fff; }
+#ui button#btn-audio { padding: 6px 10px; }
+#ui button.muted { opacity: 0.6; color: #94A3B8; }
+#scrub { width: 340px; height: 6px; accent-color: var(--primary); cursor: pointer; border-radius: 3px; }
+#clock { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; color: #E2E8F0; }
+
+body.clean-capture .top-bar,
+body.clean-capture #ui,
+body.clean-mode .top-bar,
+body.clean-mode #ui { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+body.clean-capture, body.clean-mode { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="btn-action" id="btn-hud">
+    <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    HUD (H)
+  </button>
+  <div class="export-dropdown">
+    <button class="btn-action" id="btn-export">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="19" x2="12" y2="5"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary);background:rgba(16,185,129,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stage">
+  <div class="crt-scanlines"></div>
+  <div class="vignette"></div>
+
+  <div id="world">
+    <div class="grid-lines"></div>
+
+    <!-- Top Header Bar -->
+    <div class="top-header">
+      <div class="header-brand">
+        <div class="header-dots">
+          <span class="h-dot r"></span>
+          <span class="h-dot y"></span>
+          <span class="h-dot g"></span>
+        </div>
+        <span>KINET_SECURITY_GRID // QUANTUM_CIPHER_ENGINE</span>
+      </div>
+      <div class="header-telemetry">
+        <span>LATENCY: <b id="latVal">12ms</b></span>
+        <span>CIPHER: <b>SHA-512/EC</b></span>
+        <span>STATE: <b id="headerState" style="color:var(--primary);">ACTIVE</b></span>
+      </div>
+    </div>
+
+    <!-- Left Hex Stream -->
+    <div class="left-hex-col">
+      <div class="hex-title">// MEMORY DUMP</div>
+      <div id="hexContainer">
+        <div class="hex-line">0x7F41A90B2E1C</div>
+        <div class="hex-line">0x9C04E38D12FA</div>
+        <div class="hex-line">0x2B889A1450CD</div>
+        <div class="hex-line hi">0x00F5AA6189B4</div>
+        <div class="hex-line">0x33C910FD56AA</div>
+        <div class="hex-line">0x88EE719A045B</div>
+        <div class="hex-line">0x12BA9944CD01</div>
+        <div class="hex-line hi">0xEF41508899BA</div>
+      </div>
+    </div>
+
+    <!-- Right Telemetry Panel -->
+    <div class="right-telemetry-col">
+      <div class="sys-card">
+        <div class="sys-card-title">Memory Allocation</div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+          <span class="sys-card-val" id="memVal">14%</span>
+          <span style="font-size:11px; color:#64748B;">4096 MB</span>
+        </div>
+        <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+          <div id="memBar" style="width:14%; height:100%; background:var(--primary); transition:background 0.3s; border-radius:3px;"></div>
+        </div>
+      </div>
+      <div class="sys-card">
+        <div class="sys-card-title">Encryption Key</div>
+        <div class="sys-card-val" id="keyVal">0x9F418B</div>
+      </div>
+      <div class="sys-card">
+        <div class="sys-card-title">Security Firewall</div>
+        <div class="sys-card-val" id="fwVal" style="color:#EF4444;">BREACHED</div>
+      </div>
+    </div>
+
+    <!-- Center Arena -->
+    <div class="center-arena">
+      <div class="scramble-eyebrow" id="arenaEyebrow">CYBERNETIC TELEMETRY PROTOCOL</div>
+      <div class="scramble-hero" id="scrambleBox">
+        <span id="mainText">INITIALIZING...</span>
+        <span class="rgb-copy rgb-red" id="rgbRed">INITIALIZING...</span>
+        <span class="rgb-copy rgb-cyan" id="rgbCyan">INITIALIZING...</span>
+      </div>
+
+      <div class="terminal-meta-row">
+        <span class="status-pill danger" id="statusPill">STATE: INTRUSION</span>
+        <span id="subStatus">SECURITY SHIELD: BYPASSING MEMORY SECTOR 04</span>
+        <span class="cursor-caret"></span>
+      </div>
+    </div>
+
+    <!-- Bottom Status Console -->
+    <div class="bottom-console">
+      <span>LOG: <span id="consoleLog">INITIALIZING SYSTEM TELEMETRY...</span></span>
+      <span>NODE: 127.0.0.1:4004 // 240 FPS VERIFIED</span>
+    </div>
+  </div>
+</div>
+
+<div id="ui">
+  <button id="btn-play">Pause</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
+let isRecording = false;
+
+const DURATION = 6.0;
+const tl = gsap.timeline({ paused: true });
+
+/* ============ STAGE FIT (Fixed 1920x1080 Aspect Scaling) ============ */
+const stage = $('#stage');
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit);
+fit();
+
+/* ============ TOP-LEVEL AUDIO MANIFEST (AI Director Contract) ============ */
+const audioManifest = {
+  duration: DURATION,
+  sceneArchetype: 'tech_cli',
+  semanticKeywords: ['terminal', 'cipher', 'decrypt', 'glitch', 'token', 'latency', 'code', 'binary'],
+  ambientBed: { type: 'sub_drone', baseFreq: 55, filterCutoff: 320, gain: 0.045 },
+  events: [
+    { time: 0.15, type: 'impact', sfx_id: 'digital-breach', file: 'sounds/digital/digital-breach.wav', gain: 0.75, material: 'tactile_switch', target: '#statusPill' },
+    { time: 0.35, type: 'terminal_chirp', sfx_id: 'click-tap-soft', file: 'sounds/interface/click-tap-soft.wav', gain: 0.35, material: 'tactile_switch', target: '#mainText' },
+    { time: 0.65, type: 'terminal_chirp', sfx_id: 'digital-blip-clear', file: 'sounds/digital/digital-blip-clear.wav', gain: 0.30, material: 'tactile_switch', target: '#mainText' },
+    { time: 0.95, type: 'terminal_chirp', sfx_id: 'click-tap-soft', file: 'sounds/interface/click-tap-soft.wav', gain: 0.35, material: 'tactile_switch', target: '#mainText' },
+    { time: 1.45, type: 'impact', sfx_id: 'digital-corrupt', file: 'sounds/digital/digital-corrupt.wav', gain: 0.70, material: 'tactile_switch', target: '#world' },
+    { time: 2.10, type: 'sub_reveal', sfx_id: 'digital-decrypt', file: 'sounds/digital/digital-decrypt.wav', gain: 0.80, material: 'crystal_step', target: '#keyVal' },
+    { time: 2.35, type: 'terminal_chirp', sfx_id: 'click-tap-soft', file: 'sounds/interface/click-tap-soft.wav', gain: 0.35, material: 'tactile_switch', target: '#mainText' },
+    { time: 2.65, type: 'terminal_chirp', sfx_id: 'digital-blip-clear', file: 'sounds/digital/digital-blip-clear.wav', gain: 0.30, material: 'tactile_switch', target: '#mainText' },
+    { time: 2.95, type: 'terminal_chirp', sfx_id: 'click-tap-soft', file: 'sounds/interface/click-tap-soft.wav', gain: 0.35, material: 'tactile_switch', target: '#mainText' },
+    { time: 3.25, type: 'terminal_chirp', sfx_id: 'digital-blip-clear', file: 'sounds/digital/digital-blip-clear.wav', gain: 0.30, material: 'tactile_switch', target: '#mainText' },
+    { time: 4.10, type: 'sub_reveal', sfx_id: 'notification-alert-clear', file: 'sounds/notifications/notification-alert-clear.wav', gain: 0.85, material: 'crystal_step', target: '#statusPill' },
+    { time: 4.15, type: 'impact', sfx_id: 'impact-deep-soft', file: 'sounds/impacts/impact-deep-soft.wav', gain: 0.75, material: 'physical_neutral', target: '#world' },
+    { time: 4.35, type: 'terminal_chirp', sfx_id: 'click-tap-soft', file: 'sounds/interface/click-tap-soft.wav', gain: 0.35, material: 'tactile_switch', target: '#mainText' },
+    { time: 4.65, type: 'terminal_chirp', sfx_id: 'digital-blip-clear', file: 'sounds/digital/digital-blip-clear.wav', gain: 0.30, material: 'tactile_switch', target: '#mainText' },
+    { time: 4.95, type: 'terminal_chirp', sfx_id: 'click-tap-soft', file: 'sounds/interface/click-tap-soft.wav', gain: 0.35, material: 'tactile_switch', target: '#mainText' }
+  ]
+};
+
+/* ============ FRESH ON-DEMAND SFX & WEB AUDIO ARCHITECTURE ============ */
+const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+const STUDIO_SFX = {
+  digital_breach: 'sounds/digital/digital-breach.wav',
+  digital_corrupt: 'sounds/digital/digital-corrupt.wav',
+  digital_decrypt: 'sounds/digital/digital-decrypt.wav',
+  digital_blip: 'sounds/digital/digital-blip-clear.wav',
+  click_soft: 'sounds/interface/click-tap-soft.wav',
+  alert_clear: 'sounds/notifications/notification-alert-clear.wav',
+  sub_impact: 'sounds/impacts/impact-deep-soft.wav'
+};
+
+const sfxRawBuffers = {};
+const sfxAudioBuffers = {};
+
+async function fetchSfxArrayBuffer(rel) {
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? ['../sfx/' + rel, '../../sfx/' + rel, 'sfx/' + rel, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+  });
+}
+
+/* ============ AUDIO ROUTING & AMBIENT BED ============ */
+let audioCtx = null, audioDest = null, mainMasterGain = null, ambientGain = null;
+let isAudioMuted = false, hasUserInteracted = false;
+
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  $('#icon-audio-on').style.display = isAudioMuted ? 'none' : 'block';
+  $('#icon-audio-off').style.display = isAudioMuted ? 'block' : 'none';
+  $('#btn-audio').classList.toggle('muted', isAudioMuted);
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+$('#btn-audio').onclick = toggleAudio;
+
+function markUserInteracted() {
+  hasUserInteracted = true;
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+window.addEventListener('pointerdown', markUserInteracted, { capture: true });
+window.addEventListener('keydown', markUserInteracted, { capture: true });
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || e.data?.type === 'UNLOCK_AUDIO') {
+    markUserInteracted();
+    initAudio();
+  }
+});
+
+function initAudio() {
+  if (!audioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      audioCtx = new AudioCtx();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+
+      // Layer 1: Ambient room bed (Low Cyber Drone 55Hz at -24dB)
+      try {
+        const droneOsc = audioCtx.createOscillator();
+        const droneFilter = audioCtx.createBiquadFilter();
+        ambientGain = audioCtx.createGain();
+        droneOsc.type = 'sawtooth';
+        droneOsc.frequency.setValueAtTime(55, audioCtx.currentTime);
+        droneFilter.type = 'lowpass';
+        droneFilter.frequency.setValueAtTime(150, audioCtx.currentTime);
+        ambientGain.gain.setValueAtTime(0.045, audioCtx.currentTime);
+        droneOsc.connect(droneFilter);
+        droneFilter.connect(ambientGain);
+        ambientGain.connect(mainMasterGain);
+        droneOsc.start();
+      } catch (err) {}
+    }
+  }
+  if (audioCtx) {
+    if (hasUserInteracted && audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(dec => { sfxAudioBuffers[id] = dec; }).catch(() => {});
+      }
+    }
+  }
+  return audioCtx;
+}
+
+function triggerSfx(id, fallbackFn, gain = 0.5, pitchRate = 1.0) {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running' || isAudioMuted) return;
+  const normId = id.replace(/-/g, '_');
+  const buf = sfxAudioBuffers[id] || sfxAudioBuffers[normId];
+  if (buf) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.playbackRate.value = pitchRate;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      if (audioDest && !mainMasterGain) g.connect(audioDest);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (typeof fallbackFn === 'function') fallbackFn(ctx, gain, pitchRate);
+}
+
+/* ============ PROCEDURAL FALLBACK SYNTHESIZERS ============ */
+const playCyberPop = (ctx, gVal, pitchRate = 1.0) => {
+  try {
+    const osc = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime;
+    osc.type = 'sine'; osc.frequency.setValueAtTime(740 * pitchRate, now);
+    osc.frequency.exponentialRampToValueAtTime(160 * pitchRate, now + 0.06);
+    g.gain.setValueAtTime(gVal * 0.35, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.08);
+  } catch (e) {}
+};
+
+const playCyberGlitch = (ctx, gVal) => {
+  try {
+    const now = ctx.currentTime;
+    const bufLen = Math.floor(ctx.sampleRate * 0.12);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1) * Math.sin((i / bufLen) * Math.PI);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 2200; filter.Q.value = 4;
+    const g = ctx.createGain(); g.gain.setValueAtTime(gVal * 0.5, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    src.connect(filter); filter.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    src.start(now);
+  } catch (e) {}
+};
+
+const playSubImpactFallback = (ctx, gVal) => {
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(38, now + 0.35);
+    g.gain.setValueAtTime(gVal * 0.6, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    if (audioDest && !mainMasterGain) g.connect(audioDest);
+    osc.start(now); osc.stop(now + 0.40);
+  } catch (e) {}
+};
+
+/* ============ NAMED TELEMETRY SFX FUNCTIONS ============ */
+function playDigitalBreach() { triggerSfx('digital_breach', playCyberGlitch, 0.75); }
+function playDigitalCorrupt() { triggerSfx('digital_corrupt', playCyberGlitch, 0.70); }
+function playDigitalDecrypt() { triggerSfx('digital_decrypt', playCyberPop, 0.80); }
+function playAlertClear() { triggerSfx('alert_clear', playCyberPop, 0.85); }
+function playSubImpact() { triggerSfx('sub_impact', playSubImpactFallback, 0.75); }
+function playTokenClick(step = 0, total = 10) {
+  const p = 0.95 + (step / Math.max(1, total)) * 0.3;
+  triggerSfx('click_soft', playCyberPop, 0.35, p);
+}
+
+/* ============ TIMELINE & DETERMINISTIC SCRAMBLER ============ */
+const glyphs = 'ABCDEF0123456789!@#$%^&*<>_-+=';
+const mainText = $('#mainText'), rgbRed = $('#rgbRed'), rgbCyan = $('#rgbCyan');
+const statusPill = $('#statusPill'), subStatus = $('#subStatus'), arenaEyebrow = $('#arenaEyebrow');
+const consoleLog = $('#consoleLog'), fwVal = $('#fwVal'), keyVal = $('#keyVal');
+const memBar = $('#memBar'), memVal = $('#memVal'), headerState = $('#headerState'), latVal = $('#latVal');
+
+let lastRevealedChar = -1;
+let currentScrambleId = '';
+
+function updateScramble(targetString, progress, scrambleId = '') {
+  if (scrambleId !== currentScrambleId) {
+    currentScrambleId = scrambleId;
+    lastRevealedChar = -1;
+  }
+  const len = targetString.length;
+  const revealed = Math.floor(len * progress);
+  if (revealed > lastRevealedChar && revealed > 0 && revealed <= len) {
+    lastRevealedChar = revealed;
+    playTokenClick(revealed, len);
+  }
+  let res = '';
+  for (let i = 0; i < len; i++) {
+    if (i < revealed) res += targetString[i];
+    else res += glyphs[Math.floor((i * 7 + progress * 50) % glyphs.length)];
+  }
+  mainText.textContent = res;
+  rgbRed.textContent = res;
+  rgbCyan.textContent = res;
+}
+
+/* ============ BASELINE STATE RESET (0.00s Deterministic Looping) ============ */
+tl.set('#world', { x: 0, y: 0, scale: 1 }, 0);
+tl.set(['#rgbRed', '#rgbCyan'], { opacity: 0 }, 0);
+tl.call(() => {
+  arenaEyebrow.textContent = 'CYBERNETIC TELEMETRY PROTOCOL';
+  arenaEyebrow.style.color = '#10B981';
+  statusPill.className = 'status-pill danger';
+  statusPill.textContent = 'STATE: INTRUSION';
+  subStatus.textContent = 'SECURITY SHIELD: BYPASSING MEMORY SECTOR 04';
+  consoleLog.textContent = 'INITIALIZING SYSTEM TELEMETRY...';
+  keyVal.textContent = '0x9F418B';
+  fwVal.style.color = '#EF4444';
+  fwVal.textContent = 'BREACHED';
+  headerState.style.color = '#10B981';
+  headerState.textContent = 'ACTIVE';
+  latVal.textContent = '12ms';
+  memBar.style.width = '14%';
+  memBar.style.background = '#10B981';
+  memVal.textContent = '14%';
+  lastRevealedChar = -1;
+  currentScrambleId = '';
+}, null, 0);
+
+/* ============ PHASE 1 (0.15s - 1.45s): INTRUSION BREACH ============ */
+tl.call(() => {
+  arenaEyebrow.textContent = 'SECURITY ALERT // INTRUSION DETECTED';
+  arenaEyebrow.style.color = '#EF4444';
+  statusPill.className = 'status-pill danger';
+  statusPill.textContent = 'STATE: INTRUSION';
+  subStatus.textContent = 'BYPASSING MEMORY SECTOR 04';
+  consoleLog.textContent = 'INTRUSION DETECTED: UNAUTHORIZED PRIVILEGE ESCALATION AT 0x7F41';
+  headerState.textContent = 'BREACH';
+  headerState.style.color = '#EF4444';
+  latVal.textContent = '48ms';
+}, null, 0.15);
+tl.call(playDigitalBreach, null, 0.15);
+
+// Memory buffer flood
+tl.to({ p: 14 }, {
+  p: 68, duration: 1.25, ease: 'power2.inOut',
+  onUpdate: function() {
+    const v = Math.round(this.targets()[0].p);
+    memBar.style.width = v + '%';
+    memVal.textContent = v + '%';
+  }
+}, 0.15);
+
+// Text scramble with audible character clicks
+tl.to({ p: 0 }, {
+  p: 1, duration: 1.2, ease: 'none',
+  onUpdate: function() { updateScramble('SYSTEM COMPROMISED', this.targets()[0].p, 'phase1'); }
+}, 0.25);
+
+/* ============ CHROMATIC GLITCH TRANSIENT (1.45s) ============ */
+tl.call(playDigitalCorrupt, null, 1.45);
+tl.to(['#rgbRed', '#rgbCyan'], { opacity: 0.95, duration: 0.08, yoyo: true, repeat: 2 }, 1.45);
+tl.fromTo('#world', { x: -16, scale: 1.01 }, { x: 0, scale: 1, duration: 0.14, ease: 'power2.out' }, 1.45);
+
+/* ============ PHASE 2 (2.10s - 3.80s): CIPHER DECRYPTION OVERRIDE ============ */
+tl.call(() => {
+  arenaEyebrow.textContent = 'QUANTUM OVERRIDE IN PROGRESS';
+  arenaEyebrow.style.color = '#F59E0B';
+  statusPill.className = 'status-pill warning';
+  statusPill.textContent = 'STATE: DECRYPTING';
+  subStatus.textContent = 'CRACKING 512-BIT ELLIPTIC CURVE KEY';
+  consoleLog.textContent = 'DECRYPTING BUFFER HASH: 0x9F418B... MATCH FOUND';
+  keyVal.textContent = '0x88EE71';
+  fwVal.style.color = '#F59E0B';
+  fwVal.textContent = 'OVERRIDDEN';
+  headerState.textContent = 'DECRYPT';
+  headerState.style.color = '#F59E0B';
+  latVal.textContent = '22ms';
+}, null, 2.10);
+tl.call(playDigitalDecrypt, null, 2.10);
+
+// Memory buffer progression
+tl.to({ p: 68 }, {
+  p: 94, duration: 1.7, ease: 'power1.inOut',
+  onUpdate: function() {
+    const v = Math.round(this.targets()[0].p);
+    memBar.style.width = v + '%';
+    memVal.textContent = v + '%';
+  }
+}, 2.10);
+
+// Text scramble with audible character clicks
+tl.to({ p: 0 }, {
+  p: 1, duration: 1.3, ease: 'none',
+  onUpdate: function() { updateScramble('DECRYPTING CIPHER', this.targets()[0].p, 'phase2'); }
+}, 2.20);
+
+/* ============ PHASE 3 (4.10s - 6.00s): ROOT ACCESS GRANTED TRIUMPH ============ */
+tl.call(() => {
+  arenaEyebrow.textContent = 'SECURITY VERIFIED // PROTOCOL CLEARED';
+  arenaEyebrow.style.color = '#10B981';
+  statusPill.className = 'status-pill';
+  statusPill.textContent = 'STATE: ROOT GRANTED';
+  subStatus.textContent = 'QUANTUM CORE ACCESS GRANTED // ZERO ERRORS';
+  consoleLog.textContent = 'SUCCESS: ELEVATION COMPLETE. ACCESS GRANTED TO ROOT RUNTIME.';
+  keyVal.textContent = '0x00F5AA';
+  fwVal.style.color = '#10B981';
+  fwVal.textContent = 'AUTHENTICATED';
+  headerState.textContent = 'ROOT SECURE';
+  headerState.style.color = '#10B981';
+  latVal.textContent = '8ms';
+  memBar.style.width = '100%';
+  memVal.textContent = '100%';
+  memBar.style.background = '#10B981';
+}, null, 4.10);
+tl.call(playAlertClear, null, 4.10);
+tl.call(playSubImpact, null, 4.15);
+
+tl.fromTo('#world', { scale: 1.02 }, { scale: 1.0, duration: 0.35, ease: 'power3.out' }, 4.15);
+
+// Root text scramble with audible character clicks
+tl.to({ p: 0 }, {
+  p: 1, duration: 1.1, ease: 'none',
+  onUpdate: function() { updateScramble('ROOT ACCESS GRANTED', this.targets()[0].p, 'phase3'); }
+}, 4.20);
+
+// Final Stage Shudder
+tl.fromTo('#world', { y: -6 }, { y: 0, duration: 0.12, yoyo: true, repeat: 1 }, 5.30);
+
+/* ============ DETERMINISTIC FRAME LOOP & AUTO-LOOP ============ */
+const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+const hexContainer = $('#hexContainer');
+let scrubbing = false;
+
+// Dynamic Hex memory addresses
+const hexRows = [
+  '0x7F41A90B2E1C', '0x9C04E38D12FA', '0x2B889A1450CD', '0x00F5AA6189B4',
+  '0x33C910FD56AA', '0x88EE719A045B', '0x12BA9944CD01', '0xEF41508899BA'
+];
+
+(function frame() {
+  requestAnimationFrame(frame);
+  const t = tl.time();
+  const curDisplay = Math.min(t, DURATION);
+  if (clock) clock.textContent = curDisplay.toFixed(2) + 's';
+  if (!scrubbing && scrub) scrub.value = String((curDisplay / DURATION) * 1000);
+  if (btnPlay) btnPlay.textContent = tl.paused() ? 'Play' : 'Pause';
+
+  // Live hex cycle simulation based on tl.time()
+  if (hexContainer && !tl.paused()) {
+    const shift = Math.floor(t * 8) % 16;
+    const lines = hexContainer.children;
+    if (lines && lines.length >= 8) {
+      if (lines[3]) lines[3].textContent = '0x' + ((0x00F5AA + shift * 0x111) & 0xFFFFFF).toString(16).toUpperCase().padStart(6, '0') + '6189B4';
+      if (lines[7]) lines[7].textContent = '0x' + ((0xEF4150 + shift * 0x222) & 0xFFFFFF).toString(16).toUpperCase().padStart(6, '0') + '8899BA';
+    }
+  }
+
+  if (!isRecording && !location.search.includes('clean') && (t >= DURATION || tl.progress() >= 1)) {
+    tl.pause(0);
+    tl.play(0);
+  }
+})();
+
+/* ============ AUDIO MANIFEST FOR HEADLESS RENDER & OPENER CONTRACT ============ */
+window.OPENER = {
+  W: 1920, H: 1080, DURATION, tl, ready: false,
+  audioManifest,
+  seek(t) {
+    tl.pause();
+    tl.time(t, false);
+    if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+  },
+  play() { tl.play(0); initAudio(); }
+};
+
+const toggle = () => {
+  if (tl.paused() || tl.progress() >= 1) {
+    if (tl.progress() >= 1) tl.progress(0);
+    initAudio();
+    tl.play();
+    if (btnPlay) btnPlay.textContent = 'Pause';
+  } else {
+    tl.pause();
+    if (btnPlay) btnPlay.textContent = 'Play';
+  }
+};
+if (btnPlay) btnPlay.onclick = toggle;
+
+if (scrub) {
+  scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); if (btnPlay) btnPlay.textContent = 'Play'; });
+  addEventListener('pointerup', () => scrubbing = false);
+  scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
+}
+
+const startPlayback = () => {
+  window.OPENER.ready = true;
+  if (!location.search.includes('clean')) {
+    tl.play(0);
+    if (btnPlay) btnPlay.textContent = 'Pause';
+    tl.eventCallback('onComplete', () => {
+      if (!isRecording && !location.search.includes('clean')) {
+        tl.pause(0);
+        tl.play(0);
+      }
+    });
+  }
+};
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(startPlayback).catch(startPlayback);
+} else {
+  startPlayback();
+}
+
+/* ============ TOP CONTROLS & EXPORT PIPELINE ============ */
+const btnHud = $('#btn-hud'), ui = $('#ui');
+function toggleHud() {
+  const isHidden = ui.classList.toggle('hidden');
+  if (btnHud) btnHud.classList.toggle('active', !isHidden);
+}
+if (btnHud && ui) btnHud.onclick = toggleHud;
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); toggle(); }
+  else if (e.key.toLowerCase() === 'h' && !['input','textarea'].includes(document.activeElement?.tagName?.toLowerCase())) toggleHud();
+  else if (e.key.toLowerCase() === 'm' && !['input','textarea'].includes(document.activeElement?.tagName?.toLowerCase())) toggleAudio();
+  else if (e.key.toLowerCase() === 'r' && !['input','textarea'].includes(document.activeElement?.tagName?.toLowerCase())) {
+    tl.pause(0); initAudio(); tl.play(); if (btnPlay) btnPlay.textContent = 'Pause';
+  }
+});
+
+const btnExport = $('#btn-export'), fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group'), renderControlsGroup = $('#render-controls-group');
+const btnExportText = $('#btn-export-text');
+const btnRenderPause = $('#btn-render-pause'), btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause'), iconResume = $('#icon-resume');
+
+const EXPORT_DEFAULT_HTML = `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240`;
+
+let isExporting = false, abortController = null, sseSource = null;
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = e => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+  document.addEventListener('click', e => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+}
+
+function setExportingState(exporting) {
+  isExporting = exporting;
+  if (exporting) {
+    fpsOptionsGroup.style.display = 'none';
+    renderControlsGroup.style.display = 'block';
+  } else {
+    fpsOptionsGroup.style.display = 'block';
+    renderControlsGroup.style.display = 'none';
+    btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+    if (sseSource) { sseSource.close(); sseSource = null; }
+  }
+}
+
+if (fpsOptionsGroup) {
+  fpsOptionsGroup.querySelectorAll('.fps-item').forEach(item => {
+    item.onclick = e => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      startExport(Number(item.dataset.fps) || 240);
+    };
+  });
+}
+
+if (btnRenderPause) {
+  btnRenderPause.onclick = async e => {
+    e.stopPropagation();
+    const isPaused = labelRenderPause.textContent.includes('Resume');
+    try {
+      const endpoint = isPaused ? '/api/resume' : '/api/pause';
+      await fetch(endpoint);
+      labelRenderPause.textContent = isPaused ? 'Pause Render' : 'Resume Render';
+      iconPause.style.display = isPaused ? 'block' : 'none';
+      iconResume.style.display = isPaused ? 'none' : 'block';
+    } catch (err) {}
+  };
+}
+
+if (btnRenderCancel) {
+  btnRenderCancel.onclick = async e => {
+    e.stopPropagation();
+    try { await fetch('/api/cancel'); } catch (err) {}
+    if (abortController) abortController.abort();
+    setExportingState(false);
+    fpsMenu.classList.remove('open');
+  };
+}
+
+async function startExport(targetFps) {
+  if (isExporting) return;
+  const isStudioServer = location.port === '4004' || location.host.includes('4004') || Q.has('studio');
+  if (isStudioServer) {
+    try {
+      const healthRes = await fetch('/api/health');
+      if (healthRes.ok) {
+        setExportingState(true);
+        btnExportText.textContent = `Rendering ${targetFps} FPS (0%)`;
+        abortController = new AbortController();
+        sseSource = new EventSource('/api/progress');
+        sseSource.onmessage = e => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'progress') {
+              btnExportText.textContent = `Rendering ${targetFps} FPS (${data.percent}%)`;
+            } else if (data.type === 'complete') {
+              btnExportText.textContent = 'Finalizing MP4...';
+            }
+          } catch (err) {}
+        };
+        const templatePath = location.pathname.replace(/^\//, '');
+        const renderRes = await fetch('/api/render', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ template: templatePath, fps: targetFps }),
+          signal: abortController.signal
+        });
+        if (!renderRes.ok) throw new Error(await renderRes.text());
+        btnExportText.textContent = 'Saving MP4...';
+        const blob = await renderRes.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        const baseName = templatePath.split('/').pop().replace('.html', '');
+        a.download = `${baseName}_${targetFps}fps.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        btnExportText.textContent = 'Downloaded!';
+        setTimeout(() => setExportingState(false), 2000);
+        return;
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      setExportingState(false);
+    }
+  }
+
+  // Standalone Native Screen Capture Fallback
+  try {
+    isRecording = true;
+    document.body.classList.add('clean-capture');
+    btnExportText.textContent = `Recording ${targetFps} FPS...`;
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { frameRate: targetFps, width: 1920, height: 1080, cursor: 'never' },
+      audio: true
+    });
+    let mixedStream = stream;
+    if (audioDest && !isAudioMuted && audioDest.stream.getAudioTracks().length > 0) {
+      mixedStream = new MediaStream([
+        ...stream.getVideoTracks(),
+        ...audioDest.stream.getAudioTracks()
+      ]);
+    }
+    const recorder = new MediaRecorder(mixedStream, { mimeType: 'video/webm;codecs=vp9' });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      isRecording = false;
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kinet-glitch-terminal_${targetFps}fps.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+    };
+    recorder.start();
+    tl.pause(0);
+    initAudio();
+    tl.play();
+    setTimeout(() => {
+      if (recorder.state === 'recording') recorder.stop();
+    }, DURATION * 1000 + 400);
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    isRecording = false;
+    btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+  }
+}
+</script>
+</body>
+</html>

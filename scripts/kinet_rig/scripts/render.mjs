@@ -134,7 +134,8 @@ export async function renderTimeline({
     let audioFile = audio;
     if (!audioFile && audioManifest) {
       try {
-        const { synthesizeManifest } = await import('./audio-synth.mjs');
+        const { synthesizeManifest, prefetchManifestSounds } = await import('./audio-synth.mjs');
+        if (prefetchManifestSounds) await prefetchManifestSounds(audioManifest);
         const autoAudio = resolve(tempDir, 'procedural_audio.wav');
         synthesizeManifest(audioManifest, autoAudio);
         audioFile = autoAudio;

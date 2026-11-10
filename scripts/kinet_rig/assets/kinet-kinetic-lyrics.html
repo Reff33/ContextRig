@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KinetRig — 3D Spatial Kinetic Lyric Typography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+:root {
+  --primary: #A855F7;
+  --accent: #06B6D4;
+  --bg: #030014;
+  --gold: #F59E0B;
+}
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+#stage {
+  position: fixed; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform: translate(-50%, -50%) scale(1);
+  background: radial-gradient(circle at 50% 50%, #150033 0%, #030014 85%);
+  overflow: hidden;
+  perspective: 1400px;
+}
+/* Cyber Starfield & Depth Fog */
+.space-plane {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 25%, rgba(255,255,255,0.7) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 85% 75%, rgba(168,85,247,0.8) 100%, transparent),
+    radial-gradient(2px 2px at 45% 60%, rgba(6,182,212,0.7) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 70% 20%, rgba(245,158,11,0.6) 100%, transparent);
+  background-size: 550px 550px;
+  opacity: 0.6;
+}
+.camera-rig {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  display: flex; align-items: center; justify-content: center;
+}
+.lyric-cloud {
+  position: relative;
+  width: 1400px; height: 800px;
+  transform-style: preserve-3d;
+}
+.phrase {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 24px;
+  width: 100%; text-align: center;
+  transform-style: preserve-3d;
+  opacity: 0;
+  pointer-events: none;
+}
+.lyric-word {
+  display: inline-block;
+  font-size: 110px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #F8FAFC;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  text-shadow: 0 10px 40px rgba(0,0,0,0.8);
+}
+.lyric-word.accent-purple {
+  color: var(--primary);
+  text-shadow: 0 0 50px rgba(168,85,247,0.8);
+}
+.lyric-word.accent-cyan {
+  color: var(--accent);
+  text-shadow: 0 0 50px rgba(6,182,212,0.8);
+}
+.lyric-word.accent-gold {
+  color: var(--gold);
+  text-shadow: 0 0 50px rgba(245,158,11,0.8);
+}
+.sub-caption {
+  position: absolute;
+  bottom: 80px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Space Grotesk', monospace;
+  font-size: 20px; font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  display: flex; align-items: center; gap: 16px;
+  z-index: 10;
+}
+.track-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #E2E8F0;
+  font-size: 13px;
+}
+.beat-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* TOP-BAR & DROPDOWN */
+.top-bar {
+  position: fixed; top: 20px; right: 24px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 100;
+}
+.btn-action {
+  height: 38px; padding: 0 16px;
+  border-radius: 9999px;
+  background: rgba(9, 9, 14, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #fff; font-family: inherit;
+  font-size: 13px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 8px;
+  cursor: pointer; backdrop-filter: blur(12px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-action:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.export-dropdown { position: relative; }
+.fps-menu {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 12px; backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(168,85,247,0.15);
+  padding: 6px; min-width: 175px; z-index: 120; flex-direction: column; gap: 3px;
+}
+.fps-menu.open { display: flex; }
+.fps-item {
+  background: transparent; border: none; color: #E2E8F0;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.15s ease; width: 100%; box-sizing: border-box;
+}
+.fps-item:hover {
+  background: rgba(168, 85, 247, 0.2); color: var(--primary); transform: translateX(2px);
+}
+.fps-item.danger:hover {
+  background: rgba(239, 68, 68, 0.2); color: #F87171;
+}
+
+/* HUD SCRUBBER */
+#ui {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(9, 9, 14, 0.9);
+  padding: 8px 18px; border-radius: 9999px;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  backdrop-filter: blur(16px); z-index: 90;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+#ui button {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: #fff; font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 9999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+#ui button:hover { background: rgba(168,85,247,0.25); border-color: var(--primary); }
+#scrub { width: 340px; height: 6px; accent-color: var(--primary); cursor: pointer; }
+#clock { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 50px; text-align: right; }
+
+body.clean-capture .top-bar,
+body.clean-capture #ui { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="btn-action" id="btn-hud">
+    <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    HUD (H)
+  </button>
+  <div class="export-dropdown">
+    <button class="btn-action" id="btn-export">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="19" x2="12" y2="5"/></svg>
+      <span id="btn-export-text" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
+      <svg style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;margin-left:2px;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fps-menu" id="fps-menu">
+      <div id="fps-options-group">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Choose Framerate</div>
+        <button class="fps-item" data-fps="240"><span>240 FPS (Studio)</span><span style="font-size:10px;color:var(--primary);background:rgba(168,85,247,0.15);padding:2px 6px;border-radius:4px;">True HFR</span></button>
+        <button class="fps-item" data-fps="144"><span>144 FPS</span></button>
+        <button class="fps-item" data-fps="120"><span>120 FPS</span></button>
+        <button class="fps-item" data-fps="60"><span>60 FPS (Fast)</span></button>
+      </div>
+      <div id="render-controls-group" style="display: none;">
+        <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; padding: 4px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;">Render Controls</div>
+        <button class="fps-item" id="btn-render-pause">
+          <svg id="icon-pause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="icon-resume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          <span id="label-render-pause">Pause Render</span>
+        </button>
+        <button class="fps-item danger" id="btn-render-cancel" style="color: #f87171;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Cancel Render</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stage">
+    <div class="space-plane"></div>
+
+    <div class="camera-rig" id="cameraRig">
+      <div class="lyric-cloud">
+
+        <!-- Phrase 1: 0.0s - 2.5s -->
+        <div class="phrase" id="phrase1">
+          <span class="lyric-word" data-word="1">LOST</span>
+          <span class="lyric-word" data-word="2">IN</span>
+          <span class="lyric-word accent-cyan" data-word="3">THE</span>
+          <span class="lyric-word accent-purple" data-word="4">NEON</span>
+          <span class="lyric-word accent-gold" data-word="5">ECHO</span>
+        </div>
+
+        <!-- Phrase 2: 2.5s - 5.0s -->
+        <div class="phrase" id="phrase2">
+          <span class="lyric-word" data-word="6">EVERY</span>
+          <span class="lyric-word accent-purple" data-word="7">HEARTBEAT</span>
+          <span class="lyric-word" data-word="8">BREAKS</span>
+          <span class="lyric-word accent-cyan" data-word="9">THE</span>
+          <span class="lyric-word accent-gold" data-word="10">SILENCE</span>
+        </div>
+
+        <!-- Phrase 3: 5.0s - 7.5s -->
+        <div class="phrase" id="phrase3">
+          <span class="lyric-word accent-gold" data-word="11">WE</span>
+          <span class="lyric-word" data-word="12">ARE</span>
+          <span class="lyric-word accent-purple" data-word="13">INFINITE</span>
+          <span class="lyric-word accent-cyan" data-word="14">LIGHT</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="sub-caption">
+      <div class="track-pill">
+        <span class="beat-dot"></span>
+        <span>SPATIAL LYRICS // TRACK 16</span>
+      </div>
+      <span>144-240 FPS ZERO-DROP ENGINE</span>
+    </div>
+  </div>
+
+<div id="ui">
+  <button id="btn-play">Pause</button>
+  <button id="btn-audio" title="Mute/Unmute Audio (M)">
+    <svg id="icon-audio-on" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <svg id="icon-audio-off" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const Q = new URLSearchParams(location.search);
+let isRecording = false;
+
+const DURATION = 8.0;
+const tl = gsap.timeline({ paused: true });
+
+/* ============ FRESH ON-DEMAND SFX (Zero Existing Files Used) ============ */
+const SFX_CDN_BASE = 'https://raw.githubusercontent.com/wyzowl/sfx-kit/main';
+const STUDIO_SFX = {
+  bass_808: 'sounds/booms-and-bass/bass-808-medium.wav',
+  swish_hard: 'sounds/swishes-and-zips/swish-hard.wav',
+  shimmer_sparkle: 'sounds/shimmers/shimmer-long-sparkle.wav',
+  reverse_whoosh: 'sounds/reverse-whooshes/reverse-whoosh-long-strong.wav',
+  cinematic_drum: 'sounds/cinematic-hits/cinematic-drum-big.wav'
+};
+
+const sfxRawBuffers = {};
+const sfxAudioBuffers = {};
+
+async function fetchSfxArrayBuffer(rel) {
+  const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
+  if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+  const tryUrls = isHttp
+    ? ['../sfx/' + rel, '../../sfx/' + rel, 'sfx/' + rel, `${SFX_CDN_BASE}/${rel}`]
+    : [`${SFX_CDN_BASE}/${rel}`];
+  for (const u of tryUrls) {
+    try {
+      const res = await fetch(u);
+      if (res.ok) return await res.arrayBuffer();
+    } catch (e) {}
+  }
+  return null;
+}
+
+for (const [id, rel] of Object.entries(STUDIO_SFX)) {
+  fetchSfxArrayBuffer(rel).then(ab => {
+    if (ab) {
+      sfxRawBuffers[id] = ab;
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(decoded => {
+          sfxAudioBuffers[id] = decoded;
+        }).catch(() => {});
+      }
+    }
+  });
+}
+
+/* ============ AUDIO ROUTING & FALLBACK ENGINE ============ */
+let audioCtx = null, audioDest = null, mainMasterGain = null;
+let isAudioMuted = false, hasUserInteracted = false;
+
+function toggleAudio() {
+  isAudioMuted = !isAudioMuted;
+  $('#icon-audio-on').style.display = isAudioMuted ? 'none' : 'block';
+  $('#icon-audio-off').style.display = isAudioMuted ? 'block' : 'none';
+  $('#btn-audio').classList.toggle('muted', isAudioMuted);
+  if (mainMasterGain && audioCtx) {
+    mainMasterGain.gain.setValueAtTime(isAudioMuted ? 0 : 1, audioCtx.currentTime);
+  }
+}
+$('#btn-audio').onclick = toggleAudio;
+
+function markUserInteracted() {
+  hasUserInteracted = true;
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+window.addEventListener('pointerdown', markUserInteracted, { capture: true });
+window.addEventListener('keydown', markUserInteracted, { capture: true });
+window.addEventListener('message', e => {
+  if (e.data === 'UNLOCK_AUDIO' || e.data?.type === 'UNLOCK_AUDIO') {
+    markUserInteracted();
+    initAudio();
+  }
+});
+
+function initAudio() {
+  if (!audioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      audioCtx = new AudioCtx();
+      mainMasterGain = audioCtx.createGain();
+      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+      mainMasterGain.connect(audioCtx.destination);
+      try {
+        audioDest = audioCtx.createMediaStreamDestination();
+        mainMasterGain.connect(audioDest);
+      } catch (e) {}
+
+      // Layer 1: Ambient room bed (Low Cyber Space Drone 45Hz at -24dB)
+      try {
+        const droneOsc = audioCtx.createOscillator();
+        const droneFilter = audioCtx.createBiquadFilter();
+        const ambientGain = audioCtx.createGain();
+        droneOsc.type = 'triangle';
+        droneOsc.frequency.setValueAtTime(45, audioCtx.currentTime);
+        droneFilter.type = 'lowpass';
+        droneFilter.frequency.setValueAtTime(120, audioCtx.currentTime);
+        ambientGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        droneOsc.connect(droneFilter);
+        droneFilter.connect(ambientGain);
+        ambientGain.connect(mainMasterGain);
+        droneOsc.start();
+      } catch (err) {}
+    }
+  }
+  if (audioCtx) {
+    if (hasUserInteracted && audioCtx.state === 'suspended') audioCtx.resume();
+    for (const [id, ab] of Object.entries(sfxRawBuffers)) {
+      if (!sfxAudioBuffers[id]) {
+        audioCtx.decodeAudioData(ab.slice(0)).then(dec => { sfxAudioBuffers[id] = dec; }).catch(() => {});
+      }
+    }
+  }
+  return audioCtx;
+}
+
+function triggerSfx(id, fallbackFn, gain = 0.5) {
+  const ctx = initAudio();
+  if (!ctx || ctx.state !== 'running' || isAudioMuted) return;
+  if (sfxAudioBuffers[id]) {
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = sfxAudioBuffers[id];
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, ctx.currentTime);
+      src.connect(g);
+      g.connect(mainMasterGain || ctx.destination);
+      src.start();
+      return;
+    } catch (e) {}
+  }
+  if (fallbackFn) fallbackFn(ctx, gain);
+}
+
+// Procedural Fallbacks for 100% Zero-Crash Guarantee
+const fallbackBass = (ctx, gVal) => {
+  const osc = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime;
+  osc.type = 'sine'; osc.frequency.setValueAtTime(120, now);
+  osc.frequency.exponentialRampToValueAtTime(35, now + 0.45);
+  g.gain.setValueAtTime(gVal * 0.7, now);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+  osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+  osc.start(now); osc.stop(now + 0.55);
+};
+const fallbackSwish = (ctx, gVal) => {
+  const osc = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime;
+  osc.type = 'triangle'; osc.frequency.setValueAtTime(450, now);
+  osc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+  g.gain.setValueAtTime(gVal * 0.4, now);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+  osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+  osc.start(now); osc.stop(now + 0.2);
+};
+const fallbackSparkle = (ctx, gVal) => {
+  [880, 1320, 1760].forEach((freq, idx) => {
+    const osc = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime + idx * 0.04;
+    osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now);
+    g.gain.setValueAtTime(gVal * 0.25, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+    osc.connect(g); g.connect(mainMasterGain || ctx.destination);
+    osc.start(now); osc.stop(now + 0.35);
+  });
+};
+
+/* ============ STAGE FIT ============ */
+const stage = $('#stage');
+const fit = () => {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit);
+fit();
+
+/* ============ 3D SPATIAL KINETIC LYRIC TIMELINE ============ */
+// Setup Initial Baseline States (Zero Drift)
+tl.set('#cameraRig', { transformOrigin: '50% 50% 0px', z: 0, rotateX: 0, rotateY: 0 }, 0);
+tl.set('.phrase', { display: 'none', opacity: 0 }, 0);
+tl.set('.lyric-word', { opacity: 0, scale: 0.2, z: -300, rotateX: 45 }, 0);
+
+// Sequence 1: 0.0s - 2.5s ("LOST IN THE NEON ECHO")
+tl.set('#phrase1', { display: 'flex', opacity: 1 }, 0);
+tl.call(() => triggerSfx('reverse_whoosh', fallbackSwish, 0.4), null, 0.05);
+
+const wordsP1 = $$('#phrase1 .lyric-word');
+wordsP1.forEach((w, i) => {
+  const tStart = 0.2 + i * 0.32;
+  tl.to(w, {
+    opacity: 1, scale: 1, z: 0, rotateX: 0,
+    duration: 0.35, ease: 'back.out(2.2)'
+  }, tStart);
+  tl.call(() => triggerSfx('swish_hard', fallbackSwish, 0.35), null, tStart);
+});
+
+// Bass drop on "ECHO"
+tl.call(() => triggerSfx('bass_808', fallbackBass, 0.7), null, 1.48);
+tl.call(() => triggerSfx('shimmer_sparkle', fallbackSparkle, 0.4), null, 1.6);
+tl.to('#cameraRig', { z: 400, rotateX: -8, rotateY: 5, duration: 2.2, ease: 'power2.inOut' }, 0.2);
+
+// Transition out P1
+tl.to('#phrase1', { opacity: 0, z: 800, filter: 'blur(16px)', duration: 0.4, ease: 'power2.in' }, 2.3);
+tl.set('#phrase1', { display: 'none' }, 2.7);
+
+// Sequence 2: 2.7s - 5.1s ("EVERY HEARTBEAT BREAKS THE SILENCE")
+tl.set('#phrase2', { display: 'flex', opacity: 1 }, 2.7);
+tl.fromTo('#cameraRig', { z: -500, rotateX: 12, rotateY: -10 }, { z: 200, rotateX: -4, rotateY: 3, duration: 2.4, ease: 'power3.out' }, 2.7);
+
+const wordsP2 = $$('#phrase2 .lyric-word');
+wordsP2.forEach((w, i) => {
+  const tStart = 2.8 + i * 0.36;
+  tl.to(w, {
+    opacity: 1, scale: 1, z: 0, rotateX: 0,
+    duration: 0.4, ease: 'elastic.out(1, 0.6)'
+  }, tStart);
+  if (i === 1) { // HEARTBEAT
+    tl.call(() => triggerSfx('cinematic_drum', fallbackBass, 0.75), null, tStart);
+  } else {
+    tl.call(() => triggerSfx('swish_hard', fallbackSwish, 0.3), null, tStart);
+  }
+});
+
+// Transition out P2
+tl.to('#phrase2', { opacity: 0, scale: 1.8, filter: 'blur(20px)', duration: 0.4, ease: 'power2.in' }, 5.0);
+tl.set('#phrase2', { display: 'none' }, 5.4);
+
+// Sequence 3: 5.4s - 8.0s ("WE ARE INFINITE LIGHT")
+tl.set('#phrase3', { display: 'flex', opacity: 1 }, 5.4);
+tl.fromTo('#cameraRig', { z: -800, rotateX: 0, rotateY: 0 }, { z: 0, rotateX: 0, rotateY: 0, duration: 2.2, ease: 'power4.out' }, 5.4);
+tl.call(() => triggerSfx('cinematic_drum', fallbackBass, 0.8), null, 5.45);
+tl.call(() => triggerSfx('shimmer_sparkle', fallbackSparkle, 0.6), null, 5.5);
+
+const wordsP3 = $$('#phrase3 .lyric-word');
+wordsP3.forEach((w, i) => {
+  const tStart = 5.5 + i * 0.4;
+  tl.to(w, {
+    opacity: 1, scale: 1, z: 0, rotateX: 0,
+    duration: 0.45, ease: 'back.out(2)'
+  }, tStart);
+});
+
+// Final Camera Push Through
+tl.to('#cameraRig', { z: 600, duration: 1.5, ease: 'power3.inOut' }, 6.5);
+tl.to('#phrase3', { opacity: 0, duration: 0.8, ease: 'power2.in' }, 7.2);
+
+/* ============ AUDIO MANIFEST FOR HEADLESS RENDER ============ */
+window.OPENER = {
+  W: 1920, H: 1080, DURATION, tl, ready: false,
+  audioManifest: {
+    duration: DURATION,
+    ambientBed: { type: 'space_drone', baseFreq: 45, gain: 0.04 },
+    events: [
+      { time: 0.05, file: 'sounds/reverse-whooshes/reverse-whoosh-long-strong.wav', sfx_id: 'reverse-whoosh-long-strong', gain: 0.4 },
+      { time: 0.20, file: 'sounds/swishes-and-zips/swish-hard.wav', sfx_id: 'swish-hard', gain: 0.35 },
+      { time: 0.52, file: 'sounds/swishes-and-zips/swish-hard.wav', sfx_id: 'swish-hard', gain: 0.35 },
+      { time: 0.84, file: 'sounds/swishes-and-zips/swish-hard.wav', sfx_id: 'swish-hard', gain: 0.35 },
+      { time: 1.16, file: 'sounds/swishes-and-zips/swish-hard.wav', sfx_id: 'swish-hard', gain: 0.35 },
+      { time: 1.48, file: 'sounds/booms-and-bass/bass-808-medium.wav', sfx_id: 'bass-808-medium', gain: 0.7 },
+      { time: 1.60, file: 'sounds/shimmers/shimmer-long-sparkle.wav', sfx_id: 'shimmer-long-sparkle', gain: 0.4 },
+      { time: 3.16, file: 'sounds/cinematic-hits/cinematic-drum-big.wav', sfx_id: 'cinematic-drum-big', gain: 0.75 },
+      { time: 5.45, file: 'sounds/cinematic-hits/cinematic-drum-big.wav', sfx_id: 'cinematic-drum-big', gain: 0.8 },
+      { time: 5.50, file: 'sounds/shimmers/shimmer-long-sparkle.wav', sfx_id: 'shimmer-long-sparkle', gain: 0.6 }
+    ]
+  },
+  seek(t) {
+    tl.pause();
+    tl.time(t, false);
+    if (window.gsap && gsap.ticker && gsap.ticker.tick) gsap.ticker.tick();
+  },
+  play() { tl.play(0); initAudio(); }
+};
+
+/* ============ CONTROLS & AUTO-LOOP ============ */
+const clock = $('#clock'), scrub = $('#scrub'), btnPlay = $('#btn-play');
+let scrubbing = false;
+
+(function frame() {
+  requestAnimationFrame(frame);
+  const t = tl.time();
+  const curDisplay = Math.min(t, DURATION);
+  if (clock) clock.textContent = curDisplay.toFixed(2) + 's';
+  if (!scrubbing && scrub) scrub.value = String((curDisplay / DURATION) * 1000);
+  if (btnPlay) btnPlay.textContent = tl.paused() ? 'Play' : 'Pause';
+  if (!isRecording && !location.search.includes('clean') && (t >= DURATION || tl.progress() >= 1)) {
+    tl.pause(0);
+    tl.play(0);
+  }
+})();
+
+const toggle = () => {
+  if (tl.paused() || tl.progress() >= 1) {
+    if (tl.progress() >= 1) tl.progress(0);
+    initAudio();
+    tl.play();
+    if (btnPlay) btnPlay.textContent = 'Pause';
+  } else {
+    tl.pause();
+    if (btnPlay) btnPlay.textContent = 'Play';
+  }
+};
+if (btnPlay) btnPlay.onclick = toggle;
+
+if (scrub) {
+  scrub.addEventListener('pointerdown', () => { scrubbing = true; tl.pause(); if (btnPlay) btnPlay.textContent = 'Play'; });
+  addEventListener('pointerup', () => scrubbing = false);
+  scrub.addEventListener('input', () => { tl.pause(); tl.time((scrub.value / 1000) * DURATION); });
+}
+
+const startPlayback = () => {
+  window.OPENER.ready = true;
+  if (!location.search.includes('clean')) {
+    tl.play(0);
+    if (btnPlay) btnPlay.textContent = 'Pause';
+    tl.eventCallback('onComplete', () => {
+      if (!isRecording && !location.search.includes('clean')) {
+        tl.pause(0);
+        tl.play(0);
+      }
+    });
+  }
+};
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(startPlayback).catch(startPlayback);
+} else {
+  startPlayback();
+}
+
+/* ============ TOP CONTROLS & DUAL-STATE EXPORT ============ */
+const btnHud = $('#btn-hud'), ui = $('#ui');
+if (btnHud && ui) {
+  btnHud.onclick = () => ui.classList.toggle('hidden');
+  window.addEventListener('keydown', e => {
+    if (e.key.toLowerCase() === 'h' && !['input','textarea'].includes(document.activeElement?.tagName?.toLowerCase())) {
+      ui.classList.toggle('hidden');
+    }
+  });
+}
+
+const btnExport = $('#btn-export'), fpsMenu = $('#fps-menu');
+const fpsOptionsGroup = $('#fps-options-group'), renderControlsGroup = $('#render-controls-group');
+const btnExportText = $('#btn-export-text');
+const btnRenderPause = $('#btn-render-pause'), btnRenderCancel = $('#btn-render-cancel');
+const labelRenderPause = $('#label-render-pause');
+const iconPause = $('#icon-pause'), iconResume = $('#icon-resume');
+
+const EXPORT_DEFAULT_HTML = `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240`;
+
+let isExporting = false, abortController = null, sseSource = null;
+
+if (btnExport && fpsMenu) {
+  btnExport.onclick = e => {
+    e.stopPropagation();
+    fpsMenu.classList.toggle('open');
+  };
+  document.addEventListener('click', e => {
+    if (fpsMenu && !fpsMenu.contains(e.target) && e.target !== btnExport) {
+      fpsMenu.classList.remove('open');
+    }
+  });
+}
+
+function setExportingState(exporting) {
+  isExporting = exporting;
+  if (exporting) {
+    fpsOptionsGroup.style.display = 'none';
+    renderControlsGroup.style.display = 'block';
+  } else {
+    fpsOptionsGroup.style.display = 'block';
+    renderControlsGroup.style.display = 'none';
+    btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+    if (sseSource) { sseSource.close(); sseSource = null; }
+  }
+}
+
+if (fpsOptionsGroup) {
+  fpsOptionsGroup.querySelectorAll('.fps-item').forEach(item => {
+    item.onclick = e => {
+      e.stopPropagation();
+      fpsMenu.classList.remove('open');
+      startExport(Number(item.dataset.fps) || 240);
+    };
+  });
+}
+
+if (btnRenderPause) {
+  btnRenderPause.onclick = async e => {
+    e.stopPropagation();
+    const isPaused = labelRenderPause.textContent.includes('Resume');
+    try {
+      const endpoint = isPaused ? '/api/resume' : '/api/pause';
+      await fetch(endpoint);
+      labelRenderPause.textContent = isPaused ? 'Pause Render' : 'Resume Render';
+      iconPause.style.display = isPaused ? 'block' : 'none';
+      iconResume.style.display = isPaused ? 'none' : 'block';
+    } catch (err) {}
+  };
+}
+
+if (btnRenderCancel) {
+  btnRenderCancel.onclick = async e => {
+    e.stopPropagation();
+    try { await fetch('/api/cancel'); } catch (err) {}
+    if (abortController) abortController.abort();
+    setExportingState(false);
+    fpsMenu.classList.remove('open');
+  };
+}
+
+async function startExport(targetFps) {
+  if (isExporting) return;
+  const isStudioServer = location.port === '4004' || location.host.includes('4004') || Q.has('studio');
+  if (isStudioServer) {
+    try {
+      const healthRes = await fetch('/api/health');
+      if (healthRes.ok) {
+        setExportingState(true);
+        btnExportText.textContent = `Rendering ${targetFps} FPS (0%)`;
+        abortController = new AbortController();
+        sseSource = new EventSource('/api/progress');
+        sseSource.onmessage = ev => {
+          try {
+            const data = JSON.parse(ev.data);
+            if (data.status === 'rendering') {
+              btnExportText.textContent = `Rendering ${targetFps} FPS (${data.percent || 0}%)`;
+            }
+          } catch (err) {}
+        };
+        const templatePath = location.pathname.replace(/^\/+/, '') || 'assets/kinet-kinetic-lyrics.html';
+        const renderUrl = `/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`;
+        const response = await fetch(renderUrl, { signal: abortController.signal });
+        if (!response.ok) throw new Error('Studio render failed');
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kinet-kinetic-lyrics_${targetFps}fps.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setExportingState(false);
+        return;
+      }
+    } catch (err) {
+      setExportingState(false);
+    }
+  }
+
+  // Fallback Native In-Browser Capture
+  try {
+    isRecording = true;
+    document.body.classList.add('clean-capture');
+    tl.pause(0);
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { frameRate: targetFps, width: 1920, height: 1080 },
+      audio: true
+    });
+    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+    const chunks = [];
+    recorder.ondataavailable = ev => chunks.push(ev.data);
+    recorder.onstop = () => {
+      document.body.classList.remove('clean-capture');
+      isRecording = false;
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `kinet-kinetic-lyrics_${targetFps}fps.webm`;
+      a.click();
+    };
+    recorder.start();
+    tl.play(0);
+    setTimeout(() => { recorder.stop(); stream.getTracks().forEach(t => t.stop()); }, (DURATION + 0.3) * 1000);
+  } catch (err) {
+    document.body.classList.remove('clean-capture');
+    isRecording = false;
+  }
+}
+</script>
+</body>
+</html>
