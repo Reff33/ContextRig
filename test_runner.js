@@ -266,6 +266,11 @@ async function runTests() {
   // Test 10b: SyncEngine cache, ETag handling, and hash verification
   const testHash = calculateHash('print("hello world")');
   assert(typeof testHash === 'string' && testHash.length === 64, 'SHA-256 hash must be 64 characters hex');
+  assert.strictEqual(
+    calculateHash('line1\r\nline2\r\n'),
+    calculateHash('line1\nline2\n'),
+    'calculateHash must treat CRLF and LF line endings identically'
+  );
   await saveCache(fullPath, {
     last_checked: Date.now(),
     etags: { 'web_scraper:tools/scraper.py': '"test-etag-123"' }

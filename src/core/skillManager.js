@@ -44,6 +44,6 @@ export async function saveSkill(skillData) {
   await fs.mkdir(SKILLS_LIBRARY_DIR, { recursive: true });
   const filename = `${skillData.id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_')}.json`;
   const filePath = path.join(SKILLS_LIBRARY_DIR, filename);
-  await fs.writeFile(filePath, JSON.stringify(skillData, null, 2), 'utf8');
+  await fs.writeFile(filePath, `${JSON.stringify(skillData, null, 2)}\n`, 'utf8');
   return filePath;
 }

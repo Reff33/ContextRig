@@ -50,7 +50,7 @@ async function mapWithConcurrency(items, limit, worker) {
  * @returns {string}
  */
 export function calculateHash(content) {
-  return crypto.createHash('sha256').update(content.trim(), 'utf8').digest('hex');
+  return crypto.createHash('sha256').update(content.replace(/\r\n/g, '\n').trim(), 'utf8').digest('hex');
 }
 
 /**
@@ -737,7 +737,7 @@ async function syncSingleProject(targetPath, { skillFilterId = null, autoConfirm
               value: 'apply'
             },
             {
-              name: chalk.cyan('Inspect File Details'),
+              name: 'Inspect File Details',
               short: 'Inspect File Details',
               description: 'View full list of changed files per skill',
               value: 'inspect'
@@ -1208,7 +1208,7 @@ async function runSyncOneProjectWorkflow(projects) {
       : []),
     new inquirer.Separator(),
     {
-      name: chalk.cyan('Enter Folder Path manually...'),
+      name: 'Enter Folder Path manually...',
       short: 'Enter Folder Path',
       description: 'Type or paste any target project directory path',
       value: { type: 'manual' }
@@ -1308,7 +1308,7 @@ export async function runSyncWorkflow(inputTargetDir = null, options = {}) {
           value: 'project'
         },
         {
-          name: chalk.cyan('Sync One Skill'),
+          name: 'Sync One Skill',
           short: 'Sync One Skill',
           description: 'Check & update a specific skill across Master Library or saved projects',
           value: 'skill'

@@ -633,7 +633,7 @@ async function configureSkillMenu(skill) {
             ...(field.allowCustom
               ? [
                   new inquirer.Separator(),
-                  { name: chalk.cyan('Custom value...'), short: 'Custom', value: '__CUSTOM__' }
+                  { name: 'Custom value...', short: 'Custom', value: '__CUSTOM__' }
                 ]
               : [])
           ];
@@ -846,7 +846,7 @@ async function handleManageSkills() {
           value: 'list'
         },
         {
-          name: chalk.cyan('Import Skill from GitHub / skills.sh'),
+          name: 'Import Skill from GitHub / skills.sh',
           short: 'Import from Repo',
           description: 'Auto-detect SKILL.md, scripts, assets, or npx packages from URL',
           value: 'import'
