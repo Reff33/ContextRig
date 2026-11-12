@@ -134,6 +134,37 @@ const BUILTIN_SCHEMAS = {
       },
       { key: 'outputDir', label: 'Design System Output Folder', type: 'string', default: 'design-system' }
     ]
+  },
+  cut_rig: {
+    fields: [
+      {
+        key: 'defaultEditor',
+        label: 'Default Video Editor Lane',
+        type: 'choice',
+        default: 'auto',
+        choices: [
+          { name: 'auto (Probe via cutrig_doctor)', short: 'auto', value: 'auto' },
+          { name: 'ffmpeg (Universal CLI)', short: 'ffmpeg', value: 'ffmpeg' },
+          { name: 'capcut (CapCut Draft JSON)', short: 'capcut', value: 'capcut' },
+          { name: 'davinci (DaVinci Resolve)', short: 'davinci', value: 'davinci' },
+          { name: 'premiere (Adobe Premiere Pro)', short: 'premiere', value: 'premiere' },
+          { name: 'aftereffects (After Effects aerender)', short: 'aftereffects', value: 'aftereffects' }
+        ]
+      },
+      {
+        key: 'defaultAspect',
+        label: 'Default Aspect Ratio',
+        type: 'choice',
+        default: '16:9',
+        choices: [
+          { name: '16:9 (Widescreen)', short: '16:9', value: '16:9' },
+          { name: '9:16 (Reels / TikTok / Shorts)', short: '9:16', value: '9:16' },
+          { name: '1:1 (Square)', short: '1:1', value: '1:1' },
+          { name: '4:5 (Portrait Feed)', short: '4:5', value: '4:5' }
+        ]
+      },
+      { key: 'outputDir', label: 'CutRig Output Folder', type: 'string', default: 'cutrig-out' }
+    ]
   }
 };
 

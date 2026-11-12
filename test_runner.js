@@ -191,6 +191,18 @@ async function runTests() {
   assert.strictEqual(isPatternIgnored(['other_tools'], 'rigtools/'), false, 'other_tools should not match rigtools/');
   console.log('✔ Test 7d: isPatternIgnored slash normalization verified.');
 
+  // Test 7h: CutRig MCP built-in skill bundle & .mcp.json manifest verification
+  const cutRigSkill = skills.find((s) => s.id === 'cut_rig');
+  assert(cutRigSkill, 'cut_rig skill should exist');
+  assert.strictEqual(cutRigSkill.claude_command?.name, 'cut');
+  assert(cutRigSkill.mcp_servers?.cutrig?.command === 'npx', 'cut_rig must declare mcp_servers.cutrig');
+  assert(cutRigSkill.files_to_copy?.length === 6, 'cut_rig should bundle SKILL.md + 5 editor references');
+  for (const item of cutRigSkill.files_to_copy) {
+    const srcExists = await fs.stat(path.resolve(item.source)).then(() => true).catch(() => false);
+    assert(srcExists, `Missing local cut_rig file: ${item.source}`);
+  }
+  console.log('✔ Test 7h: CutRig MCP manifest, /cut command & bundled playbooks verified.');
+
   // Test 7e: KinetRig skill definition, complete asset manifest & gitignore verification
   const kinetRigSkill = skills.find((s) => s.id === 'kinet_rig');
   assert(kinetRigSkill, 'kinet_rig skill should exist');
@@ -467,6 +479,33 @@ async function runTests() {
     globalThis.fetch = prevImportFetch;
   }
   console.log('✔ Test 10g: Smart GitHub & skills.sh importer + validator verified.');
+
+  // Test 10h: .mcp.json safe merge & cleanup on CutRig MCP inject/remove
+  const mcpPath = path.join(fullPath, '.mcp.json');
+  await fs.writeFile(
+    mcpPath,
+    JSON.stringify({ mcpServers: { custom_srv: { command: 'node', args: ['keep.js'] } } }, null, 2),
+    'utf8'
+  );
+  await injectTemplate({
+    targetDir: fullPath,
+    templateFileName: 'claude.md.hbs',
+    outputFileName: 'CLAUDE.md',
+    projectName,
+    agentName: 'Claude (CLAUDE.md)',
+    skillsInstructions: [cutRigSkill],
+    mergeMode: 'merge',
+    copyAssets: true
+  });
+  const mergedMcp = JSON.parse(await fs.readFile(mcpPath, 'utf8'));
+  assert(mergedMcp.mcpServers.custom_srv, 'Existing custom_srv in .mcp.json must be preserved');
+  assert(mergedMcp.mcpServers.cutrig, 'cutrig MCP server must be merged into .mcp.json');
+
+  await removeSkillsFromProject(fullPath, projectName, [cutRigSkill], [kinetRigSkill], { deleteArtifacts: true });
+  const afterRemoveMcp = JSON.parse(await fs.readFile(mcpPath, 'utf8'));
+  assert(afterRemoveMcp.mcpServers.custom_srv, 'custom_srv must remain after removing cut_rig');
+  assert(!afterRemoveMcp.mcpServers.cutrig, 'cutrig must be removed from .mcp.json when cut_rig is uninstalled');
+  console.log('✔ Test 10h: .mcp.json safe merge & uninstall cleanup verified.');
 
   // Verify Fix 3: Non-empty sibling subdirectory inside rigtools/ must NOT be recursively deleted on skill removal
   const siblingFile = path.join(fullPath, 'rigtools', 'custom_helper', 'keep.js');

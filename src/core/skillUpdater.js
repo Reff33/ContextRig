@@ -293,6 +293,44 @@ export async function removeSkillsFromProject(
     logger.success(`Updated ${agent.outputFile} (removed ${skillsToRemove.map((s) => s.name).join(', ')})`);
   }
 
+  // 3.5 Remove orphaned MCP server entries declared by removed skills from .mcp.json
+  const keepMcpKeys = new Set();
+  for (const s of remainingSkills) {
+    if (s.mcp_servers && typeof s.mcp_servers === 'object') {
+      for (const k of Object.keys(s.mcp_servers)) keepMcpKeys.add(k);
+    }
+  }
+  const removeMcpKeys = new Set();
+  for (const s of skillsToRemove) {
+    if (s.mcp_servers && typeof s.mcp_servers === 'object') {
+      for (const k of Object.keys(s.mcp_servers)) {
+        if (!keepMcpKeys.has(k)) removeMcpKeys.add(k);
+      }
+    }
+  }
+  if (removeMcpKeys.size > 0) {
+    const mcpPath = path.join(targetDir, '.mcp.json');
+    try {
+      const parsed = JSON.parse(await fs.readFile(mcpPath, 'utf8'));
+      if (parsed.mcpServers && typeof parsed.mcpServers === 'object') {
+        let changed = false;
+        for (const k of removeMcpKeys) {
+          if (k in parsed.mcpServers) {
+            delete parsed.mcpServers[k];
+            changed = true;
+          }
+        }
+        if (changed) {
+          if (Object.keys(parsed.mcpServers).length === 0 && Object.keys(parsed).length === 1) {
+            await fs.unlink(mcpPath);
+          } else {
+            await fs.writeFile(mcpPath, JSON.stringify(parsed, null, 2) + '\n', 'utf8');
+          }
+        }
+      }
+    } catch {}
+  }
+
   // 4. Safely prune ONLY empty subdirectories and empty rigtools/, tools/, or .claude/commands/ directories
   async function pruneEmptyDirs(dirPath) {
     let entries;

@@ -1,0 +1,60 @@
+{
+  "id": "cut_rig",
+  "name": "CutRig MCP (Video Editing & NLE Automation)",
+  "description": "Cross-platform MCP server & playbooks for automated video editing, AI captions, CapCut drafts, DaVinci Resolve, and Adobe Premiere/After Effects",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/cut_rig.json",
+  "ai_instructions": "Follow the CutRig MCP workflow (full guide in rigtools/cut_rig/SKILL.md; editor playbooks in rigtools/cut_rig/references/). Always run `cutrig_doctor` first, probe media via `cutrig_probe_media` before editing, and never overwrite original source footage or project drafts. When KinetRig is active in the same project, import rendered KinetRig MP4 openers onto Track 1 via `cutrig_concat` or `cutrig_capcut_insert_clips`.",
+  "claude_command": {
+    "name": "cut",
+    "content": "# /cut <video_edit_task>\n\nExecute a video editing or timeline automation task via CutRig MCP:\n\n1. Call `cutrig_doctor` to verify available adapters (`ffmpeg`, `whisper`, `capcut`, `davinci`, `adobe`) on the current OS.\n2. Probe all input clips with `cutrig_probe_media` before cutting, reframing, or assembling timelines.\n3. Consult `rigtools/cut_rig/SKILL.md` and the matching playbook under `rigtools/cut_rig/references/`.\n4. Keep all edits non-destructive (auto-suffix outputs / `.bak` draft backups) and inspect keyframes with `cutrig_preview_frames` when verifying visual quality."
+  },
+  "mcp_servers": {
+    "cutrig": {
+      "command": "npx",
+      "args": ["-y", "github:Reff33/CutRig-MCP#testing"]
+    }
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "artifacts": [
+    "cutrig-out/"
+  ],
+  "gitignore": [
+    "rigtools/",
+    "cutrig-out/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/cut_rig/SKILL.md",
+      "destination": "rigtools/cut_rig/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/CutRig-MCP/testing/skills/SKILL.md"
+    },
+    {
+      "source": "scripts/cut_rig/references/ffmpeg.md",
+      "destination": "rigtools/cut_rig/references/ffmpeg.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/CutRig-MCP/testing/skills/references/ffmpeg.md"
+    },
+    {
+      "source": "scripts/cut_rig/references/capcut.md",
+      "destination": "rigtools/cut_rig/references/capcut.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/CutRig-MCP/testing/skills/references/capcut.md"
+    },
+    {
+      "source": "scripts/cut_rig/references/davinci.md",
+      "destination": "rigtools/cut_rig/references/davinci.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/CutRig-MCP/testing/skills/references/davinci.md"
+    },
+    {
+      "source": "scripts/cut_rig/references/premiere.md",
+      "destination": "rigtools/cut_rig/references/premiere.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/CutRig-MCP/testing/skills/references/premiere.md"
+    },
+    {
+      "source": "scripts/cut_rig/references/after-effects.md",
+      "destination": "rigtools/cut_rig/references/after-effects.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/CutRig-MCP/testing/skills/references/after-effects.md"
+    }
+  ]
+}

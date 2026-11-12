@@ -172,6 +172,31 @@ export async function injectTemplate({
       }
     }
     await syncProjectSkillConfigs(targetDir, resolvedSkills);
+
+    // Merge skill-declared MCP servers into project .mcp.json safely
+    const mcpEntries = {};
+    for (const skill of resolvedSkills) {
+      if (skill.mcp_servers && typeof skill.mcp_servers === 'object') {
+        Object.assign(mcpEntries, skill.mcp_servers);
+      }
+    }
+    const mcpNames = Object.keys(mcpEntries);
+    if (mcpNames.length > 0) {
+      const mcpPath = path.join(targetDir, '.mcp.json');
+      let existingMcp = {};
+      try {
+        existingMcp = JSON.parse(await fs.readFile(mcpPath, 'utf8'));
+      } catch {}
+      const nextMcp = {
+        ...existingMcp,
+        mcpServers: {
+          ...(existingMcp.mcpServers && typeof existingMcp.mcpServers === 'object' ? existingMcp.mcpServers : {}),
+          ...mcpEntries
+        }
+      };
+      await fs.writeFile(mcpPath, JSON.stringify(nextMcp, null, 2) + '\n', 'utf8');
+      console.log(`  ${chalk.green('✔')} ${chalk.cyan('[mcp]'.padEnd(16))} ${chalk.white(mcpNames.join(', '))} ${chalk.dim('(.mcp.json)')}`);
+    }
   }
 
   // Generate Claude-specific slash commands (.claude/commands/*.md)
