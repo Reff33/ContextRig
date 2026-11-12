@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KinetRig Showroom — Ultra-HFR Motion Engine</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23090a0f'/%3E%3Cpath d='M10 8v16M10 16l9-8M10 16l9 8' stroke='%2300f0ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
   <style>
     :root {
       --bg: #090a0f;
@@ -409,6 +410,7 @@
         <option value="assets/kinet-typographic-montage.html">18. Swiss Typographic Montage (kinet-typographic-montage.html)</option>
         <option value="assets/kinet-liquid-orb.html">19. 3D Refractive Glass Orb (kinet-liquid-orb.html)</option>
         <option value="assets/kinet-glitch-terminal.html">20. Decrypt Glitch Terminal (kinet-glitch-terminal.html)</option>
+        <option value="assets/kinet-kinetic-lyrics.html">21. Kinetic Lyrics Typography (kinet-kinetic-lyrics.html)</option>
       </select>
 
       <label style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Frame:</label>
@@ -418,6 +420,7 @@
       <button class="btn-mockup" onclick="setMockup('browser', this)">Browser</button>
 
       <button id="btnOpenSettings" style="border-color: var(--accent); color: var(--accent); display: inline-flex; align-items: center; gap: 6px; font-weight: 600; margin-left: 6px;" onclick="openSettingsModal()">
+        <span id="headerBridgeDot" title="Studio Bridge status" style="width:7px;height:7px;border-radius:50%;background:#64748b;display:inline-block;"></span>
         <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span>Settings</span>
       </button>
@@ -472,7 +475,7 @@
         <!-- 2. Hardware Acceleration -->
         <div class="setting-group">
           <label>Hardware Acceleration (Encoder)</label>
-          <select id="settingEncoder" class="setting-select">
+          <select id="settingEncoder" class="setting-select" onchange="updateEncoderProbeNote()">
             <option value="auto">Auto GPU (NVIDIA NVENC / QuickSync / VideoToolbox / AMF)</option>
             <option value="nvenc">NVIDIA NVENC (RTX / GTX Silicon)</option>
             <option value="qsv">Intel QuickSync (iGPU / Arc)</option>
@@ -480,7 +483,7 @@
             <option value="videotoolbox">Apple Silicon (M1 / M2 / M3 / M4)</option>
             <option value="cpu">CPU Fallback (libx264 Ultrafast)</option>
           </select>
-          <span style="font-size: 11px; color: var(--text-dim);">Prioritizes dedicated GPU silicon for high-speed offline rendering without frame drops.</span>
+          <span id="encoderProbeNote" style="font-size: 11px; color: var(--text-dim); line-height: 1.45;">Prioritizes dedicated GPU silicon for high-speed offline rendering without frame drops.</span>
         </div>
 
         <!-- 3. Default Target Framerate -->
@@ -500,18 +503,19 @@
           <div class="setting-row" style="justify-content: space-between; background: #181a26; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);">
             <div>
               <div style="font-size: 12px; font-weight: 600;">Wyzowl SFX-Kit + Web Audio API</div>
-              <div style="font-size: 11px; color: var(--text-dim);">JIT on-demand disk cache in /sfx/</div>
+              <div id="sfxStatusText" style="font-size: 11px; color: var(--text-dim);">JIT on-demand disk cache in /sfx/</div>
             </div>
-            <button onclick="playSfx()" style="padding: 6px 12px; font-size: 11px; border-color: var(--accent); color: var(--accent);">🔊 Test Audio</button>
+            <button id="btnTestSfx" onclick="playSfx()" style="padding: 6px 12px; font-size: 11px; border-color: var(--accent); color: var(--accent);">🔊 Test Audio</button>
           </div>
         </div>
+        <div id="settingsSaveMsg" style="display: none; padding: 8px 12px; border-radius: 8px; font-size: 11px; line-height: 1.4;"></div>
       </div>
 
       <div class="modal-footer">
         <button onclick="resetSettingsDefaults()" style="background: transparent; border-color: transparent; color: var(--text-dim); font-size: 12px;">Reset Defaults</button>
         <div style="display: flex; gap: 8px;">
           <button onclick="closeSettingsModal()" style="font-size: 12px;">Cancel</button>
-          <button onclick="saveStudioSettings()" style="background: var(--accent); color: #000; font-weight: 700; border: none; font-size: 12px;">Save & Apply</button>
+          <button id="btnSaveSettings" onclick="saveStudioSettings()" style="background: var(--accent); color: #000; font-weight: 700; border: none; font-size: 12px;">Save & Apply</button>
         </div>
       </div>
     </div>
@@ -527,6 +531,7 @@
     const container = document.getElementById('stageContainer');
 
     // Studio Settings Manager
+    const TARGET_BRIDGE_VERSION = '1.1.4';
     const DETECTED_HOST = (typeof location !== 'undefined' && (location.protocol === 'http:' || location.protocol === 'https:') && location.hostname)
       ? location.hostname
       : '127.0.0.1';
@@ -536,6 +541,21 @@
       encoder: 'auto',
       defaultFps: 240
     };
+
+    function compareSemver(a, b) {
+      const pa = String(a || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+      const pb = String(b || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+      for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const diff = (pa[i] || 0) - (pb[i] || 0);
+        if (diff !== 0) return diff;
+      }
+      return 0;
+    }
+
+    function normalizeHostForFetch(host) {
+      const h = String(host || DETECTED_HOST).trim();
+      return h === '0.0.0.0' ? '127.0.0.1' : h;
+    }
 
     function loadSavedSettings() {
       try {
@@ -547,9 +567,121 @@
 
     function getBridgeBaseUrl() {
       const s = loadSavedSettings();
-      const host = (s.host || DETECTED_HOST).trim().replace(/\/+$/, '');
+      const host = normalizeHostForFetch(s.host).replace(/\/+$/, '');
       const port = Number(s.port) || 4004;
       return `http://${host}:${port}`;
+    }
+
+    let lastOnlineBridgeUrl = null;
+    let lastEncoderReport = null;
+    let isServedByBridge = false;
+
+    function setHeaderBridgeStatus(online, titleText) {
+      const dot = document.getElementById('headerBridgeDot');
+      const btn = document.getElementById('btnOpenSettings');
+      if (dot) dot.style.background = online ? '#4ade80' : '#f87171';
+      if (btn && titleText) btn.title = titleText;
+    }
+
+    function showSaveMessage(msg, type = 'info') {
+      const el = document.getElementById('settingsSaveMsg');
+      if (!el) return;
+      if (!msg) {
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+      }
+      const styles = {
+        error: { bg: 'rgba(239, 68, 68, 0.12)', border: 'rgba(239, 68, 68, 0.35)', color: '#fca5a5' },
+        warn: { bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.35)', color: '#fcd34d' },
+        ok: { bg: 'rgba(34, 197, 94, 0.12)', border: 'rgba(34, 197, 94, 0.35)', color: '#86efac' },
+        info: { bg: 'rgba(0, 240, 255, 0.1)', border: 'rgba(0, 240, 255, 0.3)', color: '#67e8f9' }
+      }[type] || {};
+      el.style.background = styles.bg;
+      el.style.border = `1px solid ${styles.border}`;
+      el.style.color = styles.color;
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function annotateEncoderOptions(report) {
+      const sel = document.getElementById('settingEncoder');
+      if (!sel) return;
+      for (const opt of sel.options) {
+        if (!opt.dataset.baseLabel) opt.dataset.baseLabel = opt.textContent;
+        const base = opt.dataset.baseLabel;
+        if (!report || !report.encoders) {
+          opt.textContent = base;
+          continue;
+        }
+        if (opt.value === 'auto') {
+          const activeLbl = report.resolvedEncoder ? report.resolvedEncoder.toUpperCase() : 'CPU';
+          opt.textContent = `${base} [${activeLbl}]`;
+          continue;
+        }
+        const entry = report.encoders[opt.value];
+        if (!entry) {
+          opt.textContent = base;
+        } else if (entry.available) {
+          opt.textContent = `${base} [Ready]`;
+        } else {
+          opt.textContent = `${base} [Unavailable -> CPU]`;
+        }
+      }
+    }
+
+    function updateEncoderProbeNote() {
+      const note = document.getElementById('encoderProbeNote');
+      const sel = document.getElementById('settingEncoder');
+      if (!note || !sel) return;
+      const val = sel.value || 'auto';
+      if (!lastEncoderReport) {
+        note.style.color = 'var(--text-dim)';
+        note.textContent = 'Connect or wake Studio Bridge to verify real FFmpeg GPU hardware codecs on this PC.';
+        return;
+      }
+      if (!lastEncoderReport.ffmpegAvailable) {
+        note.style.color = '#fca5a5';
+        note.textContent = 'FFmpeg not detected on system PATH. Studio Bridge will output raw JPG frame sequences instead of MP4.';
+        return;
+      }
+      if (val === 'auto') {
+        const used = (lastEncoderReport.resolvedEncoder || 'cpu').toUpperCase();
+        const codec = lastEncoderReport.resolvedCodec || 'libx264';
+        note.style.color = '#4ade80';
+        note.textContent = `Verified: Auto mode selected ${used} (${codec}) on this hardware.`;
+        return;
+      }
+      const entry = lastEncoderReport.encoders?.[val];
+      if (!entry) {
+        note.style.color = 'var(--text-dim)';
+        note.textContent = 'Prioritizes selected encoder for high-speed offline rendering.';
+        return;
+      }
+      if (entry.available) {
+        note.style.color = '#4ade80';
+        note.textContent = `Verified: ${entry.label} (${entry.codec}) passed 1-frame hardware encode test.`;
+      } else {
+        const cpuReady = lastEncoderReport.encoders?.cpu?.available;
+        note.style.color = '#fbbf24';
+        note.textContent = `${entry.label} is unavailable here (${entry.reason}). ${cpuReady ? 'Renders will safely fall back to CPU (libx264) instead of failing.' : 'No fallback codec ready.'}`;
+      }
+    }
+
+    async function fetchEncoderReport(baseUrl) {
+      try {
+        const r = await fetch(`${baseUrl}/api/encoders`, { signal: AbortSignal.timeout(4000) });
+        if (r.ok) {
+          lastEncoderReport = await r.json();
+          annotateEncoderOptions(lastEncoderReport);
+          updateEncoderProbeNote();
+          return lastEncoderReport;
+        }
+      } catch {}
+      lastEncoderReport = null;
+      annotateEncoderOptions(null);
+      updateEncoderProbeNote();
+      return null;
     }
 
     function openSettingsModal() {
@@ -561,6 +693,8 @@
       document.getElementById('settingFps').value = String(s.defaultFps || 240);
       const helper = document.getElementById('bridgeOfflineHelper');
       if (helper) helper.style.display = 'none';
+      showSaveMessage('');
+      updateEncoderProbeNote();
       modal.classList.add('open');
       checkBridgeStatus(false);
     }
@@ -599,8 +733,6 @@
       } catch {}
     }
 
-    let lastOnlineBridgeUrl = null;
-
     function showOfflineHelper(reasonText) {
       const helper = document.getElementById('bridgeOfflineHelper');
       const reason = document.getElementById('bridgeOfflineReason');
@@ -619,7 +751,7 @@
       const isHttp = location.protocol === 'http:' || location.protocol === 'https:';
       const currentPort = location.port || (location.protocol === 'https:' ? '443' : '80');
       if (isHttp) {
-        if (String(currentPort) !== String(activeBridgePort) && currentPort !== '4004') {
+        if (String(currentPort) !== String(activeBridgePort) && !isServedByBridge) {
           urls.push(new URL('api/bridge.php', location.href).href);
         }
         return [...new Set(urls)];
@@ -633,12 +765,25 @@
       return urls;
     }
 
+    async function syncConfigToEndpoint(ep, settings) {
+      try {
+        const r = await fetch(`${ep}/api/config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settings),
+          signal: AbortSignal.timeout(1500)
+        });
+        if (r.ok) return await r.json();
+      } catch {}
+      return null;
+    }
+
     async function checkBridgeStatus(isManual = false) {
       const badge = document.getElementById('bridgeStatusBadge');
       const text = document.getElementById('bridgeStatusText');
-      const rawHost = (document.getElementById('settingHost').value || DETECTED_HOST).trim();
-      const probeHost = rawHost === '0.0.0.0' ? '127.0.0.1' : rawHost;
-      const port = Number(document.getElementById('settingPort').value) || 4004;
+      const rawHost = (document.getElementById('settingHost')?.value || loadSavedSettings().host || DETECTED_HOST).trim();
+      const probeHost = normalizeHostForFetch(rawHost);
+      const port = Number(document.getElementById('settingPort')?.value || loadSavedSettings().port) || 4004;
       const targetUrl = `http://${probeHost}:${port}`;
 
       if (badge && text) {
@@ -653,29 +798,50 @@
         if (res.ok) {
           const data = await res.json();
           lastOnlineBridgeUrl = targetUrl;
+          const ver = data.version || '1.0.0';
+          const outdated = compareSemver(ver, TARGET_BRIDGE_VERSION) < 0;
+          const activeEnc = (data.resolvedEncoder || data.encoder || 'auto').toUpperCase();
           if (badge && text) {
             badge.className = 'status-badge online';
-            text.textContent = `Online (v${data.version || '1.1.2'}) • ${latency}ms`;
+            text.textContent = outdated
+              ? `Online (v${ver} outdated) • ${latency}ms`
+              : `Online (v${ver} • ${activeEnc}) • ${latency}ms`;
           }
+          setHeaderBridgeStatus(true, `Studio Bridge Online v${ver} (${targetUrl})`);
           hideOfflineHelper();
+          await fetchEncoderReport(targetUrl);
           return true;
         }
       } catch (err) {}
 
       lastOnlineBridgeUrl = null;
+      lastEncoderReport = null;
+      annotateEncoderOptions(null);
+      updateEncoderProbeNote();
+      setHeaderBridgeStatus(false, `Studio Bridge Offline (${targetUrl})`);
       if (badge && text) {
         badge.className = 'status-badge offline';
         text.textContent = 'Offline (Port Closed)';
       }
       if (isManual) {
-        showOfflineHelper(`No studio bridge running at ${targetUrl}. Start it once in your terminal:`);
+        showOfflineHelper(`No studio bridge running at ${targetUrl}. Click Auto-Wake or start it once in your terminal:`);
       }
       return false;
     }
 
-    async function pollBridgeReady(retries = 7, intervalMs = 320) {
+    async function pollBridgeReady(targetUrlOverride = null, retries = 10, intervalMs = 320) {
       for (let i = 0; i < retries; i++) {
-        if (await checkBridgeStatus(false)) return true;
+        if (targetUrlOverride) {
+          try {
+            const r = await fetch(`${targetUrlOverride}/api/health`, { signal: AbortSignal.timeout(1000) });
+            if (r.ok) {
+              await checkBridgeStatus(false);
+              return true;
+            }
+          } catch {}
+        } else if (await checkBridgeStatus(false)) {
+          return true;
+        }
         await new Promise(resolve => setTimeout(resolve, intervalMs));
       }
       return false;
@@ -689,53 +855,75 @@
         btn.disabled = true;
         btn.textContent = 'Waking...';
       }
+      showSaveMessage('');
 
       const prev = loadSavedSettings();
       const prevPort = Number(prev.port) || 4004;
 
       const host = (document.getElementById('settingHost').value || DETECTED_HOST).trim();
-      const probeHost = host === '0.0.0.0' ? '127.0.0.1' : host;
+      const probeHost = normalizeHostForFetch(host);
       const port = Number(document.getElementById('settingPort').value) || 4004;
+      if (!/^[a-zA-Z0-9.-]+$/.test(host) || !Number.isInteger(port) || port < 1024 || port > 65535) {
+        showSaveMessage('Enter a valid host and port (1024–65535) before waking.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Auto-Wake'; }
+        return;
+      }
+
       const targetUrl = `http://${probeHost}:${port}`;
+      const modalSettings = {
+        host,
+        port,
+        encoder: document.getElementById('settingEncoder').value || 'auto',
+        defaultFps: Number(document.getElementById('settingFps').value) || 240
+      };
 
       let woke = false;
       let wakeError = null;
+      let needsRestart = false;
 
-      // 1. If not cached online yet, check whether target Node bridge is already up first
-      let activeEp = lastOnlineBridgeUrl || null;
-      if (!activeEp) {
-        if (await checkBridgeStatus(false)) {
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = 'Auto-Wake';
+      // 1. Check if target bridge is already responding & up-to-date
+      try {
+        const hr = await fetch(`${targetUrl}/api/health`, { signal: AbortSignal.timeout(1000) });
+        if (hr.ok) {
+          const hd = await hr.json();
+          if (compareSemver(hd.version, TARGET_BRIDGE_VERSION) >= 0) {
+            lastOnlineBridgeUrl = targetUrl;
+            await syncConfigToEndpoint(targetUrl, modalSettings);
+            await checkBridgeStatus(false);
+            showSaveMessage(`Studio Bridge v${hd.version} is already online and synced.`, 'ok');
+            if (btn) { btn.disabled = false; btn.textContent = 'Auto-Wake'; }
+            return;
           }
-          return;
+          needsRestart = true;
+          lastOnlineBridgeUrl = targetUrl;
         }
-      }
+      } catch {}
 
-      // 2. If Node bridge is currently online, restart natively via Node (works without Apache/PHP)
-      if (activeEp) {
+      // 2. If an active Node bridge exists (outdated or on previous port), restart natively via Node
+      const activeEp = lastOnlineBridgeUrl || null;
+      if (activeEp && (needsRestart || activeEp !== targetUrl)) {
         try {
+          await syncConfigToEndpoint(activeEp, modalSettings);
           const r = await fetch(`${activeEp}/api/restart`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ host, port }),
-            signal: AbortSignal.timeout(2000)
+            signal: AbortSignal.timeout(2500)
           });
           if (r.ok) {
             await new Promise(resolve => setTimeout(resolve, 450));
-            woke = await pollBridgeReady(7, 320);
+            woke = await pollBridgeReady(targetUrl, 10, 320);
           }
         } catch (e) {}
       }
 
-      // 3. Otherwise wake offline daemon via same-origin/matched HTTP PHP bridge (zero blind localhost spam)
+      // 3. Otherwise wake offline daemon via same-origin/matched HTTP PHP bridge
       if (!woke) {
         const phpEndpoints = getPhpBridgeEndpoints(port);
         if (phpEndpoints.length === 0) {
           wakeError = location.protocol === 'file:'
             ? 'Browsers cannot launch Node.js directly from file:// without an active Apache/PHP server. Start the studio server once:'
-            : `Studio bridge is offline at ${targetUrl}. Start or restart it from your project folder:`;
+            : `Studio bridge is offline at ${targetUrl}. Start it from your project folder:`;
         } else {
           for (const base of phpEndpoints) {
             try {
@@ -744,7 +932,7 @@
               });
               const data = await res.json().catch(() => null);
               if (res.ok && data && data.ok) {
-                woke = await pollBridgeReady(5, 300);
+                woke = await pollBridgeReady(targetUrl, 8, 300);
                 if (woke) break;
               } else if (data && data.error) {
                 wakeError = data.error;
@@ -763,9 +951,16 @@
           badge.className = 'status-badge offline';
           text.textContent = 'Offline (Manual Start Needed)';
         }
+        setHeaderBridgeStatus(false, `Studio Bridge Offline (${targetUrl})`);
         showOfflineHelper(wakeError);
       } else {
         hideOfflineHelper();
+        localStorage.setItem('kinet_settings', JSON.stringify(modalSettings));
+        localStorage.setItem('kinet_bridge_url', targetUrl);
+        await syncConfigToEndpoint(targetUrl, modalSettings);
+        await checkBridgeStatus(false);
+        sendSettingsToChild();
+        showSaveMessage(`Studio Bridge is online at ${targetUrl} and synced with your settings.`, 'ok');
       }
       if (btn) {
         btn.disabled = false;
@@ -774,65 +969,97 @@
     }
 
     async function saveStudioSettings() {
+      const saveBtn = document.getElementById('btnSaveSettings');
       const prev = loadSavedSettings();
-      const prevHost = (prev.host === '0.0.0.0' ? '127.0.0.1' : (prev.host || DETECTED_HOST)).trim();
+      const prevHost = normalizeHostForFetch(prev.host || DETECTED_HOST);
       const prevPort = Number(prev.port) || 4004;
       const prevUrl = `http://${prevHost}:${prevPort}`;
 
-      const host = (document.getElementById('settingHost').value || DETECTED_HOST).trim();
-      const probeHost = host === '0.0.0.0' ? '127.0.0.1' : host;
-      const port = Number(document.getElementById('settingPort').value) || 4004;
+      const host = (document.getElementById('settingHost').value || '').trim() || DETECTED_HOST;
+      const portRaw = String(document.getElementById('settingPort').value || '').trim();
+      const port = Number(portRaw);
       const encoder = document.getElementById('settingEncoder').value || 'auto';
       const defaultFps = Number(document.getElementById('settingFps').value) || 240;
 
+      if (!/^[a-zA-Z0-9.-]+$/.test(host)) {
+        showSaveMessage('Invalid host. Use an IP (127.0.0.1) or valid hostname.', 'error');
+        return;
+      }
+      if (!Number.isInteger(port) || port < 1024 || port > 65535) {
+        showSaveMessage('Port must be a whole number between 1024 and 65535.', 'error');
+        return;
+      }
+
+      const probeHost = normalizeHostForFetch(host);
       const newSettings = { host, port, encoder, defaultFps };
       const bridgeUrl = `http://${probeHost}:${port}`;
       localStorage.setItem('kinet_settings', JSON.stringify(newSettings));
       localStorage.setItem('kinet_bridge_url', bridgeUrl);
 
-      // Sync with bridge server config API only when reachable or changing port/host
-      const tryEndpoints = lastOnlineBridgeUrl
-        ? [...new Set([lastOnlineBridgeUrl, bridgeUrl])]
-        : (prevUrl !== bridgeUrl ? [bridgeUrl, prevUrl] : [bridgeUrl]);
+      showSaveMessage('');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Applying...'; }
+
+      let syncedOnline = false;
+      let restartFailed = false;
+      const tryEndpoints = [...new Set([lastOnlineBridgeUrl, prevUrl, bridgeUrl].filter(Boolean))];
+
       for (const ep of tryEndpoints) {
-        try {
-          const r = await fetch(`${ep}/api/config`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newSettings),
-            signal: AbortSignal.timeout(1000)
-          });
-          if (r.ok) {
-            const data = await r.json();
-            if (data.restartRequired) {
-              let restarted = false;
-              try {
-                const rr = await fetch(`${ep}/api/restart`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ host, port }),
-                  signal: AbortSignal.timeout(2000)
-                });
-                if (rr.ok) restarted = true;
-              } catch {}
-              if (!restarted) {
-                for (const phpBase of getPhpBridgeEndpoints(prevPort)) {
-                  try {
-                    const pr = await fetch(`${phpBase}?restart=1&host=${encodeURIComponent(host)}&port=${port}&prevPort=${prevPort}`, {
-                      signal: AbortSignal.timeout(10000)
-                    });
-                    if (pr.ok) break;
-                  } catch {}
-                }
+        const data = await syncConfigToEndpoint(ep, newSettings);
+        if (data && data.ok) {
+          syncedOnline = true;
+          if (data.restartRequired) {
+            if (saveBtn) saveBtn.textContent = 'Restarting Bridge...';
+            let restartSent = false;
+            try {
+              const rr = await fetch(`${ep}/api/restart`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ host, port }),
+                signal: AbortSignal.timeout(2500)
+              });
+              if (rr.ok) restartSent = true;
+            } catch {}
+            if (!restartSent) {
+              for (const phpBase of getPhpBridgeEndpoints(prevPort)) {
+                try {
+                  const pr = await fetch(`${phpBase}?restart=1&host=${encodeURIComponent(host)}&port=${port}&prevPort=${prevPort}`, {
+                    signal: AbortSignal.timeout(10000)
+                  });
+                  if (pr.ok) { restartSent = true; break; }
+                } catch {}
               }
             }
-            break;
+            await new Promise(resolve => setTimeout(resolve, 450));
+            const cameUp = await pollBridgeReady(bridgeUrl, 12, 350);
+            if (!cameUp) {
+              restartFailed = true;
+            } else if (isServedByBridge && (String(location.port) === String(prevPort) || ep === location.origin) && bridgeUrl !== location.origin) {
+              sendSettingsToChild();
+              window.location.href = `${bridgeUrl}${location.pathname}${location.search}`;
+              return;
+            }
+          } else {
+            await checkBridgeStatus(false);
           }
-        } catch {}
+          break;
+        }
       }
 
-      // Notify iframe immediately
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save & Apply'; }
       sendSettingsToChild();
+
+      if (restartFailed) {
+        showSaveMessage(`Settings saved locally, but bridge did not answer on ${bridgeUrl}. Click Auto-Wake or run npm run studio.`, 'warn');
+        showOfflineHelper(`Start or restart the Studio Bridge on ${bridgeUrl}:`);
+        return;
+      }
+
+      if (!syncedOnline && (prevPort !== port || prevHost !== probeHost)) {
+        showSaveMessage(`Saved ${probeHost}:${port} in browser. Bridge is currently offline — click Auto-Wake when ready.`, 'warn');
+        await checkBridgeStatus(false);
+        return;
+      }
+
       closeSettingsModal();
     }
 
@@ -843,7 +1070,7 @@
           iframe.contentWindow.postMessage({
             type: 'UPDATE_SETTINGS',
             settings: s,
-            bridgeUrl: getBridgeBaseUrl().replace('http://0.0.0.0:', 'http://127.0.0.1:')
+            bridgeUrl: getBridgeBaseUrl()
           }, '*');
         }
       } catch (e) {}
@@ -854,6 +1081,8 @@
       document.getElementById('settingPort').value = DEFAULT_SETTINGS.port;
       document.getElementById('settingEncoder').value = DEFAULT_SETTINGS.encoder;
       document.getElementById('settingFps').value = String(DEFAULT_SETTINGS.defaultFps);
+      showSaveMessage('');
+      updateEncoderProbeNote();
       checkBridgeStatus(false);
     }
 
@@ -906,40 +1135,60 @@
     // Studio SFX-Kit + Procedural Web Audio API Synthesizer
     let audioCtx = null;
     let studioTestBuffer = null;
+    let studioTestSourceLabel = '';
 
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
+    }
+
+    async function ensureAudioRunning() {
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') {
+        try { await ctx.resume(); } catch {}
+      }
+      return ctx;
     }
 
     async function preloadTestSfx() {
       const isHttp = typeof location !== 'undefined' && location.protocol ? location.protocol.startsWith('http') : false;
-      if (!isHttp && typeof navigator !== 'undefined' && navigator.onLine === false) return;
-      const tryUrls = isHttp
-        ? [
-            'sfx/sounds/impacts/impact-deep-soft.wav',
-            '../sfx/sounds/impacts/impact-deep-soft.wav',
-            'https://raw.githubusercontent.com/wyzowl/sfx-kit/main/sounds/impacts/impact-deep-soft.wav'
-          ]
-        : ['https://raw.githubusercontent.com/wyzowl/sfx-kit/main/sounds/impacts/impact-deep-soft.wav'];
-      for (const u of tryUrls) {
+      const tryUrls = [];
+      const bridgeBase = lastOnlineBridgeUrl || getBridgeBaseUrl();
+      if (bridgeBase) {
+        tryUrls.push(`${bridgeBase}/sfx/sounds/impacts/impact-deep-soft.wav`);
+      }
+      if (isHttp) {
+        tryUrls.push('sfx/sounds/impacts/impact-deep-soft.wav');
+      }
+      if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+        tryUrls.push('https://raw.githubusercontent.com/wyzowl/sfx-kit/main/sounds/impacts/impact-deep-soft.wav');
+      }
+      for (const u of [...new Set(tryUrls)]) {
         try {
-          const r = await fetch(u);
+          const r = await fetch(u, { signal: AbortSignal.timeout(2000) });
           if (r.ok) {
             const ab = await r.arrayBuffer();
-            const ctx = getAudioContext();
+            const ctx = await ensureAudioRunning();
             studioTestBuffer = await ctx.decodeAudioData(ab);
-            break;
+            studioTestSourceLabel = u.startsWith('https://') ? 'Wyzowl CDN WAV' : 'Local /sfx/ WAV';
+            return studioTestBuffer;
           }
         } catch (e) {}
       }
+      return null;
     }
-    window.addEventListener('click', () => { getAudioContext(); preloadTestSfx(); }, { once: true });
 
-    function playSfx() {
-      const ctx = getAudioContext();
+    async function playSfx() {
+      const btn = document.getElementById('btnTestSfx');
+      const statusEl = document.getElementById('sfxStatusText');
+      if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+
+      const ctx = await ensureAudioRunning();
       unlockChildAudio();
+
+      if (!studioTestBuffer) {
+        await preloadTestSfx();
+      }
 
       if (studioTestBuffer) {
         const src = ctx.createBufferSource();
@@ -949,6 +1198,11 @@
         src.connect(gain);
         gain.connect(ctx.destination);
         src.start();
+        if (statusEl) statusEl.textContent = `Played via ${studioTestSourceLabel || 'Wyzowl SFX-Kit'}`;
+        if (btn) {
+          btn.textContent = 'Playing WAV...';
+          setTimeout(() => { btn.disabled = false; btn.textContent = '🔊 Test Audio'; }, 550);
+        }
         return;
       }
 
@@ -982,7 +1236,73 @@
       sheenGain.connect(ctx.destination);
       sheen.start(now);
       sheen.stop(now + 0.16);
+
+      if (statusEl) statusEl.textContent = 'Played via Web Audio API fallback synthesizer';
+      if (btn) {
+        btn.textContent = 'Playing Synth...';
+        setTimeout(() => { btn.disabled = false; btn.textContent = '🔊 Test Audio'; }, 450);
+      }
     }
+
+    // Bootstrap: detect bridge origin, align settings with kinet.config.json, & update header indicator
+    (async function initStudioBootstrap() {
+      let hasLocal = false;
+      try { hasLocal = !!localStorage.getItem('kinet_settings'); } catch {}
+
+      if (location.protocol === 'http:' || location.protocol === 'https:') {
+        try {
+          const hr = await fetch(`${location.origin}/api/health`, { signal: AbortSignal.timeout(700) });
+          if (hr.ok) {
+            const hd = await hr.json();
+            if (hd && String(hd.engine || '').includes('KinetRig')) {
+              isServedByBridge = true;
+              DEFAULT_SETTINGS.host = hd.host || DETECTED_HOST;
+              DEFAULT_SETTINGS.port = Number(hd.port) || 4004;
+              if (!hasLocal) {
+                const initSettings = {
+                  host: hd.host || DETECTED_HOST,
+                  port: Number(hd.port) || 4004,
+                  encoder: hd.encoder || 'auto',
+                  defaultFps: Number(hd.defaultFps) || 240
+                };
+                localStorage.setItem('kinet_settings', JSON.stringify(initSettings));
+                localStorage.setItem('kinet_bridge_url', location.origin);
+                hasLocal = true;
+              }
+            }
+          }
+        } catch {}
+      }
+
+      const targetUrl = getBridgeBaseUrl();
+      try {
+        const res = await fetch(`${targetUrl}/api/health`, { signal: AbortSignal.timeout(1000) });
+        if (res.ok) {
+          const hd = await res.json();
+          lastOnlineBridgeUrl = targetUrl;
+          setHeaderBridgeStatus(true, `Studio Bridge Online v${hd.version} (${targetUrl})`);
+          if (!hasLocal) {
+            const initSettings = {
+              host: hd.host || DETECTED_HOST,
+              port: Number(hd.port) || 4004,
+              encoder: hd.encoder || 'auto',
+              defaultFps: Number(hd.defaultFps) || 240
+            };
+            localStorage.setItem('kinet_settings', JSON.stringify(initSettings));
+            localStorage.setItem('kinet_bridge_url', targetUrl);
+          } else {
+            const s = loadSavedSettings();
+            if (s.encoder !== hd.encoder || Number(s.defaultFps) !== Number(hd.defaultFps)) {
+              await syncConfigToEndpoint(targetUrl, { encoder: s.encoder, defaultFps: Number(s.defaultFps) });
+            }
+          }
+          await fetchEncoderReport(targetUrl);
+          sendSettingsToChild();
+          return;
+        }
+      } catch {}
+      setHeaderBridgeStatus(false, `Studio Bridge Offline (${targetUrl})`);
+    })();
   </script>
 </body>
 </html>

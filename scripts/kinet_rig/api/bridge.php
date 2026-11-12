@@ -11,7 +11,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
 $host = '127.0.0.1';
 $port = 4004;
-$targetVersion = '1.1.2';
+$targetVersion = '1.1.4';
 
 $rootDir = realpath(__DIR__ . '/..');
 $configFile = $rootDir . DIRECTORY_SEPARATOR . 'kinet.config.json';

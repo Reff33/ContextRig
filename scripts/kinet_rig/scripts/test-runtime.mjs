@@ -247,7 +247,7 @@ function createMockEnvironment() {
     }
   };
 
-  return { mockDoc, mockWindow, mockGsap, mockThree, mockTimeline, rafQueue, tickerQueue };
+  return { mockDoc, mockWindow, mockGsap, mockThree, mockTimeline, rafQueue, tickerQueue, listeners };
 }
 
 let failedCount = 0;
@@ -301,12 +301,23 @@ for (const file of files) {
     code = code.replace(/import\s+[\s\S]*?from\s+['"][^'"]+['"];?/g, '');
 
     const env = createMockEnvironment();
-    const { mockDoc, mockWindow, mockGsap, mockThree, mockTimeline, rafQueue, tickerQueue } = env;
+    const { mockDoc, mockWindow, mockGsap, mockThree, mockTimeline, rafQueue, tickerQueue, listeners } = env;
+
+    const mockLocalStorage = {
+      getItem: (k) => {
+        if (k === 'kinet_settings') return JSON.stringify({ host: '127.0.0.1', port: 4004, encoder: 'nvenc', defaultFps: 60 });
+        if (k === 'kinet_bridge_url') return 'http://127.0.0.1:4004';
+        return null;
+      },
+      setItem: () => {}
+    };
+    mockWindow.localStorage = mockLocalStorage;
 
     const sandbox = {
       document: mockDoc,
       window: mockWindow,
       navigator: mockWindow.navigator,
+      localStorage: mockLocalStorage,
       location: mockWindow.location,
       innerWidth: mockWindow.innerWidth,
       innerHeight: mockWindow.innerHeight,
@@ -344,6 +355,11 @@ for (const file of files) {
     try {
       const script = new vm.Script(code, { filename: `${file}#script${idx}` });
       script.runInContext(ctx);
+
+      // Verify postMessage UPDATE_SETTINGS handlers do not hit TDZ or missing globals
+      for (const fn of (listeners.get('message') || [])) {
+        fn({ data: { type: 'UPDATE_SETTINGS', bridgeUrl: 'http://127.0.0.1:4004', settings: { encoder: 'cpu', defaultFps: 144 } } });
+      }
 
       // Verify RAF Loop Continuity when timeline completes
       if (rafQueue.length > 0) {

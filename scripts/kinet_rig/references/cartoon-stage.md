@@ -1,4 +1,4 @@
-# Proscenium Theatre Stage (`references/kartun-panggung.md`)
+# Proscenium Theatre Stage (`references/cartoon-stage.md`)
 
 The sixth explainer style: flat educational cartoon storytelling where each scene operates as an independent stage proscenium.
 

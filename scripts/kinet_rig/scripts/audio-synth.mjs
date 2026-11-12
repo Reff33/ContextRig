@@ -55,7 +55,7 @@ function decodeWavToFloat32(buffer) {
       };
       break;
     }
-    offset += 8 + len;
+    offset += 8 + len + (len & 1);
   }
 
   if (!fmt || !dataChunk) return null;
@@ -183,43 +183,48 @@ export function synthesizeManifest(manifest, outputPath) {
     const pitchFactor = ev.jitter?.pitchFactor || 1.0;
     let mixedStudio = false;
 
-    // Check for sfx-kit match
+    // Check for sfx-kit match (manifest direct file or sounds.json lookup)
     const targetSoundId = ev.sfx_id || ARCHETYPE_MAP[ev.type];
-    if (sfxIndex && targetSoundId) {
-      const soundMeta = sfxIndex.sounds.find(s => s.id === targetSoundId);
-      if (soundMeta) {
-        const wavPath = resolve(SFX_DIR, soundMeta.file);
-        if (existsSync(wavPath)) {
-          try {
-            const rawBuffer = readFileSync(wavPath);
-            const decoded = decodeWavToFloat32(rawBuffer);
-            if (decoded) {
-              const syncOffset = soundMeta.sync?.at || 0;
-              const actualStartTime = Math.max(0, (ev.time || 0) - syncOffset);
-              const startSample = Math.floor(actualStartTime * SAMPLE_RATE);
+    let soundMeta = null;
+    let relWavPath = ev.file || null;
+    if (sfxIndex && targetSoundId && Array.isArray(sfxIndex.sounds)) {
+      soundMeta = sfxIndex.sounds.find(s => s.id === targetSoundId) || null;
+      if (soundMeta && soundMeta.file) relWavPath = soundMeta.file;
+    }
+    if (relWavPath) {
+      const wavPath = resolve(SFX_DIR, relWavPath);
+      if (existsSync(wavPath)) {
+        try {
+          const rawBuffer = readFileSync(wavPath);
+          const decoded = decodeWavToFloat32(rawBuffer);
+          if (decoded && decoded.left.length > 0) {
+            const syncOffset = soundMeta?.sync?.at || 0;
+            const actualStartTime = Math.max(0, (ev.time || 0) - syncOffset);
+            const startSample = Math.floor(actualStartTime * SAMPLE_RATE);
+            const rateRatio = (decoded.sampleRate || SAMPLE_RATE) / SAMPLE_RATE;
+            const step = rateRatio * pitchFactor;
 
-              const maxOutSamples = Math.floor(decoded.left.length / pitchFactor);
-              for (let i = 0; i < maxOutSamples; i++) {
-                const targetIdx = startSample + i;
-                if (targetIdx >= totalSamples) break;
+            const maxOutSamples = Math.floor(decoded.left.length / step);
+            for (let i = 0; i < maxOutSamples; i++) {
+              const targetIdx = startSample + i;
+              if (targetIdx >= totalSamples) break;
 
-                // Linear interpolation for pitch resampling
-                const srcPos = i * pitchFactor;
-                const idx0 = Math.floor(srcPos);
-                const idx1 = Math.min(decoded.left.length - 1, idx0 + 1);
-                const frac = srcPos - idx0;
+              // Linear interpolation for sample-rate + pitch resampling
+              const srcPos = i * step;
+              const idx0 = Math.floor(srcPos);
+              const idx1 = Math.min(decoded.left.length - 1, idx0 + 1);
+              const frac = srcPos - idx0;
 
-                const sL = decoded.left[idx0] * (1 - frac) + decoded.left[idx1] * frac;
-                const sR = decoded.right[idx0] * (1 - frac) + decoded.right[idx1] * frac;
+              const sL = decoded.left[idx0] * (1 - frac) + decoded.left[idx1] * frac;
+              const sR = decoded.right[idx0] * (1 - frac) + decoded.right[idx1] * frac;
 
-                left[targetIdx] += sL * gain;
-                right[targetIdx] += sR * gain;
-              }
-              mixedStudio = true;
-              studioSamplesMixed++;
+              left[targetIdx] += sL * gain;
+              right[targetIdx] += sR * gain;
             }
-          } catch (err) {}
-        }
+            mixedStudio = true;
+            studioSamplesMixed++;
+          }
+        } catch (err) {}
       }
     }
 
@@ -286,7 +291,8 @@ export function synthesizeManifest(manifest, outputPath) {
         break;
       }
 
-      case 'exit_sweep': {
+      case 'exit_sweep':
+      case 'exit_riser': {
         const len = Math.floor(0.26 * SAMPLE_RATE);
         const f0 = 180 * pitchFactor;
         const f1 = 490 * pitchFactor;
@@ -304,7 +310,8 @@ export function synthesizeManifest(manifest, outputPath) {
         break;
       }
 
-      case 'whoosh': {
+      case 'whoosh':
+      case 'stage_slide': {
         const len = Math.floor(0.32 * SAMPLE_RATE);
         let b0 = 0, b1 = 0;
         const cutoffAlpha = Math.min(0.15, 0.05 * pitchFactor);
@@ -343,7 +350,9 @@ export function synthesizeManifest(manifest, outputPath) {
       }
 
       case 'paper_touch':
-      case 'soft_tap': {
+      case 'soft_tap':
+      case 'gesture_point':
+      case 'headlights_flash': {
         const len = Math.floor(0.08 * SAMPLE_RATE);
         const baseF = 160 * pitchFactor;
         for (let i = 0; i < len; i++) {
@@ -360,7 +369,9 @@ export function synthesizeManifest(manifest, outputPath) {
         break;
       }
 
-      case 'terminal_chirp': {
+      case 'terminal_chirp':
+      case 'face_react':
+      case 'neon_sign_on': {
         [840 * pitchFactor, 1120 * pitchFactor].forEach((freq, chordIdx) => {
           const chirpStart = startSample + Math.floor(chordIdx * 0.04 * SAMPLE_RATE);
           const len = Math.floor(0.1 * SAMPLE_RATE);
@@ -490,7 +501,7 @@ if (process.argv[2]) {
   if (inputPath.endsWith('.html')) {
     const tmpJson = resolve(__dirname, `.tmp_${Date.now()}_manifest.json`);
     try {
-      execSync(`node "${resolve(__dirname, 'parse-timeline.mjs')}" "${inputPath}" "${tmpJson}"`, { stdio: 'pipe' });
+      execSync(`node "${resolve(__dirname, 'parse-timeline.mjs')}" "${inputPath}" "${tmpJson}"`, { stdio: 'pipe', windowsHide: true });
       manifest = JSON.parse(readFileSync(tmpJson, 'utf8'));
     } finally {
       if (existsSync(tmpJson)) unlinkSync(tmpJson);

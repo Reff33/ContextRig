@@ -13,14 +13,16 @@
 
 import http from 'node:http';
 import fs from 'node:fs';
-import { resolve, join, extname, basename, dirname } from 'node:path';
+import { resolve, join, extname, basename, dirname, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
-import { renderTimeline } from './render.mjs';
+import { renderTimeline, probeEncoders, resolveEncoderSelection, findFfmpegPath } from './render.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT_DIR = resolve(__dirname, '..');
 const CONFIG_FILE = resolve(ROOT_DIR, 'kinet.config.json');
+const BRIDGE_VERSION = '1.1.4';
+const VALID_ENCODERS = new Set(['auto', 'nvenc', 'qsv', 'amf', 'videotoolbox', 'cpu']);
 
 let kinetConfig = {
   host: '127.0.0.1',
@@ -88,6 +90,7 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Expose-Headers', 'X-KinetRig-Encoder, X-KinetRig-Requested-Encoder, X-KinetRig-Codec, X-KinetRig-Fallback-Reason');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -99,18 +102,48 @@ const server = http.createServer(async (req, res) => {
 
   // 1. Healthcheck API
   if (pathname === '/api/health') {
+    loadConfig();
+    const encSelection = resolveEncoderSelection(findFfmpegPath(), kinetConfig.encoder || 'auto');
     res.writeHead(200, {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
+      'Cache-Control': 'no-store'
     });
     return res.end(JSON.stringify({
       status: 'ok',
       engine: 'KinetRig Studio Bridge',
-      version: '1.1.2',
+      version: BRIDGE_VERSION,
       host: HOST,
       port: PORT,
       encoder: kinetConfig.encoder || 'auto',
+      resolvedEncoder: encSelection.used,
+      resolvedCodec: encSelection.codec,
+      encoderFallbackReason: encSelection.fallbackReason,
+      defaultFps: Number(kinetConfig.defaultFps) || 240,
+      busy: !!activeJob,
       supportedFps: [60, 120, 144, 240]
+    }));
+  }
+
+  // 1a-ext. Real FFmpeg Hardware Encoder Probe API
+  if (pathname === '/api/encoders' || pathname === '/api/encoders/') {
+    loadConfig();
+    const refresh = reqUrl.searchParams.get('refresh') === '1';
+    const ffmpegBin = findFfmpegPath();
+    const report = probeEncoders(ffmpegBin, refresh);
+    const encSelection = resolveEncoderSelection(ffmpegBin, kinetConfig.encoder || 'auto');
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store'
+    });
+    return res.end(JSON.stringify({
+      ok: true,
+      ffmpegAvailable: report.ffmpegAvailable,
+      ffmpegPath: report.ffmpegPath,
+      configuredEncoder: kinetConfig.encoder || 'auto',
+      resolvedEncoder: encSelection.used,
+      resolvedCodec: encSelection.codec,
+      fallbackReason: encSelection.fallbackReason,
+      encoders: report.encoders
     }));
   }
 
@@ -122,7 +155,13 @@ const server = http.createServer(async (req, res) => {
       req.on('end', () => {
         try {
           const payload = JSON.parse(body || '{}');
-          if (payload.host !== undefined) payload.host = String(payload.host || '127.0.0.1').trim();
+          if (payload.host !== undefined) {
+            const h = String(payload.host || '127.0.0.1').trim();
+            if (!/^[a-zA-Z0-9.-]+$/.test(h)) {
+              throw new Error('Host must be a valid hostname or IP address');
+            }
+            payload.host = h;
+          }
           if (payload.port !== undefined) {
             const p = Number(payload.port);
             if (!Number.isInteger(p) || p < 1024 || p > 65535) {
@@ -130,29 +169,55 @@ const server = http.createServer(async (req, res) => {
             }
             payload.port = p;
           }
+          if (payload.encoder !== undefined) {
+            const enc = String(payload.encoder || 'auto').toLowerCase().trim();
+            const normEnc = enc === 'libx264' ? 'cpu' : enc;
+            if (!VALID_ENCODERS.has(normEnc)) {
+              throw new Error(`Unsupported encoder "${payload.encoder}"`);
+            }
+            payload.encoder = normEnc;
+          }
           if (payload.defaultFps !== undefined) {
-            payload.defaultFps = Number(payload.defaultFps) || 240;
+            const f = Number(payload.defaultFps);
+            if (!Number.isInteger(f) || f < 1 || f > 240) {
+              throw new Error('Default FPS must be between 1 and 240');
+            }
+            payload.defaultFps = f;
           }
           kinetConfig = { ...kinetConfig, ...payload };
           fs.writeFileSync(CONFIG_FILE, JSON.stringify(kinetConfig, null, 2), 'utf8');
-          res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          const encSelection = resolveEncoderSelection(findFfmpegPath(), kinetConfig.encoder || 'auto');
+          res.writeHead(200, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({
             ok: true,
             config: kinetConfig,
+            encoderSelection: {
+              requested: encSelection.requested,
+              used: encSelection.used,
+              codec: encSelection.codec,
+              fallbackReason: encSelection.fallbackReason
+            },
             restartRequired: (kinetConfig.host !== HOST || Number(kinetConfig.port) !== PORT)
           }));
         } catch (err) {
-          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.writeHead(400, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ error: err.message }));
         }
       });
       return;
     }
     loadConfig();
-    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    const encSelection = resolveEncoderSelection(findFfmpegPath(), kinetConfig.encoder || 'auto');
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
     return res.end(JSON.stringify({
       ok: true,
       config: kinetConfig,
+      encoderSelection: {
+        requested: encSelection.requested,
+        used: encSelection.used,
+        codec: encSelection.codec,
+        fallbackReason: encSelection.fallbackReason
+      },
       activeHost: HOST,
       activePort: PORT
     }));
@@ -166,14 +231,18 @@ const server = http.createServer(async (req, res) => {
       loadConfig();
       let payload = {};
       try { payload = JSON.parse(body || '{}'); } catch {}
-      const rawHost = String(payload.host || kinetConfig.host || HOST || '127.0.0.1').trim();
+      const rawHost = String(payload.host || reqUrl.searchParams.get('host') || kinetConfig.host || HOST || '127.0.0.1').trim();
       const targetHost = /^[a-zA-Z0-9.-]+$/.test(rawHost) ? rawHost : '127.0.0.1';
-      const parsedPort = Number(payload.port || kinetConfig.port || PORT);
+      const parsedPort = Number(payload.port || reqUrl.searchParams.get('port') || kinetConfig.port || PORT);
       const targetPort = (Number.isInteger(parsedPort) && parsedPort >= 1024 && parsedPort <= 65535) ? parsedPort : PORT;
+
+      for (const client of sseClients) {
+        try { client.end(); } catch {}
+      }
+      sseClients.clear();
 
       res.writeHead(200, {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
         'Connection': 'close'
       });
       res.end(JSON.stringify({ ok: true, restarting: true, host: targetHost, port: targetPort }), () => {
@@ -189,7 +258,7 @@ const server = http.createServer(async (req, res) => {
             process.exit(0);
           });
           if (typeof server.closeAllConnections === 'function') server.closeAllConnections();
-          setTimeout(() => process.exit(0), 2000).unref();
+          setTimeout(() => process.exit(0), 2500).unref();
         }, 60);
       });
     });
@@ -258,33 +327,86 @@ const server = http.createServer(async (req, res) => {
 
   // 3. Render MP4 API
   if (pathname === '/api/render') {
+    if (activeJob) {
+      res.writeHead(409, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'Another render is already in progress. Cancel it before starting a new render.' }));
+    }
+
     loadConfig();
     const templateParam = reqUrl.searchParams.get('template') || 'assets/kinet-opener.html';
     const fpsParam = Number(reqUrl.searchParams.get('fps')) || Number(kinetConfig.defaultFps) || 240;
     const encoderParam = reqUrl.searchParams.get('encoder') || kinetConfig.encoder || 'auto';
+    const mutedParam = ['1', 'true', 'yes'].includes(String(reqUrl.searchParams.get('muted') || '').toLowerCase());
 
-    let targetFilePath = resolve(ROOT_DIR, templateParam.replace(/^\/+/, ''));
-    if (!fs.existsSync(targetFilePath)) {
-      targetFilePath = resolve(ROOT_DIR, 'assets', basename(templateParam));
-    }
-    if (!fs.existsSync(targetFilePath)) {
-      targetFilePath = resolve(process.cwd(), templateParam.replace(/^\/+/, ''));
-    }
-    if (!fs.existsSync(targetFilePath)) {
-      targetFilePath = resolve(process.cwd(), 'assets', basename(templateParam));
+    const deriveBaseFromPath = (p) => {
+      const b = basename(p, extname(p));
+      if (!b || b.toLowerCase() === 'index') {
+        const parent = basename(dirname(p));
+        if (parent && parent !== '.' && parent !== '/' && !/^[a-zA-Z]:\\?$/.test(parent)) return parent;
+      }
+      return b || 'kinet-render';
+    };
+
+    let renderInput = null;
+    let templateBase = 'kinet-render';
+
+    if (/^https?:\/\//i.test(templateParam)) {
+      let parsedTarget;
+      try {
+        parsedTarget = new URL(templateParam);
+      } catch {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: `Invalid template URL: ${templateParam}` }));
+      }
+      renderInput = parsedTarget.href;
+      const segs = parsedTarget.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
+      const lastSeg = (segs[segs.length - 1] || '').replace(/\.html?$/i, '');
+      const prevSeg = segs.length > 1 ? segs[segs.length - 2] : '';
+      templateBase = (!lastSeg || lastSeg.toLowerCase() === 'index')
+        ? (prevSeg || parsedTarget.hostname || 'kinet-render')
+        : lastSeg;
+    } else if (/^file:\/\//i.test(templateParam)) {
+      let localPath;
+      try {
+        localPath = fileURLToPath(templateParam.split('#')[0].split('?')[0]);
+      } catch {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: `Invalid file URL: ${templateParam}` }));
+      }
+      if (!/\.html?$/i.test(localPath) || !fs.existsSync(localPath) || !fs.statSync(localPath).isFile()) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: `Template HTML not found: ${localPath}` }));
+      }
+      renderInput = templateParam;
+      templateBase = deriveBaseFromPath(localPath);
+    } else {
+      let targetFilePath = isAbsolute(templateParam)
+        ? templateParam
+        : resolve(ROOT_DIR, templateParam.replace(/^\/+/, ''));
+      if (!fs.existsSync(targetFilePath)) {
+        targetFilePath = resolve(ROOT_DIR, 'assets', basename(templateParam));
+      }
+      if (!fs.existsSync(targetFilePath)) {
+        targetFilePath = resolve(process.cwd(), templateParam.replace(/^\/+/, ''));
+      }
+      if (!fs.existsSync(targetFilePath)) {
+        targetFilePath = resolve(process.cwd(), 'assets', basename(templateParam));
+      }
+
+      if (!fs.existsSync(targetFilePath) || !fs.statSync(targetFilePath).isFile() || !/\.html?$/i.test(targetFilePath)) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: `Template not found: ${templateParam}` }));
+      }
+      renderInput = targetFilePath;
+      templateBase = deriveBaseFromPath(targetFilePath);
     }
 
-    if (!fs.existsSync(targetFilePath)) {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: `Template not found: ${templateParam}` }));
-    }
-
-    const templateBase = basename(targetFilePath, '.html');
+    templateBase = templateBase.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+|_+$/g, '') || 'kinet-render';
     const tempOutput = resolve(ROOT_DIR, `temp_render_${Date.now()}_${fpsParam}fps.mp4`);
 
     console.log(`\n[Studio Bridge] Incoming Render Request:`);
-    console.log(`   Template: ${targetFilePath}`);
-    console.log(`   Target FPS: ${fpsParam}`);
+    console.log(`   Template: ${renderInput}`);
+    console.log(`   Target FPS: ${fpsParam} | Encoder: ${encoderParam} | Audio: ${mutedParam ? 'Muted' : 'Capture+Sync'}`);
 
     const jobControl = { cancelled: false, paused: false };
     activeJob = { jobControl, tempOutput };
@@ -300,11 +422,12 @@ const server = http.createServer(async (req, res) => {
     broadcastProgress({ status: 'rendering', percent: 0, current: 0, total: 1 });
 
     try {
-      await renderTimeline({
-        input: targetFilePath,
+      const renderResult = await renderTimeline({
+        input: renderInput,
         output: tempOutput,
         fps: fpsParam,
         encoder: encoderParam,
+        muted: mutedParam,
         jobControl,
         onProgress: ({ current, total, percent, time }) => {
           broadcastProgress({ status: jobControl.paused ? 'paused' : 'rendering', percent, current, total, time });
@@ -313,21 +436,42 @@ const server = http.createServer(async (req, res) => {
 
       renderFinished = true;
       activeJob = null;
-      broadcastProgress({ status: 'complete', percent: 100 });
+      broadcastProgress({
+        status: 'complete',
+        percent: 100,
+        encoder: renderResult.encoder || null,
+        codec: renderResult.codec || null,
+        audioMode: renderResult.audioMode || null,
+        fallbackReason: renderResult.fallbackReason || null
+      });
 
       const stat = fs.statSync(tempOutput);
       const downloadFilename = `${templateBase}_${fpsParam}fps.mp4`;
 
+      const cleanupTemp = () => {
+        try { if (fs.existsSync(tempOutput)) fs.unlinkSync(tempOutput); } catch {}
+      };
+
       res.writeHead(200, {
         'Content-Type': 'video/mp4',
         'Content-Length': stat.size,
-        'Content-Disposition': `attachment; filename="${downloadFilename}"`
+        'Content-Disposition': `attachment; filename="${downloadFilename}"`,
+        'X-KinetRig-Encoder': String(renderResult.encoder || 'frames'),
+        'X-KinetRig-Requested-Encoder': String(renderResult.requestedEncoder || encoderParam),
+        'X-KinetRig-Codec': String(renderResult.codec || 'mjpeg'),
+        'X-KinetRig-Audio': String(renderResult.audioMode || 'unknown'),
+        'X-KinetRig-Fallback-Reason': String(renderResult.fallbackReason || '').replace(/[\r\n]+/g, ' ')
       });
 
       const readStream = fs.createReadStream(tempOutput);
       readStream.pipe(res);
+      readStream.on('error', () => {
+        cleanupTemp();
+        broadcastProgress({ status: 'idle', percent: 0 });
+      });
+      res.on('close', cleanupTemp);
       readStream.on('end', () => {
-        try { fs.unlinkSync(tempOutput); } catch {}
+        cleanupTemp();
         broadcastProgress({ status: 'idle', percent: 0 });
       });
     } catch (err) {
@@ -378,12 +522,19 @@ const server = http.createServer(async (req, res) => {
   }
 
   // 5. Static file serving (e.g. preview.html, assets/*)
-  let staticPath = resolve(ROOT_DIR, pathname === '/' ? 'preview.html' : pathname.replace(/^\/+/, ''));
-  if (!fs.existsSync(staticPath)) {
-    staticPath = resolve(ROOT_DIR, 'sfx', pathname.replace(/^\/+/, ''));
+  let cleanPathname = pathname;
+  try { cleanPathname = decodeURIComponent(pathname); } catch {}
+  const relStatic = (cleanPathname === '/' ? 'preview.html' : cleanPathname.replace(/^\/+/, ''));
+  let staticPath = resolve(ROOT_DIR, relStatic);
+  if (!staticPath.startsWith(ROOT_DIR)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    return res.end('403 Forbidden');
   }
   if (!fs.existsSync(staticPath)) {
-    staticPath = resolve(process.cwd(), pathname.replace(/^\/+/, ''));
+    staticPath = resolve(ROOT_DIR, 'sfx', relStatic);
+  }
+  if (!fs.existsSync(staticPath)) {
+    staticPath = resolve(process.cwd(), relStatic);
   }
 
   if (fs.existsSync(staticPath) && fs.statSync(staticPath).isFile()) {
@@ -394,13 +545,32 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/favicon.ico') {
+    res.writeHead(204);
+    return res.end();
+  }
+
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('404 Not Found');
 });
 
+let listenAttempts = 0;
+server.on('error', err => {
+  if (err.code === 'EADDRINUSE' && listenAttempts < 8) {
+    listenAttempts++;
+    setTimeout(() => {
+      server.listen(PORT, HOST);
+    }, 300);
+    return;
+  }
+  console.error('[Studio Bridge Listen Error]:', err);
+  process.exit(1);
+});
+
 server.listen(PORT, HOST, () => {
+  probeEncoders(findFfmpegPath());
   console.log(`\n======================================================`);
-  console.log(`🚀 KinetRig Studio Local Bridge Running on http://${HOST}:${PORT}`);
+  console.log(`🚀 KinetRig Studio Local Bridge v${BRIDGE_VERSION} Running on http://${HOST}:${PORT}`);
   console.log(`   - Preview Showroom: http://${HOST}:${PORT}/preview.html`);
   console.log(`   - Native 240 FPS Render Endpoint: http://${HOST}:${PORT}/api/render`);
   console.log(`   - Status: Ready to receive in-browser Export clicks`);

@@ -460,7 +460,7 @@ VERIFIED LOSSLESS</pre>
 <script>
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const q = new URLSearchParams(location.search);
-let isRecording = false;
+let isRecording = false, isExporting = false;
 if (location.search.includes('clean') || q.has('clean')) { document.body.classList.add('clean-capture', 'clean-mode'); }
 const W = 1920, H = 1080, DURATION = 18, DUR = DURATION;
 
@@ -1216,9 +1216,43 @@ document.fonts.ready.then(() => {
 
 /* Ultra-HFR Clean Video Exporter (Up to 240 FPS with Audio Muxing) */
 /* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
-const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+const TARGET_BRIDGE_VERSION = '1.1.4';
+function compareBridgeVersion(a, b) {
+  const pa = String(a || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d !== 0) return d;
+  }
+  return 0;
+}
+let activeEncoder = 'auto';
+let activeDefaultFps = 240;
+const buildExportDefaultHtml = fps => `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> ${Number(fps) || 240}`;
+let EXPORT_DEFAULT_HTML = buildExportDefaultHtml(240);
 
-/* ---- Studio Bridge discovery: same origin -> same host -> loopback ---- */
+function readSavedSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('kinet_settings') || '{}');
+  } catch { return {}; }
+}
+
+function syncDefaultFpsUi(fps) {
+  const nextFps = Number(fps) || 240;
+  activeDefaultFps = nextFps;
+  EXPORT_DEFAULT_HTML = buildExportDefaultHtml(nextFps);
+  const el = document.querySelector('#btn-export-text');
+  if (el && (typeof isExporting === 'undefined' || !isExporting)) {
+    el.innerHTML = EXPORT_DEFAULT_HTML;
+  }
+  document.querySelectorAll('#fps-options-group .fps-item').forEach(item => {
+    const match = Number(item.dataset.fps) === nextFps;
+    item.style.fontWeight = match ? '800' : '';
+    item.style.color = match ? '#4ade80' : '';
+  });
+}
+
+/* ---- Studio Bridge discovery: live settings -> same origin -> same host -> loopback ---- */
 const BRIDGE_CANDIDATES = (() => {
   const out = [];
   try {
@@ -1238,55 +1272,97 @@ const BRIDGE_CANDIDATES = (() => {
   return out.filter((v, i) => out.indexOf(v) === i);
 })();
 let BRIDGE = 'http://127.0.0.1:4004';
-try {
-  const _s = JSON.parse(localStorage.getItem('kinet_settings') || '{}');
+(() => {
+  const _s = readSavedSettings();
   if (_s.host && _s.port) BRIDGE = 'http://' + (_s.host === '0.0.0.0' ? '127.0.0.1' : _s.host) + ':' + _s.port;
-  if (_s.defaultFps) {
-    const _el = document.getElementById('btn-export-text');
-    if (_el) _el.innerHTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> ' + _s.defaultFps;
-  }
-} catch {}
+  if (_s.encoder) activeEncoder = _s.encoder;
+  if (_s.defaultFps) syncDefaultFpsUi(_s.defaultFps);
+})();
 window.addEventListener('message', e => {
   if (e.data?.type === 'UPDATE_SETTINGS') {
-    if (e.data.bridgeUrl) BRIDGE = e.data.bridgeUrl;
-    if (e.data.settings?.defaultFps) {
-      const _el = document.getElementById('btn-export-text');
-      if (_el && (typeof isExporting === 'undefined' || !isExporting)) {
-        _el.innerHTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> ' + e.data.settings.defaultFps;
-      }
-    }
+    if (e.data.bridgeUrl) BRIDGE = e.data.bridgeUrl.replace(/\/+$/, '');
+    if (e.data.settings?.encoder) activeEncoder = e.data.settings.encoder;
+    if (e.data.settings?.defaultFps) syncDefaultFpsUi(e.data.settings.defaultFps);
   }
 });
 async function resolveBridge() {
-  for (let pass = 0; pass < 2; pass++) {
-    for (const base of BRIDGE_CANDIDATES) {
-      try {
-        const r = await fetch(base + '/api/health', { signal: AbortSignal.timeout(1500) });
-        if (r.ok) { BRIDGE = base; return true; }
-      } catch {}
-    }
-  }
+  const s = readSavedSettings();
+  const liveCandidates = [];
+  if (BRIDGE) liveCandidates.push(BRIDGE.replace(/\/+$/, ''));
   try {
+    const u = localStorage.getItem('kinet_bridge_url');
+    if (u) liveCandidates.push(u.replace(/\/+$/, ''));
+  } catch {}
+  if (s.host && s.port) {
+    liveCandidates.push(`http://${s.host === '0.0.0.0' ? '127.0.0.1' : s.host}:${s.port}`);
+  }
+  for (const c of BRIDGE_CANDIDATES) liveCandidates.push(c);
+  const ordered = liveCandidates.filter((v, i) => v && liveCandidates.indexOf(v) === i);
+
+  let outdatedBase = null;
+  for (const base of ordered) {
+    try {
+      const r = await fetch(base + '/api/health', { signal: AbortSignal.timeout(1000) });
+      if (r.ok) {
+        const info = await r.json().catch(() => ({}));
+        if (info && info.version && compareBridgeVersion(info.version, TARGET_BRIDGE_VERSION) >= 0) {
+          BRIDGE = base;
+          return true;
+        }
+        if (!outdatedBase) outdatedBase = base;
+      }
+    } catch {}
+  }
+
+  if (outdatedBase) {
+    try {
+      await fetch(`${outdatedBase}/api/restart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ host: s.host || '127.0.0.1', port: Number(s.port) || 4004 }),
+        signal: AbortSignal.timeout(2000)
+      });
+      await new Promise(res => setTimeout(res, 700));
+      const targetCheck = (s.host && s.port)
+        ? `http://${s.host === '0.0.0.0' ? '127.0.0.1' : s.host}:${s.port}`
+        : outdatedBase;
+      for (let i = 0; i < 6; i++) {
+        try {
+          const r = await fetch(targetCheck + '/api/health', { signal: AbortSignal.timeout(900) });
+          if (r.ok) { BRIDGE = targetCheck; return true; }
+        } catch {}
+        await new Promise(res => setTimeout(res, 300));
+      }
+    } catch {}
+  }
+
+  try {
+    const qs = `?restart=1&host=${encodeURIComponent(s.host || '127.0.0.1')}&port=${Number(s.port) || 4004}`;
     const endpoints = [
-      'http://127.0.0.1/KinetRig/api/bridge.php',
-      'http://localhost/KinetRig/api/bridge.php',
+      `http://127.0.0.1/KinetRig/api/bridge.php${qs}`,
+      `http://localhost/KinetRig/api/bridge.php${qs}`,
       ...(location.protocol.startsWith('http') && location.origin && location.origin !== 'null' && location.port !== '4004'
-        ? [location.origin + '/api/bridge.php', location.origin + '/KinetRig/api/bridge.php']
+        ? [`${location.origin}/api/bridge.php${qs}`, `${location.origin}/KinetRig/api/bridge.php${qs}`]
         : [])
     ];
     for (const ep of endpoints) {
       try {
-        const h = await fetch(ep, { signal: AbortSignal.timeout(4000) });
+        const h = await fetch(ep, { signal: AbortSignal.timeout(4500) });
         if (h.ok) {
           const res = await h.json();
           if (res.ok) {
-            BRIDGE = res.bridge || 'http://127.0.0.1:4004';
+            BRIDGE = res.bridge || BRIDGE;
             return true;
           }
         }
       } catch {}
     }
   } catch {}
+
+  if (outdatedBase) {
+    BRIDGE = outdatedBase;
+    return true;
+  }
   return false;
 }
 
@@ -1301,7 +1377,6 @@ const labelRenderPause = $('#label-render-pause');
 const iconPause = $('#icon-pause');
 const iconResume = $('#icon-resume');
 
-let isExporting = false;
 let isRenderPaused = false;
 let currentAbortController = null;
 let currentEvtSource = null;
@@ -1396,7 +1471,7 @@ if (btnExport && fpsMenu) {
   }
 }
 
-async function startExport(targetFps = 240) {
+async function startExport(targetFps = activeDefaultFps) {
   if (isExporting || isRecording) return;
   if (typeof markUserInteracted === 'function') markUserInteracted();
 
@@ -1422,30 +1497,39 @@ async function startExport(targetFps = 240) {
         };
       } catch {}
 
-      const templatePath = location.pathname.includes('assets/')
+      const isBridgeAsset = typeof BRIDGE === 'string' && BRIDGE && location.origin === BRIDGE && location.pathname.includes('assets/');
+      const templatePath = isBridgeAsset
         ? location.pathname.substring(location.pathname.indexOf('assets/'))
-        : 'assets/kinet-catalog.html';
+        : location.href.split('#')[0].split('?')[0];
 
-      const renderRes = await fetch(`${BRIDGE}/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
+      const reqEncoder = activeEncoder || readSavedSettings().encoder || 'auto';
+      const renderRes = await fetch(`${BRIDGE}/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}&encoder=${encodeURIComponent(reqEncoder)}&muted=${typeof isAudioMuted!=='undefined'&&isAudioMuted?1:0}`, {
         signal: currentAbortController.signal
       });
       if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
 
-      if (!renderRes.ok) throw new Error(await renderRes.text());
+      if (!renderRes.ok) { const errTxt = await renderRes.text(); let errMsg = errTxt; try { errMsg = JSON.parse(errTxt).error || errTxt; } catch {} throw new Error(errMsg || `HTTP ${renderRes.status}`); }
 
       btnExportLabel.textContent = 'Saving MP4...';
       const blob = await renderRes.blob();
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      const baseName = templatePath.split('/').pop().replace('.html', '');
+      const pathSegs = decodeURIComponent(location.pathname || '').replace(/\/+$/, '').split('/').filter(Boolean);
+      const rawLast = (pathSegs[pathSegs.length - 1] || '').replace(/\.html?$/i, '');
+      const parentSeg = pathSegs.length > 1 ? pathSegs[pathSegs.length - 2] : '';
+      const baseName = ((!rawLast || rawLast.toLowerCase() === 'index')
+        ? ((parentSeg && !/^[a-zA-Z]:$/.test(parentSeg) ? parentSeg : '') || location.hostname || 'kinet-render')
+        : rawLast).replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+|_+$/g, '') || 'kinet-render';
       a.download = `${baseName}_${targetFps}fps.mp4`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
 
-      btnExportLabel.textContent = 'Downloaded!';
+      const fbReason = renderRes.headers?.get?.('X-KinetRig-Fallback-Reason');
+      if (fbReason) console.warn('[Studio Bridge Encoder Fallback]', fbReason);
+      btnExportLabel.textContent = fbReason ? 'Downloaded (CPU)' : 'Downloaded!';
       setTimeout(() => {
         btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
         setExportUiState(false);

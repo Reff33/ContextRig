@@ -1,7 +1,7 @@
 {
   "host": "127.0.0.1",
   "port": 4004,
-  "encoder": "auto",
-  "defaultFps": 240,
+  "encoder": "cpu",
+  "defaultFps": 144,
   "outputDir": "renders"
 }
