@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import handlebars from 'handlebars';
@@ -174,10 +175,36 @@ export async function injectTemplate({
     await syncProjectSkillConfigs(targetDir, resolvedSkills);
 
     // Merge skill-declared MCP servers into project .mcp.json safely
+    const resolveMcpEntry = (srv) => {
+      if (!srv || srv.command !== 'npx' || !Array.isArray(srv.args)) return srv;
+      const isCutRig = srv.args.some((a) => /cutrig-mcp/i.test(String(a)));
+      if (isCutRig) {
+        const candidates = [
+          path.resolve(ROOT_DIR, '..', 'CutRig-MCP', 'dist', 'index.js'),
+          process.env.APPDATA ? path.join(process.env.APPDATA, 'npm', 'node_modules', 'cutrig-mcp', 'dist', 'index.js') : '',
+          path.join(path.dirname(process.execPath), '..', 'lib', 'node_modules', 'cutrig-mcp', 'dist', 'index.js')
+        ].filter(Boolean);
+        const localEntry = candidates.find((p) => existsSync(p));
+        if (localEntry) {
+          return { command: 'node', args: [localEntry.replace(/\\/g, '/')] };
+        }
+      }
+      const hasGithubArg = srv.args.some((a) => String(a).startsWith('github:'));
+      if (hasGithubArg && !srv.args.includes('--allow-git=all')) {
+        const nextArgs = [...srv.args];
+        const yIdx = nextArgs.indexOf('-y');
+        nextArgs.splice(yIdx >= 0 ? yIdx + 1 : 0, 0, '--allow-git=all');
+        return { ...srv, args: nextArgs };
+      }
+      return srv;
+    };
+
     const mcpEntries = {};
     for (const skill of resolvedSkills) {
       if (skill.mcp_servers && typeof skill.mcp_servers === 'object') {
-        Object.assign(mcpEntries, skill.mcp_servers);
+        for (const [srvName, srvCfg] of Object.entries(skill.mcp_servers)) {
+          mcpEntries[srvName] = resolveMcpEntry(srvCfg);
+        }
       }
     }
     const mcpNames = Object.keys(mcpEntries);

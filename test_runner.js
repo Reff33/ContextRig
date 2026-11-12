@@ -505,6 +505,11 @@ async function runTests() {
   const mergedMcp = JSON.parse(await fs.readFile(mcpPath, 'utf8'));
   assert(mergedMcp.mcpServers.custom_srv, 'Existing custom_srv in .mcp.json must be preserved');
   assert(mergedMcp.mcpServers.cutrig, 'cutrig MCP server must be merged into .mcp.json');
+  assert(
+    mergedMcp.mcpServers.cutrig.command === 'node' ||
+      mergedMcp.mcpServers.cutrig.args?.includes('--allow-git=all'),
+    'cutrig MCP entry must use local node entry or --allow-git=all for npm v11+'
+  );
 
   await removeSkillsFromProject(fullPath, projectName, [cutRigSkill], [kinetRigSkill], { deleteArtifacts: true });
   const afterRemoveMcp = JSON.parse(await fs.readFile(mcpPath, 'utf8'));
