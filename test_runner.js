@@ -216,6 +216,17 @@ async function runTests() {
   assert(gitWorkflowSkill.ai_instructions.includes('Change Detection & Metrics'), 'git_workflow should include metrics instructions');
   console.log('✔ Test 7f: Git Workflow skill definition and /commit slash command verified.');
 
+  // Test 7g: UI/UX Pro Max built-in trimmed bundle verification
+  const uiUxSkill = skills.find((s) => s.id === 'ui_ux_pro_max');
+  assert(uiUxSkill, 'ui_ux_pro_max skill should exist');
+  assert.strictEqual(uiUxSkill.claude_command?.name, 'ui-ux', 'ui_ux_pro_max slash command should be /ui-ux');
+  assert(uiUxSkill.files_to_copy?.length >= 40, 'ui_ux_pro_max should include SKILL.md, references, scripts, and CSVs');
+  assert(uiUxSkill.files_to_copy.some((f) => f.destination.endsWith('/scripts/search.py')), 'ui_ux_pro_max must include search.py');
+  for (const item of uiUxSkill.files_to_copy) {
+    await fs.access(path.resolve(process.cwd(), item.source));
+  }
+  console.log('✔ Test 7g: UI/UX Pro Max built-in bundle & local sources verified.');
+
   // Test 8: Skill update detection & sync
   // Simulate an outdated version of scraper.py in the target project
   await fs.writeFile(copiedToolPath, '# outdated version\nprint("old")', 'utf8');

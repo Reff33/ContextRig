@@ -111,6 +111,29 @@ const BUILTIN_SCHEMAS = {
     fields: [
       { key: 'outputFile', label: 'Schema Output Path', type: 'string', default: 'docs/db_schema.md' }
     ]
+  },
+  ui_ux_pro_max: {
+    fields: [
+      {
+        key: 'defaultStack',
+        label: 'Default Tech Stack',
+        type: 'choice',
+        allowCustom: true,
+        customType: 'string',
+        default: 'auto',
+        choices: [
+          { name: 'auto (Detect from project)', short: 'auto', value: 'auto' },
+          { name: 'nextjs (Next.js App Router)', short: 'nextjs', value: 'nextjs' },
+          { name: 'react (React)', short: 'react', value: 'react' },
+          { name: 'html-tailwind (HTML + Tailwind)', short: 'html-tailwind', value: 'html-tailwind' },
+          { name: 'shadcn (shadcn/ui)', short: 'shadcn', value: 'shadcn' },
+          { name: 'vue / nuxtjs', short: 'vue', value: 'vue' },
+          { name: 'laravel (Laravel Blade/Livewire)', short: 'laravel', value: 'laravel' },
+          { name: 'flutter / react-native', short: 'flutter', value: 'flutter' }
+        ]
+      },
+      { key: 'outputDir', label: 'Design System Output Folder', type: 'string', default: 'design-system' }
+    ]
   }
 };
 

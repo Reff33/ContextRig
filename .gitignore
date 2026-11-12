@@ -27,3 +27,6 @@ kinetrig/
 sfx/
 scripts/kinet_rig/sfx/
 *.wav
+__pycache__/
+*.pyc
+
