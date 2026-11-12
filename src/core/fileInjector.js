@@ -1,9 +1,24 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import chalk from 'chalk';
 import handlebars from 'handlebars';
 import { TEMPLATES_DIR, ROOT_DIR } from '../config.js';
 import { logger } from '../utils/logger.js';
 import { applySettingsToSkills, syncProjectSkillConfigs } from './skillSettings.js';
+
+function getCommonDestFolder(items) {
+  const dirs = items
+    .map((item) => String(item.destination || '').replace(/\\/g, '/').split('/').slice(0, -1))
+    .filter((parts) => parts.length > 0);
+  if (dirs.length === 0) return 'rigtools/';
+  let prefix = dirs[0];
+  for (const parts of dirs.slice(1)) {
+    let i = 0;
+    while (i < prefix.length && i < parts.length && prefix[i] === parts[i]) i++;
+    prefix = prefix.slice(0, i);
+  }
+  return prefix.length > 0 ? `${prefix.join('/')}/` : 'rigtools/';
+}
 
 /**
  * Formats a skill object into markdown for injection into AI rule files.
@@ -118,7 +133,7 @@ export async function injectTemplate({
 
     if (existingContent.trim().length > 0) {
       finalContent = mergeSkillsIntoContent(existingContent, resolvedSkills);
-      logger.info(`Smart Merge applied: preserved existing rules and updated skills without duplicates.`);
+      console.log(`  ${chalk.cyan('●')} ${chalk.white('Smart Merge')}      ${chalk.dim('Preserved custom rules & updated skills')}`);
     } else {
       finalContent = renderedContent;
     }
@@ -132,19 +147,28 @@ export async function injectTemplate({
   // Copy skill asset files if defined in files_to_copy
   if (copyAssets) {
     for (const skill of resolvedSkills) {
-      if (Array.isArray(skill.files_to_copy)) {
-        for (const item of skill.files_to_copy) {
+      const files = Array.isArray(skill.files_to_copy) ? skill.files_to_copy : [];
+      if (files.length === 0) continue;
+
+      let copied = 0;
+      await Promise.all(
+        files.map(async (item) => {
           const srcFile = path.resolve(ROOT_DIR, item.source);
           const destFile = path.resolve(targetDir, item.destination);
-
           try {
             await fs.mkdir(path.dirname(destFile), { recursive: true });
             await fs.copyFile(srcFile, destFile);
-            logger.info(`Copied ${item.source} -> ${item.destination}`);
+            copied++;
           } catch (err) {
             logger.warn(`Could not copy skill file ${item.source}: ${err.message}`);
           }
-        }
+        })
+      );
+
+      if (copied > 0) {
+        const tag = chalk.cyan(`[${skill.id}]`.padEnd(16));
+        const destSummary = files.length === 1 ? files[0].destination : `${copied} files → ${getCommonDestFolder(files)}`;
+        console.log(`  ${chalk.green('✔')} ${tag} ${chalk.white(destSummary)}`);
       }
     }
     await syncProjectSkillConfigs(targetDir, resolvedSkills);
@@ -153,17 +177,21 @@ export async function injectTemplate({
   // Generate Claude-specific slash commands (.claude/commands/*.md)
   const isClaude = outputFileName === 'CLAUDE.md' || (agentName && agentName.toLowerCase().includes('claude'));
   if (isClaude) {
+    const generatedCmds = [];
     for (const skill of resolvedSkills) {
       if (skill.claude_command?.name && skill.claude_command?.content) {
         const cmdPath = path.join(targetDir, '.claude', 'commands', `${skill.claude_command.name}.md`);
         try {
           await fs.mkdir(path.dirname(cmdPath), { recursive: true });
           await fs.writeFile(cmdPath, skill.claude_command.content.trim() + '\n', 'utf8');
-          logger.info(`Generated Claude command: .claude/commands/${skill.claude_command.name}.md`);
+          generatedCmds.push(`/${skill.claude_command.name}`);
         } catch (err) {
           logger.warn(`Could not create Claude command for ${skill.name}: ${err.message}`);
         }
       }
+    }
+    if (generatedCmds.length > 0) {
+      console.log(`  ${chalk.green('✔')} ${chalk.cyan('[commands]'.padEnd(16))} ${chalk.white(generatedCmds.join(', '))} ${chalk.dim('(.claude/commands/)')}`);
     }
   }
 

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import path from 'node:path';
+import chalk from 'chalk';
 import { ROOT_DIR, SUPPORTED_AGENTS } from '../config.js';
 import { injectTemplate } from './fileInjector.js';
 import { handleDependencies } from './dependencyInstaller.js';
@@ -210,17 +211,25 @@ export async function removeSkillsFromProject(
 
   for (const skill of skillsToRemove) {
     // 1. Remove copied tool files
-    if (Array.isArray(skill.files_to_copy)) {
+    if (Array.isArray(skill.files_to_copy) && skill.files_to_copy.length > 0) {
+      let deletedCount = 0;
       for (const item of skill.files_to_copy) {
         const destFile = path.resolve(targetDir, item.destination);
         try {
           await fs.unlink(destFile);
-          logger.info(`Deleted: ${item.destination}`);
+          deletedCount++;
         } catch (err) {
           if (err.code !== 'ENOENT') {
             logger.warn(`Could not delete ${item.destination}: ${err.message}`);
           }
         }
+      }
+      if (deletedCount > 0) {
+        const tag = chalk.cyan(`[${skill.id}]`.padEnd(16));
+        const label = skill.files_to_copy.length === 1
+          ? `Deleted ${skill.files_to_copy[0].destination}`
+          : `Deleted ${deletedCount} file(s)`;
+        console.log(`  ${chalk.green('✔')} ${tag} ${chalk.white(label)}`);
       }
     }
 
@@ -229,7 +238,7 @@ export async function removeSkillsFromProject(
       const cmdPath = path.join(targetDir, '.claude', 'commands', `${skill.claude_command.name}.md`);
       try {
         await fs.unlink(cmdPath);
-        logger.info(`Deleted Claude command: .claude/commands/${skill.claude_command.name}.md`);
+        console.log(`  ${chalk.green('✔')} ${chalk.cyan(`[${skill.id}]`.padEnd(16))} ${chalk.dim(`Removed /${skill.claude_command.name}`)}`);
       } catch (err) {
         if (err.code !== 'ENOENT') {
           logger.warn(`Could not delete Claude command: ${err.message}`);

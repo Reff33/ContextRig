@@ -206,7 +206,12 @@ async function handleInjectSkills() {
   // 4. Compile and inject template
   console.log();
   logger.divider();
-  logger.step(`Injecting rules into ${agent.outputFile}...`);
+  console.log(chalk.bold.cyan('  INJECTING CONTEXT & SKILLS'));
+  console.log(chalk.dim('  Target : ') + chalk.white(fullPath));
+  console.log(chalk.dim('  Agent  : ') + chalk.white(`${agent.name} (${agent.outputFile})`));
+  console.log(chalk.dim('  Mode   : ') + chalk.white(mergeMode === 'merge' ? 'Smart Merge' : 'Overwrite'));
+  console.log(chalk.dim('  Skills : ') + chalk.cyan(finalSelectedSkills.map((s) => s.id).join(', ')));
+  logger.divider();
   const outputFile = await injectTemplate({
     targetDir: fullPath,
     templateFileName: agent.templateFile,
@@ -218,7 +223,7 @@ async function handleInjectSkills() {
   });
 
   console.log();
-  logger.success(`Configuration generated successfully at: ${outputFile}`);
+  logger.success(`Injected ${finalSelectedSkills.length} skill(s) into ${outputFile}`);
 
   await registerProject({
     projectPath: fullPath,
