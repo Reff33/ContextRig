@@ -2,6 +2,7 @@
   "id": "db_inspector",
   "name": "Database Schema Inspector",
   "description": "Inspects local DB tables & schema",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/db_inspector.json",
   "ai_instructions": "To inspect project database tables and column types, run 'node rigtools/db_inspector.js'. Use the generated docs/db_schema.md to ensure all queries, models, and migrations adhere strictly to real database schemas.",
   "dependencies": {
     "npm": [],

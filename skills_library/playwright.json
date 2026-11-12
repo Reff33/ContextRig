@@ -2,6 +2,7 @@
   "id": "playwright",
   "name": "Playwright (Browser & E2E Testing)",
   "description": "Headless browser automation & UI testing",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/playwright.json",
   "ai_instructions": "To test web pages, verify UI rendering, or capture screenshots of localhost/external apps, run 'node rigtools/playwright_runner.js <URL> [output.png]'. Review captured console errors and screenshot outputs before verifying frontend fixes.",
   "claude_command": {
     "name": "playwright",

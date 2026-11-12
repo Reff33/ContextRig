@@ -2,6 +2,7 @@
   "id": "web_scraper",
   "name": "Web Scraper",
   "description": "Fetches & extracts clean webpage text",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/web_scraper.json",
   "ai_instructions": "When the user provides an external URL or explicitly asks to read a webpage, immediately execute `python rigtools/scraper.py <URL>` without asking for redundant permission. Only ask for confirmation if you autonomously suggest visiting an external link not mentioned by the user. Always summarize key findings concisely rather than repeating raw scraped text.",
   "claude_command": {
     "name": "scrape",

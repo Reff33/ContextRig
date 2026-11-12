@@ -2,6 +2,7 @@
   "id": "git_workflow",
   "name": "Git Workflow & Conventional Commits",
   "description": "Smart Conventional Commits, diff metric analysis & commit approval",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/git_workflow.json",
   "ai_instructions": "1. Change Detection & Metrics: Before creating a commit or when instructed, inspect working tree changes using `git status` and `git diff --stat`. If there are no changes ('nothing to commit, working tree clean'), immediately notify the user in English: 'Working tree clean: nothing to commit.' and stop without prompting for a commit.\n2. Security Guard: Verify that no secrets, `.env` files, API keys, certificates (*.pem), or build artifacts are staged. Warn immediately if detected.\n3. Conventional Message Generation: Draft a concise, context-aware Conventional Commit message (`feat`, `fix`, `docs`, `chore`, `test`, `refactor`) with appropriate scope based on exact diffs (e.g. `feat(auth): add jwt refresh token validation`).\n4. Strict Attribution Policy: NEVER include 'Co-Authored-By: Claude Code', 'Generated with Claude Code', or any AI attribution/trailers in commit messages or pull request bodies.\n5. User Approval Protocol: Always present the draft commit message and changed file list to the user first. Ask for confirmation before executing `git commit`.",
   "claude_command": {
     "name": "commit",

@@ -80,6 +80,7 @@ export function mergeSkillsIntoContent(existingContent, skillsInstructions) {
  * @param {string} options.agentName - Selected agent name
  * @param {Array<Object>} options.skillsInstructions - List of selected skills
  * @param {'overwrite'|'merge'} [options.mergeMode='overwrite']
+ * @param {boolean} [options.copyAssets=true]
  * @returns {Promise<string>} The output file path
  */
 export async function injectTemplate({
@@ -89,7 +90,8 @@ export async function injectTemplate({
   projectName,
   agentName,
   skillsInstructions,
-  mergeMode = 'overwrite'
+  mergeMode = 'overwrite',
+  copyAssets = true
 }) {
   const templatePath = path.join(TEMPLATES_DIR, templateFileName);
   const rawTemplate = await fs.readFile(templatePath, 'utf8');
@@ -126,18 +128,20 @@ export async function injectTemplate({
   await fs.writeFile(outputPath, finalContent, 'utf8');
 
   // Copy skill asset files if defined in files_to_copy
-  for (const skill of skillsInstructions) {
-    if (Array.isArray(skill.files_to_copy)) {
-      for (const item of skill.files_to_copy) {
-        const srcFile = path.resolve(ROOT_DIR, item.source);
-        const destFile = path.resolve(targetDir, item.destination);
+  if (copyAssets) {
+    for (const skill of skillsInstructions) {
+      if (Array.isArray(skill.files_to_copy)) {
+        for (const item of skill.files_to_copy) {
+          const srcFile = path.resolve(ROOT_DIR, item.source);
+          const destFile = path.resolve(targetDir, item.destination);
 
-        try {
-          await fs.mkdir(path.dirname(destFile), { recursive: true });
-          await fs.copyFile(srcFile, destFile);
-          logger.info(`Copied ${item.source} -> ${item.destination}`);
-        } catch (err) {
-          logger.warn(`Could not copy skill file ${item.source}: ${err.message}`);
+          try {
+            await fs.mkdir(path.dirname(destFile), { recursive: true });
+            await fs.copyFile(srcFile, destFile);
+            logger.info(`Copied ${item.source} -> ${item.destination}`);
+          } catch (err) {
+            logger.warn(`Could not copy skill file ${item.source}: ${err.message}`);
+          }
         }
       }
     }

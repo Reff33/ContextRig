@@ -32,5 +32,13 @@ export const logger = {
 
   divider() {
     console.log(chalk.gray('─'.repeat(52)));
+  },
+
+  section(title) {
+    console.log();
+    this.divider();
+    console.log();
+    this.step(title);
+    console.log();
   }
 };

@@ -159,7 +159,7 @@ export async function syncSkills(targetDir, projectName, skillsToSync, { promptD
     }
   }
 
-  // Update existing AI profile rules
+  // Update existing AI profile rules (preserve custom user rules via Smart Merge, don't re-copy assets)
   const existingAgents = await detectConfiguredAgents(targetDir);
   for (const agent of existingAgents) {
     logger.step(`Re-syncing AI rules in ${agent.outputFile}...`);
@@ -169,7 +169,9 @@ export async function syncSkills(targetDir, projectName, skillsToSync, { promptD
       outputFileName: agent.outputFile,
       projectName,
       agentName: agent.name,
-      skillsInstructions: skillsToSync
+      skillsInstructions: skillsToSync,
+      mergeMode: 'merge',
+      copyAssets: false
     });
     logger.success(`Synchronized: ${agent.outputFile}`);
   }
@@ -276,33 +278,42 @@ export async function removeSkillsFromProject(
       outputFileName: agent.outputFile,
       projectName,
       agentName: agent.name,
-      skillsInstructions: remainingSkills
+      skillsInstructions: remainingSkills,
+      copyAssets: false
     });
     logger.success(`Updated ${agent.outputFile} (removed ${skillsToRemove.map((s) => s.name).join(', ')})`);
   }
 
-  // 4. Try cleaning up empty subdirectories and rigtools/, tools/, or .claude/commands/ directories
-  for (const dirName of ['rigtools', 'tools']) {
+  // 4. Safely prune ONLY empty subdirectories and empty rigtools/, tools/, or .claude/commands/ directories
+  async function pruneEmptyDirs(dirPath) {
+    let entries;
     try {
-      const dirPath = path.join(targetDir, dirName);
-      // Clean subdirectories first if empty
-      const subEntries = await fs.readdir(dirPath, { withFileTypes: true });
-      for (const entry of subEntries) {
-        if (entry.isDirectory()) {
-          const subDirPath = path.join(dirPath, entry.name);
-          try {
-            await fs.rm(subDirPath, { recursive: true, force: false });
-          } catch {
-            // not empty
-          }
-        }
+      entries = await fs.readdir(dirPath, { withFileTypes: true });
+    } catch {
+      return false;
+    }
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        await pruneEmptyDirs(path.join(dirPath, entry.name));
       }
-      const remainingFiles = await fs.readdir(dirPath);
-      if (remainingFiles.length === 0) {
+    }
+
+    try {
+      const remaining = await fs.readdir(dirPath);
+      if (remaining.length === 0) {
         await fs.rmdir(dirPath);
-        logger.info(`Cleaned up empty ${dirName}/ directory.`);
+        return true;
       }
     } catch {}
+    return false;
+  }
+
+  for (const dirName of ['rigtools', 'tools']) {
+    const dirPath = path.join(targetDir, dirName);
+    if (await pruneEmptyDirs(dirPath)) {
+      logger.info(`Cleaned up empty ${dirName}/ directory.`);
+    }
   }
 
   try {

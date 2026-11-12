@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { setupTargetProject, sanitizePath } from './src/core/projectSetup.js';
 import { injectTemplate } from './src/core/fileInjector.js';
@@ -7,10 +8,14 @@ import { loadAvailableSkills, saveSkill } from './src/core/skillManager.js';
 import { aggregateDependencies, getAgentCliFlag } from './src/core/dependencyInstaller.js';
 import { aggregateGitIgnorePatterns, isPatternIgnored } from './src/core/gitIgnoreManager.js';
 import { detectInstalledSkills, syncSkills, removeSkillsFromProject } from './src/core/skillUpdater.js';
-import { loadCache, saveCache, calculateHash } from './src/core/syncEngine.js';
+import { loadCache, saveCache, calculateHash, syncMasterSkillLibrary } from './src/core/syncEngine.js';
 
 async function runTests() {
+  const isolatedRegistryPath = path.join(os.tmpdir(), `contextrig-test-registry-${Date.now()}.json`);
+  process.env.CONTEXTRIG_REGISTRY_PATH = isolatedRegistryPath;
   console.log('🧪 Starting ContextRig CLI automated integration tests...');
+
+  try {
 
   // Test 1: Load available skills
   const skills = await loadAvailableSkills();
@@ -184,16 +189,23 @@ async function runTests() {
   assert.strictEqual(isPatternIgnored(['other_tools'], 'rigtools/'), false, 'other_tools should not match rigtools/');
   console.log('✔ Test 7d: isPatternIgnored slash normalization verified.');
 
-  // Test 7e: KinetRig skill definition and gitignore verification
+  // Test 7e: KinetRig skill definition, complete asset manifest & gitignore verification
   const kinetRigSkill = skills.find((s) => s.id === 'kinet_rig');
   assert(kinetRigSkill, 'kinet_rig skill should exist');
   assert.strictEqual(kinetRigSkill.claude_command?.name, 'kinet-rig');
+  assert(kinetRigSkill.manifest_remote_url, 'kinet_rig must define manifest_remote_url');
   assert(aggregateGitIgnorePatterns([kinetRigSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
-  assert(kinetRigSkill.files_to_copy?.length >= 5, 'kinet_rig should include official starters and references');
+  assert(kinetRigSkill.files_to_copy?.length >= 60, 'kinet_rig should include all starters, scripts, and references');
+  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.endsWith('/SKILL.md')), 'kinet_rig must include SKILL.md');
+  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.endsWith('/scripts/server.mjs')), 'kinet_rig must include server.mjs');
+  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.endsWith('/assets/kinet-typographic-montage.html')), 'kinet_rig must include templates 11-21');
   const openerItem = kinetRigSkill.files_to_copy.find((f) => f.destination.includes('kinet-opener.html'));
-  assert(openerItem && openerItem.remote_url, 'kinet-opener.html must have remote_url for sync');
+  assert(openerItem && openerItem.remote_url && openerItem.remote_url.includes('/testing/'), 'kinet-opener.html must have testing remote_url');
+  for (const item of kinetRigSkill.files_to_copy) {
+    await fs.access(path.resolve(process.cwd(), item.source));
+  }
   assert(kinetRigSkill.ai_instructions.includes('144 FPS'), 'kinet_rig must document 144 FPS');
-  console.log('✔ Test 7e: KinetRig skill definition, official starters & gitignore verified.');
+  console.log('✔ Test 7e: KinetRig skill definition, full manifest & local sources verified.');
 
   // Test 7f: Git Workflow skill definition and slash command verification
   const gitWorkflowSkill = skills.find((s) => s.id === 'git_workflow');
@@ -236,10 +248,95 @@ async function runTests() {
   const loadedCache = await loadCache(fullPath);
   assert(loadedCache.etags['web_scraper:tools/scraper.py'] === '"test-etag-123"', 'Cache ETag must persist');
 
-  const { checkSingleSkillUpdate } = await import('./src/core/syncEngine.js');
+  const { checkSingleSkillUpdate, applyProjectUpdates } = await import('./src/core/syncEngine.js');
   const checkedGit = await checkSingleSkillUpdate(fullPath, gitWorkflowSkill, loadedCache, null);
   assert.strictEqual(checkedGit.id, 'git_workflow');
-  console.log('✔ Test 10b: SyncEngine ETag caching, hash calculations & multi-skill checks verified.');
+
+  // Verify Fix 1 & Fix 2: staged remote content not overwritten by local copyAssets, custom rules preserved, and missing file bypasses 304 ETag
+  const prevFetch = globalThis.fetch;
+  let seenIfNoneMatch = null;
+  globalThis.fetch = async (_url, opts) => {
+    seenIfNoneMatch = opts?.headers?.['If-None-Match'] || null;
+    return {
+      ok: true,
+      status: 200,
+      headers: new Map([['etag', '"remote-etag-new"']]),
+      text: async () => '# REMOTE VERSION v99\nprint("remote")\n'
+    };
+  };
+  try {
+    // Missing local file must NOT send cached ETag
+    await fs.rm(copiedToolPath, { force: true });
+    const cacheWithEtag = {
+      last_checked: Date.now(),
+      etags: { 'web_scraper:rigtools/scraper.py': '"stale-etag"' },
+      hashes: { 'web_scraper:rigtools/scraper.py': calculateHash('anything') }
+    };
+    const remoteCheck = await checkSingleSkillUpdate(fullPath, webScraper, cacheWithEtag, null);
+    assert.strictEqual(seenIfNoneMatch, null, 'Missing file must bypass If-None-Match ETag');
+    assert.strictEqual(remoteCheck.hasUpdate, true, 'Missing file should trigger update');
+
+    // Add custom section to CLAUDE.md and ensure applyProjectUpdates preserves both custom section and remote file content
+    const claudeBeforeSync = await fs.readFile(claudeOut, 'utf8');
+    await fs.writeFile(claudeOut, claudeBeforeSync + '\n## Custom User Rules\n- Keep me intact\n', 'utf8');
+    await applyProjectUpdates(
+      {
+        fullPath,
+        projectName,
+        configuredAgents: [{ name: 'Claude (CLAUDE.md)', value: 'claude', templateFile: 'claude.md.hbs', outputFile: 'CLAUDE.md' }],
+        installedSkills: [webScraper],
+        outdatedSkills: [remoteCheck],
+        cache: cacheWithEtag
+      },
+      { promptDeps: false }
+    );
+    const syncedTool = await fs.readFile(copiedToolPath, 'utf8');
+    assert(syncedTool.includes('REMOTE VERSION v99'), 'applyProjectUpdates must keep remote content instead of overwriting with local scripts/');
+    const claudeAfterSync = await fs.readFile(claudeOut, 'utf8');
+    assert(claudeAfterSync.includes('Keep me intact'), 'applyProjectUpdates must preserve custom rules via Smart Merge');
+  } finally {
+    globalThis.fetch = prevFetch;
+  }
+  console.log('✔ Test 10b: SyncEngine ETag safety, remote content preservation & Smart Merge verified.');
+
+  // Test 10d: Project Registry lifecycle (using isolated CONTEXTRIG_REGISTRY_PATH)
+  const { registerProject, loadRegistry, unregisterProject, pruneMissingProjects } = await import('./src/core/projectRegistry.js');
+  await fs.rm(isolatedRegistryPath, { force: true });
+  await registerProject({ projectPath: fullPath, name: projectName, agents: ['claude'], skills: ['web_scraper'] });
+  let reg = await loadRegistry();
+  assert.strictEqual(reg.projects.length, 1, 'Project should be saved in registry');
+  await registerProject({ projectPath: fullPath + path.sep, name: projectName, agents: ['claude'], skills: ['kinet_rig'] });
+  reg = await loadRegistry();
+  assert.strictEqual(reg.projects.length, 1, 'Duplicate project path should upsert cleanly');
+  assert(reg.projects[0].skills.includes('kinet_rig'), 'Upsert should update skill list');
+  await unregisterProject(fullPath);
+  reg = await loadRegistry();
+  assert.strictEqual(reg.projects.length, 0, 'Project should be removed on unregister');
+  await registerProject({ projectPath: path.join(fullPath, 'nonexistent_dir_xyz'), name: 'ghost', agents: [], skills: [] });
+  const pruned = await pruneMissingProjects();
+  assert.strictEqual(pruned.removed.length, 1, 'Missing project directories should be pruned');
+  console.log('✔ Test 10d: Project Registry register/upsert/prune/unregister verified.');
+
+  // Test 10e: syncMasterSkillLibrary tracks HTTP errors honestly instead of false success
+  const prevMasterFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: false, status: 404, statusText: 'Not Found', headers: new Map() });
+  try {
+    const failRes = await syncMasterSkillLibrary({
+      id: 'mock_fail',
+      name: 'Mock Fail Skill',
+      files_to_copy: [{ source: 'scripts/mock.js', remote_url: 'https://example.com/404.js' }]
+    });
+    assert.strictEqual(failRes.errorCount, 1, 'Master sync should report errorCount=1 on HTTP 404');
+    assert.strictEqual(failRes.updatedCount, 0);
+  } finally {
+    globalThis.fetch = prevMasterFetch;
+  }
+  console.log('✔ Test 10e: Master library sync error counting verified.');
+
+  // Verify Fix 3: Non-empty sibling subdirectory inside rigtools/ must NOT be recursively deleted on skill removal
+  const siblingFile = path.join(fullPath, 'rigtools', 'custom_helper', 'keep.js');
+  await fs.mkdir(path.dirname(siblingFile), { recursive: true });
+  await fs.writeFile(siblingFile, '// keep', 'utf8');
 
   // Test 10c: Skill removal and artifact cleanup workflow
   const fakePromoDir = path.join(fullPath, 'promo-video');
@@ -284,13 +381,19 @@ async function runTests() {
 
   const updatedClaudeContent = await fs.readFile(claudeOut, 'utf8');
   assert(!updatedClaudeContent.includes('Web Scraper'), 'CLAUDE.md should no longer contain removed skill');
-  console.log('✔ Test 10c: Skill removal and artifact cleanup verified.');
+  const siblingStillExists = await fs.stat(siblingFile).then(() => true).catch(() => false);
+  assert(siblingStillExists, 'Non-empty sibling subfolder inside rigtools/ must not be deleted on skill removal');
+  console.log('✔ Test 10c: Skill removal and safe directory cleanup verified.');
 
   // Cleanup test directory
   await fs.rm(fullPath, { recursive: true, force: true });
   console.log('✔ Test 11: Cleanup test project directory completed.');
 
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
+  } finally {
+    await fs.rm(isolatedRegistryPath, { force: true }).catch(() => {});
+    delete process.env.CONTEXTRIG_REGISTRY_PATH;
+  }
 }
 
 runTests().catch((err) => {

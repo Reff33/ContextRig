@@ -13,8 +13,9 @@ import { injectTemplate } from './core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
 import { handleDependencies } from './core/dependencyInstaller.js';
 import { handleGitIgnore } from './core/gitIgnoreManager.js';
-import { detectInstalledSkills, syncSkills, removeSkillsFromProject } from './core/skillUpdater.js';
-import { runSyncWorkflow } from './core/syncEngine.js';
+import { detectInstalledSkills, detectConfiguredAgents, syncSkills, removeSkillsFromProject } from './core/skillUpdater.js';
+import { runSyncWorkflow, runSyncMasterWorkflow } from './core/syncEngine.js';
+import { registerProject, unregisterProject } from './core/projectRegistry.js';
 import { printSkillsTable } from './utils/table.js';
 
 const execAsync = promisify(exec);
@@ -47,9 +48,7 @@ inquirer.prompt = function (questions, answers) {
  * Handle Option [1]: Inject Skills to Project
  */
 async function handleInjectSkills() {
-  logger.divider();
-  logger.step('Starting Skill Injection Workflow...');
-  console.log();
+  logger.section('Starting Skill Injection Workflow...');
 
   // 1. Prompt user for target folder path
   const { targetPath } = await inquirer.prompt([
@@ -74,12 +73,9 @@ async function handleInjectSkills() {
     logger.warn(`Folder did not exist — created a new directory at ${fullPath}`);
   }
   logger.info(`Target directory: ${fullPath} (Project: ${projectName})`);
-  console.log();
 
   // 2. Select AI profile (Claude, Cursor, etc.) with detection of existing files
-  logger.divider();
-  logger.step('Select Target AI Agent Profile');
-  console.log();
+  logger.section('Select Target AI Agent Profile');
 
   const agent = await selectAgent(fullPath);
   if (!agent) {
@@ -150,20 +146,17 @@ async function handleInjectSkills() {
     logger.info(`Detected ${installedSkills.length} skill(s) already in ${projectName}: ${installedSkills.map((s) => s.name).join(', ')}`);
   }
 
-  console.log();
-  logger.divider();
-  logger.step('Select Skills to Inject');
-  console.log();
+  logger.section('Select Skills to Inject');
 
   const choices = [
     ...skills.map((skill) => {
-      const isInstalled = installedIds.has(skill.id);
-      const badge = isInstalled ? ` ${chalk.green('[Installed]')}` : '';
-      const paddedName = (skill.name + badge).padEnd(52, ' ');
+      const shortName = skill.name.length > 34 ? `${skill.name.slice(0, 33)}…` : skill.name;
+      const badge = installedIds.has(skill.id) ? ` ${chalk.green('[Installed]')}` : '';
+      const shortDesc = skill.description.length > 52 ? `${skill.description.slice(0, 51)}…` : skill.description;
       return {
-        name: `${paddedName} ${chalk.dim(skill.description)}`,
+        name: `${chalk.cyan(`[${skill.id}]`.padEnd(16))} ${shortName.padEnd(36)} ${chalk.dim(shortDesc)}${badge}`,
         value: skill,
-        checked: isInstalled
+        checked: installedIds.has(skill.id)
       };
     }),
     new inquirer.Separator(),
@@ -213,6 +206,13 @@ async function handleInjectSkills() {
 
   console.log();
   logger.success(`Configuration generated successfully at: ${outputFile}`);
+
+  await registerProject({
+    projectPath: fullPath,
+    name: projectName,
+    agents: [agent.value],
+    skills: finalSelectedSkills.map((s) => s.id)
+  });
 
   // 5. Dependency Automation (only prompt for newly added skills if existing ones already present)
   console.log();
@@ -270,9 +270,7 @@ async function handleSyncSkills() {
  * Handle Option [3]: Remove Skills from Project
  */
 async function handleRemoveSkills() {
-  logger.divider();
-  logger.step('Remove Skills from Project');
-  console.log();
+  logger.section('Remove Skills from Project');
 
   const { targetPath } = await inquirer.prompt([
     {
@@ -315,10 +313,14 @@ async function handleRemoveSkills() {
       name: 'skillsToRemove',
       message: 'Select skill(s) to remove (Space to select, select "Back" or leave empty to cancel):',
       choices: [
-        ...installedSkills.map((s) => ({
-          name: `${s.name.padEnd(52, ' ')} ${chalk.dim(s.description)}`,
-          value: s
-        })),
+        ...installedSkills.map((s) => {
+          const shortName = s.name.length > 34 ? `${s.name.slice(0, 33)}…` : s.name;
+          const shortDesc = s.description.length > 52 ? `${s.description.slice(0, 51)}…` : s.description;
+          return {
+            name: `${chalk.cyan(`[${s.id}]`.padEnd(16))} ${shortName.padEnd(36)} ${chalk.dim(shortDesc)}`,
+            value: s
+          };
+        }),
         new inquirer.Separator(),
         {
           name: chalk.yellow('← Back to Main Menu (Cancel)'),
@@ -398,14 +400,25 @@ async function handleRemoveSkills() {
 
   console.log();
   await removeSkillsFromProject(fullPath, projectName, finalSkillsToRemove, remainingSkills, { deleteArtifacts });
+
+  if (remainingSkills.length > 0) {
+    const remainingAgents = await detectConfiguredAgents(fullPath);
+    await registerProject({
+      projectPath: fullPath,
+      name: projectName,
+      agents: remainingAgents.map((a) => a.value),
+      skills: remainingSkills.map((s) => s.id)
+    });
+  } else {
+    await unregisterProject(fullPath);
+  }
 }
 
 /**
  * Handle Option [4]: Manage Skills Library
  */
 async function handleManageSkills() {
-  logger.divider();
-  logger.step('Skills Library Management');
+  logger.section('Skills Library Management');
 
   const { subAction } = await inquirer.prompt([
     {
@@ -413,13 +426,19 @@ async function handleManageSkills() {
       name: 'subAction',
       message: 'Choose a skill library operation:',
       choices: [
-        { name: 'List All Available Skills', value: 'list' },
-        { name: 'Create a New Skill', value: 'create' },
+        { name: `${'List All Skills'.padEnd(24)} ${chalk.dim('Inspect installed library & instructions')}`, value: 'list' },
+        { name: `${'Create New Skill'.padEnd(24)} ${chalk.dim('Add custom JSON skill definition')}`, value: 'create' },
+        { name: `${'Sync Master Library'.padEnd(24)} ${chalk.dim('Update skills_library/ & scripts/ from GitHub')}`, value: 'sync_master' },
         new inquirer.Separator(),
-        { name: '← Back to Main Menu', value: 'back' }
+        { name: chalk.yellow('← Back to Main Menu'), value: 'back' }
       ]
     }
   ]);
+
+  if (subAction === 'sync_master') {
+    await runSyncMasterWorkflow();
+    return;
+  }
 
   if (subAction === 'list') {
     const skills = await loadAvailableSkills();
@@ -601,6 +620,8 @@ async function mainMenu() {
       }
       if (keepRunning) {
         console.log();
+        logger.divider();
+        console.log();
       }
     } catch (err) {
       if (err.isTtyError) {
@@ -613,5 +634,60 @@ async function mainMenu() {
   }
 }
 
+function printCliHelp() {
+  console.log(`
+ContextRig CLI — AI Agent Context & Skill Provisioner
+
+Usage:
+  rig                                Launch interactive menu
+  rig sync                           Open interactive sync hub (All / Skill / CWD / Project)
+  rig sync --all [--yes]             Check & update all registered projects
+  rig sync --skill <id> [--yes]      Update a specific skill across registered projects
+  rig sync <path> [--yes]            Sync a specific project directory
+  rig --help                         Show this help message
+`);
+}
+
+async function runCli(argv) {
+  if (argv.includes('--help') || argv.includes('-h')) {
+    printCliHelp();
+    return;
+  }
+
+  const cmd = argv[0];
+  if (cmd === 'sync') {
+    const rest = argv.slice(1);
+    const autoConfirm = rest.includes('--yes') || rest.includes('-y');
+    const isAll = rest.includes('--all');
+    const skillFlagIdx = rest.findIndex((a) => a === '--skill' || a === '-s');
+    const skillId = skillFlagIdx >= 0 ? rest[skillFlagIdx + 1] : null;
+    const positionalPath = rest.find(
+      (a, idx) => !a.startsWith('-') && !(skillFlagIdx >= 0 && idx === skillFlagIdx + 1)
+    );
+
+    if (isAll) {
+      await runSyncWorkflow(null, { mode: 'all', skillId, autoConfirm });
+    } else if (skillId) {
+      await runSyncWorkflow(null, { mode: 'skill', skillId, autoConfirm });
+    } else if (positionalPath) {
+      await runSyncWorkflow(positionalPath, { autoConfirm });
+    } else {
+      await runSyncWorkflow();
+    }
+    return;
+  }
+
+  logger.error(`Unknown command '${cmd}'. Run 'rig --help' for usage.`);
+  process.exitCode = 1;
+}
+
 // Start CLI
-mainMenu();
+const cliArgs = process.argv.slice(2);
+if (cliArgs.length > 0) {
+  runCli(cliArgs).catch((err) => {
+    logger.error(`CLI error: ${err.message}`);
+    process.exit(1);
+  });
+} else {
+  mainMenu();
+}

@@ -2,6 +2,7 @@
   "id": "archify",
   "name": "Archify (Interactive Diagrams & ERD)",
   "description": "Interactive HTML diagrams & ERD",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/archify.json",
   "install_command": "npx -y skills@latest add https://archify.si --skill archify --agent {{agent_flag}} --copy --yes",
   "ai_instructions": "When the user asks for a diagram without specifying the exact type, first present the relevant options (architecture: system components & services with showcase sidebar; erd: database tables & PK/FK relationships; sequence: API message interactions; workflow: business process steps) and recommend the best fit. Once the type is confirmed, generate the diagram via the installed archify skill (.agents/skills/archify or .claude/skills/archify). For architecture diagrams, always set 'quality_profile': 'showcase' to produce the full interactive sidebar, narrative, and lens controls. Save output in '.archify/' and provide a clickable markdown link to the HTML file.",
   "dependencies": {

@@ -1,24 +1,95 @@
-# ContextRig CLI
+<div align="center">
 
-> **Developer Tool & Environment Provisioner for AI Coding Agents**  
-> Easily rig, scaffold, and inject contextual rules, tool scripts, and dependencies into any project repository.
+<img src="assets/image/ContextRig%20Icon.png" alt="ContextRig Icon" width="128" />
+
+# ContextRig
+
+**Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
+Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
+
+[![Version](https://img.shields.io/badge/version-1.0.0-2f6fd6?style=flat-square)](package.json)
+[![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
+[![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
+[![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
+[![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20OpenCode%20%C2%B7%20Copilot-7a5af5?style=flat-square)](#quick-start)
+
+[Why](#why) · [Supported agents](#supported-ai-agent-profiles) · [Skills library](#curated-skills-library) · [Workflow](#recommended-workflow) · [Quick start](#quick-start) · [Cloud sync](#cloud-sync--project-registry) · [Layout](#repository-layout) · [FAQ](#faq)
+
+</div>
 
 ---
 
-## Why ContextRig?
+## Why
 
-AI coding agents like **Claude Code**, **OpenCode**, **Cursor**, **ChatGPT**, and **GitHub Copilot** require project-specific knowledge, tools, and rules to operate at their full potential. Manually writing system rules, copy-pasting utility scripts, and configuring dependencies across every new repository is repetitive and friction-heavy.
+Global AI skill folders dump every tool into every repository, bloating context windows and confusing models with irrelevant instructions. Manual per-repo setup, on the other hand, leaves scripts stale and rules inconsistent across projects.
 
-**ContextRig** solves this by providing an interactive terminal CLI to:
-1. **Target Any Project Directory** — Scaffolds local repositories effortlessly.
-2. **Select Your AI Profile** — Supports 5 major AI agent formats out of the box.
-3. **Equip Curated Capabilities & Skills** — Injects production-ready tools (Graph visualizers, API testers, Web scrapers, DB inspectors, and Git conventions).
-4. **Automate Dependency Installation** — Automatically installs required `npm` and `pip` packages directly in your project.
-5. **Cloud-Based Remote Sync Engine** — Keeps installed skills up to date using **ETag (304 Not Modified)** conditional requests, **1-hour TTL caching**, and **SHA-256 hash comparison** to prevent GitHub API rate limits.
+**ContextRig** keeps skills **strictly project-scoped** while making cross-project management effortless via a global project registry (`~/.contextrig/projects.json`), Smart Merge, and conditional GitHub sync.
+
+| Manual or Global Setup | ContextRig CLI |
+|---|---|
+| Global skill dumps bloat every project's prompt | **Project-Scoped Injection** — equip only what each repo needs |
+| Copy-pasting `CLAUDE.md` / `.cursorrules` by hand | **5 Native Agent Templates** + Claude `.claude/commands/*.md` |
+| Updates wipe hand-written project rules | **Smart Merge** (`mergeMode: 'merge'`) updates skill blocks in-place |
+| Retyping folder paths to update every repo | **Global Registry + Sync All / By Skill** (`rig sync --all`) |
+| Hitting GitHub API rate limits on every check | **ETag `304` + SHA-256 Hash Guard** + 1-hour TTL cache |
 
 ---
 
-## ⚡ Quick Start
+## Supported AI Agent Profiles
+
+<details open>
+<summary><b>5 agent profiles</b> — generated from modular Handlebars templates</summary>
+
+| Profile | Output File | Template | Extras |
+|---|---|---|---|
+| **Claude Code** | `CLAUDE.md` | `templates/claude.md.hbs` | Generates `.claude/commands/<name>.md` slash commands |
+| **Cursor** | `.cursorrules` | `templates/cursorrules.hbs` | Project-scoped Composer & AI rules |
+| **OpenCode** | `AGENTS.md` | `templates/opencode.md.hbs` | Multi-agent specification |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | `templates/copilot.md.hbs` | Repository Copilot instructions |
+| **ChatGPT** | `CHATGPT.md` | `templates/chatgpt.md.hbs` | Context & guidelines for ChatGPT Projects |
+
+</details>
+
+---
+
+## Curated Skills Library
+
+<details open>
+<summary><b>7 built-in skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
+
+| Skill ID | Name | Slash Command | Injected Assets | Purpose |
+|---|---|---|---|---|
+| `kinet_rig` | **KinetRig (144–240 FPS)** | `/kinet-rig` | `rigtools/kinet_rig/` | Zero-dependency Ultra-HFR HTML5/GSAP/Three.js motion & video engine with live Web Audio capture |
+| `archify` | **Archify** | `/archify` | *(Agent skill & rules)* | Interactive HTML architecture diagrams, ERD, sequence, and workflow visualizers |
+| `graphify` | **Graphify** | `/graphify` | `rigtools/graphify.py` | Codebase dependency graph (`graphify-out/graph.html`), God Nodes & architectural report |
+| `web_scraper` | **Web Scraper** | `/scrape` | `rigtools/scraper.py` | Clean webpage text extraction from URLs or docs straight in terminal |
+| `playwright` | **Playwright** | `/playwright` | `rigtools/playwright_runner.js` | Headless Chromium runner for E2E checks, screenshots, and console error inspection |
+| `db_inspector` | **DB Schema Inspector** | — | `rigtools/db_inspector.js` | Inspects SQLite databases & `.env` profiles into `docs/db_schema.md` |
+| `git_workflow` | **Git Workflow** | `/commit` | *(System rules & command)* | Enforces Conventional Commits, diff metrics, secret guards & commit confirmation |
+
+</details>
+
+---
+
+## Recommended Workflow
+
+```mermaid
+flowchart LR
+  A[Inject<br>Select project, agent & skills] --> B[Smart Merge<br>Preserve hand-written rules]
+  B --> C[Auto-Register<br>Save to ~/.contextrig/projects.json]
+  C --> D{Update later}
+  D --> E[Sync All<br>rig sync --all]
+  D --> F[Update by Skill<br>rig sync --skill kinet_rig]
+  D --> G[Clean Remove<br>Prune scripts, commands & empty dirs]
+```
+
+1. **Inject once per project (`[1] Inject Skills`):** ContextRig detects existing agent files & installed skills, preserves custom rules via Smart Merge, installs `npm`/`pip` dependencies, updates `.gitignore`, and registers the project in `~/.contextrig/projects.json`.
+2. **Sync without typing paths (`[2] Sync & Update`):** Run `Sync All Registered Projects`, `Update by Skill` (push to projects or refresh ContextRig's master `scripts/`), or target the current working folder.
+3. **Clean uninstall (`[3] Remove Skills`):** Deletes only the removed skill's files, slash commands, optional generated artifacts, and empty subdirectories without touching sibling skills.
+
+---
+
+## Quick Start
 
 ### Installation
 
@@ -27,125 +98,75 @@ AI coding agents like **Claude Code**, **OpenCode**, **Cursor**, **ChatGPT**, an
 git clone https://github.com/Reff33/ContextRig.git
 cd ContextRig
 
-# Install dependencies
+# Install dependencies & link global CLI ('rig' / 'contextrig')
 npm install
-
-# Link globally (run 'rig' from any directory)
 npm link
 ```
 
-### Usage
+### Interactive & Direct CLI Commands
 
-Run from anywhere on your machine:
 ```bash
+# Launch interactive menu
 rig
-# or
-contextrig
+
+# Open Sync Hub (Sync All / Update by Skill / Current Folder / Registered Projects)
+rig sync
+
+# Check & update all registered projects in one command
+rig sync --all
+rig sync --all --yes
+
+# Skill-first update across all projects using a specific skill
+rig sync --skill kinet_rig
+
+# Sync a specific folder directly
+rig sync ./my-project
 ```
 
-Or run directly from source:
-```bash
-npm start
-# or: node src/index.js
-```
+---
+
+## Cloud Sync & Project Registry
+
+1. **ETag Conditional Requests (`If-None-Match`):** Remote files are checked with ETags so unchanged files return `304 Not Modified` with zero GitHub rate-limit cost.
+2. **Local Integrity Guard:** ContextRig tracks SHA-256 hashes in `.contextrig_cache.json`. If a target file was deleted or edited locally, `304` caching is bypassed and the file is cleanly restored.
+3. **Remote Preservation + Smart Merge:** Sync writes staged remote files first, then updates `CLAUDE.md` / `.cursorrules` in `merge` mode without copying stale local `scripts/` over fetched updates.
+4. **Global Project Registry (`~/.contextrig/projects.json`):** Automatically remembers injected projects, configured agents, and skills, pruning deleted directories automatically during `Sync All`.
+5. **GitHub Token Support:** Reads `GITHUB_TOKEN` from your environment or project `.env` to raise GitHub API limits from 60/hr to 5,000/hr.
 
 ---
 
-## 🔍 Existing Project Detection
-
-ContextRig inspects the target folder before writing anything:
-
-1. **Agent profiles** — any of the six output files already present is marked `[Already Configured]` and preselected.
-2. **Skills** — skills whose tool files exist in `rigtools/` (or whose name appears in existing rules) are marked `[Installed]` and pre-checked in the skill list.
-3. **Overwrite guard** — if a rules file exists but was not generated by ContextRig (no `Agent Profile:` header), the CLI asks before replacing it and keeps your hand-written rules by default.
-4. **Path cleanup** — quoted paths from Explorer ("Copy as path"), trailing slashes, `~`, and `%VAR%` are normalized automatically.
-
----
-
-## 🤖 Supported AI Agent Profiles
-
-| Profile | Output File | Description |
-| :--- | :--- | :--- |
-| **OpenCode** | `AGENTS.md` | Standard multi-agent configuration for OpenCode & Codex. |
-| **Claude** | `CLAUDE.md` | Context file for Claude Code (CLI) & Claude desktop. |
-| **Cursor** | `.cursorrules` | Project system instructions for Cursor AI and Composer. |
-| **ChatGPT** | `CHATGPT.md` | Context and guidelines for ChatGPT Projects & Custom GPTs. |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | Repository guidelines for GitHub Copilot Chat. |
-
----
-
-## 🛠️ Curated Capabilities & Skills
-
-| Skill | Asset Injected | Purpose |
-| :--- | :--- | :--- |
-| **KinetRig** | *(Agent Skill & Rules)* | Zero-dependency 144 FPS kinetic motion graphics, openers, explainers, data visualizers, and diegetic chat simulation using HTML5, GSAP & Three.js. Claude slash command: `/kinet-rig`. |
-| **Archify** | *(Agent Skill & Rules)* | Interactive HTML architecture diagrams and database ERD visualizers. Claude slash command: `/archify`. |
-| **Graphify** | `rigtools/graphify.py` | Visualizes codebase architectures, generates interactive **`graphify-out/graph.html`** (vis-network), God Node metrics, and architectural reports. Automatically added to `.gitignore`. |
-| **Web Scraper** | `rigtools/scraper.py` | Enables the AI agent to fetch clean text content from external web URLs or documentation directly from the terminal. |
-| **Playwright** | `rigtools/playwright_runner.js` | Headless Chromium runner for E2E testing, visual UI verification, and console error inspection. Claude slash command: `/playwright`. |
-| **DB Inspector** | `rigtools/db_inspector.js` | Inspects local SQLite databases and `.env` profiles, generating clean markdown schemas in `docs/db_schema.md` for accurate queries and models. |
-| **Git Workflow** | *(System Rules & Command)* | Enforces Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`), diff volume metrics, secret leak guards, and explicit commit approval. Claude slash command: `/commit`. |
-
----
-
-## ☁️ Cloud Sync Engine & Rate Limit Protection
-
-ContextRig includes a built-in remote synchronization engine (`src/core/syncEngine.js`) to keep your project's tools up to date without hitting GitHub's rate limits:
-
-1. **ETag Conditional Requests (`If-None-Match`):** Remote scripts are checked using ETags. If the file has not changed on GitHub, the server returns `304 Not Modified`, using 0 rate limit quota.
-2. **TTL Caching:** Results are cached in `.contextrig_cache.json` with a 1-hour Time-to-Live (TTL) to avoid redundant network calls.
-3. **SHA-256 Hash Fallback:** Ensures local files are compared accurately with remote releases before applying any overwrite.
-4. **GitHub Token Support:** Automatically detects `GITHUB_TOKEN` from your environment or project `.env`, expanding the rate limit from 60/hr to 5,000/hr for heavy usage.
-
----
-
-## 📂 Architecture & Directory Structure
+## Repository Layout
 
 ```text
-contextrig/
+ContextRig/
+├── assets/
+│   └── image/
+│       └── ContextRig Icon.png      Project icon
 ├── src/
-│   ├── index.js                     # CLI Entry point & Main interactive menu
-│   ├── config.js                    # Global paths and AI profiles
+│   ├── index.js                     CLI entry point, interactive menu & subcommands
+│   ├── config.js                    Paths & supported AI agent profiles
 │   ├── core/
-│   │   ├── projectSetup.js          # Validates & initializes target projects
-│   │   ├── agentSelector.js         # Interactive selection of AI profiles
-│   │   ├── fileInjector.js          # Handlebars compiler & asset copier
-│   │   ├── skillManager.js          # Skill schema validator & library manager
-│   │   ├── skillUpdater.js          # Automatic update detector & sync engine
-│   │   ├── syncEngine.js            # Cloud-based ETag & TTL remote sync engine
-│   │   ├── dependencyInstaller.js   # Automated npm/pip dependency installer
-│   │   └── gitIgnoreManager.js      # Automated .gitignore updater
+│   │   ├── projectSetup.js          Path sanitization & target directory validation
+│   │   ├── projectRegistry.js       Global ~/.contextrig/projects.json registry
+│   │   ├── agentSelector.js         Agent profile picker with existing detection
+│   │   ├── fileInjector.js          Handlebars compiler, Smart Merge & asset copier
+│   │   ├── skillManager.js          Skill schema loader & creator
+│   │   ├── skillUpdater.js          Installed skill detection, sync & safe removal
+│   │   ├── syncEngine.js            ETag/SHA-256 remote sync, Sync All & Skill-First
+│   │   ├── dependencyInstaller.js   Automated npm/pip & custom install_command runner
+│   │   └── gitIgnoreManager.js      Automated .gitignore pattern management
 │   └── utils/
-│       └── logger.js                # Styled console output & banners
-├── templates/                       # Dynamic Handlebars templates
-│   ├── claude.md.hbs                # Context template for Claude (CLAUDE.md)
-│   ├── cursorrules.hbs              # Rules template for Cursor (.cursorrules)
-│   ├── chatgpt.md.hbs               # Rules template for ChatGPT (CHATGPT.md)
-│   ├── copilot.md.hbs               # Rules template for Copilot (.github/copilot-instructions.md)
-│   └── opencode.md.hbs              # Rules template for OpenCode (AGENTS.md)
-├── skills_library/                  # Curated library of JSON capabilities
-│   ├── kinet_rig.json               # Zero-dependency 144 FPS kinetic motion & video engine
-│   ├── archify.json                 # Interactive HTML diagrams & ERD skill
-│   ├── web_scraper.json             # Web scraping tool & dependencies
-│   ├── playwright.json              # Playwright browser & E2E testing skill
-│   ├── graphify.json                # Graphify visual dependency & report skill
-│   ├── db_inspector.json            # Database schema inspection skill
-│   └── git_workflow.json            # Conventional commit & git conventions
-├── scripts/                         # Reusable tools & scripts
-│   ├── scraper.py                   # Python scraping tool asset
-│   ├── playwright_runner.js         # Playwright browser runner asset
-│   ├── graphify.py                  # Codebase visualizer & Graphify asset
-│   └── db_inspector.js              # Database inspector utility asset
-├── test_runner.js                   # Automated integration test suite
-├── package.json
-└── README.md
+│       ├── logger.js                Formatted console output & banners
+│       └── table.js                 Boxed CLI skill table renderer
+├── templates/                       Handlebars templates for 5 AI agent profiles
+├── skills_library/                  JSON definitions & remote_url manifests
+├── scripts/                         Local master scripts & skill toolkits
+└── test_runner.js                   Automated integration test suite
 ```
 
 ---
 
-## 🧪 Testing
-
-Run the automated integration test suite:
+## Testing
 
 ```bash
 npm test
@@ -153,6 +174,28 @@ npm test
 
 ---
 
-## 📄 License
+## FAQ
+
+<details>
+<summary><b>Will syncing overwrite my custom rules in CLAUDE.md or .cursorrules?</b></summary>
+
+No. ContextRig uses Smart Merge (`mergeMode: 'merge'`) during sync so only the matching `### Skill Name` block under `## Available AI Skills & Tools` is updated, while your custom sections and hand-written rules remain untouched.
+</details>
+
+<details>
+<summary><b>Do I have to type the project folder path every time I update a skill?</b></summary>
+
+No. Projects are auto-registered in `~/.contextrig/projects.json` when you inject or sync once. Afterward you can use **Sync All Registered Projects**, **Update by Skill**, **Sync Current Folder**, or `rig sync --all` from any terminal.
+</details>
+
+<details>
+<summary><b>How does ContextRig update ContextRig's own local scripts/ library?</b></summary>
+
+Choose **Update by Skill → ContextRig Master Library** (under `[2] Sync` or `[4] Manage Skills Library`) to pull updated skill JSON manifests (`manifest_remote_url`) and remote files straight into `skills_library/` and `scripts/`.
+</details>
+
+---
+
+## License
 
 MIT © Reff
