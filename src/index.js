@@ -11,11 +11,19 @@ import { setupTargetProject, sanitizePath } from './core/projectSetup.js';
 import { selectAgent } from './core/agentSelector.js';
 import { injectTemplate } from './core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
+import { inspectRemoteSkillRepo, commitImportedSkill } from './core/skillImporter.js';
 import { handleDependencies } from './core/dependencyInstaller.js';
 import { handleGitIgnore } from './core/gitIgnoreManager.js';
 import { detectInstalledSkills, detectConfiguredAgents, syncSkills, removeSkillsFromProject } from './core/skillUpdater.js';
-import { runSyncWorkflow, runSyncMasterWorkflow } from './core/syncEngine.js';
+import { runSyncWorkflow } from './core/syncEngine.js';
 import { registerProject, unregisterProject } from './core/projectRegistry.js';
+import {
+  getSkillSchema,
+  getSkillSettings,
+  loadAllSkillSettings,
+  saveSkillSettings,
+  resetSkillSettings
+} from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
 
 const execAsync = promisify(exec);
@@ -104,16 +112,21 @@ async function handleInjectSkills() {
           message: `Existing ${agent.outputFile} detected. Choose action:`,
           choices: [
             {
-              name: `${'Smart Merge'.padEnd(14, ' ')} ${chalk.dim('Preserve custom rules & avoid duplicates')} ${chalk.green('[Recommended]')}`,
+              name: `${'Smart Merge'} ${chalk.green('[Recommended]')}`,
+              short: 'Smart Merge',
+              description: 'Preserve custom rules and update ContextRig skill sections cleanly',
               value: 'merge'
             },
             {
-              name: `${'Overwrite'.padEnd(14, ' ')} ${chalk.dim('Reset file to fresh ContextRig template')}`,
+              name: 'Overwrite',
+              short: 'Overwrite',
+              description: 'Reset rules file to a fresh ContextRig template',
               value: 'overwrite'
             },
             new inquirer.Separator(),
             {
               name: chalk.yellow('← Cancel & Return to Main Menu'),
+              short: 'Cancelled',
               value: 'cancel'
             }
           ],
@@ -414,6 +427,401 @@ async function handleRemoveSkills() {
   }
 }
 
+async function configureSkillMenu(skill) {
+  const schema = getSkillSchema(skill);
+
+  while (true) {
+    const saved = await getSkillSettings(skill.id);
+    const hasCustomValues = Object.keys(saved.values).length > 0;
+    const isCustomized = hasCustomValues || Boolean(saved.extraRule);
+
+    console.log();
+    logger.divider();
+    logger.step(`Skill Inspector: ${skill.name} (${skill.id})`);
+    console.log();
+    console.log(`  Description:      ${chalk.white(skill.description)}`);
+    console.log(`  Slash Command:    ${skill.claude_command?.name ? chalk.green(`/${skill.claude_command.name}`) : chalk.dim('None')}`);
+    const npmDeps = skill.dependencies?.npm?.length ? skill.dependencies.npm.join(', ') : 'none';
+    const pipDeps = skill.dependencies?.pip?.length ? skill.dependencies.pip.join(', ') : 'none';
+    console.log(`  Dependencies:     npm [${npmDeps}], pip [${pipDeps}]`);
+    if (skill.files_to_copy?.length) {
+      const preview = skill.files_to_copy.length > 3
+        ? `${skill.files_to_copy.slice(0, 3).map((f) => f.destination).join(', ')} (+${skill.files_to_copy.length - 3} more)`
+        : skill.files_to_copy.map((f) => `${f.source} -> ${f.destination}`).join(', ');
+      console.log(`  Files to Copy:    ${preview}`);
+    }
+    if (skill.gitignore?.length) {
+      console.log(`  GitIgnore Rules:  ${skill.gitignore.join(', ')}`);
+    }
+
+    if (schema.fields.length > 0) {
+      console.log();
+      console.log(chalk.cyan('  Skill Settings:'));
+      for (const field of schema.fields) {
+        const activeVal = saved.values[field.key] ?? field.default;
+        const badge = saved.values[field.key] !== undefined && saved.values[field.key] !== field.default
+          ? chalk.yellow(' [custom]')
+          : chalk.dim(' [default]');
+        console.log(`    ${field.label.padEnd(28)} ${chalk.white(String(activeVal))}${badge}`);
+      }
+    }
+
+    if (saved.extraRule) {
+      console.log();
+      console.log(`  ${chalk.cyan('Extra AI Rule:')}   ${chalk.yellow(saved.extraRule)}`);
+    }
+
+    console.log();
+    console.log(chalk.cyan('  AI Instructions:'));
+    const wrappedInstructions = skill.ai_instructions
+      .replace(/(.{1,90})(\s+|$)/g, '    $1\n')
+      .trimEnd();
+    console.log(chalk.gray(wrappedInstructions));
+    console.log();
+    logger.divider();
+    console.log();
+
+    const { skillAction } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'skillAction',
+        message: `Manage ${chalk.cyan(skill.id)}:`,
+        choices: [
+          ...(schema.fields.length > 0
+            ? [
+                {
+                  name: 'Configure Settings',
+                  short: 'Configure Settings',
+                  description: `Edit ${schema.fields.map((f) => f.key).join(', ')} safely without changing base template`,
+                  value: 'settings'
+                }
+              ]
+            : []),
+          {
+            name: saved.extraRule ? 'Edit Extra AI Rule' : 'Add Extra AI Rule',
+            short: 'Extra AI Rule',
+            description: 'Append a custom rule when injecting or syncing projects',
+            value: 'rule'
+          },
+          ...(isCustomized
+            ? [
+                {
+                  name: chalk.yellow('Reset to Default'),
+                  short: 'Reset to Default',
+                  description: 'Clear saved custom settings and extra rule for this skill',
+                  value: 'reset'
+                }
+              ]
+            : []),
+          new inquirer.Separator(),
+          { name: chalk.yellow('← Back to Skill List'), short: 'Back', value: 'back' }
+        ]
+      }
+    ]);
+
+    if (skillAction === 'back') return;
+
+    if (skillAction === 'reset') {
+      await resetSkillSettings(skill.id);
+      console.log();
+      logger.success(`Reset ${skill.id} settings back to defaults.`);
+      continue;
+    }
+
+    if (skillAction === 'rule') {
+      console.log();
+      const { nextRule } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'nextRule',
+          message: 'Enter extra AI rule (leave blank to clear):',
+          default: saved.extraRule || ''
+        }
+      ]);
+      await saveSkillSettings(skill.id, { values: saved.values, extraRule: nextRule });
+      console.log();
+      logger.success(nextRule.trim() ? `Saved extra AI rule for ${skill.id}.` : `Cleared extra AI rule for ${skill.id}.`);
+      continue;
+    }
+
+    if (skillAction === 'settings') {
+      let updatedValues = { ...saved.values };
+      while (true) {
+        console.log();
+        const { fieldKey } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'fieldKey',
+            message: `Select setting to edit for ${chalk.cyan(skill.id)}:`,
+            choices: [
+              ...(schema.presets?.length
+                ? [
+                    {
+                      name: chalk.bold.cyan('Apply Quick Preset...'),
+                      short: 'Quick Preset',
+                      description: 'Apply a ready-made configuration profile in one click',
+                      value: '__PRESET__'
+                    },
+                    new inquirer.Separator()
+                  ]
+                : []),
+              ...schema.fields.map((f) => {
+                const cur = updatedValues[f.key] ?? f.default;
+                return {
+                  name: `${f.label.padEnd(28)} ${chalk.cyan(String(cur))}`,
+                  short: f.label,
+                  description: `Key: ${f.key} (default: ${f.default})`,
+                  value: f.key
+                };
+              }),
+              new inquirer.Separator(),
+              { name: chalk.green('✔ Save & Done'), short: 'Done', value: '__DONE__' }
+            ]
+          }
+        ]);
+
+        if (fieldKey === '__DONE__') {
+          await saveSkillSettings(skill.id, { values: updatedValues, extraRule: saved.extraRule });
+          console.log();
+          logger.success(`Saved settings for ${skill.id} (applies on next Inject or Sync).`);
+          break;
+        }
+
+        if (fieldKey === '__PRESET__') {
+          const { chosenPreset } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'chosenPreset',
+              message: `Choose preset for ${chalk.cyan(skill.id)}:`,
+              choices: [
+                ...schema.presets.map((p) => ({
+                  name: p.name,
+                  short: p.name,
+                  description: p.description,
+                  value: p
+                })),
+                new inquirer.Separator(),
+                { name: chalk.yellow('← Back'), short: 'Back', value: null }
+              ]
+            }
+          ]);
+          if (chosenPreset) {
+            updatedValues = { ...updatedValues, ...chosenPreset.values };
+            logger.info(`Applied preset: ${chosenPreset.name}`);
+          }
+          continue;
+        }
+
+        const field = schema.fields.find((f) => f.key === fieldKey);
+        const curVal = updatedValues[field.key] ?? field.default;
+
+        if (field.type === 'choice') {
+          const baseChoices = field.choices.map((c) =>
+            typeof c === 'object' ? c : { name: String(c), short: String(c), value: c }
+          );
+          const hasCurrent = baseChoices.some((c) => c.value === curVal);
+          const listChoices = [
+            ...(!hasCurrent
+              ? [{ name: `${curVal} (Current custom)`, short: String(curVal), value: curVal }]
+              : []),
+            ...baseChoices,
+            ...(field.allowCustom
+              ? [
+                  new inquirer.Separator(),
+                  { name: chalk.cyan('Custom value...'), short: 'Custom', value: '__CUSTOM__' }
+                ]
+              : [])
+          ];
+
+          const { val } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'val',
+              message: `Choose ${field.label}:`,
+              choices: listChoices,
+              default: curVal
+            }
+          ]);
+
+          if (val === '__CUSTOM__') {
+            const isNum = field.customType === 'number';
+            const { customVal } = await inquirer.prompt([
+              {
+                type: 'input',
+                name: 'customVal',
+                message: `Enter custom ${field.label}:`,
+                default: String(curVal),
+                validate: (input) => {
+                  if (isNum) {
+                    const n = Number(input);
+                    return Number.isInteger(n) && n > 0 ? true : 'Enter a valid positive integer.';
+                  }
+                  return input.trim().length > 0 ? true : `${field.label} cannot be empty.`;
+                }
+              }
+            ]);
+            updatedValues[field.key] = isNum ? Number(customVal) : customVal.trim();
+          } else {
+            updatedValues[field.key] = val;
+          }
+        } else if (field.type === 'number') {
+          const { val } = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'val',
+              message: `Enter ${field.label}:`,
+              default: String(curVal),
+              validate: (input) => {
+                const n = Number(input);
+                return Number.isInteger(n) && n > 0 ? true : 'Enter a valid positive integer.';
+              }
+            }
+          ]);
+          updatedValues[field.key] = Number(val);
+        } else {
+          const { val } = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'val',
+              message: `Enter ${field.label}:`,
+              default: String(curVal),
+              validate: (input) => (input.trim().length > 0 ? true : `${field.label} cannot be empty.`)
+            }
+          ]);
+          updatedValues[field.key] = val.trim();
+        }
+      }
+    }
+  }
+}
+
+async function handleImportSkillFromRepo() {
+  console.log();
+  const { repoInput } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'repoInput',
+      message: 'Enter GitHub URL, skills.sh URL, or owner/repo (or "b" to back):',
+      validate: (v) => (v.trim().length > 0 ? true : 'Repository URL is required.')
+    }
+  ]);
+
+  const clean = repoInput.trim();
+  if (clean.toLowerCase() === 'b' || clean.toLowerCase() === 'back') {
+    logger.info('Cancelled — returning to Main Menu.');
+    return;
+  }
+
+  console.log();
+  logger.step('Inspecting repository structure...');
+  let preview;
+  try {
+    preview = await inspectRemoteSkillRepo(clean);
+  } catch (err) {
+    console.log();
+    logger.error(`Import inspection failed: ${err.message}`);
+    return;
+  }
+
+  const { skill } = preview;
+  console.log();
+  logger.divider();
+  logger.step(`Import Preview: ${skill.name} (${skill.id})`);
+  console.log();
+  console.log(`  Category:         ${chalk.cyan(preview.category)}`);
+  console.log(`  Description:      ${chalk.white(skill.description)}`);
+  console.log(`  Files to Copy:    ${skill.files_to_copy.length} file(s)`);
+  const npmList = skill.dependencies?.npm?.length ? skill.dependencies.npm.join(', ') : 'none';
+  const pipList = skill.dependencies?.pip?.length ? skill.dependencies.pip.join(', ') : 'none';
+  console.log(`  Dependencies:     npm [${npmList}], pip [${pipList}]`);
+  if (skill.install_command) {
+    console.log(`  Install Command:  ${chalk.dim(skill.install_command)}`);
+  }
+  if (preview.warnings.length > 0) {
+    console.log();
+    for (const w of preview.warnings) {
+      logger.warn(w);
+    }
+  }
+  if (!preview.validation.valid) {
+    console.log();
+    for (const e of preview.validation.errors) {
+      logger.error(e);
+    }
+    return;
+  }
+  console.log();
+  logger.divider();
+
+  if (preview.needsManualInstructions) {
+    console.log();
+    logger.warn('No SKILL.md found in this repository.');
+    const { manualInst } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'manualInst',
+        message: 'Enter AI instructions for using this skill:',
+        validate: (v) => (v.trim().length > 0 ? true : 'AI instructions are required.')
+      }
+    ]);
+    skill.ai_instructions = manualInst.trim();
+    if (skill.claude_command) {
+      skill.claude_command.content = `# /${skill.claude_command.name}\n\n${skill.ai_instructions}`;
+    }
+  }
+
+  const existingSkills = await loadAvailableSkills();
+  if (existingSkills.some((s) => s.id === skill.id)) {
+    console.log();
+    const { overwrite } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: `Skill '${skill.id}' already exists in skills_library/. Overwrite it?`,
+        default: false
+      }
+    ]);
+    if (!overwrite) {
+      logger.info('Import cancelled — existing skill kept.');
+      return;
+    }
+  }
+
+  console.log();
+  const { confirmImport } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirmImport',
+      message: `Import '${skill.name}' into ContextRig Master Library?`,
+      default: true
+    }
+  ]);
+
+  if (!confirmImport) {
+    logger.info('Import cancelled.');
+    return;
+  }
+
+  console.log();
+  logger.step('Downloading files & running dry-run verification...');
+  const result = await commitImportedSkill(preview);
+  console.log();
+  logger.success(`Saved manifest: ${result.manifestPath}`);
+  if (result.downloadedCount > 0) {
+    logger.success(`Downloaded ${result.downloadedCount} file(s) to scripts/${skill.id}/`);
+  }
+  if (result.failedFiles.length > 0) {
+    for (const f of result.failedFiles.slice(0, 5)) {
+      logger.warn(`Skipped: ${f}`);
+    }
+  }
+  if (result.dryRunOk) {
+    logger.success(`Dry-run verification passed! '${skill.id}' is ready for [1] Inject Skills to Project.`);
+  } else {
+    logger.warn(`Dry-run warning: missing local source(s): ${result.missingLocalSources.join(', ')}`);
+  }
+}
+
 /**
  * Handle Option [4]: Manage Skills Library
  */
@@ -426,17 +834,32 @@ async function handleManageSkills() {
       name: 'subAction',
       message: 'Choose a skill library operation:',
       choices: [
-        { name: `${'List All Skills'.padEnd(24)} ${chalk.dim('Inspect installed library & instructions')}`, value: 'list' },
-        { name: `${'Create New Skill'.padEnd(24)} ${chalk.dim('Add custom JSON skill definition')}`, value: 'create' },
-        { name: `${'Sync Master Library'.padEnd(24)} ${chalk.dim('Update skills_library/ & scripts/ from GitHub')}`, value: 'sync_master' },
+        {
+          name: 'List & Configure Skills',
+          short: 'List & Configure Skills',
+          description: 'Inspect skills, configure parameters (IP, encoder, folders), or add extra AI rules',
+          value: 'list'
+        },
+        {
+          name: chalk.cyan('Import Skill from GitHub / skills.sh'),
+          short: 'Import from Repo',
+          description: 'Auto-detect SKILL.md, scripts, assets, or npx packages from URL',
+          value: 'import'
+        },
+        {
+          name: 'Create Custom Rule (No Repo)',
+          short: 'Create Custom Rule',
+          description: 'Add a prompt/rule skill JSON definition without an external repo',
+          value: 'create'
+        },
         new inquirer.Separator(),
-        { name: chalk.yellow('← Back to Main Menu'), value: 'back' }
+        { name: chalk.yellow('← Back to Main Menu'), short: 'Back', value: 'back' }
       ]
     }
   ]);
 
-  if (subAction === 'sync_master') {
-    await runSyncMasterWorkflow();
+  if (subAction === 'import') {
+    await handleImportSkillFromRepo();
     return;
   }
 
@@ -452,46 +875,33 @@ async function handleManageSkills() {
     logger.info(`Total available skills: ${skills.length}`);
     console.log();
 
-    const { inspectChoice } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'inspectChoice',
-        message: 'Select a skill to inspect details or return to menu:',
-        choices: [
-          { name: chalk.yellow('← Back to Skills Management Menu'), value: 'back' },
-          new inquirer.Separator(),
-          ...skills.map((s, idx) => ({
-            name: `${String(idx + 1).padStart(2, ' ')}. [${s.id.padEnd(14, ' ')}] ${s.name}`,
-            value: s
-          }))
-        ]
-      }
-    ]);
+    while (true) {
+      const allSettings = await loadAllSkillSettings();
+      const { inspectChoice } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'inspectChoice',
+          message: 'Select a skill to inspect or configure:',
+          choices: [
+            ...skills.map((s, idx) => {
+              const isCustom = Boolean(allSettings[s.id]);
+              const badge = isCustom ? ` ${chalk.yellow('[Custom]')}` : '';
+              return {
+                name: `${String(idx + 1).padStart(2, ' ')}. [${s.id.padEnd(14, ' ')}] ${s.name}${badge}`,
+                short: s.id,
+                description: s.description,
+                value: s
+              };
+            }),
+            new inquirer.Separator(),
+            { name: chalk.yellow('← Back to Main Menu'), short: 'Back', value: 'back' }
+          ]
+        }
+      ]);
 
-    if (inspectChoice && inspectChoice !== 'back') {
+      if (!inspectChoice || inspectChoice === 'back') break;
+      await configureSkillMenu(inspectChoice);
       console.log();
-      logger.divider();
-      logger.step(`Skill Inspector: ${inspectChoice.name} (${inspectChoice.id})`);
-      console.log();
-      console.log(`  Description:      ${chalk.white(inspectChoice.description)}`);
-      console.log(`  Slash Command:    ${inspectChoice.claude_command?.name ? chalk.green(`/${inspectChoice.claude_command.name}`) : chalk.dim('None')}`);
-      const npmDeps = inspectChoice.dependencies?.npm?.length ? inspectChoice.dependencies.npm.join(', ') : 'none';
-      const pipDeps = inspectChoice.dependencies?.pip?.length ? inspectChoice.dependencies.pip.join(', ') : 'none';
-      console.log(`  Dependencies:     npm [${npmDeps}], pip [${pipDeps}]`);
-      if (inspectChoice.files_to_copy?.length) {
-        console.log(`  Files to Copy:    ${inspectChoice.files_to_copy.map((f) => `${f.source} -> ${f.destination}`).join(', ')}`);
-      }
-      if (inspectChoice.gitignore?.length) {
-        console.log(`  GitIgnore Rules:  ${inspectChoice.gitignore.join(', ')}`);
-      }
-      console.log();
-      console.log(chalk.cyan('  AI Instructions:'));
-      const wrappedInstructions = inspectChoice.ai_instructions
-        .replace(/(.{1,90})(\s+|$)/g, '    $1\n')
-        .trimEnd();
-      console.log(chalk.gray(wrappedInstructions));
-      console.log();
-      logger.divider();
     }
   } else if (subAction === 'create') {
     logger.step('Define a new Skill according to standard schema:');
@@ -589,7 +999,7 @@ async function mainMenu() {
           message: 'What would you like to do?',
           choices: [
             { name: '[1] Inject Skills to Project', value: 'inject' },
-            { name: '[2] Sync & Update Project Skills', value: 'sync' },
+            { name: '[2] Sync & Check Updates', value: 'sync' },
             { name: '[3] Remove Skills from Project', value: 'remove' },
             { name: '[4] Manage Skills Library', value: 'manage' },
             new inquirer.Separator(),
@@ -640,7 +1050,7 @@ ContextRig CLI — AI Agent Context & Skill Provisioner
 
 Usage:
   rig                                Launch interactive menu
-  rig sync                           Open interactive sync hub (All / Skill / CWD / Project)
+  rig sync                           Open sync hub (Check & Update All / One Project / One Skill)
   rig sync --all [--yes]             Check & update all registered projects
   rig sync --skill <id> [--yes]      Update a specific skill across registered projects
   rig sync <path> [--yes]            Sync a specific project directory

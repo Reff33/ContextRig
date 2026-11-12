@@ -13,6 +13,7 @@ import { handleDependencies } from './dependencyInstaller.js';
 import { handleGitIgnore } from './gitIgnoreManager.js';
 import { detectInstalledSkills, detectConfiguredAgents } from './skillUpdater.js';
 import { registerProject, pruneMissingProjects } from './projectRegistry.js';
+import { getSkillSchema, getSkillSettings, mergeConfigContent, syncProjectSkillConfigs } from './skillSettings.js';
 import { logger } from '../utils/logger.js';
 
 const CACHE_FILE_NAME = '.contextrig_cache.json';
@@ -175,11 +176,16 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
   const newHashes = {};
   let hasUpdate = false;
 
+  const schema = getSkillSchema(skill);
+  const savedSettings = schema.configTarget ? await getSkillSettings(skill.id) : { values: {} };
+  const hasSavedConfig = Boolean(schema.configTarget && Object.keys(savedSettings.values).length > 0);
+
   if (Array.isArray(skill.files_to_copy) && skill.files_to_copy.length > 0) {
     const results = await mapWithConcurrency(skill.files_to_copy, FETCH_CONCURRENCY, async (item) => {
       const destPath = path.resolve(targetDir, item.destination);
       const destRel = item.destination.replace(/\\/g, '/');
       const fileKey = `${skill.id}:${destRel}`;
+      const isConfigTarget = hasSavedConfig && destRel === schema.configTarget;
 
       let localContent = '';
       let localExists = false;
@@ -196,7 +202,7 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
 
       if (item.remote_url) {
         // Only allow 304 Not Modified skip if local file exists AND matches last synced hash
-        const canUseEtag = Boolean(localExists && cachedEtag && cachedHash && localHash === cachedHash);
+        const canUseEtag = Boolean(localExists && cachedEtag && cachedHash && localHash === cachedHash && !isConfigTarget);
         const res = await fetchRemoteFile(item.remote_url, canUseEtag ? cachedEtag : null, token);
 
         if (res.notModified) {
@@ -206,15 +212,18 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
         if (res.error) {
           logger.warn(`Could not check remote ${destRel}: ${res.error}. Falling back to local check.`);
         } else if (res.content !== undefined) {
-          const remoteHash = calculateHash(res.content);
+          const expectedContent = isConfigTarget
+            ? mergeConfigContent(res.content, savedSettings.values, schema)
+            : res.content;
+          const remoteHash = calculateHash(expectedContent);
           const outdated = !localExists || remoteHash !== localHash;
           return {
             destRel,
             destination: item.destination,
             fileKey,
             outdated,
-            content: outdated ? res.content : undefined,
-            etag: res.etag || null,
+            content: outdated ? expectedContent : undefined,
+            etag: isConfigTarget ? null : res.etag || null,
             hash: remoteHash
           };
         }
@@ -225,14 +234,17 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
         const srcPath = path.resolve(ROOT_DIR, item.source);
         try {
           const srcContent = await fs.readFile(srcPath, 'utf8');
-          const srcHash = calculateHash(srcContent);
+          const expectedContent = isConfigTarget
+            ? mergeConfigContent(srcContent, savedSettings.values, schema)
+            : srcContent;
+          const srcHash = calculateHash(expectedContent);
           const outdated = !localExists || srcHash !== localHash;
           return {
             destRel,
             destination: item.destination,
             fileKey,
             outdated,
-            content: outdated ? srcContent : undefined,
+            content: outdated ? expectedContent : undefined,
             hash: srcHash
           };
         } catch {
@@ -365,6 +377,24 @@ export async function inspectProjectUpdates(targetPath, availableSkills, { skill
   };
 }
 
+function printCompactFileList(files, maxVisible = 6) {
+  if (!files || files.length === 0) return;
+  console.log();
+  const visible = files.slice(0, maxVisible);
+  for (const file of visible) {
+    console.log(`  ${chalk.green('✔')}  ${chalk.dim(file)}`);
+  }
+  if (files.length > maxVisible) {
+    console.log(`  ${chalk.cyan(`… +${files.length - maxVisible} more file(s)`)}`);
+  }
+  console.log();
+}
+
+function formatSkillOptionName(skill) {
+  const shortTitle = skill.name.length > 42 ? `${skill.name.slice(0, 41)}…` : skill.name;
+  return `${chalk.cyan(`[${skill.id}]`.padEnd(16))} ${shortTitle}`;
+}
+
 /**
  * Applies staged updates for a single project inspection without clobbering remote files or custom rules.
  * @param {Object} inspection
@@ -373,14 +403,17 @@ export async function inspectProjectUpdates(targetPath, availableSkills, { skill
 export async function applyProjectUpdates(inspection, { promptDeps = true } = {}) {
   const { fullPath, projectName, configuredAgents, installedSkills, outdatedSkills, cache } = inspection;
 
+  const updatedFiles = [];
   for (const skill of outdatedSkills) {
     for (const [destRel, content] of Object.entries(skill.stagedContent)) {
       const destPath = path.resolve(fullPath, destRel);
       await fs.mkdir(path.dirname(destPath), { recursive: true });
       await fs.writeFile(destPath, content, 'utf8');
-      logger.info(`Updated: ${destRel} ✔`);
+      updatedFiles.push(destRel);
     }
   }
+  await syncProjectSkillConfigs(fullPath, installedSkills);
+  printCompactFileList(updatedFiles);
 
   // Re-sync AI rules with Smart Merge & copyAssets: false (never overwrite remote staged files or user custom rules)
   for (const agent of configuredAgents) {
@@ -430,23 +463,23 @@ function hasLocalUncommittedManifest(skillId) {
 }
 
 /**
- * Syncs a single skill's remote manifest & master scripts directly into ContextRig itself.
+ * Inspects a single skill's remote manifest & master scripts in memory without writing to disk.
  * @param {Object} skill
  * @param {{ token?: string|null }} [options]
  */
-export async function syncMasterSkillLibrary(skill, { token = null } = {}) {
+export async function inspectMasterSkillLibrary(skill, { token = null } = {}) {
   const authToken = token || (await getGitHubToken(ROOT_DIR));
-  let activeSkill = skill;
+  let effectiveSkill = skill;
+  let manifestUpdate = null;
+  let manifestNote = null;
 
-  // 1. Refresh skill JSON manifest if manifest_remote_url is present and local copy is clean
   if (skill.manifest_remote_url) {
     if (hasLocalUncommittedManifest(skill.id)) {
-      logger.warn(`Local skills_library/${skill.id}.json has uncommitted changes — keeping local manifest.`);
+      manifestNote = `Local skills_library/${skill.id}.json has uncommitted changes — keeping local manifest.`;
     } else {
-      logger.step(`Checking manifest for ${skill.name}...`);
       const manifestRes = await fetchRemoteFile(skill.manifest_remote_url, null, authToken);
       if (manifestRes.error) {
-        logger.warn(`Manifest fetch skipped (${manifestRes.error}); using local ${skill.id}.json.`);
+        manifestNote = `Manifest check skipped (${manifestRes.error}); using local ${skill.id}.json.`;
       } else if (manifestRes.content) {
         try {
           const parsed = JSON.parse(manifestRes.content);
@@ -457,77 +490,158 @@ export async function syncMasterSkillLibrary(skill, { token = null } = {}) {
               currentRaw = await fs.readFile(localManifestPath, 'utf8');
             } catch {}
             if (calculateHash(currentRaw) !== calculateHash(manifestRes.content)) {
-              await saveSkill(parsed);
-              activeSkill = parsed;
-              logger.success(`Updated manifest: skills_library/${skill.id}.json`);
-            } else {
-              logger.info(`Manifest skills_library/${skill.id}.json is up to date.`);
+              manifestUpdate = { parsed };
+              effectiveSkill = parsed;
             }
           }
         } catch (err) {
-          logger.warn(`Invalid remote manifest JSON for ${skill.id}: ${err.message}`);
+          manifestNote = `Invalid remote manifest JSON for ${skill.id}: ${err.message}`;
         }
       }
     }
   }
 
-  // 2. Refresh ContextRig/scripts/* master files from each item.remote_url
-  const items = Array.isArray(activeSkill.files_to_copy)
-    ? activeSkill.files_to_copy.filter((i) => i.source && i.remote_url)
+  const items = Array.isArray(effectiveSkill.files_to_copy)
+    ? effectiveSkill.files_to_copy.filter((i) => i.source && i.remote_url)
     : [];
 
-  if (items.length === 0) {
-    logger.info(`No remote files configured for ${activeSkill.name} master library.`);
-    return { updatedCount: 0, errorCount: 0, skill: activeSkill };
-  }
+  const updates = [];
+  const failedFiles = [];
 
-  logger.step(`Syncing ${items.length} master file(s) for ${activeSkill.name} into ContextRig...`);
-  let updatedCount = 0;
-  let errorCount = 0;
+  if (items.length > 0) {
+    const results = await mapWithConcurrency(items, FETCH_CONCURRENCY, async (item) => {
+      const masterPath = path.resolve(ROOT_DIR, item.source);
+      let localContent = '';
+      let localExists = false;
+      try {
+        localContent = await fs.readFile(masterPath, 'utf8');
+        localExists = true;
+      } catch {}
 
-  const results = await mapWithConcurrency(items, FETCH_CONCURRENCY, async (item) => {
-    const masterPath = path.resolve(ROOT_DIR, item.source);
-    let localContent = '';
-    let localExists = false;
-    try {
-      localContent = await fs.readFile(masterPath, 'utf8');
-      localExists = true;
-    } catch {}
+      const res = await fetchRemoteFile(item.remote_url, null, authToken);
+      if (res.error || res.content === undefined) {
+        return { source: item.source, error: res.error || 'empty' };
+      }
 
-    const res = await fetchRemoteFile(item.remote_url, null, authToken);
-    if (res.error || res.content === undefined) {
-      return { source: item.source, error: res.error || 'empty' };
-    }
+      if (!localExists || calculateHash(localContent) !== calculateHash(res.content)) {
+        return { source: item.source, masterPath, content: res.content, updated: true };
+      }
+      return { source: item.source, updated: false };
+    });
 
-    if (!localExists || calculateHash(localContent) !== calculateHash(res.content)) {
-      await fs.mkdir(path.dirname(masterPath), { recursive: true });
-      await fs.writeFile(masterPath, res.content, 'utf8');
-      return { source: item.source, updated: true };
-    }
-    return { source: item.source, updated: false };
-  });
-
-  for (const r of results) {
-    if (r.error) {
-      errorCount++;
-      logger.warn(`Could not fetch ${r.source}: ${r.error}`);
-    } else if (r.updated) {
-      updatedCount++;
-      logger.info(`Master updated: ${r.source} ✔`);
+    for (const r of results) {
+      if (r.error) {
+        failedFiles.push(`${r.source} (${r.error})`);
+      } else if (r.updated) {
+        updates.push({ source: r.source, masterPath: r.masterPath, content: r.content });
+      }
     }
   }
 
-  if (errorCount > 0 && updatedCount === 0) {
-    logger.error(`${activeSkill.name} master library sync failed (${errorCount} file(s) could not be fetched).`);
-  } else if (errorCount > 0) {
-    logger.warn(`Updated ${updatedCount} file(s), but ${errorCount} file(s) failed to fetch.`);
-  } else if (updatedCount === 0) {
-    logger.success(`${activeSkill.name} master library is already up to date.`);
+  return {
+    skill: effectiveSkill,
+    manifestUpdate,
+    manifestNote,
+    updates,
+    failedFiles,
+    hasRemoteFiles: items.length > 0 || Boolean(skill.manifest_remote_url),
+    hasUpdate: Boolean(manifestUpdate) || updates.length > 0
+  };
+}
+
+/**
+ * Applies previously inspected Master Library updates to ContextRig's skills_library/ and scripts/.
+ * @param {Object} inspection
+ */
+export async function applyMasterSkillInspection(inspection) {
+  let manifestUpdated = false;
+  if (inspection.manifestUpdate?.parsed) {
+    await saveSkill(inspection.manifestUpdate.parsed);
+    manifestUpdated = true;
+  }
+
+  const updatedFiles = [];
+  for (const u of inspection.updates) {
+    await fs.mkdir(path.dirname(u.masterPath), { recursive: true });
+    await fs.writeFile(u.masterPath, u.content, 'utf8');
+    updatedFiles.push(u.source);
+  }
+
+  return {
+    updatedCount: updatedFiles.length,
+    manifestUpdated,
+    updatedFiles,
+    errorCount: inspection.failedFiles.length,
+    skill: inspection.skill
+  };
+}
+
+function printMasterStatusLine(inspection) {
+  const id = inspection.skill.id.padEnd(16);
+  if (!inspection.hasRemoteFiles) {
+    console.log(`${chalk.dim('  —  [LOCAL ONLY]')}       ${chalk.dim(id)} ${chalk.dim('(no remote URLs)')}`);
+    return;
+  }
+  if (inspection.failedFiles.length > 0 && !inspection.hasUpdate) {
+    console.log(`${chalk.red('  !  [CHECK FAILED]')}     ${chalk.white(id)} ${chalk.red(`(${inspection.failedFiles.length} unreachable)`)}`);
+    return;
+  }
+  if (inspection.hasUpdate) {
+    const parts = [];
+    if (inspection.manifestUpdate) parts.push('manifest');
+    if (inspection.updates.length > 0) parts.push(`${inspection.updates.length} file(s)`);
+    console.log(`${chalk.bold.yellow('  ▲ [UPDATE AVAILABLE]')} ${chalk.white(id)} ${chalk.cyan(`[${parts.join(' + ')}]`)}`);
+    return;
+  }
+  console.log(`${chalk.green('  ✔  [UP TO DATE]')}       ${chalk.dim(inspection.skill.id)}`);
+}
+
+/**
+ * Syncs a single skill's remote manifest & master scripts directly into ContextRig itself.
+ * @param {Object} skill
+ * @param {{ token?: string|null }} [options]
+ */
+export async function syncMasterSkillLibrary(skill, { token = null } = {}) {
+  logger.step(`Checking master library for ${skill.id}...`);
+  const inspection = await inspectMasterSkillLibrary(skill, { token });
+
+  if (inspection.manifestNote) {
+    logger.warn(inspection.manifestNote);
+  }
+
+  if (!inspection.hasRemoteFiles) {
+    logger.info(`No remote files configured for ${inspection.skill.id} master library.`);
+    return { updatedCount: 0, errorCount: 0, skill: inspection.skill };
+  }
+
+  const applied = await applyMasterSkillInspection(inspection);
+  if (applied.manifestUpdated) {
+    logger.success(`Updated manifest: skills_library/${inspection.skill.id}.json`);
+  }
+  printCompactFileList(applied.updatedFiles);
+
+  if (applied.errorCount > 0) {
+    console.log();
+    for (const errLine of inspection.failedFiles.slice(0, 6)) {
+      logger.warn(`Failed: ${errLine}`);
+    }
+    if (inspection.failedFiles.length > 6) {
+      logger.warn(`... +${inspection.failedFiles.length - 6} more failed file(s)`);
+    }
+    console.log();
+  }
+
+  if (applied.errorCount > 0 && applied.updatedCount === 0) {
+    logger.error(`${inspection.skill.id} master sync failed (${applied.errorCount} file(s) unreachable).`);
+  } else if (applied.errorCount > 0) {
+    logger.warn(`Updated ${applied.updatedCount} file(s) for ${inspection.skill.id}, but ${applied.errorCount} failed.`);
+  } else if (applied.updatedCount === 0 && !applied.manifestUpdated) {
+    logger.success(`${inspection.skill.id} master library is already up to date.`);
   } else {
-    logger.success(`Updated ${updatedCount} master file(s) for ${activeSkill.name}.`);
+    logger.success(`Updated ${applied.updatedCount} master file(s) for ${inspection.skill.id}.`);
   }
 
-  return { updatedCount, errorCount, skill: activeSkill };
+  return { updatedCount: applied.updatedCount, errorCount: applied.errorCount, skill: applied.skill };
 }
 
 /**
@@ -617,16 +731,21 @@ async function syncSingleProject(targetPath, { skillFilterId = null, autoConfirm
           message: `Found ${inspection.outdatedSkills.length} outdated skill(s) (${totalFilesCount} files):`,
           choices: [
             {
-              name: `${chalk.bold.green('Apply All Updates'.padEnd(22))} ${chalk.dim(`${inspection.outdatedSkills.length} skill(s), ${totalFilesCount} files`)} ${chalk.green('[Recommended]')}`,
+              name: `${chalk.bold.green('Apply All Updates')} ${chalk.green('[Recommended]')}`,
+              short: 'Apply All Updates',
+              description: `Apply updates to ${inspection.outdatedSkills.length} skill(s) (${totalFilesCount} files total)`,
               value: 'apply'
             },
             {
-              name: `${chalk.cyan('Inspect File Details'.padEnd(22))} ${chalk.dim('View changed files per skill')}`,
+              name: chalk.cyan('Inspect File Details'),
+              short: 'Inspect File Details',
+              description: 'View full list of changed files per skill',
               value: 'inspect'
             },
             new inquirer.Separator(),
             {
               name: chalk.yellow('← Cancel & Back to Main Menu'),
+              short: 'Cancelled',
               value: 'cancel'
             }
           ]
@@ -781,11 +900,13 @@ export async function runUpdateBySkillWorkflow({ skillId = null, autoConfirm = f
         message: 'Select skill to sync/update:',
         choices: [
           ...availableSkills.map((s) => ({
-            name: `${chalk.cyan(`[${s.id}]`.padEnd(16))} ${s.name}`,
+            name: formatSkillOptionName(s),
+            short: s.id,
+            description: s.description,
             value: s
           })),
           new inquirer.Separator(),
-          { name: chalk.yellow('← Back'), value: null }
+          { name: chalk.yellow('← Back'), short: 'Back', value: null }
         ]
       }
     ]);
@@ -807,19 +928,25 @@ export async function runUpdateBySkillWorkflow({ skillId = null, autoConfirm = f
       message: `Update scope for ${chalk.cyan(chosenSkill.id)}:`,
       choices: [
         {
-          name: `${'Registered Projects'.padEnd(22)} ${chalk.dim(`Push updates to saved projects`)} ${chalk.green('[Recommended]')}`,
+          name: `Registered Projects ${chalk.green('[Recommended]')}`,
+          short: 'Registered Projects',
+          description: `Push updates to saved projects using ${chosenSkill.id}`,
           value: 'projects'
         },
         {
-          name: `${'Master Library'.padEnd(22)} ${chalk.dim('Refresh local skills_library/ & scripts/')}`,
+          name: 'Master Library',
+          short: 'Master Library',
+          description: 'Refresh local skills_library/ and scripts/ from GitHub',
           value: 'master'
         },
         {
-          name: `${'Both'.padEnd(22)} ${chalk.dim('Master Library + Registered Projects')}`,
+          name: 'Both (Master + Projects)',
+          short: 'Both',
+          description: 'Update Master Library first, then push to saved projects',
           value: 'both'
         },
         new inquirer.Separator(),
-        { name: chalk.yellow('← Back'), value: 'back' }
+        { name: chalk.yellow('← Back'), short: 'Back', value: 'back' }
       ]
     }
   ]);
@@ -828,12 +955,156 @@ export async function runUpdateBySkillWorkflow({ skillId = null, autoConfirm = f
 
   console.log();
   if (targetScope === 'master' || targetScope === 'both') {
-    await syncMasterSkillLibrary(chosenSkill);
+    const masterInsp = await inspectMasterSkillLibrary(chosenSkill);
+    if (masterInsp.manifestNote) logger.warn(masterInsp.manifestNote);
+    printMasterStatusLine(masterInsp);
     console.log();
+
+    if (masterInsp.hasUpdate) {
+      const { confirmMaster } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirmMaster',
+          message: `Apply Master Library update for ${chosenSkill.id} (${masterInsp.updates.length} file(s))?`,
+          default: true
+        }
+      ]);
+      if (confirmMaster) {
+        const applied = await applyMasterSkillInspection(masterInsp);
+        printCompactFileList(applied.updatedFiles);
+        logger.success(`Updated ${applied.updatedCount} master file(s) for ${chosenSkill.id}.`);
+      } else {
+        logger.info('Master Library update skipped.');
+      }
+      console.log();
+    } else if (masterInsp.hasRemoteFiles && masterInsp.failedFiles.length === 0) {
+      logger.success(`${chosenSkill.id} Master Library is already up to date.`);
+      console.log();
+    }
   }
   if (targetScope === 'projects' || targetScope === 'both') {
     await runSyncAllWorkflow({ skillFilterId: chosenSkill.id, autoConfirm: false });
   }
+}
+
+/**
+ * Checks all skills in ContextRig Master Library and all registered projects in one flow,
+ * printing a status breakdown before asking once to apply any available updates.
+ */
+export async function runCheckAndUpdateAllWorkflow({ autoConfirm = false } = {}) {
+  const availableSkills = await loadAvailableSkills();
+  const { valid: projects, removed } = await pruneMissingProjects();
+  if (removed.length > 0) {
+    logger.info(`Pruned ${removed.length} missing project directory(s) from registry.`);
+    console.log();
+  }
+
+  // 1. Check ContextRig Master Library
+  let masterOutdated = [];
+  if (availableSkills.length > 0) {
+    logger.step(`Checking ContextRig Master Library (${availableSkills.length} skill(s))...`);
+    console.log();
+    const token = await getGitHubToken(ROOT_DIR);
+    const masterInspections = await mapWithConcurrency(availableSkills, 3, (s) =>
+      inspectMasterSkillLibrary(s, { token })
+    );
+
+    for (const insp of masterInspections) {
+      if (insp.manifestNote) logger.warn(insp.manifestNote);
+      printMasterStatusLine(insp);
+    }
+    console.log();
+    masterOutdated = masterInspections.filter((i) => i.hasUpdate);
+  }
+
+  // 2. Check Registered Projects
+  const projectInspections = [];
+  if (projects.length > 0) {
+    logger.step(`Checking ${projects.length} registered project(s)...`);
+    console.log();
+    for (const proj of projects) {
+      const inspection = await inspectProjectUpdates(proj.path, availableSkills);
+      if (inspection.checkedSkills.length > 0) {
+        projectInspections.push(inspection);
+        printInspectionSummary(inspection);
+        console.log();
+      } else {
+        inspection.cache.last_checked = Date.now();
+        await saveCache(inspection.fullPath, inspection.cache);
+      }
+    }
+  } else {
+    logger.info('No registered projects yet — checked Master Library only.');
+    console.log();
+  }
+
+  const projectsWithUpdates = projectInspections.filter((i) => i.outdatedSkills.length > 0);
+  if (masterOutdated.length === 0 && projectsWithUpdates.length === 0) {
+    for (const insp of projectInspections) {
+      insp.cache.last_checked = Date.now();
+      await saveCache(insp.fullPath, insp.cache);
+    }
+    logger.success('Everything is up to date! No updates needed.');
+    return;
+  }
+
+  const masterFilesTotal = masterOutdated.reduce(
+    (sum, i) => sum + i.updates.length + (i.manifestUpdate ? 1 : 0),
+    0
+  );
+  const projectFilesTotal = projectsWithUpdates.reduce(
+    (sum, insp) => sum + insp.outdatedSkills.reduce((sSum, s) => sSum + s.outdatedFiles.length, 0),
+    0
+  );
+
+  const summaryParts = [];
+  if (masterOutdated.length > 0) {
+    summaryParts.push(`${masterOutdated.length} Master skill(s) (${masterFilesTotal} file(s))`);
+  }
+  if (projectsWithUpdates.length > 0) {
+    summaryParts.push(`${projectsWithUpdates.length} project(s) (${projectFilesTotal} file(s))`);
+  }
+
+  let proceed = autoConfirm;
+  if (!autoConfirm) {
+    const { confirmAll } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'confirmAll',
+        message: `Apply updates for ${summaryParts.join(' and ')}?`,
+        default: true
+      }
+    ]);
+    proceed = confirmAll;
+  }
+
+  if (!proceed) {
+    console.log();
+    logger.info('Update cancelled — no files were modified.');
+    return;
+  }
+
+  for (const insp of masterOutdated) {
+    console.log();
+    logger.step(`Updating Master Library: ${insp.skill.id}...`);
+    const applied = await applyMasterSkillInspection(insp);
+    if (applied.manifestUpdated) {
+      logger.success(`Updated manifest: skills_library/${insp.skill.id}.json`);
+    }
+    printCompactFileList(applied.updatedFiles);
+  }
+
+  for (const insp of projectsWithUpdates) {
+    console.log();
+    logger.divider();
+    console.log();
+    logger.step(`Updating ${insp.projectName} (${insp.fullPath})...`);
+    console.log();
+    await applyProjectUpdates(insp, { promptDeps: !autoConfirm });
+  }
+
+  console.log();
+  logger.success('All selected updates applied successfully!');
 }
 
 /**
@@ -851,19 +1122,23 @@ export async function runSyncMasterWorkflow() {
     {
       type: 'list',
       name: 'chosen',
-      message: 'Select skill(s) to refresh in ContextRig Master Library:',
+      message: 'Select skill(s) to check in ContextRig Master Library:',
       choices: [
         {
-          name: `${chalk.bold.green('All Master Skills'.padEnd(22))} ${chalk.dim(`Sync all ${availableSkills.length} skill(s) into skills_library/ & scripts/`)}`,
+          name: chalk.bold.green(`All Master Skills (${availableSkills.length})`),
+          short: 'All Master Skills',
+          description: 'Check all manifests and scripts inside ContextRig',
           value: '__ALL__'
         },
         new inquirer.Separator(),
         ...availableSkills.map((s) => ({
-          name: `${chalk.cyan(`[${s.id}]`.padEnd(16))} ${s.name}`,
+          name: formatSkillOptionName(s),
+          short: s.id,
+          description: s.description,
           value: s
         })),
         new inquirer.Separator(),
-        { name: chalk.yellow('← Back'), value: null }
+        { name: chalk.yellow('← Back'), short: 'Back', value: null }
       ]
     }
   ]);
@@ -872,10 +1147,109 @@ export async function runSyncMasterWorkflow() {
 
   console.log();
   const targets = chosen === '__ALL__' ? availableSkills : [chosen];
-  for (const skill of targets) {
-    await syncMasterSkillLibrary(skill);
-    console.log();
+  const token = await getGitHubToken(ROOT_DIR);
+  const inspections = await mapWithConcurrency(targets, 3, (s) => inspectMasterSkillLibrary(s, { token }));
+  for (const insp of inspections) {
+    if (insp.manifestNote) logger.warn(insp.manifestNote);
+    printMasterStatusLine(insp);
   }
+  console.log();
+
+  const outdated = inspections.filter((i) => i.hasUpdate);
+  if (outdated.length === 0) {
+    logger.success('Selected Master Library skill(s) are already up to date.');
+    return;
+  }
+
+  const totalFiles = outdated.reduce((sum, i) => sum + i.updates.length + (i.manifestUpdate ? 1 : 0), 0);
+  const { confirmApply } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirmApply',
+      message: `Apply Master Library updates for ${outdated.length} skill(s) (${totalFiles} file(s))?`,
+      default: true
+    }
+  ]);
+
+  if (!confirmApply) {
+    logger.info('Master Library update cancelled.');
+    return;
+  }
+
+  for (const insp of outdated) {
+    const applied = await applyMasterSkillInspection(insp);
+    printCompactFileList(applied.updatedFiles);
+  }
+  logger.success(`Updated ${outdated.length} skill(s) in ContextRig Master Library.`);
+}
+
+async function runSyncOneProjectWorkflow(projects) {
+  const cwdName = path.basename(process.cwd());
+  const choices = [
+    {
+      name: `${chalk.bold.green(`Current Folder (${cwdName})`)} ${chalk.green('[Quick]')}`,
+      short: `Current Folder (${cwdName})`,
+      description: process.cwd(),
+      value: { type: 'path', path: process.cwd() }
+    },
+    ...(projects.length > 0
+      ? [
+          new inquirer.Separator('── Saved Projects ──'),
+          ...projects.map((p) => {
+            const skillCount = p.skills?.length ? `${p.skills.length} skill(s)` : 'no skills listed';
+            return {
+              name: `${chalk.white(p.name.padEnd(20))} ${chalk.dim(`(${skillCount})`)}`,
+              short: p.name,
+              description: p.path,
+              value: { type: 'path', path: p.path }
+            };
+          })
+        ]
+      : []),
+    new inquirer.Separator(),
+    {
+      name: chalk.cyan('Enter Folder Path manually...'),
+      short: 'Enter Folder Path',
+      description: 'Type or paste any target project directory path',
+      value: { type: 'manual' }
+    },
+    { name: chalk.yellow('← Back'), short: 'Back', value: null }
+  ];
+
+  const { picked } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'picked',
+      message: 'Select project to check & sync:',
+      choices
+    }
+  ]);
+
+  if (!picked) return;
+
+  if (picked.type === 'path') {
+    await syncSingleProject(picked.path);
+    return;
+  }
+
+  console.log();
+  const { targetPath } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'targetPath',
+      message: 'Enter target project folder path (or "b" to back):',
+      default: './'
+    }
+  ]);
+
+  const cleanPath = sanitizePath(targetPath);
+  if (cleanPath.toLowerCase() === 'b' || cleanPath.toLowerCase() === 'back') {
+    console.log();
+    logger.info('Returning to Main Menu...');
+    return;
+  }
+
+  await syncSingleProject(cleanPath);
 }
 
 /**
@@ -914,46 +1288,34 @@ export async function runSyncWorkflow(inputTargetDir = null, options = {}) {
     console.log();
   }
 
-  const cwdName = path.basename(process.cwd());
-  const choices = [
-    ...(projects.length > 0
-      ? [
-          {
-            name: `${chalk.bold.green('Sync All Projects'.padEnd(22))} ${chalk.dim(`${projects.length} registered`)} ${chalk.green('[Recommended]')}`,
-            value: 'all'
-          }
-        ]
-      : []),
-    {
-      name: `${chalk.cyan('Update by Skill'.padEnd(22))} ${chalk.dim('Update projects or master library')}`,
-      value: 'skill'
-    },
-    {
-      name: `${'Sync Current Folder'.padEnd(22)} ${chalk.dim(cwdName)}`,
-      value: 'cwd'
-    },
-    ...(projects.length > 0
-      ? [
-          {
-            name: `${'Pick Saved Project'.padEnd(22)} ${chalk.dim(`${projects.length} registered`)}`,
-            value: 'pick'
-          }
-        ]
-      : []),
-    {
-      name: `${'Enter Folder Path'.padEnd(22)} ${chalk.dim('Type or paste path manually')}`,
-      value: 'manual'
-    },
-    new inquirer.Separator(),
-    { name: chalk.yellow('← Back to Main Menu'), value: 'back' }
-  ];
-
+  const projectCountLabel = projects.length > 0 ? ` + ${projects.length} Project(s)` : '';
   const { syncAction } = await inquirer.prompt([
     {
       type: 'list',
       name: 'syncAction',
       message: 'Choose sync mode:',
-      choices
+      choices: [
+        {
+          name: `${chalk.bold.green('Check & Update All')} ${chalk.green('[Recommended]')}`,
+          short: 'Check & Update All',
+          description: `Check all skills in Master Library${projectCountLabel} first, then confirm updates`,
+          value: 'all'
+        },
+        {
+          name: 'Sync One Project',
+          short: 'Sync One Project',
+          description: 'Check & update current folder, a saved project, or any custom path',
+          value: 'project'
+        },
+        {
+          name: chalk.cyan('Sync One Skill'),
+          short: 'Sync One Skill',
+          description: 'Check & update a specific skill across Master Library or saved projects',
+          value: 'skill'
+        },
+        new inquirer.Separator(),
+        { name: chalk.yellow('← Back to Main Menu'), short: 'Back', value: 'back' }
+      ]
     }
   ]);
 
@@ -965,61 +1327,15 @@ export async function runSyncWorkflow(inputTargetDir = null, options = {}) {
 
   if (syncAction === 'all') {
     console.log();
-    await runSyncAllWorkflow();
+    await runCheckAndUpdateAllWorkflow();
     return;
   }
 
-  if (syncAction === 'skill') {
-    await runUpdateBySkillWorkflow();
-    return;
-  }
-
-  if (syncAction === 'cwd') {
-    await syncSingleProject(process.cwd());
-    return;
-  }
-
-  if (syncAction === 'pick') {
+  if (syncAction === 'project') {
     console.log();
-    const { chosenPath } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'chosenPath',
-        message: 'Select a registered project to sync:',
-        choices: [
-          ...projects.map((p) => {
-            const skillCount = p.skills?.length ? ` (${p.skills.length} skill(s))` : '';
-            return {
-              name: `${chalk.white(p.name.padEnd(22))} ${chalk.dim(p.path)}${chalk.cyan(skillCount)}`,
-              value: p.path
-            };
-          }),
-          new inquirer.Separator(),
-          { name: chalk.yellow('← Back'), value: null }
-        ]
-      }
-    ]);
-    if (!chosenPath) return;
-    await syncSingleProject(chosenPath);
+    await runSyncOneProjectWorkflow(projects);
     return;
   }
 
-  console.log();
-  const { targetPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'targetPath',
-      message: 'Enter target project folder path (or "b" to back):',
-      default: './'
-    }
-  ]);
-
-  const cleanPath = sanitizePath(targetPath);
-  if (cleanPath.toLowerCase() === 'b' || cleanPath.toLowerCase() === 'back') {
-    console.log();
-    logger.info('Returning to Main Menu...');
-    return;
-  }
-
-  await syncSingleProject(cleanPath);
+  await runUpdateBySkillWorkflow();
 }

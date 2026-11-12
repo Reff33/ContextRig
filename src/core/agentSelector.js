@@ -24,12 +24,12 @@ export async function selectAgent(targetDir = null) {
         defaultChoice = agent;
       }
 
-      const statusBadge = isConfigured
-        ? `${chalk.dim(agent.outputFile.padEnd(32))} ${chalk.green('[Configured]')}`
-        : chalk.dim(agent.outputFile);
-
       return {
-        name: `${agent.name.padEnd(18)} ${statusBadge}`,
+        name: isConfigured
+          ? `${agent.name.padEnd(18)} ${chalk.green('[Configured]')}`
+          : agent.name,
+        short: agent.name,
+        description: `Target config file: ${agent.outputFile}`,
         value: agent
       };
     }),

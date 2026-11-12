@@ -3,6 +3,7 @@ import path from 'node:path';
 import handlebars from 'handlebars';
 import { TEMPLATES_DIR, ROOT_DIR } from '../config.js';
 import { logger } from '../utils/logger.js';
+import { applySettingsToSkills, syncProjectSkillConfigs } from './skillSettings.js';
 
 /**
  * Formats a skill object into markdown for injection into AI rule files.
@@ -93,6 +94,7 @@ export async function injectTemplate({
   mergeMode = 'overwrite',
   copyAssets = true
 }) {
+  const resolvedSkills = await applySettingsToSkills(skillsInstructions);
   const templatePath = path.join(TEMPLATES_DIR, templateFileName);
   const rawTemplate = await fs.readFile(templatePath, 'utf8');
 
@@ -100,7 +102,7 @@ export async function injectTemplate({
   const renderedContent = compiled({
     projectName,
     agentName,
-    skillsInstructions
+    skillsInstructions: resolvedSkills
   });
 
   const outputPath = path.join(targetDir, outputFileName);
@@ -115,7 +117,7 @@ export async function injectTemplate({
     }
 
     if (existingContent.trim().length > 0) {
-      finalContent = mergeSkillsIntoContent(existingContent, skillsInstructions);
+      finalContent = mergeSkillsIntoContent(existingContent, resolvedSkills);
       logger.info(`Smart Merge applied: preserved existing rules and updated skills without duplicates.`);
     } else {
       finalContent = renderedContent;
@@ -129,7 +131,7 @@ export async function injectTemplate({
 
   // Copy skill asset files if defined in files_to_copy
   if (copyAssets) {
-    for (const skill of skillsInstructions) {
+    for (const skill of resolvedSkills) {
       if (Array.isArray(skill.files_to_copy)) {
         for (const item of skill.files_to_copy) {
           const srcFile = path.resolve(ROOT_DIR, item.source);
@@ -145,12 +147,13 @@ export async function injectTemplate({
         }
       }
     }
+    await syncProjectSkillConfigs(targetDir, resolvedSkills);
   }
 
   // Generate Claude-specific slash commands (.claude/commands/*.md)
   const isClaude = outputFileName === 'CLAUDE.md' || (agentName && agentName.toLowerCase().includes('claude'));
   if (isClaude) {
-    for (const skill of skillsInstructions) {
+    for (const skill of resolvedSkills) {
       if (skill.claude_command?.name && skill.claude_command?.content) {
         const cmdPath = path.join(targetDir, '.claude', 'commands', `${skill.claude_command.name}.md`);
         try {

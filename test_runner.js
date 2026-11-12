@@ -12,7 +12,9 @@ import { loadCache, saveCache, calculateHash, syncMasterSkillLibrary } from './s
 
 async function runTests() {
   const isolatedRegistryPath = path.join(os.tmpdir(), `contextrig-test-registry-${Date.now()}.json`);
+  const isolatedSettingsPath = path.join(os.tmpdir(), `contextrig-test-settings-${Date.now()}.json`);
   process.env.CONTEXTRIG_REGISTRY_PATH = isolatedRegistryPath;
+  process.env.CONTEXTRIG_SETTINGS_PATH = isolatedSettingsPath;
   console.log('🧪 Starting ContextRig CLI automated integration tests...');
 
   try {
@@ -317,10 +319,26 @@ async function runTests() {
   assert.strictEqual(pruned.removed.length, 1, 'Missing project directories should be pruned');
   console.log('✔ Test 10d: Project Registry register/upsert/prune/unregister verified.');
 
-  // Test 10e: syncMasterSkillLibrary tracks HTTP errors honestly instead of false success
+  // Test 10e: inspectMasterSkillLibrary dry-run + syncMasterSkillLibrary HTTP 404 tracking
+  const { inspectMasterSkillLibrary } = await import('./src/core/syncEngine.js');
   const prevMasterFetch = globalThis.fetch;
-  globalThis.fetch = async () => ({ ok: false, status: 404, statusText: 'Not Found', headers: new Map() });
+  globalThis.fetch = async (url) => {
+    if (String(url).includes('ok.js')) {
+      return { ok: true, status: 200, headers: new Map(), text: async () => '// remote check' };
+    }
+    return { ok: false, status: 404, statusText: 'Not Found', headers: new Map() };
+  };
   try {
+    const dryCheck = await inspectMasterSkillLibrary({
+      id: 'mock_dry',
+      name: 'Mock Dry Skill',
+      files_to_copy: [{ source: 'scripts/mock_never_written.js', remote_url: 'https://example.com/ok.js' }]
+    });
+    assert.strictEqual(dryCheck.hasUpdate, true, 'inspectMasterSkillLibrary should detect update in memory');
+    assert.strictEqual(dryCheck.updates.length, 1);
+    const writtenOnInspect = await fs.stat(path.resolve('scripts/mock_never_written.js')).then(() => true).catch(() => false);
+    assert.strictEqual(writtenOnInspect, false, 'inspectMasterSkillLibrary must NOT write files during check');
+
     const failRes = await syncMasterSkillLibrary({
       id: 'mock_fail',
       name: 'Mock Fail Skill',
@@ -331,7 +349,113 @@ async function runTests() {
   } finally {
     globalThis.fetch = prevMasterFetch;
   }
-  console.log('✔ Test 10e: Master library sync error counting verified.');
+  console.log('✔ Test 10e: Master library dry-run check & error counting verified.');
+
+  // Test 10f: Skill Settings override (kinet.config.json + Extra AI Rule) without mutating master manifest
+  const { saveSkillSettings, getSkillSettings, resetSkillSettings } = await import('./src/core/skillSettings.js');
+  await saveSkillSettings('kinet_rig', {
+    values: { host: '0.0.0.0', encoder: 'nvenc' },
+    extraRule: 'Always export 144fps'
+  });
+  await injectTemplate({
+    targetDir: fullPath,
+    templateFileName: 'claude.md.hbs',
+    outputFileName: 'CLAUDE.md',
+    projectName,
+    agentName: 'Claude (CLAUDE.md)',
+    skillsInstructions: [kinetRigSkill],
+    mergeMode: 'merge',
+    copyAssets: true
+  });
+  const claudeWithCustom = await fs.readFile(claudeOut, 'utf8');
+  assert(claudeWithCustom.includes('Always export 144fps'), 'Custom extraRule must be injected into CLAUDE.md');
+  assert(claudeWithCustom.includes('Studio Host IP: 0.0.0.0'), 'Custom host override must appear in CLAUDE.md');
+  const kinetCfg = JSON.parse(await fs.readFile(path.join(fullPath, 'rigtools', 'kinet_rig', 'kinet.config.json'), 'utf8'));
+  assert.strictEqual(kinetCfg.host, '0.0.0.0', 'kinet.config.json should receive custom host override');
+  assert.strictEqual(kinetCfg.encoder, 'nvenc', 'kinet.config.json should receive custom encoder override');
+  await resetSkillSettings('kinet_rig');
+  const clearedSettings = await getSkillSettings('kinet_rig');
+  assert.strictEqual(Object.keys(clearedSettings.values).length, 0);
+  assert.strictEqual(clearedSettings.extraRule, '');
+  console.log('✔ Test 10f: Skill Settings config override, Extra AI Rule & reset verified.');
+
+  // Test 10g: Smart GitHub Importer + Validator (offline mock)
+  const {
+    parseSkillSourceUrl,
+    parseSkillMarkdown,
+    extractDependencies,
+    normalizeSkillPaths,
+    validateSkillCandidate,
+    inspectRemoteSkillRepo
+  } = await import('./src/core/skillImporter.js');
+
+  const ghParsed = parseSkillSourceUrl('https://github.com/acme/tools/tree/dev/skills/demo');
+  assert.strictEqual(ghParsed.owner, 'acme');
+  assert.strictEqual(ghParsed.branch, 'dev');
+  assert.strictEqual(ghParsed.subpath, 'skills/demo');
+  const shParsed = parseSkillSourceUrl('https://skills.sh/acme/repo/archify');
+  assert.strictEqual(shParsed.kind, 'skills_sh');
+  assert.strictEqual(shParsed.skillsShSkill, 'archify');
+
+  const mdParsed = parseSkillMarkdown('---\nname: Demo Tool\ndescription: Runs demo\n---\nRun scripts/run.py now.', 'fallback');
+  assert.strictEqual(mdParsed.id, 'demo_tool');
+  assert.strictEqual(normalizeSkillPaths(mdParsed.body, 'demo_tool', ['scripts/run.py']), 'Run rigtools/demo_tool/scripts/run.py now.');
+  const extDeps = extractDependencies({ packageJsonRaw: '{"dependencies":{"zod":"^3.0.0"}}', requirementsTxtRaw: 'httpx>=0.27\n# comment\n' });
+  assert.deepStrictEqual(extDeps, { npm: ['zod'], pip: ['httpx'] });
+  const badCheck = validateSkillCandidate({
+    id: 'bad_skill',
+    name: 'Bad',
+    ai_instructions: 'ok',
+    files_to_copy: [{ source: 'scripts/bad/.env', destination: 'rigtools/bad/.env' }]
+  });
+  assert.strictEqual(badCheck.valid, false, 'Validator must block .env files');
+
+  const prevImportFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.endsWith('/repos/acme/demo')) {
+      return { ok: true, status: 200, json: async () => ({ default_branch: 'main', description: 'Demo repo' }) };
+    }
+    if (u.includes('/git/trees/main')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          tree: [
+            { type: 'blob', path: 'SKILL.md', size: 120 },
+            { type: 'blob', path: 'scripts/run.py', size: 80 },
+            { type: 'blob', path: 'requirements.txt', size: 20 },
+            { type: 'blob', path: '.env', size: 15 },
+            { type: 'blob', path: '.mcp.json', size: 40 }
+          ]
+        })
+      };
+    }
+    if (u.endsWith('/SKILL.md')) {
+      return { ok: true, status: 200, text: async () => '---\nname: Demo Tool\ndescription: Runs demo\n---\nExecute scripts/run.py first.' };
+    }
+    if (u.endsWith('/requirements.txt')) {
+      return { ok: true, status: 200, text: async () => 'httpx>=0.27.0\n' };
+    }
+    return { ok: false, status: 404, statusText: 'Not Found', text: async () => '' };
+  };
+  try {
+    const preview = await inspectRemoteSkillRepo('acme/demo');
+    assert.strictEqual(preview.category, 'script_or_asset_pack');
+    assert.strictEqual(preview.skill.id, 'demo_tool');
+    assert(preview.skill.ai_instructions.includes('rigtools/demo_tool/scripts/run.py'), 'Should normalize relative script paths');
+    assert.deepStrictEqual(preview.skill.dependencies.pip, ['httpx']);
+    assert(!preview.skill.files_to_copy.some((f) => f.source.includes('.env')), 'Must exclude .env from import');
+    assert(preview.mcpDetected === true && preview.warnings.length > 0, 'Should warn on .mcp.json');
+    assert.strictEqual(preview.validation.valid, true);
+
+    const shPreview = await inspectRemoteSkillRepo('https://skills.sh/acme/repo/archify');
+    assert.strictEqual(shPreview.category, 'npx_package');
+    assert(shPreview.skill.install_command.includes('npx -y skills@latest add'));
+  } finally {
+    globalThis.fetch = prevImportFetch;
+  }
+  console.log('✔ Test 10g: Smart GitHub & skills.sh importer + validator verified.');
 
   // Verify Fix 3: Non-empty sibling subdirectory inside rigtools/ must NOT be recursively deleted on skill removal
   const siblingFile = path.join(fullPath, 'rigtools', 'custom_helper', 'keep.js');
@@ -392,7 +516,9 @@ async function runTests() {
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
   } finally {
     await fs.rm(isolatedRegistryPath, { force: true }).catch(() => {});
+    await fs.rm(isolatedSettingsPath, { force: true }).catch(() => {});
     delete process.env.CONTEXTRIG_REGISTRY_PATH;
+    delete process.env.CONTEXTRIG_SETTINGS_PATH;
   }
 }
 
