@@ -15,11 +15,40 @@ import http from 'node:http';
 import fs from 'node:fs';
 import { resolve, join, extname, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
 import { renderTimeline } from './render.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT_DIR = resolve(__dirname, '..');
-const PORT = Number(process.argv[2]) || 4004;
+const CONFIG_FILE = resolve(ROOT_DIR, 'kinet.config.json');
+
+let kinetConfig = {
+  host: '127.0.0.1',
+  port: 4004,
+  encoder: 'auto',
+  defaultFps: 240,
+  outputDir: 'renders'
+};
+
+function loadConfig() {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+      kinetConfig = { ...kinetConfig, ...parsed };
+    }
+  } catch (e) {
+    console.warn('[Studio Bridge] Warning reading kinet.config.json:', e.message);
+  }
+}
+loadConfig();
+
+const rawArgs = process.argv.slice(2);
+const cliPort = rawArgs.find(a => /^\d+$/.test(a));
+const cliHost = rawArgs.find(a => a.startsWith('--host='))?.split('=')[1]
+  || (rawArgs.includes('--host') ? rawArgs[rawArgs.indexOf('--host') + 1] : null);
+
+const PORT = Number(cliPort) || Number(process.env.PORT) || kinetConfig.port || 4004;
+const HOST = cliHost || process.env.HOST || kinetConfig.host || '127.0.0.1';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -34,6 +63,13 @@ const MIME_TYPES = {
   '.wav': 'audio/wav',
   '.mp3': 'audio/mpeg'
 };
+
+process.on('uncaughtException', err => {
+  console.error('[Studio Bridge Uncaught Exception]:', err);
+});
+process.on('unhandledRejection', reason => {
+  console.error('[Studio Bridge Unhandled Rejection]:', reason);
+});
 
 let currentProgress = { percent: 0, current: 0, total: 0, time: 0, status: 'idle' };
 let activeJob = null;
@@ -63,27 +99,125 @@ const server = http.createServer(async (req, res) => {
 
   // 1. Healthcheck API
   if (pathname === '/api/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    });
     return res.end(JSON.stringify({
       status: 'ok',
       engine: 'KinetRig Studio Bridge',
-      version: '1.0.0',
+      version: '1.1.2',
+      host: HOST,
       port: PORT,
+      encoder: kinetConfig.encoder || 'auto',
       supportedFps: [60, 120, 144, 240]
     }));
   }
 
+  // 1a. Configuration API (GET / POST)
+  if (pathname === '/api/config' || pathname === '/api/config/') {
+    if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const payload = JSON.parse(body || '{}');
+          if (payload.host !== undefined) payload.host = String(payload.host || '127.0.0.1').trim();
+          if (payload.port !== undefined) {
+            const p = Number(payload.port);
+            if (!Number.isInteger(p) || p < 1024 || p > 65535) {
+              throw new Error('Port must be between 1024 and 65535');
+            }
+            payload.port = p;
+          }
+          if (payload.defaultFps !== undefined) {
+            payload.defaultFps = Number(payload.defaultFps) || 240;
+          }
+          kinetConfig = { ...kinetConfig, ...payload };
+          fs.writeFileSync(CONFIG_FILE, JSON.stringify(kinetConfig, null, 2), 'utf8');
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          return res.end(JSON.stringify({
+            ok: true,
+            config: kinetConfig,
+            restartRequired: (kinetConfig.host !== HOST || Number(kinetConfig.port) !== PORT)
+          }));
+        } catch (err) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          return res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+      return;
+    }
+    loadConfig();
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    return res.end(JSON.stringify({
+      ok: true,
+      config: kinetConfig,
+      activeHost: HOST,
+      activePort: PORT
+    }));
+  }
+
+  // 1b. Native Self-Restart API (works even without Apache/PHP)
+  if (pathname === '/api/restart' || pathname === '/api/restart/') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      loadConfig();
+      let payload = {};
+      try { payload = JSON.parse(body || '{}'); } catch {}
+      const rawHost = String(payload.host || kinetConfig.host || HOST || '127.0.0.1').trim();
+      const targetHost = /^[a-zA-Z0-9.-]+$/.test(rawHost) ? rawHost : '127.0.0.1';
+      const parsedPort = Number(payload.port || kinetConfig.port || PORT);
+      const targetPort = (Number.isInteger(parsedPort) && parsedPort >= 1024 && parsedPort <= 65535) ? parsedPort : PORT;
+
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Connection': 'close'
+      });
+      res.end(JSON.stringify({ ok: true, restarting: true, host: targetHost, port: targetPort }), () => {
+        setTimeout(() => {
+          server.close(() => {
+            const child = spawn(process.execPath, [resolve(__dirname, 'server.mjs'), String(targetPort), '--host', targetHost], {
+              cwd: ROOT_DIR,
+              detached: true,
+              stdio: 'ignore',
+              windowsHide: true
+            });
+            child.unref();
+            process.exit(0);
+          });
+          if (typeof server.closeAllConnections === 'function') server.closeAllConnections();
+          setTimeout(() => process.exit(0), 2000).unref();
+        }, 60);
+      });
+    });
+    return;
+  }
+
   // 2. Real-time Progress SSE Stream
-  if (pathname === '/api/progress') {
+  if (pathname === '/api/progress' || pathname === '/api/progress/') {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*'
     });
     sseClients.add(res);
     res.write(`data: ${JSON.stringify(currentProgress)}\n\n`);
     req.on('close', () => sseClients.delete(res));
     return;
+  }
+
+  // 2a. Real-time Progress Polling Fallback API
+  if (pathname === '/api/progress-poll' || pathname === '/api/progress-poll/') {
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store',
+      'Access-Control-Allow-Origin': '*'
+    });
+    return res.end(JSON.stringify(currentProgress));
   }
 
   // 2b. Pause Render API
@@ -124,8 +258,10 @@ const server = http.createServer(async (req, res) => {
 
   // 3. Render MP4 API
   if (pathname === '/api/render') {
+    loadConfig();
     const templateParam = reqUrl.searchParams.get('template') || 'assets/kinet-opener.html';
-    const fpsParam = Number(reqUrl.searchParams.get('fps')) || 240;
+    const fpsParam = Number(reqUrl.searchParams.get('fps')) || Number(kinetConfig.defaultFps) || 240;
+    const encoderParam = reqUrl.searchParams.get('encoder') || kinetConfig.encoder || 'auto';
 
     let targetFilePath = resolve(ROOT_DIR, templateParam.replace(/^\/+/, ''));
     if (!fs.existsSync(targetFilePath)) {
@@ -168,6 +304,7 @@ const server = http.createServer(async (req, res) => {
         input: targetFilePath,
         output: tempOutput,
         fps: fpsParam,
+        encoder: encoderParam,
         jobControl,
         onProgress: ({ current, total, percent, time }) => {
           broadcastProgress({ status: jobControl.paused ? 'paused' : 'rendering', percent, current, total, time });
@@ -261,11 +398,11 @@ const server = http.createServer(async (req, res) => {
   res.end('404 Not Found');
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, HOST, () => {
   console.log(`\n======================================================`);
-  console.log(`🚀 KinetRig Studio Local Bridge Running on http://127.0.0.1:${PORT}`);
-  console.log(`   - Preview Showroom: http://127.0.0.1:${PORT}/preview.html`);
-  console.log(`   - Native 240 FPS Render Endpoint: http://127.0.0.1:${PORT}/api/render`);
+  console.log(`🚀 KinetRig Studio Local Bridge Running on http://${HOST}:${PORT}`);
+  console.log(`   - Preview Showroom: http://${HOST}:${PORT}/preview.html`);
+  console.log(`   - Native 240 FPS Render Endpoint: http://${HOST}:${PORT}/api/render`);
   console.log(`   - Status: Ready to receive in-browser Export clicks`);
   console.log(`======================================================\n`);
 });

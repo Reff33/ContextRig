@@ -456,6 +456,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const Q = new URLSearchParams(location.search);
 let isRecording = false;
+if (location.search.includes('clean') || Q.has('clean')) { document.body.classList.add('clean-capture', 'clean-mode'); }
 
 const DURATION = 15.0;
 const tl = gsap.timeline({ paused: true });
@@ -554,54 +555,81 @@ function toggleAudio() {
 }
 $('#btn-audio').onclick = toggleAudio;
 
+const hasBrowserGesture = () => (typeof navigator === 'undefined' || !navigator.userActivation || navigator.userActivation.hasBeenActive);
 function markUserInteracted() {
+  if (!hasBrowserGesture()) return;
   hasUserInteracted = true;
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  initAudio();
 }
 window.addEventListener('pointerdown', markUserInteracted, { capture: true });
+window.addEventListener('click', markUserInteracted, { capture: true });
 window.addEventListener('keydown', markUserInteracted, { capture: true });
 window.addEventListener('message', e => {
   if (e.data === 'UNLOCK_AUDIO' || e.data?.type === 'UNLOCK_AUDIO') {
     markUserInteracted();
-    initAudio();
+  }
+  if (e.data?.type === 'UPDATE_SETTINGS') {
+    if (e.data.bridgeUrl) BRIDGE = e.data.bridgeUrl;
+    if (e.data.settings?.defaultFps) {
+      const fps = Number(e.data.settings.defaultFps) || 240;
+      const textEl = document.getElementById('btn-export-text');
+      if (textEl && !isExporting) {
+        textEl.innerHTML = `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> ${fps}`;
+      }
+    }
   }
 });
 
 function initAudio() {
+  if (!hasUserInteracted || !hasBrowserGesture()) return null;
   if (!audioCtx) {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (AudioCtx) {
-      audioCtx = new AudioCtx();
-      mainMasterGain = audioCtx.createGain();
-      mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
-      mainMasterGain.connect(audioCtx.destination);
-      try {
-        audioDest = audioCtx.createMediaStreamDestination();
-        mainMasterGain.connect(audioDest);
-      } catch (e) {}
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        audioCtx = new AudioCtx();
+        mainMasterGain = audioCtx.createGain();
+        mainMasterGain.gain.value = isAudioMuted ? 0 : 1;
+        mainMasterGain.connect(audioCtx.destination);
+        try {
+          audioDest = audioCtx.createMediaStreamDestination();
+          mainMasterGain.connect(audioDest);
+        } catch (e) {}
 
-      // Layer 1: Ambient Spatial Shimmer Drone (Sine 65Hz + 420Hz filter)
-      try {
-        const droneOsc = audioCtx.createOscillator();
-        const droneFilter = audioCtx.createBiquadFilter();
-        ambientGain = audioCtx.createGain();
-        droneOsc.type = 'sine';
-        droneOsc.frequency.setValueAtTime(65, audioCtx.currentTime);
-        droneFilter.type = 'lowpass';
-        droneFilter.frequency.setValueAtTime(420, audioCtx.currentTime);
-        ambientGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        droneOsc.connect(droneFilter);
-        droneFilter.connect(ambientGain);
-        ambientGain.connect(mainMasterGain);
-        droneOsc.start();
-      } catch (err) {}
-    }
+        // Layer 1: Ambient Spatial Shimmer Drone (Sine 65Hz + 420Hz filter)
+        try {
+          const droneOsc = audioCtx.createOscillator();
+          const droneFilter = audioCtx.createBiquadFilter();
+          ambientGain = audioCtx.createGain();
+          droneOsc.type = 'sine';
+          droneOsc.frequency.setValueAtTime(65, audioCtx.currentTime);
+          droneFilter.type = 'lowpass';
+          droneFilter.frequency.setValueAtTime(420, audioCtx.currentTime);
+          ambientGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          droneOsc.connect(droneFilter);
+          droneFilter.connect(ambientGain);
+          ambientGain.connect(mainMasterGain);
+          if (audioCtx.state === 'running') {
+            droneOsc.start();
+          } else {
+            audioCtx.addEventListener('statechange', () => {
+              if (audioCtx.state === 'running') {
+                try { droneOsc.start(); } catch {}
+              }
+            }, { once: true });
+          }
+        } catch (err) {}
+      }
+    } catch {}
   }
   if (audioCtx) {
-    if (hasUserInteracted && audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx.state === 'suspended') {
+      try { audioCtx.resume().catch(() => {}); } catch {}
+    }
     for (const [id, ab] of Object.entries(sfxRawBuffers)) {
       if (!sfxAudioBuffers[id]) {
-        audioCtx.decodeAudioData(ab.slice(0)).then(dec => { sfxAudioBuffers[id] = dec; }).catch(() => {});
+        try {
+          audioCtx.decodeAudioData(ab.slice(0)).then(dec => { sfxAudioBuffers[id] = dec; }).catch(() => {});
+        } catch {}
       }
     }
   }
@@ -1016,7 +1044,80 @@ const iconPause = $('#icon-pause'), iconResume = $('#icon-resume');
 
 const EXPORT_DEFAULT_HTML = `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240`;
 
-let isExporting = false, abortController = null, sseSource = null;
+/* ---- Studio Bridge discovery: same origin -> same host -> loopback ---- */
+const BRIDGE_CANDIDATES = (() => {
+  const out = [];
+  try {
+    const customUrl = localStorage.getItem('kinet_bridge_url');
+    if (customUrl) out.push(customUrl.replace(/\/+$/, ''));
+  } catch {}
+  try {
+    const q = new URLSearchParams(location.search).get('bridge');
+    if (q) out.push(q.replace(/\/+$/, ''));
+  } catch {}
+  const p = location.protocol, host = location.hostname, org = location.origin;
+  if (p === 'http:' || p === 'https:') {
+    if (org && org !== 'null') out.push(org);
+    if (host) out.push('http://' + host + ':4004');
+  }
+  out.push('http://127.0.0.1:4004', 'http://localhost:4004');
+  return out.filter((v, i) => out.indexOf(v) === i);
+})();
+let BRIDGE = 'http://127.0.0.1:4004';
+async function resolveBridge() {
+  // 1. Fast probe existing bridge instances
+  for (const base of BRIDGE_CANDIDATES) {
+    try {
+      const r = await fetch(base + '/api/health', { signal: AbortSignal.timeout(600) });
+      if (r.ok) {
+        const info = await r.json();
+        if (info && info.version && info.version < '1.1.2') {
+          break; // trigger bridge upgrade
+        }
+        BRIDGE = base;
+        return true;
+      }
+    } catch {}
+  }
+  // 2. Auto-wake daemon if offline or outdated
+  try {
+    const endpoints = [
+      'http://127.0.0.1/KinetRig/api/bridge.php?restart=1',
+      'http://localhost/KinetRig/api/bridge.php?restart=1'
+    ];
+    if (location.protocol === 'http:' || location.protocol === 'https:') {
+      if (location.origin && location.origin !== 'null' && location.port !== '4004') {
+        endpoints.unshift(
+          location.origin + '/api/bridge.php?restart=1',
+          location.origin + '/KinetRig/api/bridge.php?restart=1'
+        );
+      }
+    }
+    for (const ep of endpoints) {
+      try {
+        const h = await fetch(ep, { signal: AbortSignal.timeout(3500) });
+        if (h.ok) {
+          const res = await h.json();
+          if (res.ok) {
+            BRIDGE = res.bridge || 'http://127.0.0.1:4004';
+            return true;
+          }
+        }
+      } catch {}
+    }
+  } catch {}
+  // 3. Fallback verification
+  for (const base of ['http://127.0.0.1:4004', 'http://localhost:4004']) {
+    try {
+      const r = await fetch(base + '/api/health', { signal: AbortSignal.timeout(1000) });
+      if (r.ok) { BRIDGE = base; return true; }
+    } catch {}
+  }
+  return false;
+}
+
+
+let isExporting = false, abortController = null, sseSource = null, progressPollTimer = null;
 
 if (btnExport && fpsMenu) {
   btnExport.onclick = e => {
@@ -1040,6 +1141,7 @@ function setExportingState(exporting) {
     renderControlsGroup.style.display = 'none';
     btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
     if (sseSource) { sseSource.close(); sseSource = null; }
+    if (progressPollTimer) { clearInterval(progressPollTimer); progressPollTimer = null; }
   }
 }
 
@@ -1058,7 +1160,7 @@ if (btnRenderPause) {
     e.stopPropagation();
     const isPaused = labelRenderPause.textContent.includes('Resume');
     try {
-      const endpoint = isPaused ? '/api/resume' : '/api/pause';
+      const endpoint = isPaused ? `${BRIDGE}/api/resume` : `${BRIDGE}/api/pause`;
       await fetch(endpoint);
       labelRenderPause.textContent = isPaused ? 'Pause Render' : 'Resume Render';
       iconPause.style.display = isPaused ? 'block' : 'none';
@@ -1070,7 +1172,7 @@ if (btnRenderPause) {
 if (btnRenderCancel) {
   btnRenderCancel.onclick = async e => {
     e.stopPropagation();
-    try { await fetch('/api/cancel'); } catch (err) {}
+    try { await fetch(`${BRIDGE}/api/cancel`); } catch (err) {}
     if (abortController) abortController.abort();
     setExportingState(false);
     fpsMenu.classList.remove('open');
@@ -1079,30 +1181,58 @@ if (btnRenderCancel) {
 
 async function startExport(targetFps) {
   if (isExporting) return;
-  const isStudioServer = location.port === '4004' || location.host.includes('4004') || Q.has('studio');
-  if (isStudioServer) {
+  if (await resolveBridge()) {
     try {
-      const healthRes = await fetch('/api/health');
-      if (healthRes.ok) {
+      {
         setExportingState(true);
         btnExportText.textContent = `Rendering ${targetFps} FPS (0%)`;
         abortController = new AbortController();
-        sseSource = new EventSource('/api/progress');
-        sseSource.onmessage = e => {
-          try {
-            const data = JSON.parse(e.data);
-            if (data.type === 'progress') {
-              btnExportText.textContent = `Rendering ${targetFps} FPS (${data.percent}%)`;
-            } else if (data.type === 'complete') {
-              btnExportText.textContent = 'Finalizing MP4...';
-            }
-          } catch (err) {}
+
+        const updateProgressUi = (data) => {
+          if (!data) return;
+          if (data.status === 'rendering' || data.status === 'paused') {
+            btnExportText.textContent = `Rendering ${targetFps} FPS (${data.percent || 0}%)`;
+          } else if (data.status === 'complete') {
+            btnExportText.textContent = 'Finalizing MP4...';
+          }
         };
-        const templatePath = location.pathname.replace(/^\//, '');
-        const renderRes = await fetch('/api/render', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ template: templatePath, fps: targetFps }),
+
+        const startPollingFallback = () => {
+          if (progressPollTimer) return;
+          let pollFails = 0;
+          progressPollTimer = setInterval(async () => {
+            try {
+              const pr = await fetch(`${BRIDGE}/api/progress-poll`, { cache: 'no-store' });
+              if (pr.ok) {
+                updateProgressUi(await pr.json());
+              } else {
+                pollFails++;
+                if (pollFails >= 3) { clearInterval(progressPollTimer); progressPollTimer = null; }
+              }
+            } catch {
+              pollFails++;
+              if (pollFails >= 3) { clearInterval(progressPollTimer); progressPollTimer = null; }
+            }
+          }, 500);
+        };
+
+        try {
+          sseSource = new EventSource(`${BRIDGE}/api/progress`);
+          sseSource.onmessage = e => {
+            try { updateProgressUi(JSON.parse(e.data)); } catch {}
+          };
+          sseSource.onerror = () => {
+            if (sseSource) { sseSource.close(); sseSource = null; }
+            if (isExporting) startPollingFallback();
+          };
+        } catch {
+          startPollingFallback();
+        }
+
+        const templatePath = location.pathname.includes('assets/')
+          ? location.pathname.substring(location.pathname.indexOf('assets/'))
+          : 'assets/kinet-ios-liquid-glass.html';
+        const renderRes = await fetch(`${BRIDGE}/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
           signal: abortController.signal
         });
         if (!renderRes.ok) throw new Error(await renderRes.text());
@@ -1123,11 +1253,28 @@ async function startExport(targetFps) {
       }
     } catch (err) {
       if (err.name === 'AbortError') return;
+      console.error('[Studio Bridge Render Error]', err);
+      if (sseSource) { sseSource.close(); sseSource = null; }
+      if (progressPollTimer) { clearInterval(progressPollTimer); progressPollTimer = null; }
       setExportingState(false);
+      btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+      alert(`[Ralat Render Studio Bridge]\n\n${err.message || 'Render terhenti.'}`);
+      return;
     }
   }
 
-  // Standalone Screen Capture Fallback
+  // Studio bridge offline: maklumkan pengguna untuk hidupkan bridge (tanpa screen-share)
+  if (!window.__bridgeRetried && confirm(`[KinetRig Studio Bridge Diperlukan]\n\nEksport visual ${targetFps} FPS memerlukan Studio Bridge tempatan.\n\nLangkah mudah:\n1. Klik dua kali "start-studio.bat" dalam folder projek, ATAU\n2. Jalankan arahan di terminal: node scripts/server.mjs\n\nKlik OK untuk sambung semula selepas bridge dihidupkan.`)) {
+    window.__bridgeRetried = true;
+    if (await resolveBridge()) { window.__bridgeRetried = false; return startExport(targetFps); }
+    window.__bridgeRetried = false;
+    alert('Bridge belum dapat dikesan. Sila pastikan start-studio.bat telah dibuka.');
+  }
+  btnExportText.innerHTML = EXPORT_DEFAULT_HTML;
+  setExportingState(false);
+  isRecording = false;
+  return;
+
   try {
     isRecording = true;
     document.body.classList.add('clean-capture');

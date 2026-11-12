@@ -280,6 +280,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const Q = new URLSearchParams(location.search);
 let isRecording = false;
+if (location.search.includes('clean') || Q.has('clean')) { document.body.classList.add('clean-capture', 'clean-mode'); }
 
 const DURATION = 6.0;
 const tl = gsap.timeline({ paused: true });
@@ -300,7 +301,19 @@ function toggleAudio() {
 }
 if (btnAudio) btnAudio.onclick = toggleAudio;
 
+let hasUserInteracted = false;
+const hasBrowserGesture = () => (typeof navigator === 'undefined' || !navigator.userActivation || navigator.userActivation.hasBeenActive);
+function markUserInteracted() {
+  if (!hasBrowserGesture()) return;
+  hasUserInteracted = true;
+  initAudio();
+}
+window.addEventListener('pointerdown', markUserInteracted, { capture: true });
+window.addEventListener('click', markUserInteracted, { capture: true });
+window.addEventListener('keydown', markUserInteracted, { capture: true });
+
 function initAudio() {
+  if (!hasUserInteracted || !hasBrowserGesture()) return null;
   if (!audioCtx) {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (AudioCtx) {
@@ -314,7 +327,7 @@ function initAudio() {
       } catch (e) {}
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
   return audioCtx;
 }
 
@@ -520,7 +533,7 @@ addEventListener('keydown', e => {
 
 window.addEventListener('message', e => {
   if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) {
-    initAudio();
+    markUserInteracted();
   }
 });
 
@@ -557,6 +570,79 @@ if (document.fonts && document.fonts.ready) {
 
 /* ============ 240 FPS STUDIO BRIDGE & CLEAN VIDEO EXPORTER ============ */
 const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
+
+/* ---- Studio Bridge discovery: same origin -> same host -> loopback ---- */
+const BRIDGE_CANDIDATES = (() => {
+  const out = [];
+  try {
+    const customUrl = localStorage.getItem('kinet_bridge_url');
+    if (customUrl) out.push(customUrl.replace(/\/+$/, ''));
+  } catch {}
+  try {
+    const q = new URLSearchParams(location.search).get('bridge');
+    if (q) out.push(q.replace(/\/+$/, ''));
+  } catch {}
+  const p = location.protocol, host = location.hostname, org = location.origin;
+  if (p === 'http:' || p === 'https:') {
+    if (org && org !== 'null') out.push(org);
+    if (host) out.push('http://' + host + ':4004');
+  }
+  out.push('http://127.0.0.1:4004', 'http://localhost:4004');
+  return out.filter((v, i) => out.indexOf(v) === i);
+})();
+let BRIDGE = 'http://127.0.0.1:4004';
+try {
+  const _s = JSON.parse(localStorage.getItem('kinet_settings') || '{}');
+  if (_s.host && _s.port) BRIDGE = 'http://' + (_s.host === '0.0.0.0' ? '127.0.0.1' : _s.host) + ':' + _s.port;
+  if (_s.defaultFps) {
+    const _el = document.getElementById('btn-export-text');
+    if (_el) _el.innerHTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> ' + _s.defaultFps;
+  }
+} catch {}
+window.addEventListener('message', e => {
+  if (e.data?.type === 'UPDATE_SETTINGS') {
+    if (e.data.bridgeUrl) BRIDGE = e.data.bridgeUrl;
+    if (e.data.settings?.defaultFps) {
+      const _el = document.getElementById('btn-export-text');
+      if (_el && (typeof isExporting === 'undefined' || !isExporting)) {
+        _el.innerHTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> ' + e.data.settings.defaultFps;
+      }
+    }
+  }
+});
+async function resolveBridge() {
+  for (let pass = 0; pass < 2; pass++) {
+    for (const base of BRIDGE_CANDIDATES) {
+      try {
+        const r = await fetch(base + '/api/health', { signal: AbortSignal.timeout(1500) });
+        if (r.ok) { BRIDGE = base; return true; }
+      } catch {}
+    }
+  }
+  try {
+    const endpoints = [
+      'http://127.0.0.1/KinetRig/api/bridge.php',
+      'http://localhost/KinetRig/api/bridge.php',
+      ...(location.protocol.startsWith('http') && location.origin && location.origin !== 'null' && location.port !== '4004'
+        ? [location.origin + '/api/bridge.php', location.origin + '/KinetRig/api/bridge.php']
+        : [])
+    ];
+    for (const ep of endpoints) {
+      try {
+        const h = await fetch(ep, { signal: AbortSignal.timeout(4000) });
+        if (h.ok) {
+          const res = await h.json();
+          if (res.ok) {
+            BRIDGE = res.bridge || 'http://127.0.0.1:4004';
+            return true;
+          }
+        }
+      } catch {}
+    }
+  } catch {}
+  return false;
+}
+
 const btnExport = $('#btn-export');
 const btnExportLabel = $('#btn-export-text');
 const fpsMenu = $('#fps-menu');
@@ -622,12 +708,12 @@ if (btnExport && fpsMenu) {
       if (!isExporting) return;
       try {
         if (!isRenderPaused) {
-          await fetch('http://127.0.0.1:4004/api/pause');
+          await fetch(`${BRIDGE}/api/pause`);
           isRenderPaused = true;
           updatePauseButtonUi(true);
           btnExportLabel.textContent = btnExportLabel.textContent.replace('Rendering', 'Paused');
         } else {
-          await fetch('http://127.0.0.1:4004/api/resume');
+          await fetch(`${BRIDGE}/api/resume`);
           isRenderPaused = false;
           updatePauseButtonUi(false);
           btnExportLabel.textContent = btnExportLabel.textContent.replace('Paused', 'Rendering');
@@ -644,7 +730,7 @@ if (btnExport && fpsMenu) {
       fpsMenu.classList.remove('open');
       if (!isExporting) return;
       try {
-        await fetch('http://127.0.0.1:4004/api/cancel');
+        await fetch(`${BRIDGE}/api/cancel`);
       } catch {}
       if (currentEvtSource) {
         currentEvtSource.close();
@@ -668,20 +754,15 @@ async function startExport(targetFps = 240) {
   if (typeof markUserInteracted === 'function') markUserInteracted();
 
   // 1. Studio Local Bridge Attempt (Deterministic 60–240 FPS Headless Render)
-  let bridgeAvailable = false;
-  try {
-    const healthRes = await fetch('http://127.0.0.1:4004/api/health', { signal: AbortSignal.timeout(800) });
-    if (healthRes.ok) bridgeAvailable = true;
-  } catch {}
-
-  if (bridgeAvailable) {
+  if (btnExportLabel) btnExportLabel.textContent = 'Connecting Studio...';
+  if (await resolveBridge()) {
     try {
       setExportUiState(true);
       currentAbortController = new AbortController();
       btnExportLabel.textContent = `Connecting Studio...`;
 
       try {
-        currentEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
+        currentEvtSource = new EventSource(`${BRIDGE}/api/progress`);
         currentEvtSource.onmessage = e => {
           try {
             const data = JSON.parse(e.data);
@@ -698,7 +779,7 @@ async function startExport(targetFps = 240) {
         ? location.pathname.substring(location.pathname.indexOf('assets/'))
         : 'assets/kinet-reel-hook.html';
 
-      const renderRes = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
+      const renderRes = await fetch(`${BRIDGE}/api/render?template=${encodeURIComponent(templatePath)}&fps=${targetFps}`, {
         signal: currentAbortController.signal
       });
       if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
@@ -724,23 +805,26 @@ async function startExport(targetFps = 240) {
       }, 2000);
       return;
     } catch (bridgeErr) {
-      if (bridgeErr.name === 'AbortError') {
-        return; // User clicked Cancel Render
-      }
-      console.warn('[Studio Bridge Error, falling back to browser capture]', bridgeErr);
+      if (bridgeErr.name === 'AbortError') return;
+      console.error('[Studio Bridge Render Error]', bridgeErr);
       if (currentEvtSource) { currentEvtSource.close(); currentEvtSource = null; }
       setExportUiState(false);
+      btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+      alert(`[Ralat Render Studio Bridge]\n\n${bridgeErr.message || 'Render terhenti.'}`);
+      return;
     }
   }
 
-  // 2. Studio Bridge is offline:
-  const isFileOrigin = typeof location !== 'undefined' && location.protocol === 'file:';
-  if (isFileOrigin || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-    alert(`[KinetRig Studio Bridge Offline]\n\nUntuk muat turun video ${targetFps} FPS MP4 secara automatik melalui pelayar, sila jalankan arahan ini dalam terminal:\n\nnode scripts/server.mjs\n\nKemudian klik semula Download, atau buka:\nhttp://127.0.0.1:4004`);
-    btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
-    setExportUiState(false);
-    return;
+  // Studio bridge offline: maklumkan pengguna untuk hidupkan bridge (tanpa screen-share)
+  if (!window.__bridgeRetried && confirm(`[KinetRig Studio Bridge Diperlukan]\n\nEksport visual ${targetFps} FPS memerlukan Studio Bridge tempatan.\n\nLangkah mudah:\n1. Klik dua kali "start-studio.bat" dalam folder projek, ATAU\n2. Jalankan arahan di terminal: node scripts/server.mjs\n\nKlik OK untuk sambung semula selepas bridge dihidupkan.`)) {
+    window.__bridgeRetried = true;
+    if (await resolveBridge()) { window.__bridgeRetried = false; return startExport(targetFps); }
+    window.__bridgeRetried = false;
+    alert('Bridge belum dapat dikesan. Sila pastikan start-studio.bat telah dibuka.');
   }
+  btnExportLabel.innerHTML = EXPORT_DEFAULT_HTML;
+  setExportUiState(false);
+  return;
 
   // 3. Standalone In-Browser Clean Screen Recording
   try {

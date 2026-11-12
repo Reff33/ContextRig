@@ -148,11 +148,11 @@ Adapt the chosen starter template from `assets/` into a single self-contained `i
      - **Protocol Detection Guard:** The audio prefetching pipeline in `fetchSfxArrayBuffer(rel)` MUST inspect `location.protocol`. If running under `file:` protocol:
        1. NEVER query relative local disk paths via `fetch()`.
        2. If offline (`navigator.onLine === false`), return `null` immediately without attempting network activity.
-       3. If online, ONLY fetch from CORS-enabled HTTPS CDN (`https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main/${rel}` or `https://raw.githubusercontent.com/wyzowl/sfx-kit/main/${rel}`).
+       3. If online, ONLY fetch from CORS-enabled HTTPS CDN (`https://raw.githubusercontent.com/wyzowl/sfx-kit/main/${rel}`). Do NOT use jsDelivr (`cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main`) as it returns HTTP 403 Forbidden.
        4. Only probe relative disk paths (`../sfx/`, `sfx/`) when running under `http:` or `https:`.
      - **Mandatory SFX Path Architecture (`wyzowl/sfx-kit`):**
        The `wyzowl/sfx-kit` sound repository stores audio assets strictly under the `sounds/<category>/<file>.wav` structure.
-       1. `SFX_CDN_BASE` MUST be `https://raw.githubusercontent.com/wyzowl/sfx-kit/main` or `https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main`. NEVER append `/sfx` to the base URL.
+       1. `SFX_CDN_BASE` MUST be `https://raw.githubusercontent.com/wyzowl/sfx-kit/main`. NEVER append `/sfx` to the base URL and NEVER use `cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main` (403 Forbidden).
        2. Every relative path in `STUDIO_SFX` MUST start with `sounds/<category>/`. Category names:
           - Interface/clicks: `sounds/interface/click-tap-soft.wav`, `sounds/interface/click-snap-soft.wav` (NEVER `clicks/...`)
           - Risers/fallers: `sounds/risers-and-fallers/riser-1s-soft.wav` (NEVER `whooshes/riser...`)
@@ -228,10 +228,11 @@ Adapt the chosen starter template from `assets/` into a single self-contained `i
       tl.play(0);
     }
     ```
-  - **Showroom Audio Unlock Listener:** Listen for postMessage from preview shells:
+  - **Showroom Audio Unlock Listener (User-Activation Guarded):** Listen for postMessage from preview shells, but NEVER create/resume `AudioContext` until `navigator.userActivation.hasBeenActive` is true inside the frame itself:
     ```javascript
+    const hasBrowserGesture = () => (typeof navigator === 'undefined' || !navigator.userActivation || navigator.userActivation.hasBeenActive);
     window.addEventListener('message', e => {
-      if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) initAudio();
+      if (e.data === 'UNLOCK_AUDIO' || (e.data && e.data.type === 'UNLOCK_AUDIO')) markUserInteracted();
     });
     ```
 - **Top-Level Variable Hoisting & Zero-TDZ Rule (Preventing Frozen UI):**
@@ -243,10 +244,17 @@ Adapt the chosen starter template from `assets/` into a single self-contained `i
   - **HUD Toggle Button (`#btn-hud`):** Glassmorphic cyber-pill button with inline SVG gear icon (`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`) and text `HUD (H)`. Clicking this button or pressing the `H` keyboard shortcut toggles timeline HUD `#ui` visibility.
   - **Unified Action-Dropdown Download Button (`#btn-export` + `#fps-menu`):** Single unified cyber-pill button wrapped inside `.export-dropdown` with mandatory label, vector arrow icon, and chevron: `Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240 ▾`. NEVER use two separate controls (such as a separate `<select>` dropdown alongside the export button). Clicking `#btn-export` toggles the overlay glassmorphic menu `#fps-menu` (`240 FPS (Studio)`, `144 FPS`, `120 FPS`, `60 FPS`). Clicking any framerate choice instantly closes the menu and dispatches automatic rendering and download (`startExport(fps)`). Document click listeners dismiss the menu when clicking outside.
   - **Immutable Export Label Contract:** The label and vector arrow icon of `#btn-export` are governed by `EXPORT_DEFAULT_HTML` and MUST NEVER revert to plain text or legacy strings like `Download Video (144 FPS)` in any `catch`, cancel, or `onstop` handler.
-  - **Dual-Mode Hybrid Studio Bridge Export Pipeline:**
-    - Host-Aware Inspection: The export handler evaluates `const isStudioServer = location.port === '4004' || location.host.includes('4004') || Q.has('studio');`.
-    - If `isStudioServer === true`, it pings the local Studio Bridge at `http://127.0.0.1:4004/api/health` with a lightweight timeout. If online, it routes through the headless Puppeteer + FFmpeg deterministic stepping renderer for visually lossless true 240 FPS MP4 with real-time progress feedback (`Rendering 240 FPS (45%)`), streaming the finished file directly to the browser for instant automatic download.
-    - If `isStudioServer === false` (standalone `file:///` or external server), it directly executes in-tab browser screen capture (`getDisplayMedia`) at the chosen framerate without probing port 4004, eliminating `ERR_CONNECTION_REFUSED` errors completely.
+  - **Zero-Prompt Studio Bridge & Hardware Acceleration Architecture:**
+    - **Persistent Auto-Wake Bridge Daemon:** The export handler (`resolveBridge()`) queries candidate endpoints (`http://127.0.0.1:4004`, `http://localhost:4004`). If offline, it triggers the silent local helper `api/bridge.php`, which automatically spawns `node scripts/server.mjs` in the background without blocking prompt dialogs (`alert`/`confirm`) or manual terminal execution.
+    - **Headless WebGL Stability Law:** Chromium headless instances must launch with `--use-gl=swiftshader` and `--no-sandbox`. Using `--use-gl=angle` on Windows causes Three.js WebGL context initialization to freeze without a physical display handle, hanging the headless page. SwiftShader ensures 100% stable 3D shader and canvas initialization in < 500ms.
+    - **Font Race Law:** Web font readiness (`document.fonts.ready`) must be raced against a 3000ms safety timeout (`Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 3000))])`) to prevent headless render hangs caused by tracking prevention or network font latency.
+    - **Hardware-Accelerated Encoding (GPU & Platform Agnostic):** Multi-tier FFmpeg encoder auto-detection prioritizes hardware silicon:
+      - NVIDIA GPUs (RTX/GTX): `h264_nvenc` with preset `p5`, constant quality `-cq 16`.
+      - Apple Silicon (M1/M2/M3/M4): `h264_videotoolbox` with `-q:v 65`.
+      - Intel QuickSync: `h264_qsv` with `-preset veryfast`.
+      - AMD GPUs: `h264_amf` with `-quality speed`.
+      - Fallback: `libx264 -preset ultrafast -crf 18`.
+    - **Inline Real-Time Telemetry:** Button UI displays live deterministic progression (`Connecting Studio...` -> `Rendering 240 FPS (XX%)` -> `Saving MP4...` -> `Downloaded!`), automatically downloading the resulting MP4 blob to the user's browser with zero interruptions.
 - **HUD & Scrubber Design Rules (Glassmorphic Cyber-Pill Spec):**
   - **Standard Minimalist 4-Element Layout:** Container `#ui` features a compact layout: `[ Play/Pause ] [ 🔊 Speaker Toggle (#btn-audio) ] [ ══════════●══════════ (#scrub) ] 0.00s (#clock)`.
   - **Redundant Controls Elimination:** Never place a restart button (`#btn-restart`) inside the HUD capsule to prevent visual clutter; restart functionality is mapped to the `R` key and scrubber.

@@ -102,6 +102,152 @@
       background: rgba(0, 240, 255, 0.18); color: var(--accent); transform: translateX(2px);
     }
 
+    /* Studio Settings Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 5, 10, 0.78);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: #12141e;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 240, 255, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.96) translateY(6px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .modal-header h2 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-header .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 20px;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .modal-header .close-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+    }
+    .modal-body {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .setting-group label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .setting-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .setting-input {
+      flex: 1;
+      background: #181a26;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .setting-input:focus {
+      border-color: var(--accent);
+    }
+    .setting-select {
+      width: 100%;
+      background: #181a26;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .status-badge.online {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+    .status-badge.offline {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .modal-footer {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
     /* Main Stage */
     main {
       flex: 1;
@@ -266,41 +412,15 @@
       </select>
 
       <label style="font-size: 12px; color: var(--text-dim); margin-left: 8px;">Frame:</label>
-      <button class="active" onclick="setMockup('none', this)">None</button>
-      <button onclick="setMockup('laptop', this)">Laptop</button>
-      <button onclick="setMockup('phone', this)">Mobile</button>
-      <button onclick="setMockup('browser', this)">Browser</button>
+      <button class="btn-mockup active" onclick="setMockup('none', this)">None</button>
+      <button class="btn-mockup" onclick="setMockup('laptop', this)">Laptop</button>
+      <button class="btn-mockup" onclick="setMockup('phone', this)">Mobile</button>
+      <button class="btn-mockup" onclick="setMockup('browser', this)">Browser</button>
 
-      <button style="border-color: var(--accent); color: var(--accent);" onclick="playSfx()">🔊 Test SFX</button>
-
-      <div class="export-dropdown" style="position: relative; margin-left: 10px;">
-        <button id="btnStudioExport" style="background:var(--accent);color:#000;font-weight:700;border:none;display:inline-flex;align-items:center;gap:6px;" onclick="togglePreviewFpsMenu(event)">
-          <svg style="width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span id="btnExportLabel" style="display:inline-flex;align-items:center;gap:4px;">Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240</span>
-          <svg style="width:10px;height:10px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div id="previewFpsMenu" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:rgba(18,20,28,0.96); border:1px solid var(--accent); border-radius:10px; backdrop-filter:blur(16px); box-shadow:0 10px 30px rgba(0,0,0,0.7); padding:6px; min-width:170px; z-index:150; flex-direction:column; gap:4px;">
-          <div id="preview-fps-options-group">
-            <div style="font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; padding: 4px 8px 6px; border-bottom: 1px solid var(--border);">Select Framerate</div>
-            <button class="preview-fps-item" onclick="exportCurrentPreset(240)"><span>240 FPS (Studio)</span></button>
-            <button class="preview-fps-item" onclick="exportCurrentPreset(144)"><span>144 FPS</span></button>
-            <button class="preview-fps-item" onclick="exportCurrentPreset(120)"><span>120 FPS</span></button>
-            <button class="preview-fps-item" onclick="exportCurrentPreset(60)"><span>60 FPS (Fast)</span></button>
-          </div>
-          <div id="preview-render-controls-group" style="display: none;">
-            <div style="font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; padding: 4px 8px 6px; border-bottom: 1px solid var(--border);">Render Controls</div>
-            <button class="preview-fps-item" id="btnPreviewPause" onclick="togglePreviewPause(event)">
-              <svg id="iconPreviewPause" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-              <svg id="iconPreviewResume" viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:currentColor;stroke-width:1;display:none;"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-              <span id="labelPreviewPause">Pause Render</span>
-            </button>
-            <button class="preview-fps-item danger" id="btnPreviewCancel" style="color: #f87171;" onclick="cancelPreviewRender(event)">
-              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              <span>Cancel Render</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <button id="btnOpenSettings" style="border-color: var(--accent); color: var(--accent); display: inline-flex; align-items: center; gap: 6px; font-weight: 600; margin-left: 6px;" onclick="openSettingsModal()">
+        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
     </div>
   </header>
 
@@ -309,6 +429,93 @@
       <iframe id="previewIframe" src="assets/kinet-opener.html" allow="display-capture *; autoplay *; camera *; microphone *; clipboard-write *" allowfullscreen></iframe>
     </div>
   </main>
+
+  <!-- Studio Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop" onclick="closeSettingsModalOnBackdrop(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>
+          <svg style="width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:2.2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Studio Settings
+        </h2>
+        <button class="close-btn" onclick="closeSettingsModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 1. Bridge Connection -->
+        <div class="setting-group">
+          <label>Studio Bridge Daemon (Host & Port)</label>
+          <div class="setting-row">
+            <input id="settingHost" class="setting-input" placeholder="127.0.0.1 or LAN IP" value="127.0.0.1" />
+            <input id="settingPort" class="setting-input" type="number" placeholder="4004" value="4004" style="max-width: 90px;" />
+          </div>
+          <div class="setting-row" style="margin-top: 4px; justify-content: space-between;">
+            <div id="bridgeStatusBadge" class="status-badge offline">
+              <span class="status-dot"></span>
+              <span id="bridgeStatusText">Checking...</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button id="btnPingBridge" onclick="checkBridgeStatus(true)" style="padding: 6px 10px; font-size: 11px;">Test Ping</button>
+              <button id="btnWakeBridge" onclick="wakeBridgeDaemon()" style="padding: 6px 10px; font-size: 11px; border-color: rgba(0,240,255,0.4); color: var(--accent);">Auto-Wake</button>
+            </div>
+          </div>
+          <div id="bridgeOfflineHelper" style="display: none; margin-top: 6px; padding: 10px 12px; border-radius: 8px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); font-size: 11px; color: var(--text); line-height: 1.5;">
+            <div id="bridgeOfflineReason" style="color: #fca5a5; margin-bottom: 6px;"></div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <code style="flex: 1; background: #11121a; border: 1px solid var(--border); padding: 5px 8px; border-radius: 6px; font-family: monospace; color: var(--accent);">npm run studio</code>
+              <button onclick="copyStudioCommand(this)" style="padding: 5px 10px; font-size: 11px;">Copy Command</button>
+            </div>
+            <div style="margin-top: 5px; color: var(--text-dim);">Run in project folder (or double-click <code>start-studio.bat</code> on Windows), then click Test Ping.</div>
+          </div>
+        </div>
+
+        <!-- 2. Hardware Acceleration -->
+        <div class="setting-group">
+          <label>Hardware Acceleration (Encoder)</label>
+          <select id="settingEncoder" class="setting-select">
+            <option value="auto">Auto GPU (NVIDIA NVENC / QuickSync / VideoToolbox / AMF)</option>
+            <option value="nvenc">NVIDIA NVENC (RTX / GTX Silicon)</option>
+            <option value="qsv">Intel QuickSync (iGPU / Arc)</option>
+            <option value="amf">AMD Radeon AMF (RX / RDNA GPU)</option>
+            <option value="videotoolbox">Apple Silicon (M1 / M2 / M3 / M4)</option>
+            <option value="cpu">CPU Fallback (libx264 Ultrafast)</option>
+          </select>
+          <span style="font-size: 11px; color: var(--text-dim);">Prioritizes dedicated GPU silicon for high-speed offline rendering without frame drops.</span>
+        </div>
+
+        <!-- 3. Default Target Framerate -->
+        <div class="setting-group">
+          <label>Default Render Framerate</label>
+          <select id="settingFps" class="setting-select">
+            <option value="240">240 FPS (Ultra-HFR Studio Master)</option>
+            <option value="144">144 FPS (High Refresh Rate)</option>
+            <option value="120">120 FPS (Smooth Cinematic)</option>
+            <option value="60">60 FPS (Web & Social Fast Export)</option>
+          </select>
+        </div>
+
+        <!-- 4. Procedural & Studio SFX Kit -->
+        <div class="setting-group">
+          <label>Studio SFX Audio Engine</label>
+          <div class="setting-row" style="justify-content: space-between; background: #181a26; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);">
+            <div>
+              <div style="font-size: 12px; font-weight: 600;">Wyzowl SFX-Kit + Web Audio API</div>
+              <div style="font-size: 11px; color: var(--text-dim);">JIT on-demand disk cache in /sfx/</div>
+            </div>
+            <button onclick="playSfx()" style="padding: 6px 12px; font-size: 11px; border-color: var(--accent); color: var(--accent);">🔊 Test Audio</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button onclick="resetSettingsDefaults()" style="background: transparent; border-color: transparent; color: var(--text-dim); font-size: 12px;">Reset Defaults</button>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="closeSettingsModal()" style="font-size: 12px;">Cancel</button>
+          <button onclick="saveStudioSettings()" style="background: var(--accent); color: #000; font-weight: 700; border: none; font-size: 12px;">Save & Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <footer>
     <span>Zero-dependency 144–240 FPS kinetic motion graphics & video engine.</span>
@@ -319,6 +526,337 @@
     const iframe = document.getElementById('previewIframe');
     const container = document.getElementById('stageContainer');
 
+    // Studio Settings Manager
+    const DETECTED_HOST = (typeof location !== 'undefined' && (location.protocol === 'http:' || location.protocol === 'https:') && location.hostname)
+      ? location.hostname
+      : '127.0.0.1';
+    const DEFAULT_SETTINGS = {
+      host: DETECTED_HOST,
+      port: 4004,
+      encoder: 'auto',
+      defaultFps: 240
+    };
+
+    function loadSavedSettings() {
+      try {
+        const raw = localStorage.getItem('kinet_settings');
+        if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+      } catch {}
+      return { ...DEFAULT_SETTINGS };
+    }
+
+    function getBridgeBaseUrl() {
+      const s = loadSavedSettings();
+      const host = (s.host || DETECTED_HOST).trim().replace(/\/+$/, '');
+      const port = Number(s.port) || 4004;
+      return `http://${host}:${port}`;
+    }
+
+    function openSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      const s = loadSavedSettings();
+      document.getElementById('settingHost').value = s.host || DETECTED_HOST;
+      document.getElementById('settingPort').value = s.port || 4004;
+      document.getElementById('settingEncoder').value = s.encoder || 'auto';
+      document.getElementById('settingFps').value = String(s.defaultFps || 240);
+      const helper = document.getElementById('bridgeOfflineHelper');
+      if (helper) helper.style.display = 'none';
+      modal.classList.add('open');
+      checkBridgeStatus(false);
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('open');
+    }
+
+    function closeSettingsModalOnBackdrop(e) {
+      if (e.target && e.target.id === 'settingsModal') {
+        closeSettingsModal();
+      }
+    }
+
+    function copyStudioCommand(btn) {
+      const cmd = 'npm run studio';
+      const markCopied = () => {
+        if (!btn) return;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Command'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cmd).then(markCopied).catch(() => {});
+        return;
+      }
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = cmd;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        markCopied();
+      } catch {}
+    }
+
+    let lastOnlineBridgeUrl = null;
+
+    function showOfflineHelper(reasonText) {
+      const helper = document.getElementById('bridgeOfflineHelper');
+      const reason = document.getElementById('bridgeOfflineReason');
+      if (!helper || !reason) return;
+      reason.textContent = reasonText || 'No local PHP/Node bridge responded. Start the Node server once in your terminal:';
+      helper.style.display = 'block';
+    }
+
+    function hideOfflineHelper() {
+      const helper = document.getElementById('bridgeOfflineHelper');
+      if (helper) helper.style.display = 'none';
+    }
+
+    function getPhpBridgeEndpoints(activeBridgePort) {
+      const urls = [];
+      const isHttp = location.protocol === 'http:' || location.protocol === 'https:';
+      const currentPort = location.port || (location.protocol === 'https:' ? '443' : '80');
+      if (isHttp) {
+        if (String(currentPort) !== String(activeBridgePort) && currentPort !== '4004') {
+          urls.push(new URL('api/bridge.php', location.href).href);
+        }
+        return [...new Set(urls)];
+      }
+      let decodedPath = '';
+      try { decodedPath = decodeURIComponent(location.pathname || ''); } catch { decodedPath = location.pathname || ''; }
+      const pathMatch = decodedPath.match(/\/(?:www|htdocs)\/(.+?)\/preview\.html$/i);
+      if (pathMatch && pathMatch[1]) {
+        urls.push(`http://127.0.0.1/${pathMatch[1]}/api/bridge.php`);
+      }
+      return urls;
+    }
+
+    async function checkBridgeStatus(isManual = false) {
+      const badge = document.getElementById('bridgeStatusBadge');
+      const text = document.getElementById('bridgeStatusText');
+      const rawHost = (document.getElementById('settingHost').value || DETECTED_HOST).trim();
+      const probeHost = rawHost === '0.0.0.0' ? '127.0.0.1' : rawHost;
+      const port = Number(document.getElementById('settingPort').value) || 4004;
+      const targetUrl = `http://${probeHost}:${port}`;
+
+      if (badge && text) {
+        text.textContent = 'Testing...';
+        badge.className = 'status-badge';
+      }
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch(`${targetUrl}/api/health`, { signal: AbortSignal.timeout(1200) });
+        const latency = Math.round(performance.now() - t0);
+        if (res.ok) {
+          const data = await res.json();
+          lastOnlineBridgeUrl = targetUrl;
+          if (badge && text) {
+            badge.className = 'status-badge online';
+            text.textContent = `Online (v${data.version || '1.1.2'}) • ${latency}ms`;
+          }
+          hideOfflineHelper();
+          return true;
+        }
+      } catch (err) {}
+
+      lastOnlineBridgeUrl = null;
+      if (badge && text) {
+        badge.className = 'status-badge offline';
+        text.textContent = 'Offline (Port Closed)';
+      }
+      if (isManual) {
+        showOfflineHelper(`No studio bridge running at ${targetUrl}. Start it once in your terminal:`);
+      }
+      return false;
+    }
+
+    async function pollBridgeReady(retries = 7, intervalMs = 320) {
+      for (let i = 0; i < retries; i++) {
+        if (await checkBridgeStatus(false)) return true;
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+      }
+      return false;
+    }
+
+    async function wakeBridgeDaemon() {
+      const btn = document.getElementById('btnWakeBridge');
+      const badge = document.getElementById('bridgeStatusBadge');
+      const text = document.getElementById('bridgeStatusText');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Waking...';
+      }
+
+      const prev = loadSavedSettings();
+      const prevPort = Number(prev.port) || 4004;
+
+      const host = (document.getElementById('settingHost').value || DETECTED_HOST).trim();
+      const probeHost = host === '0.0.0.0' ? '127.0.0.1' : host;
+      const port = Number(document.getElementById('settingPort').value) || 4004;
+      const targetUrl = `http://${probeHost}:${port}`;
+
+      let woke = false;
+      let wakeError = null;
+
+      // 1. If not cached online yet, check whether target Node bridge is already up first
+      let activeEp = lastOnlineBridgeUrl || null;
+      if (!activeEp) {
+        if (await checkBridgeStatus(false)) {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Auto-Wake';
+          }
+          return;
+        }
+      }
+
+      // 2. If Node bridge is currently online, restart natively via Node (works without Apache/PHP)
+      if (activeEp) {
+        try {
+          const r = await fetch(`${activeEp}/api/restart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ host, port }),
+            signal: AbortSignal.timeout(2000)
+          });
+          if (r.ok) {
+            await new Promise(resolve => setTimeout(resolve, 450));
+            woke = await pollBridgeReady(7, 320);
+          }
+        } catch (e) {}
+      }
+
+      // 3. Otherwise wake offline daemon via same-origin/matched HTTP PHP bridge (zero blind localhost spam)
+      if (!woke) {
+        const phpEndpoints = getPhpBridgeEndpoints(port);
+        if (phpEndpoints.length === 0) {
+          wakeError = location.protocol === 'file:'
+            ? 'Browsers cannot launch Node.js directly from file:// without an active Apache/PHP server. Start the studio server once:'
+            : `Studio bridge is offline at ${targetUrl}. Start or restart it from your project folder:`;
+        } else {
+          for (const base of phpEndpoints) {
+            try {
+              const res = await fetch(`${base}?restart=1&host=${encodeURIComponent(host)}&port=${port}&prevPort=${prevPort}`, {
+                signal: AbortSignal.timeout(10000)
+              });
+              const data = await res.json().catch(() => null);
+              if (res.ok && data && data.ok) {
+                woke = await pollBridgeReady(5, 300);
+                if (woke) break;
+              } else if (data && data.error) {
+                wakeError = data.error;
+              } else if (!res.ok) {
+                wakeError = `PHP bridge returned HTTP ${res.status}.`;
+              }
+            } catch (e) {
+              wakeError = `Could not reach PHP Auto-Wake helper (${base}). Start Node manually:`;
+            }
+          }
+        }
+      }
+
+      if (!woke) {
+        if (badge && text) {
+          badge.className = 'status-badge offline';
+          text.textContent = 'Offline (Manual Start Needed)';
+        }
+        showOfflineHelper(wakeError);
+      } else {
+        hideOfflineHelper();
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Auto-Wake';
+      }
+    }
+
+    async function saveStudioSettings() {
+      const prev = loadSavedSettings();
+      const prevHost = (prev.host === '0.0.0.0' ? '127.0.0.1' : (prev.host || DETECTED_HOST)).trim();
+      const prevPort = Number(prev.port) || 4004;
+      const prevUrl = `http://${prevHost}:${prevPort}`;
+
+      const host = (document.getElementById('settingHost').value || DETECTED_HOST).trim();
+      const probeHost = host === '0.0.0.0' ? '127.0.0.1' : host;
+      const port = Number(document.getElementById('settingPort').value) || 4004;
+      const encoder = document.getElementById('settingEncoder').value || 'auto';
+      const defaultFps = Number(document.getElementById('settingFps').value) || 240;
+
+      const newSettings = { host, port, encoder, defaultFps };
+      const bridgeUrl = `http://${probeHost}:${port}`;
+      localStorage.setItem('kinet_settings', JSON.stringify(newSettings));
+      localStorage.setItem('kinet_bridge_url', bridgeUrl);
+
+      // Sync with bridge server config API only when reachable or changing port/host
+      const tryEndpoints = lastOnlineBridgeUrl
+        ? [...new Set([lastOnlineBridgeUrl, bridgeUrl])]
+        : (prevUrl !== bridgeUrl ? [bridgeUrl, prevUrl] : [bridgeUrl]);
+      for (const ep of tryEndpoints) {
+        try {
+          const r = await fetch(`${ep}/api/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newSettings),
+            signal: AbortSignal.timeout(1000)
+          });
+          if (r.ok) {
+            const data = await r.json();
+            if (data.restartRequired) {
+              let restarted = false;
+              try {
+                const rr = await fetch(`${ep}/api/restart`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ host, port }),
+                  signal: AbortSignal.timeout(2000)
+                });
+                if (rr.ok) restarted = true;
+              } catch {}
+              if (!restarted) {
+                for (const phpBase of getPhpBridgeEndpoints(prevPort)) {
+                  try {
+                    const pr = await fetch(`${phpBase}?restart=1&host=${encodeURIComponent(host)}&port=${port}&prevPort=${prevPort}`, {
+                      signal: AbortSignal.timeout(10000)
+                    });
+                    if (pr.ok) break;
+                  } catch {}
+                }
+              }
+            }
+            break;
+          }
+        } catch {}
+      }
+
+      // Notify iframe immediately
+      sendSettingsToChild();
+      closeSettingsModal();
+    }
+
+    function sendSettingsToChild() {
+      try {
+        if (iframe && iframe.contentWindow) {
+          const s = loadSavedSettings();
+          iframe.contentWindow.postMessage({
+            type: 'UPDATE_SETTINGS',
+            settings: s,
+            bridgeUrl: getBridgeBaseUrl().replace('http://0.0.0.0:', 'http://127.0.0.1:')
+          }, '*');
+        }
+      } catch (e) {}
+    }
+
+    function resetSettingsDefaults() {
+      document.getElementById('settingHost').value = DEFAULT_SETTINGS.host;
+      document.getElementById('settingPort').value = DEFAULT_SETTINGS.port;
+      document.getElementById('settingEncoder').value = DEFAULT_SETTINGS.encoder;
+      document.getElementById('settingFps').value = String(DEFAULT_SETTINGS.defaultFps);
+      checkBridgeStatus(false);
+    }
+
     function unlockChildAudio() {
       try {
         if (iframe && iframe.contentWindow) {
@@ -327,7 +865,11 @@
       } catch (e) {}
     }
 
-    window.addEventListener('click', unlockChildAudio);
+    iframe.addEventListener('load', () => {
+      setTimeout(() => {
+        sendSettingsToChild();
+      }, 120);
+    });
 
     function changePreset(path) {
       iframe.src = path;
@@ -335,16 +877,11 @@
       if (browserUrl) {
         browserUrl.textContent = `https://kinetrig.dev/${path.split('/').pop()}`;
       }
-      iframe.onload = () => {
-        setTimeout(unlockChildAudio, 120);
-      };
     }
 
     function setMockup(type, btn) {
       unlockChildAudio();
-      document.querySelectorAll('.controls button').forEach(b => {
-        if (b.innerText !== '🔊 Test SFX') b.classList.remove('active');
-      });
+      document.querySelectorAll('.controls .btn-mockup').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
       container.className = 'stage-wrapper mockup-' + type;
@@ -366,183 +903,6 @@
       }
     }
 
-    function togglePreviewFpsMenu(e) {
-      e.stopPropagation();
-      const menu = document.getElementById('previewFpsMenu');
-      if (menu) menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    document.addEventListener('click', (e) => {
-      const menu = document.getElementById('previewFpsMenu');
-      const btn = document.getElementById('btnStudioExport');
-      if (menu && !menu.contains(e.target) && e.target !== btn) {
-        menu.style.display = 'none';
-      }
-    });
-
-    let isPreviewExporting = false;
-    let isPreviewPaused = false;
-    let currentPreviewAbortController = null;
-    let currentPreviewEvtSource = null;
-
-    function setPreviewExportUiState(exporting) {
-      isPreviewExporting = exporting;
-      const optsGroup = document.getElementById('preview-fps-options-group');
-      const ctrlGroup = document.getElementById('preview-render-controls-group');
-      if (optsGroup && ctrlGroup) {
-        optsGroup.style.display = exporting ? 'none' : 'block';
-        ctrlGroup.style.display = exporting ? 'block' : 'none';
-      }
-      if (!exporting) {
-        isPreviewPaused = false;
-        updatePreviewPauseUi(false);
-      }
-    }
-
-    function updatePreviewPauseUi(paused) {
-      const lbl = document.getElementById('labelPreviewPause');
-      const iconP = document.getElementById('iconPreviewPause');
-      const iconR = document.getElementById('iconPreviewResume');
-      if (lbl) lbl.textContent = paused ? 'Resume Render' : 'Pause Render';
-      if (iconP) iconP.style.display = paused ? 'none' : 'inline-block';
-      if (iconR) iconR.style.display = paused ? 'inline-block' : 'none';
-    }
-
-    async function togglePreviewPause(e) {
-      if (e) e.stopPropagation();
-      const menu = document.getElementById('previewFpsMenu');
-      if (menu) menu.style.display = 'none';
-      if (!isPreviewExporting) return;
-      const label = document.getElementById('btnExportLabel');
-      try {
-        if (!isPreviewPaused) {
-          await fetch('http://127.0.0.1:4004/api/pause');
-          isPreviewPaused = true;
-          updatePreviewPauseUi(true);
-          if (label) label.textContent = label.textContent.replace('Rendering', 'Paused');
-        } else {
-          await fetch('http://127.0.0.1:4004/api/resume');
-          isPreviewPaused = false;
-          updatePreviewPauseUi(false);
-          if (label) label.textContent = label.textContent.replace('Paused', 'Rendering');
-        }
-      } catch (err) {
-        console.warn('[Preview Pause Error]', err);
-      }
-    }
-
-    async function cancelPreviewRender(e) {
-      if (e) e.stopPropagation();
-      const menu = document.getElementById('previewFpsMenu');
-      if (menu) menu.style.display = 'none';
-      if (!isPreviewExporting) return;
-      try {
-        await fetch('http://127.0.0.1:4004/api/cancel');
-      } catch {}
-      if (currentPreviewEvtSource) {
-        currentPreviewEvtSource.close();
-        currentPreviewEvtSource = null;
-      }
-      if (currentPreviewAbortController) {
-        currentPreviewAbortController.abort();
-        currentPreviewAbortController = null;
-      }
-      const label = document.getElementById('btnExportLabel');
-      const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
-      if (label) label.textContent = 'Cancelled';
-      setTimeout(() => {
-        if (label) label.innerHTML = EXPORT_DEFAULT_HTML;
-        setPreviewExportUiState(false);
-      }, 1500);
-    }
-
-    async function exportCurrentPreset(fps = 240) {
-      if (isPreviewExporting) return;
-      const menu = document.getElementById('previewFpsMenu');
-      if (menu) menu.style.display = 'none';
-
-      const btn = document.getElementById('btnStudioExport');
-      const label = document.getElementById('btnExportLabel');
-      const presetPath = document.getElementById('presetSelect').value;
-      const baseName = presetPath.split('/').pop().replace('.html', '');
-
-      // Check if studio bridge server is running
-      const isStudio = (typeof location !== 'undefined') && (
-        location.port === '4004' ||
-        location.host.includes('4004')
-      );
-
-      let isBridgeOnline = false;
-      if (isStudio) {
-        try {
-          const ping = await fetch('/api/health', { signal: AbortSignal.timeout(600) });
-          if (ping.ok) isBridgeOnline = true;
-        } catch {}
-      }
-
-      if (!isBridgeOnline) {
-        alert("KinetRig Studio Bridge is offline.\n\nTo download true deterministic 240 FPS MP4 video directly through the browser, run in your terminal:\n\nnode scripts/server.mjs\n\nThen open: http://127.0.0.1:4004\n\n(The server runs 100% locally on your machine with 0 cost)");
-        return;
-      }
-
-      setPreviewExportUiState(true);
-      currentPreviewAbortController = new AbortController();
-      label.textContent = `Connecting Studio...`;
-
-      try {
-        currentPreviewEvtSource = new EventSource('http://127.0.0.1:4004/api/progress');
-        currentPreviewEvtSource.onmessage = e => {
-          try {
-            const data = JSON.parse(e.data);
-            if (data.status === 'rendering' && !isPreviewPaused) {
-              label.textContent = `Rendering: ${data.percent || 0}% (${fps} FPS)`;
-            } else if (data.status === 'paused') {
-              label.textContent = `Paused: ${data.percent || 0}% (${fps} FPS)`;
-            }
-          } catch {}
-        };
-      } catch {}
-
-      try {
-        const res = await fetch(`http://127.0.0.1:4004/api/render?template=${encodeURIComponent(presetPath)}&fps=${fps}`, {
-          signal: currentPreviewAbortController.signal
-        });
-        if (currentPreviewEvtSource) {
-          currentPreviewEvtSource.close();
-          currentPreviewEvtSource = null;
-        }
-        if (!res.ok) throw new Error(await res.text());
-
-        label.textContent = 'Saving MP4...';
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${baseName}_${fps}fps.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
-        label.textContent = 'Downloaded!';
-        setTimeout(() => {
-          label.innerHTML = EXPORT_DEFAULT_HTML;
-          setPreviewExportUiState(false);
-        }, 2000);
-      } catch (err) {
-        if (err.name === 'AbortError') return;
-        const EXPORT_DEFAULT_HTML = 'Download <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg> 240';
-        if (currentPreviewEvtSource) {
-          currentPreviewEvtSource.close();
-          currentPreviewEvtSource = null;
-        }
-        alert(`Export failed: ${err.message}`);
-        label.innerHTML = EXPORT_DEFAULT_HTML;
-        setPreviewExportUiState(false);
-      }
-    }
-
     // Studio SFX-Kit + Procedural Web Audio API Synthesizer
     let audioCtx = null;
     let studioTestBuffer = null;
@@ -560,9 +920,9 @@
         ? [
             'sfx/sounds/impacts/impact-deep-soft.wav',
             '../sfx/sounds/impacts/impact-deep-soft.wav',
-            'https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main/sounds/impacts/impact-deep-soft.wav'
+            'https://raw.githubusercontent.com/wyzowl/sfx-kit/main/sounds/impacts/impact-deep-soft.wav'
           ]
-        : ['https://cdn.jsdelivr.net/gh/wyzowl/sfx-kit@main/sounds/impacts/impact-deep-soft.wav'];
+        : ['https://raw.githubusercontent.com/wyzowl/sfx-kit/main/sounds/impacts/impact-deep-soft.wav'];
       for (const u of tryUrls) {
         try {
           const r = await fetch(u);
