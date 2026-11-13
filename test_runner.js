@@ -9,6 +9,7 @@ import { aggregateDependencies, getAgentCliFlag } from './src/core/dependencyIns
 import { aggregateGitIgnorePatterns, isPatternIgnored } from './src/core/gitIgnoreManager.js';
 import { detectInstalledSkills, syncSkills, removeSkillsFromProject } from './src/core/skillUpdater.js';
 import { loadCache, saveCache, calculateHash, syncMasterSkillLibrary } from './src/core/syncEngine.js';
+import { compareVersions, checkForUpdates, getCurrentVersionSync } from './src/core/updateChecker.js';
 
 async function runTests() {
   const isolatedRegistryPath = path.join(os.tmpdir(), `contextrig-test-registry-${Date.now()}.json`);
@@ -571,7 +572,30 @@ async function runTests() {
 
   // Cleanup test directory
   await fs.rm(fullPath, { recursive: true, force: true });
-  console.log('✔ Test 11: Cleanup test project directory completed.');
+  console.log('✔ Test 11: Cleanup test project directory cleared.');
+
+  // Test 12: CLI update checker (offline-safe, cache-backed)
+  assert.strictEqual(compareVersions('1.0.0', '1.1.0'), -1);
+  assert.strictEqual(compareVersions('1.2.0', '1.1.9'), 1);
+  assert.strictEqual(compareVersions('v1.0.0', '1.0.0'), 0);
+  assert.strictEqual(compareVersions('nope', '1.0.0'), null);
+  assert.strictEqual(getCurrentVersionSync(), '1.0.0');
+
+  const updateCachePath = path.join(os.tmpdir(), `contextrig-update-cache-${Date.now()}.json`);
+  process.env.CONTEXTRIG_UPDATE_CACHE_PATH = updateCachePath;
+  await fs.writeFile(
+    updateCachePath,
+    JSON.stringify({ checkedAt: Date.now(), latestVersion: '1.9.9' }),
+    'utf8'
+  );
+  const updateState = await checkForUpdates();
+  assert(updateState, 'checkForUpdates should return cached state');
+  assert.strictEqual(updateState.latestVersion, '1.9.9');
+  assert.strictEqual(updateState.updateAvailable, true);
+  assert.strictEqual(updateState.fromCache, true);
+  await fs.rm(updateCachePath, { force: true });
+  delete process.env.CONTEXTRIG_UPDATE_CACHE_PATH;
+  console.log('✔ Test 12: CLI update checker version compare & cache banner verified.');
 
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
   } finally {

@@ -25,6 +25,7 @@ import {
   resetSkillSettings
 } from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
+import { printUpdateBanner, runSelfUpdate } from './core/updateChecker.js';
 
 const execAsync = promisify(exec);
 
@@ -992,6 +993,7 @@ function clearTerminal() {
 async function mainMenu() {
   clearTerminal();
   logger.banner();
+  await printUpdateBanner();
 
   let keepRunning = true;
 
@@ -1004,7 +1006,7 @@ async function mainMenu() {
           message: 'What would you like to do?',
           choices: [
             { name: '[1] Inject Skills to Project', value: 'inject' },
-            { name: '[2] Sync & Check Updates', value: 'sync' },
+            { name: '[2] Sync Skills to Projects', value: 'sync' },
             { name: '[3] Remove Skills from Project', value: 'remove' },
             { name: '[4] Manage Skills Library', value: 'manage' },
             new inquirer.Separator(),
@@ -1059,6 +1061,7 @@ Usage:
   rig sync --all [--yes]             Check & update all registered projects
   rig sync --skill <id> [--yes]      Update a specific skill across registered projects
   rig sync <path> [--yes]            Sync a specific project directory
+  rig --update                       Pull the latest ContextRig source from GitHub
   rig --help                         Show this help message
 `);
 }
@@ -1070,6 +1073,18 @@ async function runCli(argv) {
   }
 
   const cmd = argv[0];
+  if (cmd === '--update' || cmd === 'update') {
+    logger.info('Pulling latest ContextRig source from GitHub...');
+    const result = await runSelfUpdate();
+    if (result.ok) {
+      logger.success(result.message);
+    } else {
+      logger.error(result.message);
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (cmd === 'sync') {
     const rest = argv.slice(1);
     const autoConfirm = rest.includes('--yes') || rest.includes('-y');
