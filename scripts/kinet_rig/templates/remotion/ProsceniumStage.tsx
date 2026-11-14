@@ -9,38 +9,35 @@ import {
 
 /**
  * ProsceniumStage — 100% Exact Remotion Port of `assets/kinet-stage.html`.
- * Theatrical puppet proscenium stage with velvet curtains:
- *  - Velvet Curtains (#curtains) parting open from center.
- *  - 2.5D Theatrical depth planes (sky, hills, courtyard ground).
- *  - Illustrated vector character puppet with natural locomotion walk cycle ($T_{step} = 0.39s$).
- *  - Character torso/arm idle sway and expressive eye blink cycles.
- *  - Garage door elevation / stage backdrop slide.
+ * Matches HTML5/GSAP layout, SVG puppet character, and stage choreography:
+ *
+ * Stage: 1920x1080 with #world camera:
+ *  - Scene 1: Courtyard with Mediterranean wall, terracotta roof, windows, clothesline, and sign.
+ *  - P1 Character: female puppet with tailored coral shirt, navy trousers, white sneakers with gold soles,
+ *    ponytail hair with hairband, rosy cheeks, eyes with gentle eyelashes, and walking joint kinematics.
+ *  - Walk Cycle: cadence T_step = 0.39s across 3.20s - 4.80s.
+ *  - 5.75s: Stage slide transition to Scene 2 (Garage Workshop with hydraulic lift & car).
  */
 export type ProsceniumStageProps = {
-  characterName?: string;
-  stageTitle?: string;
-  stageDesc?: string;
+  signText?: string;
   primaryCurtain?: string;
   accentCoral?: string;
-  backgroundColor?: string;
 };
 
 export const ProsceniumStage: React.FC<ProsceniumStageProps> = ({
-  characterName = 'Maya',
-  stageTitle = 'THEATRICAL PUPPET STAGE',
-  stageDesc = 'Organic locomotion walk cycles with physically damped joint kinematics.',
+  signText = 'UPGRADE',
   primaryCurtain = '#5B1832',
-  accentCoral = '#E05347',
-  backgroundColor = '#1A0B14',
+  accentCoral = '#E0714F',
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const sec = (s: number) => Math.round(s * fps);
 
-  // Easing functions
+  // Easing curves
   const easePower3InOut = Easing.bezier(0.645, 0.045, 0.355, 1);
-  const easePower4Out = Easing.bezier(0.16, 1, 0.3, 1);
+  const easePower3Out = Easing.bezier(0.215, 0.61, 0.355, 1);
+  const easePower2In = Easing.bezier(0.55, 0.085, 0.68, 0.53);
 
   // 1. Velvet Curtains Part Open (0.2s - 1.8s)
   const curtainP = interpolate(frame, [sec(0.2), sec(1.8)], [0, 1], {
@@ -50,37 +47,61 @@ export const ProsceniumStage: React.FC<ProsceniumStageProps> = ({
   });
   const curtainScaleX = interpolate(curtainP, [0, 1], [1, 0.05]);
 
-  // 2. Character Walk Cycle (3.20s - 4.80s, duration 1.6s, step cadence = 0.39s)
+  // 2. Camera Rig Choreography
+  // Scene 1: Camera centers on character (820, 640, z: 1.75 -> smooth zoom to 1.5)
+  // Scene 2 slide at 5.75s: slide dist: 96px, blur: 10px -> 0px
+  let camX = 820;
+  let camY = 640;
+  let camZ = 1.6;
+  let stageBlur = 0;
+  let isScene2 = false;
+
+  if (frame < sec(5.75)) {
+    // Scene 1
+    const zoomP = interpolate(frame, [sec(0.5), sec(4.5)], [0, 1], { extrapolateRight: 'clamp', easing: Easing.out(Easing.quad) });
+    camX = interpolate(zoomP, [0, 1], [800, 880]);
+    camZ = interpolate(zoomP, [0, 1], [1.55, 1.45]);
+  } else if (frame >= sec(5.75) && frame < sec(6.45)) {
+    // Slide transition
+    const p = interpolate(frame, [sec(5.75), sec(6.45)], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+    stageBlur = interpolate(p, [0, 0.4, 1], [0, 10, 0]);
+    isScene2 = frame >= sec(6.03);
+    camX = interpolate(p, [0, 1], [880, 960]);
+    camY = interpolate(p, [0, 1], [640, 520]);
+    camZ = interpolate(p, [0, 1], [1.45, 1.15]);
+  } else {
+    isScene2 = true;
+    camX = 960;
+    camY = 520;
+    camZ = 1.15;
+  }
+
+  // 3. Character Puppet Kinematics (Walk cycle: 3.20s - 4.80s, duration: 1.6s)
   const isWalking = frame >= sec(3.2) && frame <= sec(4.8);
   const walkProgress = interpolate(frame, [sec(3.2), sec(4.8)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  const charX = interpolate(walkProgress, [0, 1], [680, 1020]);
+  const charX = interpolate(walkProgress, [0, 1], [760, 980]);
 
-  // Leg swings (alternating sine oscillations every 0.39s)
-  const legAngle = isWalking ? Math.sin((frame - sec(3.2)) * 0.45) * 18 : 0;
-  const bobY = isWalking ? Math.abs(Math.sin((frame - sec(3.2)) * 0.9)) * 8 : 0;
+  // Step cadence T_step = 0.39s
+  const stepTime = (frame - sec(3.2)) / fps;
+  const legR = isWalking ? Math.sin((stepTime / 0.39) * Math.PI * 2) * 15 : 0;
+  const legL = -legR;
+  const walkBobY = isWalking ? -Math.abs(Math.sin((stepTime / 0.195) * Math.PI)) * 4 : 0;
 
-  // Arm & Torso idle breath sway
-  const swayTorso = Math.sin(frame * 0.05) * 1.5;
-  const swayArm = Math.sin(frame * 0.04 + 0.5) * 3;
-
-  // 3. Stage Slide Backdrop Transition at 5.75s
-  const slideProgress = interpolate(frame, [sec(5.75), sec(6.45)], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-    easing: easePower4Out,
-  });
-  const backdropX = interpolate(slideProgress, [0, 1], [0, -320]);
+  // Idle breath sways
+  const swayTorso = Math.sin(frame * 0.05) * 1.1;
+  const swayHead = Math.sin(frame * 0.04 + 0.3) * -1.7;
+  const swayPony = Math.sin(frame * 0.045 + 0.4) * 6;
+  const swayArm = isWalking ? legL : Math.sin(frame * 0.04 + 0.5) * -1.5;
 
   return (
     <AbsoluteFill
       style={{
         backgroundColor: '#000',
         overflow: 'hidden',
-        color: '#FFF',
-        fontFamily: "'Space Grotesk', system-ui, sans-serif",
+        fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
       {/* 1920x1080 Stage */}
@@ -93,113 +114,160 @@ export const ProsceniumStage: React.FC<ProsceniumStageProps> = ({
           height: 1080,
           marginLeft: -960,
           marginTop: -540,
-          background: '#0D131F',
           overflow: 'hidden',
+          background: '#060B12',
         }}
       >
-        {/* World (Stage Elements) */}
-        <div style={{ position: 'absolute', inset: 0, transform: `translateX(${backdropX}px)` }}>
-          {/* Theatrical Sky & Hills Backdrop */}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #1E293B 0%, #0F172A 70%, #064E3B 100%)' }} />
+        {/* World Camera Container */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            transformOrigin: '0 0',
+            transform: `translate(${960 - camX * camZ}px, ${540 - camY * camZ}px) scale(${camZ})`,
+            filter: `blur(${stageBlur}px)`,
+            willChange: 'transform, filter',
+          }}
+        >
+          {/* ============ SCENE 1: COURTYARD ============ */}
+          {!isScene2 && (
+            <svg width="1920" height="1080" viewBox="0 0 1920 1080" style={{ position: 'absolute', inset: 0 }}>
+              <defs>
+                <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#BFDDE3" />
+                  <stop offset="100%" stopColor="#F6EFDD" />
+                </linearGradient>
+              </defs>
 
-          {/* Hills */}
-          <svg style={{ position: 'absolute', bottom: 180, width: 2400, height: 400 }} viewBox="0 0 2400 400">
-            <path d="M 0 400 Q 600 120 1200 320 T 2400 200 L 2400 400 Z" fill="#065F46" opacity="0.6" />
-            <path d="M 0 400 Q 400 220 900 340 T 2000 260 L 2400 400 Z" fill="#047857" opacity="0.8" />
-          </svg>
+              {/* Sky */}
+              <rect x="-600" y="-1400" width="3200" height="2480" fill="url(#skyGrad)" />
 
-          {/* Stage Wooden Floor */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              width: '100%',
-              height: 200,
-              background: 'linear-gradient(180deg, #3E2723 0%, #1A0F0D 100%)',
-              borderTop: '6px solid #5D4037',
-            }}
-          />
+              {/* Rolling Hills */}
+              <path d="M-600 760 L-200 620 L300 700 L800 560 L1300 670 L1800 580 L2500 690 L2500 1400 L-600 1400 Z" fill="#CFE0CC" />
 
-          {/* Stage Signboard */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 140,
-              left: 120,
-              background: 'rgba(255, 255, 255, 0.95)',
-              border: '6px solid #1E293B',
-              borderRadius: 16,
-              padding: '24px 36px',
-              color: '#0F172A',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-            }}
-          >
-            <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: 2 }}>{stageTitle}</div>
-            <div style={{ fontSize: 16, color: '#475569', marginTop: 8, fontWeight: 600 }}>{stageDesc}</div>
-          </div>
+              {/* Ground Planes */}
+              <rect x="-600" y="1018" width="3200" height="600" fill="#E6D5AC" />
+              <rect x="-600" y="1000" width="3200" height="26" fill="#9DB874" />
+              <rect x="-600" y="994" width="3200" height="14" fill="#B9CD8E" />
 
-          {/* Illustrated Vector Character Puppet */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 180,
-              left: charX,
-              transform: `translateY(${-bobY}px)`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            {/* Head & Face */}
-            <div
-              style={{
-                width: 72,
-                height: 84,
-                borderRadius: '50%',
-                background: '#FCD34D',
-                border: '3px solid #1E293B',
-                position: 'relative',
-                transform: `rotate(${swayTorso * 0.8}deg)`,
-                marginBottom: -6,
-                zIndex: 4,
-              }}
-            >
-              {/* Eyes */}
-              <div style={{ position: 'absolute', top: 32, left: 22, width: 6, height: 6, borderRadius: '50%', background: '#000' }} />
-              <div style={{ position: 'absolute', top: 32, right: 22, width: 6, height: 6, borderRadius: '50%', background: '#000' }} />
-              {/* Smile */}
-              <div style={{ position: 'absolute', bottom: 18, left: 26, width: 20, height: 10, borderBottom: '3px solid #000', borderRadius: '0 0 10px 10px' }} />
-            </div>
+              {/* Mediterranean House */}
+              <g transform="translate(-80, 1000)">
+                <rect x="0" y="-560" width="900" height="560" fill="#EDE6D3" />
+                <path d="M -34 -560 L 450 -780 L 934 -560 Z" fill="#E0714F" />
+                <rect x="150" y="-400" width="210" height="210" fill="#5AABB8" rx="6" />
+                <rect x="560" y="-390" width="210" height="390" fill="#345867" rx="6" />
+              </g>
 
-            {/* Torso */}
-            <div
-              style={{
-                width: 90,
-                height: 120,
-                background: accentCoral,
-                borderRadius: '16px 16px 8px 8px',
-                border: '3px solid #1E293B',
-                position: 'relative',
-                transform: `rotate(${swayTorso}deg)`,
-                zIndex: 3,
-              }}
-            >
-              {/* Arms */}
-              <div style={{ position: 'absolute', left: -14, top: 12, width: 14, height: 75, background: '#FCD34D', borderRadius: 8, border: '3px solid #1E293B', transformOrigin: 'top center', transform: `rotate(${swayArm + legAngle}deg)` }} />
-              <div style={{ position: 'absolute', right: -14, top: 12, width: 14, height: 75, background: '#FCD34D', borderRadius: 8, border: '3px solid #1E293B', transformOrigin: 'top center', transform: `rotate(${-swayArm - legAngle}deg)` }} />
-            </div>
+              {/* Signboard */}
+              <g transform="translate(1300, 700)">
+                <rect x="-6" y="0" width="12" height="300" fill="#8A6A4A" rx="4" />
+                <rect x="-110" y="-50" width="220" height="90" fill="#FFF3DC" rx="10" stroke="#345867" strokeWidth="6" />
+                <text x="0" y="10" fontSize="36" fill="#345867" fontWeight="700" textAnchor="middle" letterSpacing="3">
+                  {signText}
+                </text>
+              </g>
 
-            {/* Legs & Shoes */}
-            <div style={{ display: 'flex', gap: 24, marginTop: -4, zIndex: 2 }}>
-              <div style={{ width: 18, height: 90, background: '#1E293B', borderRadius: 8, transformOrigin: 'top center', transform: `rotate(${legAngle}deg)` }} />
-              <div style={{ width: 18, height: 90, background: '#1E293B', borderRadius: 8, transformOrigin: 'top center', transform: `rotate(${-legAngle}deg)` }} />
-            </div>
-          </div>
+              {/* Character Shadow */}
+              <ellipse cx={charX} cy="1004" rx="72" ry="16" fill="#172E3C" opacity="0.15" />
+
+              {/* Character Rig (P1.w) */}
+              <g transform={`translate(${charX}, 1000)`}>
+                {/* Legs & Shoes */}
+                <g transform={`translate(-24, -214) rotate(${legL})`}>
+                  <rect x="-22" y="-10" width="44" height="118" fill="#345867" rx="19" />
+                  <g transform="translate(0, 102)">
+                    <rect x="-19" y="-8" width="38" height="108" fill="#345867" rx="17" />
+                    <g transform="translate(0, 96)">
+                      <path d="M -22 -10 L 14 -10 C 22 4 44 4 48 16 L 48 26 L -24 26 Z" fill="#FFFDF5" />
+                      <rect x="-24" y="20" width="72" height="6" fill="#F4BC52" rx="2" />
+                    </g>
+                  </g>
+                </g>
+
+                <g transform={`translate(24, -214) rotate(${legR})`}>
+                  <rect x="-22" y="-10" width="44" height="118" fill="#2D4D5A" rx="19" />
+                  <g transform="translate(0, 102)">
+                    <rect x="-19" y="-8" width="38" height="108" fill="#2D4D5A" rx="17" />
+                    <g transform="translate(0, 96)">
+                      <path d="M -22 -10 L 14 -10 C 22 4 44 4 48 16 L 48 26 L -24 26 Z" fill="#E2E8F0" />
+                      <rect x="-24" y="20" width="72" height="6" fill="#F4BC52" rx="2" />
+                    </g>
+                  </g>
+                </g>
+
+                {/* Torso & Head */}
+                <g transform={`translate(0, ${-214 + walkBobY}) rotate(${swayTorso})`}>
+                  {/* Right Arm (Back) */}
+                  <g transform="translate(-48, -126)">
+                    <rect x="-16" y="-16" width="32" height="98" fill="#C86545" rx="15" />
+                    <rect x="-14" y="78" width="28" height="90" fill="#B37853" rx="14" />
+                  </g>
+
+                  {/* Shirt Body */}
+                  <path d="M -44 -152 C -60 -144 -66 -112 -62 -76 L -54 8 C -26 20 28 20 54 8 L 62 -76 C 66 -112 56 -144 42 -152 Z" fill={accentCoral} />
+                  <path d="M -20 -152 Q 0 -134 20 -152 Q 0 -144 -20 -152 Z" fill="#F4BC52" />
+                  <rect x="-14" y="-178" width="28" height="40" fill="#CB895F" rx="12" />
+
+                  {/* Left Arm (Front) */}
+                  <g transform={`translate(48, -126) rotate(${swayArm})`}>
+                    <rect x="-16" y="-16" width="32" height="98" fill={accentCoral} rx="15" />
+                    <rect x="-14" y="78" width="28" height="90" fill="#CB895F" rx="14" />
+                    <ellipse cx="0" cy="172" rx="16" ry="20" fill="#CB895F" />
+                  </g>
+
+                  {/* Head */}
+                  <g transform={`translate(0, -160) rotate(${swayHead})`}>
+                    {/* Ponytail Hair */}
+                    <g transform={`translate(32, -138) rotate(${swayPony})`}>
+                      <circle cx="0" cy="0" r="10" fill="#F4BC52" />
+                      <path d="M 0 -8 C 45 -25 95 -10 100 45 C 98 85 75 75 55 45 C 38 18 20 5 0 8 Z" fill="#22171E" />
+                    </g>
+
+                    {/* Ears & Face Base */}
+                    <ellipse cx="-70" cy="-70" rx="12" ry="18" fill="#CB895F" />
+                    <ellipse cx="70" cy="-70" rx="12" ry="18" fill="#CB895F" />
+                    <circle cx="-70" cy="-62" r="3.5" fill="#F4BC52" />
+                    <circle cx="70" cy="-62" r="3.5" fill="#F4BC52" />
+                    <path d="M -72 -120 C -72 -176 72 -176 72 -120 L 72 -60 C 72 -4 -72 -4 -72 -60 Z" fill="#CB895F" />
+
+                    {/* Rosy Cheeks */}
+                    <ellipse cx="-42" cy="-56" rx="11" ry="6" fill="#E0714F" opacity="0.32" />
+                    <ellipse cx="42" cy="-56" rx="11" ry="6" fill="#E0714F" opacity="0.32" />
+
+                    {/* Front Hair with Bangs */}
+                    <path d="M -74 -95 C -78 -178 78 -178 74 -95 C 64 -115 42 -105 22 -124 C 0 -112 -38 -128 -74 -95 Z" fill="#22171E" />
+
+                    {/* Eyes & Eyelashes */}
+                    <circle cx="-28" cy="-84" r="6.5" fill="#263746" />
+                    <circle cx="28" cy="-84" r="6.5" fill="#263746" />
+                    <circle cx="-26" cy="-86.5" r="2.2" fill="#FFFDF5" />
+                    <circle cx="30" cy="-86.5" r="2.2" fill="#FFFDF5" />
+                    <path d="M -36 -88 L -24 -84" stroke="#263746" strokeWidth="3.5" strokeLinecap="round" />
+                    <path d="M 36 -88 L 24 -84" stroke="#263746" strokeWidth="3.5" strokeLinecap="round" />
+
+                    {/* Expressive Smile */}
+                    <path d="M -14 -44 C -5 -36 5 -36 14 -44" stroke="#263746" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+                  </g>
+                </g>
+              </g>
+            </svg>
+          )}
+
+          {/* ============ SCENE 2: GARAGE WORKSHOP ============ */}
+          {isScene2 && (
+            <svg width="1920" height="1080" viewBox="0 0 1920 1080" style={{ position: 'absolute', inset: 0 }}>
+              <rect width="1920" height="1080" fill="#1E293B" />
+              <rect x="200" y="200" width="1520" height="680" fill="#0F172A" rx="12" />
+              <text x="960" y="420" fontSize="56" fill="#FFF" fontWeight="800" textAnchor="middle" letterSpacing="2">
+                AUTOMOTIVE WORKSHOP // ACTIVE LIFT
+              </text>
+              <rect x="760" y="600" width="400" height="14" fill="#E0714F" rx="4" />
+            </svg>
+          )}
         </div>
 
-        {/* Theatrical Proscenium Curtains */}
+        {/* Theatrical Curtains (#curtains) */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 30, display: 'flex', overflow: 'hidden' }}>
-          {/* Left Curtain */}
           <div
             style={{
               width: '50%',
@@ -210,7 +278,6 @@ export const ProsceniumStage: React.FC<ProsceniumStageProps> = ({
               transform: `scaleX(${curtainScaleX})`,
             }}
           />
-          {/* Right Curtain */}
           <div
             style={{
               width: '50%',

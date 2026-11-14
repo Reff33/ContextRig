@@ -267,11 +267,11 @@ export const RemotionRoot: React.FC = () => {
         } as StudioCatalogProps}
       />
 
-      {/* 12. Paper Collage (Stop-Motion Paper Scrapbook) */}
+      {/* 12. Paper Collage (Stop-Motion Paper Scrapbook - 100% exact to kinet-collage.html) */}
       <Composition
         id="PaperCollage"
         component={PaperCollage}
-        durationInFrames={450} // 7.5 seconds matching exact kinet-collage.html
+        durationInFrames={540} // 9.0 seconds matching exact kinet-collage.html
         fps={60}
         width={1920}
         height={1080}
@@ -284,45 +284,40 @@ export const RemotionRoot: React.FC = () => {
           scrapText2: "AUTHENTIC CRAFT\nNOT DIGITAL PPT",
           polaroidCaption2: "press master copy #14",
           primaryPaper: "#F5F0E6",
+          paperDark: "#EAE0D0",
           accentOrange: "#EA580C",
           accentYellow: "#FDE047",
           accentRed: "#DC2626",
         } as PaperCollageProps}
       />
 
-      {/* 13. Proscenium Stage (Theatrical Puppet Proscenium Stage) */}
+      {/* 13. Proscenium Stage (Theatrical Puppet Proscenium Stage - 100% exact to kinet-stage.html) */}
       <Composition
         id="ProsceniumStage"
         component={ProsceniumStage}
-        durationInFrames={480} // 8.0 seconds matching exact kinet-stage.html
+        durationInFrames={720} // 12.0 seconds matching exact kinet-stage.html
         fps={60}
         width={1920}
         height={1080}
         defaultProps={{
-          characterName: "Maya",
-          stageTitle: "THEATRICAL PUPPET STAGE",
-          stageDesc: "Organic locomotion walk cycles with physically damped joint kinematics.",
+          signText: "UPGRADE",
           primaryCurtain: "#5B1832",
-          accentCoral: "#E05347",
-          backgroundColor: "#1A0B14",
+          accentCoral: "#E0714F",
         } as ProsceniumStageProps}
       />
 
-      {/* 14. Liquid Glass (iOS Spatial VisionOS Liquid Glass) */}
+      {/* 14. Liquid Glass (Apple VisionOS & Dynamic Island - 100% exact to kinet-ios-liquid-glass.html) */}
       <Composition
         id="LiquidGlass"
         component={LiquidGlass}
-        durationInFrames={360} // 6.0 seconds matching exact kinet-ios-liquid-glass.html
+        durationInFrames={900} // 15.0 seconds matching exact kinet-ios-liquid-glass.html
         fps={60}
         width={1920}
         height={1080}
         defaultProps={{
-          islandText: "SPATIAL INTELLIGENCE",
-          heroHeadline: "Fluid Spatial Vision",
-          heroSub: "Refractive liquid glass physics with VisionOS concentric orbital rings.",
-          primaryCyan: "#64D2FF",
+          primaryColor: "#0A84FF",
           accentPurple: "#BF5AF2",
-          backgroundColor: "#07090E",
+          backgroundColor: "#020305",
         } as LiquidGlassProps}
       />
     </>

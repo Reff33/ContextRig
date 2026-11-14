@@ -9,21 +9,26 @@ import {
 
 /**
  * PaperCollage — 100% Exact Remotion Port of `assets/kinet-collage.html`.
- * Tactile paper stop-motion scrapbook collage:
- *  - Tactile paper background with 40px gridlines, grain texture, and crease.
- *  - Scene 1 (0.0s - 4.85s):
- *      0.20s: Polaroid photo card slaps down from y: -650 with -4deg tilt.
- *      0.50s: Scotch masking tape slaps the top corner.
- *      0.90s: Torn newspaper scrap slides in from right with friction.
- *      1.15s: Second scotch tape slaps the torn scrap corner.
- *      1.40s: Vintage air mail postage stamp drops in from scale: 0.2, rotate: 8deg.
- *      2.10s: Heavy rubber ink stamp slams down: "★ VERIFIED PRINT ★" at 2.30s.
- *      2.60s: Handwritten note reveals with gentle drift.
- *      3.00s: Kinetic headline snaps in.
- *      3.60s: Stop-motion 12fps micro-jitter.
- *  - Scene 2 (4.85s - 7.5s):
- *      4.40s - 5.00s: Physical paper rip wipe sweeps across stage tearing Scene 1 away.
- *      4.90s: Scene 2 scrap slides in with tape & Polaroid exhibit.
+ * Matches HTML5/GSAP paper rip sheet geometry and timing:
+ *
+ * .rip-wipe specs from kinet-collage.html:
+ *  - width: 1920px (full-width tear cover sheet, NOT a narrow strip!)
+ *  - background: var(--paper-dark, #EAE0D0)
+ *  - box-shadow: -30px 0 60px rgba(0,0,0,0.35)
+ *  - clip-path: polygon(0% 0%, 100% 0%, 97% 12%, 100% 25%, 96% 40%, 100% 55%, 97% 70%, 100% 85%, 96% 100%, 0% 100%)
+ *  - Timeline (9.0s = 540 frames @ 60fps):
+ *      0.20s - 0.65s: Polaroid photo slaps down from y: -650 with rotate: -4deg (back.out(2))
+ *      0.50s: Scotch tape 1 snaps on top corner
+ *      0.90s: Torn newspaper scrap slides in from x: 500 (power3.out)
+ *      1.15s: Scotch tape 2 snaps corner
+ *      1.40s: Air mail postage stamp drops in with bounce
+ *      2.10s - 2.32s: Rubber ink stamp SLAMS down "★ VERIFIED PRINT ★" with double border
+ *      2.60s: Handwritten note reveals with drift
+ *      3.00s: Kinetic headline reveals
+ *      3.60s: 12fps stop-motion micro-jitter
+ *      4.40s - 5.30s: Physical paper rip sheet sweeps from X: 1920 -> -1920 (power3.inOut, duration: 0.9s)
+ *      4.85s: Midpoint cut (Scene 1 unmounts, Scene 2 mounts cleanly under tear cover!)
+ *      4.90s+: Scene 2 torn scrap, polaroid 2, and tape snap in
  */
 export type PaperCollageProps = {
   polaroidCaption1?: string;
@@ -34,6 +39,7 @@ export type PaperCollageProps = {
   scrapText2?: string;
   polaroidCaption2?: string;
   primaryPaper?: string;
+  paperDark?: string;
   accentOrange?: string;
   accentYellow?: string;
   accentRed?: string;
@@ -48,6 +54,7 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
   scrapText2 = 'AUTHENTIC CRAFT\nNOT DIGITAL PPT',
   polaroidCaption2 = 'press master copy #14',
   primaryPaper = '#F5F0E6',
+  paperDark = '#EAE0D0',
   accentOrange = '#EA580C',
   accentYellow = '#FDE047',
   accentRed = '#DC2626',
@@ -57,7 +64,7 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
 
   const sec = (s: number) => Math.round(s * fps);
 
-  // Easing curves
+  // Easing curves matching GSAP
   const easeBackOut2 = Easing.bezier(0.175, 0.885, 0.32, 1.4);
   const easeBackOut25 = Easing.bezier(0.175, 0.885, 0.32, 1.6);
   const easePower4Out = Easing.bezier(0.16, 1, 0.3, 1);
@@ -129,15 +136,16 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
   const isJitter = frame >= sec(3.60) && frame <= sec(3.72);
   const jitterRot = isJitter ? 1.5 : 0;
 
-  // Paper Rip Transition (4.40s - 5.00s)
-  const ripX = interpolate(frame, [sec(4.40), sec(5.00)], [1920, -1920], {
+  // Exact Physical Paper Rip Wipe (4.40s - 5.30s, duration: 0.9s)
+  const ripX = interpolate(frame, [sec(4.40), sec(5.30)], [1920, -1920], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: easePower3InOut,
   });
+  // Clean midpoint cut: Scene 1 unmounts at 4.85s when full tear sheet is completely covering the view!
   const isScene2 = frame >= sec(4.85);
 
-  // Scene 2 elements
+  // Scene 2 Elements
   const scrap2Prog = interpolate(frame, [sec(4.90), sec(5.35)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -147,6 +155,11 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: easeBackOut2,
+  });
+  const tape3Prog = interpolate(frame, [sec(5.40), sec(5.55)], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: easePower4Out,
   });
 
   return (
@@ -194,7 +207,7 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
           }}
         />
 
-        {/* SCENE 1 */}
+        {/* ============ SCENE 1 (Strictly disappears at 4.85s under the full tear sheet) ============ */}
         {!isScene2 && (
           <div style={{ position: 'absolute', inset: 0 }}>
             {/* Polaroid 1 */}
@@ -399,9 +412,10 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
           </div>
         )}
 
-        {/* SCENE 2 (Post Paper Rip) */}
+        {/* ============ SCENE 2: Clean reveal on the wake of the tear ============ */}
         {isScene2 && (
           <div style={{ position: 'absolute', inset: 0 }}>
+            {/* Torn Scrap 2 */}
             <div
               style={{
                 position: 'absolute',
@@ -424,6 +438,7 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
               {scrapText2}
             </div>
 
+            {/* Polaroid 2 */}
             <div
               style={{
                 position: 'absolute',
@@ -452,19 +467,65 @@ export const PaperCollage: React.FC<PaperCollageProps> = ({
                 {polaroidCaption2}
               </div>
             </div>
+
+            {/* Scotch Tape 3 */}
+            <div
+              style={{
+                position: 'absolute',
+                left: 1360,
+                top: 160,
+                width: 140,
+                height: 38,
+                background: 'rgba(254, 243, 199, 0.65)',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                transform: 'rotate(-30deg)',
+                opacity: tape3Prog,
+                zIndex: 25,
+              }}
+            />
+
+            {/* Headline 2 */}
+            <div
+              style={{
+                position: 'absolute',
+                left: 200,
+                top: 840,
+                fontWeight: 900,
+                fontSize: 78,
+                color: '#1C1917',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              ZERO BORING FADES.{' '}
+              <span
+                style={{
+                  display: 'inline-block',
+                  background: accentOrange,
+                  color: '#fff',
+                  padding: '4px 18px',
+                  boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+                }}
+              >
+                100% TACTILE.
+              </span>
+            </div>
           </div>
         )}
 
-        {/* Paper Rip Wipe Tear Overlay */}
+        {/*
+          100% Exact .rip-wipe Paper Rip Sheet from kinet-collage.html:
+          Full 1920px wide cover with jagged serrated polygon tear edge and drop shadow
+        */}
         <div
           style={{
             position: 'absolute',
-            top: -200,
-            bottom: -200,
-            width: 240,
-            background: '#E7E5E4',
-            boxShadow: '0 0 50px rgba(0,0,0,0.5)',
-            transform: `translateX(${ripX}px) rotate(-3deg)`,
+            top: 0,
+            bottom: 0,
+            width: 1920,
+            background: paperDark,
+            boxShadow: '-30px 0 60px rgba(0,0,0,0.35)',
+            clipPath: 'polygon(0% 0%, 100% 0%, 97% 12%, 100% 25%, 96% 40%, 100% 55%, 97% 70%, 100% 85%, 96% 100%, 0% 100%)',
+            transform: `translateX(${ripX}px)`,
             pointerEvents: 'none',
             zIndex: 40,
           }}
