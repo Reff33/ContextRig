@@ -252,7 +252,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           </div>
         )}
 
-        {/* Left Spatial Glass Card */}
+        {/* Left Spatial Glass Card (exact .spatial-card-left: x-slide only, no scale) */}
         {showCards && (
           <div
             style={{
@@ -261,6 +261,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               top: '50%',
               width: 380,
               padding: 28,
+              boxSizing: 'border-box',
               background: 'rgba(255, 255, 255, 0.08)',
               border: '1px solid rgba(255, 255, 255, 0.18)',
               borderRadius: 28,
@@ -269,7 +270,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
               zIndex: 20,
               opacity: cardLeftP,
-              transform: `translateY(-50%) translateX(${interpolate(cardLeftP, [0, 1], [-60, 0])}px) scale(${interpolate(cardLeftP, [0, 1], [0.92, 1])})`,
+              transform: `translateY(-50%) translateX(${interpolate(cardLeftP, [0, 1], [-60, 0])}px)`,
             }}
           >
             <div
@@ -286,7 +287,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 marginBottom: 16,
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
                 <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
               </svg>
@@ -294,7 +295,12 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
             <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Spatial Audio Depth</div>
             <div style={{ fontSize: 13, fontWeight: 500, color: '#8E8E93', marginBottom: 22 }}>Head-tracking acoustic wave field</div>
 
-            <div style={{ width: '100%', height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden', marginBottom: 10 }}>
+            {/* Label row FIRST, then bar (exact original order) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: '#8E8E93', marginBottom: 6 }}>
+              <span>Resonance Level</span>
+              <span style={{ color: '#FFF' }}>{Math.round(resonanceP)}%</span>
+            </div>
+            <div style={{ width: '100%', height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden' }}>
               <div
                 style={{
                   width: `${resonanceP}%`,
@@ -304,19 +310,15 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 }}
               />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: '#8E8E93', marginBottom: 12 }}>
-              <span>Resonance Level</span>
-              <span style={{ color: '#FFF', fontWeight: 700 }}>{Math.round(resonanceP)}%</span>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: '#0A84FF', fontWeight: 700 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#0A84FF' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64D2FF', fontWeight: 600, marginTop: 14 }}>
+              <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#64D2FF' }} />
               Dynamic Island Link: Active
             </div>
           </div>
         )}
 
-        {/* Right Spatial Glass Card */}
+        {/* Right Spatial Glass Card (Apple Intelligence) */}
         {showCards && (
           <div
             style={{
@@ -325,6 +327,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               top: '50%',
               width: 380,
               padding: 28,
+              boxSizing: 'border-box',
               background: 'rgba(255, 255, 255, 0.08)',
               border: '1px solid rgba(255, 255, 255, 0.18)',
               borderRadius: 28,
@@ -333,11 +336,11 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
               zIndex: 20,
               opacity: cardRightP,
-              transform: `translateY(-50%) translateX(${interpolate(cardRightP, [0, 1], [60, 0])}px) scale(${interpolate(cardRightP, [0, 1], [0.92, 1])})`,
+              transform: `translateY(-50%) translateX(${interpolate(cardRightP, [0, 1], [60, 0])}px)`,
             }}
           >
             <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Apple Intelligence</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#8E8E93', marginBottom: 20 }}>On-Device Neural Engine v18</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: '#8E8E93', marginBottom: 16 }}>On-Device Neural Engine v18</div>
 
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
