@@ -8,27 +8,24 @@ import {
 } from 'remotion';
 
 /**
- * StudioCatalog — 100% Exact Remotion Port of `assets/kinet-catalog.html`.
- * Matches Swiss minimalist architectural catalog aesthetics:
- *  - High-key clean studio white paper background (#ffffff) with 120px architectural grid.
- *  - Camera rig tracking across desk:
- *      0.00s: Initial closeup looking at Cutout A (C.x: 530, C.y: 490, C.z: 1.8).
- *      2.20s - 3.60s: Camera glides to Cutout B (C.x: 1380, C.y: 520, C.z: 1.6).
- *      4.20s - 5.40s: Camera glides home to wide stage (C.x: 960, C.y: 540, C.z: 1.0).
- *  - 0.15s: Architectural drafting hairlines (#swissGrid) stroke draw in (0.65s).
- *  - 0.20s: Ghost date '1972' subtle whisper entrance from y: 40.
- *  - 0.30s: 3D Specimen Card A lands, then fans out into isometric stack at 0.78s (#cardSub1: rot -4deg, #cardSub2: rot +5deg).
- *  - 2.50s: Cutout B slides in from right (x: 400).
- *  - 5.50s: Hero statement kinetic word reveals with yellow felt highlighter stroke.
- *  - 6.80s: Pencil sketch annotation ring draws around Card A.
- *  - 8.20s: Archive specification document (#docA) drops in from y: 400.
- *  - 9.10s: Red rubber stamp 'VERIFIED' slams down on document at 9.36s with desk shake.
+ * StudioCatalog — Swiss Minimalist Architectural Catalog & 3D Cinema Camera.
+ *
+ * Pindaan Mengikut Arahan Tepat Anda:
+ *  1. MEMBUANG BULATAN LAKARAN:
+ *     - Tiada lagi bulatan pensel merah/hitam di sekeliling kad.
+ *  2. MEMBUANG BULATAN KECIL MERAH:
+ *     - Grid cross bulatan merah (#gridCross) telah dibuang sepenuhnya.
+ *  3. MEMBUANG TULISAN KECIL DI BAWAH KAD:
+ *     - Tulisan "SPEC · MINIMALIST CATALOG" di bawah kad A telah dibuang supaya ruang bawah bersih.
+ *  4. ALUR KAMERA SEMPURNA (NATURAL & BERSAHAJA):
+ *     - 0.0s - 2.5s: Kad A mendarat di paparan stabil.
+ *     - 2.5s - 5.0s: Apabila Kad B masuk di sebelah kanan, kamera meluncur lancar ke kanan menjejak pergerakan Kad B.
+ *     - 5.0s - 7.5s: Kamera zoom out perlahan-lahan ke paparan seimbang penuh (Wide) dan KEKAL seimbang di situ tanpa zoom-in yang mengejut.
  */
 export type StudioCatalogProps = {
   ghostYear?: string;
   headlinePart1?: string;
   headlineHighlight?: string;
-  specLabel?: string;
   handNote?: string;
   docSubtitle?: string;
   stampText?: string;
@@ -41,7 +38,6 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
   ghostYear = '1972',
   headlinePart1 = 'Studio precision, ',
   headlineHighlight = 'two words.',
-  specLabel = 'SPEC · MINIMALIST CATALOG',
   handNote = 'verified 64 px',
   docSubtitle = '1972 · flagship release',
   stampText = 'VERIFIED',
@@ -54,64 +50,61 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
 
   const sec = (s: number) => Math.round(s * fps);
 
-  // Easing functions
-  const easePower2InOut = Easing.bezier(0.45, 0, 0.55, 1);
-  const easeSineInOut = Easing.bezier(0.37, 0, 0.63, 1);
-  const easePower3Out = Easing.bezier(0.215, 0.61, 0.355, 1);
+  // Easing curves
+  const easeNatural = Easing.bezier(0.25, 0.1, 0.25, 1);
   const easePower4Out = Easing.bezier(0.16, 1, 0.3, 1);
-  const easeBackOut2 = Easing.bezier(0.175, 0.885, 0.32, 1.4);
+  const easeBackOut2 = Easing.bezier(0.175, 0.885, 0.32, 1.3);
+  const easePower3Out = Easing.bezier(0.215, 0.61, 0.355, 1);
   const easePower4In = Easing.bezier(0.7, 0, 0.84, 0);
 
-  // 1. Camera Rig Pan & Zoom:
-  // 0.0s - 2.2s: x: 530, y: 490, z: 1.8
-  // 2.2s - 3.6s: pan to Cutout B (x: 1380, y: 520, z: 1.6)
-  // 4.2s - 5.4s: pan home to wide (x: 960, y: 540, z: 1.0)
-  let camX = 530;
-  let camY = 490;
-  let camZ = 1.8;
+  // ==========================================
+  // ALUR KAMERA: Mendarat -> Kad B Masuk Terus Gerak Kanan -> Zoom Out Balik Kekal
+  // (Tiada lagi zoom mengejut atau mula terlalu dekat)
+  // ==========================================
+  let camX = 960;
+  let camY = 540;
+  let camZ = 1.0;
 
-  if (frame < sec(2.2)) {
-    camX = 530;
-    camY = 490;
-    camZ = 1.8;
-  } else if (frame >= sec(2.2) && frame < sec(4.2)) {
-    const p = interpolate(frame, [sec(2.2), sec(3.6)], [0, 1], {
+  if (frame < sec(2.5)) {
+    // 0.0s - 2.5s: Paparan natural di tengah, kad A masuk & fan out
+    camX = 960;
+    camY = 540;
+    camZ = 1.0;
+  } else if (frame >= sec(2.5) && frame < sec(5.0)) {
+    // 2.5s - 5.0s: Kad B muncul di kanan -> Kamera terus bergerak menatap ke sebelah kanan
+    const p = interpolate(frame, [sec(2.5), sec(4.2)], [0, 1], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
-      easing: easeSineInOut,
+      easing: easeNatural,
     });
-    camX = interpolate(p, [0, 1], [530, 1380]);
-    camY = interpolate(p, [0, 1], [490, 520]);
-    camZ = interpolate(p, [0, 1], [1.8, 1.6]);
+    camX = interpolate(p, [0, 1], [960, 1260]);
+    camY = interpolate(p, [0, 1], [540, 500]);
+    camZ = interpolate(p, [0, 1], [1.0, 1.15]); // Zum sedikit sahaja secara sinematik
   } else {
-    const p = interpolate(frame, [sec(4.2), sec(5.4)], [0, 1], {
+    // 5.0s+: Kamera zoom out balik ke paparan wide penuh dan KEKAL di situ tanpa zoom lain
+    const p = interpolate(frame, [sec(5.0), sec(6.8)], [0, 1], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
-      easing: easePower2InOut,
+      easing: easeNatural,
     });
-    camX = interpolate(p, [0, 1], [1380, 960]);
-    camY = interpolate(p, [0, 1], [520, 540]);
-    camZ = interpolate(p, [0, 1], [1.6, 1.0]);
+    camX = interpolate(p, [0, 1], [1260, 960]);
+    camY = interpolate(p, [0, 1], [500, 540]);
+    camZ = interpolate(p, [0, 1], [1.15, 1.0]);
   }
 
-  // 2. Swiss Drafting Grid stroke draw-in (0.15s - 0.80s)
+  // 1. Swiss Drafting Grid Line Hairlines (0.15s - 0.80s)
   const gridLineH = interpolate(frame, [sec(0.15), sec(0.80)], [1700, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
-    easing: easePower2InOut,
+    easing: easeNatural,
   });
   const gridLineV = interpolate(frame, [sec(0.15), sec(0.80)], [1000, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
-    easing: easePower2InOut,
-  });
-  const gridCrossP = interpolate(frame, [sec(0.20), sec(0.55)], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-    easing: easeBackOut2,
+    easing: easeNatural,
   });
 
-  // 3. Ghost Date 1972 (0.20s - 1.40s)
+  // 2. Ghost Year 1972
   const ghostP = interpolate(frame, [sec(0.20), sec(1.40)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -119,13 +112,16 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
   });
   const ghostY = interpolate(ghostP, [0, 1], [40, 0]);
 
-  // 4. Specimen Cutout A fan-out stack (0.30s - 1.20s)
+  // 3. Kad A meluncur masuk (0.30s - 1.20s)
   const flyAP = interpolate(frame, [sec(0.30), sec(1.20)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: easePower4Out,
   });
   const cutAY = interpolate(flyAP, [0, 1], [500, 0]);
+
+  // Kesan apungan lembut bernafas (Organic Breathing Float)
+  const floatBobA = frame >= sec(1.2) ? Math.sin((frame - sec(1.2)) * 0.04) * 8 : 0;
 
   // Fan out subcards (0.78s & 0.82s)
   const sub1Rot = interpolate(frame, [sec(0.78), sec(1.28)], [0, -4], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easeBackOut2 });
@@ -136,7 +132,7 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
   const sub2X = interpolate(frame, [sec(0.82), sec(1.37)], [0, 28], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easeBackOut2 });
   const sub2Y = interpolate(frame, [sec(0.82), sec(1.37)], [0, 18], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easeBackOut2 });
 
-  // 5. Cutout B enters from right (2.50s - 3.40s)
+  // 4. Kad B masuk dari kanan (2.50s - 3.40s)
   const flyBP = interpolate(frame, [sec(2.50), sec(3.40)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -144,7 +140,7 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
   });
   const cutBX = interpolate(flyBP, [0, 1], [400, 0]);
 
-  // 6. Hero Statement Line 1 reveal & highlighter (5.50s - 6.20s)
+  // 5. Tajuk Utama & Highlighter (5.50s - 6.30s)
   const line1P = interpolate(frame, [sec(5.50), sec(6.05)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -156,18 +152,14 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
     easing: easePower3Out,
   });
 
-  // 7. Pencil Sketch Annotation Ring (6.80s - 7.60s)
-  const ringP = interpolate(frame, [sec(6.80), sec(7.60)], [0, 1], {
+  // 6. Label Tulisan Tangan Merah (7.80s)
+  const label2P = interpolate(frame, [sec(7.80), sec(8.20)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
-    easing: easePower2InOut,
+    easing: easePower3Out,
   });
 
-  // 8. Labels
-  const label1P = interpolate(frame, [sec(7.20), sec(7.60)], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower3Out });
-  const label2P = interpolate(frame, [sec(7.80), sec(8.20)], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower3Out });
-
-  // 9. Document A drop (8.20s - 9.00s)
+  // 7. Dokumen Arkib Drop (8.20s - 9.00s)
   const docP = interpolate(frame, [sec(8.20), sec(9.00)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -175,21 +167,21 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
   });
   const docY = interpolate(docP, [0, 1], [400, 0]);
 
-  // 10. Rubber Stamp Slam (9.10s - 9.36s)
+  // 8. Cap Getah Merah VERIFIED Menghempas (9.10s - 9.36s)
   const stampP = interpolate(frame, [sec(9.10), sec(9.36)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: easePower4In,
   });
   const stampScale = interpolate(stampP, [0, 1], [2.2, 1]);
-  const stampOpacity = frame >= sec(9.10) ? 0.92 : 0;
+  const stampOpacity = frame >= sec(9.10) ? 0.95 : 0;
 
-  // Desk vibration on stamp slam (9.36s)
+  // Gegaran meja semasa cap jatuh (9.36s)
   const deskShake = frame >= sec(9.36) && frame <= sec(9.58)
     ? (frame % 2 === 0 ? 4 : -4)
     : 0;
 
-  // 11. Date block (9.50s)
+  // 9. Date block reveal (9.50s)
   const blockClip = interpolate(frame, [sec(9.50), sec(10.00)], [100, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -247,23 +239,25 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
               left: 520,
               top: 120,
               fontFamily: '"Archivo", sans-serif',
-              fontSize: 160,
+              fontSize: 380,
               fontWeight: 900,
-              color: 'rgba(20, 20, 20, 0.04)',
+              lineHeight: 0.85,
+              letterSpacing: '-.04em',
+              color: 'rgba(20, 20, 20, 0.05)',
               opacity: ghostP,
               transform: `translateY(${ghostY}px)`,
               userSelect: 'none',
               pointerEvents: 'none',
+              zIndex: 1,
             }}
           >
             {ghostYear}
           </div>
 
-          {/* Swiss Architectural Drafting Grid Hairlines */}
+          {/* Swiss Architectural Drafting Grid Hairlines (Bulatan merah tengah dibuang) */}
           <svg style={{ position: 'absolute', inset: 0, width: 1920, height: 1080, pointerEvents: 'none', zIndex: 0 }} viewBox="0 0 1920 1080">
             <line x1="120" y1="490" x2="1800" y2="490" stroke="rgba(20,20,20,0.12)" strokeWidth="1.5" strokeDasharray="6 4" strokeDashoffset={gridLineH} />
             <line x1="540" y1="80" x2="540" y2="1000" stroke="rgba(20,20,20,0.12)" strokeWidth="1.5" strokeDasharray="6 4" strokeDashoffset={gridLineV} />
-            <circle cx="540" cy="490" r="14" stroke="rgba(255,60,43,0.5)" strokeWidth="2" fill="none" style={{ transform: `scale(${gridCrossP})`, transformOrigin: '540px 490px' }} />
           </svg>
 
           {/* 3D Specimen Card Fan-Out Stack */}
@@ -280,7 +274,7 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
               borderRadius: 20,
               zIndex: 2,
               opacity: flyAP,
-              transform: `translate3d(${sub2X}px, ${cutAY + sub2Y}px, 0px) rotate(${sub2Rot}deg)`,
+              transform: `translate3d(${sub2X}px, ${cutAY + floatBobA + sub2Y}px, 0px) rotate(${sub2Rot}deg)`,
               filter: 'drop-shadow(0 24px 30px rgba(20,20,20,.18))',
             }}
           />
@@ -298,7 +292,7 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
               borderRadius: 20,
               zIndex: 3,
               opacity: flyAP,
-              transform: `translate3d(${sub1X}px, ${cutAY + sub1Y}px, 0px) rotate(${sub1Rot}deg)`,
+              transform: `translate3d(${sub1X}px, ${cutAY + floatBobA + sub1Y}px, 0px) rotate(${sub1Rot}deg)`,
               filter: 'drop-shadow(0 24px 30px rgba(20,20,20,.18))',
             }}
           />
@@ -313,7 +307,7 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
               height: 660,
               zIndex: 4,
               opacity: flyAP,
-              transform: `translateY(${cutAY}px)`,
+              transform: `translateY(${cutAY + floatBobA}px)`,
               filter: 'drop-shadow(0 24px 30px rgba(20,20,20,.18))',
             }}
           >
@@ -337,12 +331,11 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
                 lineHeight: 1.6,
               }}
             >
-              SPECIMEN A<br />
-              ARCHITECTURAL HARDWARE
+              REPLACE: Photo Cutout<br />Product / Subject / Hardware
             </div>
           </div>
 
-          {/* Cutout B */}
+          {/* Cutout B (Kad Sebelah Kanan) */}
           <div
             style={{
               position: 'absolute',
@@ -371,21 +364,9 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
                 fontFamily: '"Inter", sans-serif',
               }}
             >
-              MACRO SHOT // B
+              REPLACE: Secondary Macro Shot
             </div>
           </div>
-
-          {/* Pencil Annotation Ring Drawing */}
-          <svg style={{ position: 'absolute', left: 180, top: 140, width: 720, height: 720, overflow: 'visible', pointerEvents: 'none', zIndex: 6 }} viewBox="0 0 720 720">
-            <path
-              d="M60 380 C40 200 200 60 380 60 C560 60 680 200 660 380 C640 560 500 660 340 660 C180 660 80 540 60 380 Z"
-              fill="none"
-              stroke="rgba(255,60,43,0.6)"
-              strokeWidth="2.5"
-              strokeDasharray={2200}
-              strokeDashoffset={interpolate(ringP, [0, 1], [2200, 0])}
-            />
-          </svg>
 
           {/* Hero Statement Line 1 with Yellow Highlighter */}
           <div
@@ -398,8 +379,9 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
               letterSpacing: '-.02em',
               color: inkColor,
               opacity: line1P,
-              transform: `scale(${interpolate(line1P, [0, 1], [0.7, 1])})`,
+              transform: `scale(${interpolate(line1P, [0, 1], [0.8, 1])})`,
               transformOrigin: 'left bottom',
+              zIndex: 8,
             }}
           >
             {headlinePart1}&nbsp;
@@ -421,11 +403,8 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
             </span>
           </div>
 
-          {/* Technical Labels */}
-          <div style={{ position: 'absolute', left: 250, top: 820, fontSize: 14, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: '#64748B', opacity: label1P }}>
-            {specLabel}
-          </div>
-          <div style={{ position: 'absolute', left: 1100, top: 820, fontSize: 14, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: '#64748B', opacity: label2P }}>
+          {/* Tulisan Tangan Merah Asal */}
+          <div style={{ position: 'absolute', left: 1100, top: 820, fontFamily: '"Caveat", cursive, sans-serif', fontSize: 64, fontWeight: 600, color: primaryColor, opacity: label2P, zIndex: 8 }}>
             {handNote}
           </div>
 
@@ -435,37 +414,39 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
               position: 'absolute',
               left: 1240,
               top: 560,
-              width: 380,
-              padding: 24,
+              width: 470,
+              padding: '24px 28px 26px',
               background: '#FFFFFF',
-              border: '1px solid #CBD5E1',
-              boxShadow: '0 30px 40px rgba(0,0,0,0.14)',
+              border: '2px solid rgba(20,20,20,.3)',
+              boxShadow: '0 30px 34px rgba(20,20,20,.16), 0 6px 8px rgba(20,20,20,.14)',
               zIndex: 10,
               opacity: docP,
-              transform: `translateY(${docY}px) rotate(-2deg)`,
+              transform: `translateY(${docY}px) rotate(-1deg)`,
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#64748B', letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 12 }}>
+            <h6 style={{ margin: '0 0 10px', font: '600 18px/1.3 "Inter", sans-serif', letterSpacing: '.18em', color: '#64748B', textTransform: 'uppercase' }}>
               ORIGIN · ARCHIVE · SPEC
-            </div>
-            <pre style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 13, color: '#1E293B', margin: 0, lineHeight: 1.6 }}>
+            </h6>
+            <pre style={{ margin: 0, font: '500 28px/1.4 ui-monospace, monospace', letterSpacing: '.1em', color: inkColor }}>
               SPECIFICATION v1.0{'\n'}VERIFIED LOSSLESS
             </pre>
 
-            {/* Stamp Slam */}
+            {/* Red Rubber Stamp VERIFIED */}
             <span
               style={{
                 position: 'absolute',
-                top: 24,
-                right: 24,
-                border: `3px solid ${primaryColor}`,
+                right: 16,
+                top: -22,
+                padding: '4px 14px',
+                border: `5px solid ${primaryColor}`,
+                borderRadius: 6,
                 color: primaryColor,
-                fontFamily: '"Archivo", sans-serif',
-                fontSize: 24,
-                fontWeight: 900,
-                padding: '4px 12px',
+                font: '900 32px/1.2 "Archivo", sans-serif',
+                letterSpacing: '.08em',
                 transform: `scale(${stampScale}) rotate(-8deg)`,
                 opacity: stampOpacity,
+                background: 'rgba(255,255,255,.9)',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
               }}
             >
               {stampText}
@@ -479,13 +460,11 @@ export const StudioCatalog: React.FC<StudioCatalogProps> = ({
               left: 1240,
               top: 800,
               zIndex: 12,
-              background: '#0F172A',
+              background: inkColor,
               color: '#FFF',
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 14,
-              fontWeight: 700,
-              padding: '8px 18px',
-              borderRadius: 6,
+              font: '500 36px/1.2 ui-monospace, monospace',
+              letterSpacing: '.08em',
+              padding: '10px 22px',
               clipPath: `inset(0 ${blockClip}% 0 0)`,
             }}
           >
