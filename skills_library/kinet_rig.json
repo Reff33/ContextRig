@@ -3,7 +3,7 @@
   "name": "KinetRig (AI Remotion Video Production Engine)",
   "description": "AI-powered motion graphics and cinematic video production engine using Remotion (React). Converts prompts into Remotion compositions, and automatically launches the interactive Remotion Studio in the browser for visual editing and custom rendering.",
   "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/kinet_rig.json",
-  "ai_instructions": "Follow the official KinetRig Remotion workflow (https://github.com/Reff33/KinetRig):\n\n1. MANDATORY EXECUTION RULE (AUTO-LAUNCH REMOTION STUDIO):\n   • When the user asks to create, test, or generate a video, NEVER stop after writing code.\n   • ALWAYS update Root.tsx props, then execute `node scripts/preview-remotion.mjs` immediately.\n   • This automatically launches the Remotion Studio in the browser (http://localhost:3000) so the user can visually preview, scrub, and customize.\n\n2. CORE MOTION LAWS:\n   • Deterministic Timeline: Timing driven by useCurrentFrame() and interpolate(). Never use Math.random() or Date.now().\n   • Zero OS Emojis: Strictly inline SVG vectors or high-fidelity typography. Never use emojis.\n   • Anti-PowerPoint: Continuous camera moves (push-in, whip-pan, dolly-zoom). Never static fades.\n   • 1 Statement Per Shot: Text under 5 words per beat. Max 2 text levels per scene.\n\n3. AUTONOMOUS STEPS:\n   • Step 1: Plan concept, title, subtitle, 3-color palette (primary, accent, bg).\n   • Step 2: Update composition defaultProps in `remotion/Root.tsx` (or `rigtools/kinet_rig/remotion/Root.tsx`).\n   • Step 3: Run `node scripts/preview-remotion.mjs` to launch Remotion Studio in the browser.",
+  "ai_instructions": "Follow the official KinetRig Remotion workflow (https://github.com/Reff33/KinetRig):\n\n1. MANDATORY EXECUTION RULE (AUTO-LAUNCH REMOTION STUDIO):\n   • When the user asks to create, test, or generate a video, NEVER stop after writing code.\n   • ALWAYS update Root.tsx props, then execute `node scripts/preview-remotion.mjs` immediately.\n   • This automatically launches the Remotion Studio in the browser (http://localhost:3000) so the user can visually preview, scrub, and customize.\n\n2. CORE MOTION LAWS:\n   • Deterministic Timeline: Timing driven by useCurrentFrame() and interpolate(). Never use Math.random() or Date.now().\n   • Zero OS Emojis: Strictly inline SVG vectors or high-fidelity typography. Never use emojis.\n   • Anti-PowerPoint: Continuous camera moves (push-in, whip-pan, dolly-zoom). Never static fades.\n   • 1 Statement Per Shot: Text under 5 words per beat. Max 2 text levels per scene.\n\n3. AUTONOMOUS STEPS:\n   • Step 1: Select best template (`CinematicTitle` for openers, `GlitchTerminal` for tech/cipher/security, `SaasMacro` for UI/analytics).\n   • Step 2: Update composition defaultProps in `remotion/Root.tsx` (or `rigtools/kinet_rig/remotion/Root.tsx`).\n   • Step 3: Run `node scripts/preview-remotion.mjs` to launch Remotion Studio in the browser.",
   "claude_command": {
     "name": "kinet-rig",
     "content": "# /kinet-rig <brief> [aspect_ratio] [concept/style]\n\nCreate a video and automatically launch Remotion Studio in the browser:\n\n1. **Plan Concept & Colors:** Establish title, subtitle, and 3-color palette.\n2. **Update Props:** Set `defaultProps` in `remotion/Root.tsx`.\n3. **Launch Studio:** Execute immediately:\n   `node scripts/preview-remotion.mjs`\n   This starts Remotion and automatically pops open the interactive player in the browser at http://localhost:3000."
@@ -55,6 +55,16 @@
       "source": "scripts/kinet_rig/templates/remotion/CinematicTitle.tsx",
       "destination": "rigtools/kinet_rig/templates/remotion/CinematicTitle.tsx",
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/templates/remotion/CinematicTitle.tsx"
+    },
+    {
+      "source": "scripts/kinet_rig/templates/remotion/GlitchTerminal.tsx",
+      "destination": "rigtools/kinet_rig/templates/remotion/GlitchTerminal.tsx",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/templates/remotion/GlitchTerminal.tsx"
+    },
+    {
+      "source": "scripts/kinet_rig/templates/remotion/SaasMacro.tsx",
+      "destination": "rigtools/kinet_rig/templates/remotion/SaasMacro.tsx",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/templates/remotion/SaasMacro.tsx"
     },
     {
       "source": "scripts/kinet_rig/scripts/preview-remotion.mjs",

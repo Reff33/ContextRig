@@ -32,7 +32,10 @@ Intelligent motion graphics and video composition built for AI coding agents. Us
 
 Whenever a user requests a video (e.g. *"Tolong buatkan video tajuk 'NEXUS AI 2.0', subtitle 'AUTONOMOUS AGENT ORCHESTRATION', warna neon cyan"*):
 
-1. **Formulate Creative Props:** Extract Title, Subtitle, Colors (Primary, Accent, Background), Aspect Ratio, and Duration.
+1. **Select Best Template:**
+   - Opener / Brand Launch $\to$ `CinematicTitle`
+   - Terminal / Cybersecurity / Dev Tools / Hacker Decrypt $\to$ `GlitchTerminal`
+   - SaaS / UI Tour / Analytics / Revenue Dashboard $\to$ `SaasMacro`
 2. **Apply Directly to `Root.tsx`:** Edit `Root.tsx` (in `remotion/Root.tsx` or `rigtools/kinet_rig/remotion/Root.tsx`) to set `defaultProps` matching the user's brief.
 3. **Launch Remotion Studio Automatically:** Run:
    ```bash
@@ -45,4 +48,9 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tajuk 'NEXUS AI 2.
 
 ## 3. Templates Library
 
-- `templates/remotion/CinematicTitle.tsx`: Full-bleed kinetic headline with character-by-character reveal, slow cinematic push-in, glowing accent beam, and vignette.
+1. **`templates/remotion/CinematicTitle.tsx`** (*Opener*):
+   - Full-bleed kinetic headline, character-by-character reveal with blur/slide, cinematic push-in, glowing accent beam, and dark vignette.
+2. **`templates/remotion/GlitchTerminal.tsx`** (*Decrypt Glitch Terminal*):
+   - Cybernetic terminal with memory hex dump stream, live memory bar, decrypting text scramble with RGB split glitch chromatic aberration, and status telemetry.
+3. **`templates/remotion/SaasMacro.tsx`** (*SaaS Macro Tour*):
+   - 3D browser mockup perspective with dynamic SVG metric chart, animated metric drawing line, sidebar navigation, and live pipeline status.
