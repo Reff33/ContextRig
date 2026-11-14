@@ -7,7 +7,8 @@ export const ThreeLiquidOrb: React.FC<{
   orbScale: number;
   ringsScale: number;
   roughness: number;
-}> = ({ frame, fps, orbScale, ringsScale, roughness }) => {
+  camZ: number;
+}> = ({ frame, fps, orbScale, ringsScale, roughness, camZ }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -126,7 +127,7 @@ export const ThreeLiquidOrb: React.FC<{
     };
   }, []);
 
-  // Update on each frame deterministically
+  // Update on each frame deterministically using EXACT second t = frame / fps
   useEffect(() => {
     if (!stateRef.current) return;
     const { renderer, scene, camera, orbMesh, orbMat, ringMesh1, ringMesh2, origPositions, orbGeo } = stateRef.current;
@@ -134,7 +135,7 @@ export const ThreeLiquidOrb: React.FC<{
     const t = frame / fps;
     const time = t * 2.5;
 
-    // Fluid Mesh Deformation from exact updateFluidMesh(t)
+    // Physical Fluid Standing Wave Deformation formula from kinet-ios-liquid-glass.html:
     const pos = orbGeo.attributes.position;
     const count = pos.count;
 
@@ -165,9 +166,10 @@ export const ThreeLiquidOrb: React.FC<{
     ringMesh2.rotation.x = Math.PI / 1.9 + Math.sin(t * 0.3) * 0.15;
 
     orbMat.roughness = roughness;
+    camera.position.set(0, 0, camZ);
 
     renderer.render(scene, camera);
-  }, [frame, fps, orbScale, ringsScale, roughness]);
+  }, [frame, fps, orbScale, ringsScale, roughness, camZ]);
 
   return <div ref={mountRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }} />;
 };

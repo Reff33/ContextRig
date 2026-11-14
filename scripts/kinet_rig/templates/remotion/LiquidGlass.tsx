@@ -80,6 +80,16 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   // Orb Material Roughness (0.08 -> 0.02 at 8.5s)
   const roughness = frame >= sec(8.50) ? 0.02 : 0.08;
 
+  // Camera Z: Exactly 7.5 throughout Scene 1 & 2, gentle push to 6.2 in Scene 3 (6.6s -> 10.2s)
+  let camZ = 7.5;
+  if (frame >= sec(6.60) && frame < sec(10.20)) {
+    camZ = interpolate(frame, [sec(6.60), sec(8.40)], [7.5, 6.2], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower2InOut });
+  } else if (frame >= sec(11.50) && frame < sec(12.90)) {
+    camZ = interpolate(frame, [sec(11.50), sec(12.90)], [6.2, 7.5], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower2InOut });
+  } else if (frame >= sec(10.20) && frame < sec(11.50)) {
+    camZ = 6.2;
+  }
+
   // 3. Left & Right Cards
   let cardLeftP = 0;
   let cardRightP = 0;
@@ -183,7 +193,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
             top: '50%',
             width: 720,
             height: 720,
-            transform: `translate(-50%, -50%) scale(${siriScale})`,
+            transform: `translate(-50%, -50%) scale(${siriScale}) rotate(${(frame * 1.5) % 360}deg)`,
             borderRadius: '50%',
             background: 'conic-gradient(from 0deg, #FF375F, #BF5AF2, #0A84FF, #64D2FF, #30D158, #FF9F0A, #FF375F)',
             filter: 'blur(75px)',
@@ -200,6 +210,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           orbScale={orbScale}
           ringsScale={ringsScale}
           roughness={roughness}
+          camZ={camZ}
         />
 
         {/* Face ID Biometric Spatial Ring (Scene 4) */}
@@ -381,7 +392,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               boxSizing: 'border-box',
             }}
           >
-            {/* Compact View: Single Row Text & Waveform */}
+            {/* Compact View: Single-Row 1 Baris Tepat */}
             {!showExpandedIsland && (
               <div
                 style={{
