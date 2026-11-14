@@ -39,6 +39,7 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
    - **SaaS / Analytics / Business Dashboard / UI Tour:** $\to$ Recommend `SaasMacro`
    - **Modular Features / Architecture / Product Capabilities:** $\to$ Recommend `BentoGrid`
    - **Conversational UI / AI Chatbot / Messaging App:** $\to$ Recommend `ChatDialogue`
+   - **Financial Volume / KPI Cards / Growth Metrics:** $\to$ Recommend `DataMetrics`
 2. **Setup Composition:** Update `Root.tsx` (in `remotion/Root.tsx` or `rigtools/kinet_rig/remotion/Root.tsx`) with the proposed concept.
 3. **Launch Studio Automatically:** Run:
    ```bash
@@ -64,3 +65,5 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
    - 3x2 modern glassmorphism Bento Grid layout, staggered entry animation, animated progress fill line, and glowing accent telemetry.
 5. **`templates/remotion/ChatDialogue.tsx`** (*Diegetic AI Chat*):
    - 3D tilted chat device, human keystroke simulation in input bar, pulsing typing dots, spring message popups, and verified reaction badges.
+6. **`templates/remotion/DataMetrics.tsx`** (*KPI & Area Chart Metrics*):
+   - Exact 8.0s financial metrics dashboard with 3 KPI card popups, animated live number counters, and 6 elastic animated SVG bar charts with area glow.

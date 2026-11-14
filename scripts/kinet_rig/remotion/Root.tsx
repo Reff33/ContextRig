@@ -5,6 +5,7 @@ import GlitchTerminal, { GlitchTerminalProps } from '../templates/remotion/Glitc
 import SaasMacro, { SaasMacroProps } from '../templates/remotion/SaasMacro';
 import BentoGrid, { BentoGridProps } from '../templates/remotion/BentoGrid';
 import ChatDialogue, { ChatDialogueProps } from '../templates/remotion/ChatDialogue';
+import DataMetrics, { DataMetricsProps } from '../templates/remotion/DataMetrics';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -47,7 +48,7 @@ export const RemotionRoot: React.FC = () => {
           textPhase3: "ROOT ACCESS GRANTED",
           primaryColor: "#10B981",
           accentColor: "#EF4444",
-          backgroundColor: "#050811",
+          backgroundColor: "#040810",
         } as GlitchTerminalProps}
       />
 
@@ -65,7 +66,7 @@ export const RemotionRoot: React.FC = () => {
           urlBarText: "https://app.kinetrig.ai/telemetry/live",
           primaryColor: "#38BDF8",
           accentColor: "#10B981",
-          backgroundColor: "#020617",
+          backgroundColor: "#030712",
         } as SaasMacroProps}
       />
 
@@ -105,6 +106,29 @@ export const RemotionRoot: React.FC = () => {
           primaryColor: "#38BDF8",
           backgroundColor: "#0B1120",
         } as ChatDialogueProps}
+      />
+
+      {/* 6. Data Metrics (KPI Cards & Dynamic SVG Bar Chart) */}
+      <Composition
+        id="DataMetrics"
+        component={DataMetrics}
+        durationInFrames={480} // 8.0 seconds matching exact kinet-metrics.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          titlePrefix: "Real-Time Performance ",
+          titleHighlight: "Metrics",
+          currency: "$",
+          metric1Val: 14400,
+          metric1Label: "Transactions / Sec",
+          metric2Val: 84,
+          metric2Label: "Cache Hit Rate",
+          metric3Val: 256,
+          metric3Label: "Quarterly Volume",
+          primaryColor: "#10B981",
+          backgroundColor: "#040810",
+        } as DataMetricsProps}
       />
     </>
   );
