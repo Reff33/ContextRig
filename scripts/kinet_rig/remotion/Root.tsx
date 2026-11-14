@@ -8,6 +8,8 @@ import ChatDialogue, { ChatDialogueProps } from '../templates/remotion/ChatDialo
 import DataMetrics, { DataMetricsProps } from '../templates/remotion/DataMetrics';
 import ReelHook, { ReelHookProps } from '../templates/remotion/ReelHook';
 import ProductShowcase, { ProductShowcaseProps } from '../templates/remotion/ProductShowcase';
+import ActionFlow, { ActionFlowProps } from '../templates/remotion/ActionFlow';
+import EditorialDossier, { EditorialDossierProps } from '../templates/remotion/EditorialDossier';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -187,6 +189,49 @@ export const RemotionRoot: React.FC = () => {
           primaryColor: "#F59E0B",
           backgroundColor: "#000000",
         } as ProductShowcaseProps}
+      />
+
+      {/* 9. Action Flow (Persistent Traveling Object across 3840px World) */}
+      <Composition
+        id="ActionFlow"
+        component={ActionFlow}
+        durationInFrames={360} // 6.0 seconds matching exact kinet-flow.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          zone1Title: "From Static Code to ",
+          zone1Highlight: "Fluid Cinema",
+          zone1Desc: "Motion graphics that breathe in real 3D space with continuous physics.",
+          zone2Title: "Zero PowerPoint Fades. ",
+          zone2Highlight: "Infinite Momentum.",
+          zone2Desc: "Persistent hero objects traversing across unified worlds without jump cuts.",
+          chip1Text: "FPS: 60 BROADCAST",
+          chip2Text: "VELOCITY: 3840PX/S",
+          primaryColor: "#A855F7",
+          backgroundColor: "#07050A",
+        } as ActionFlowProps}
+      />
+
+      {/* 10. Editorial Dossier (Investigative Journalism / Classified Archive) */}
+      <Composition
+        id="EditorialDossier"
+        component={EditorialDossier}
+        durationInFrames={390} // 6.5 seconds matching exact kinet-editorial.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          caseNumber: "CASE NO. 9042-ALPHA",
+          headlineWord1: "EVIDENCE HIDDEN",
+          headlineWord2: "BEHIND",
+          redactedText: "CLASSIFIED",
+          scene2Headline: "FIELD SURVEILLANCE LOG // CONFIRMED",
+          primaryColor: "#06B6D4",
+          accentYellow: "#EAB308",
+          accentRed: "#EF4444",
+          backgroundColor: "#090B10",
+        } as EditorialDossierProps}
       />
     </>
   );
