@@ -16,11 +16,11 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
         defaultProps={{
-          title: "KINETRIG STUDIO",
-          subtitle: "AI REMOTION PRODUCTION ENGINE",
-          primaryColor: "#FFFFFF",
-          accentColor: "#00F0FF",
-          backgroundColor: "#08090D",
+          title: 'NUR AQILAH ZAHIDAH',
+          subtitle: 'AI REMOTION PRODUCTION ENGINE',
+          primaryColor: '#FFFFFF',
+          accentColor: '#00F0FF',
+          backgroundColor: '#08090D',
           fontSize: 120,
           letterSpacing: 8,
           zoomIntensity: 1.15,
@@ -49,17 +49,17 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="SaasMacro"
         component={SaasMacro}
-        durationInFrames={180}
+        durationInFrames={420} // 7.0 seconds at 60fps (exact match to original kinet-saas-macro.html)
         fps={60}
         width={1920}
         height={1080}
         defaultProps={{
-          headline: "AUTONOMOUS REVENUE ORCHESTRATION",
-          metricLabel: "ACTIVE MRR PIPELINE",
-          metricValue: "$148,200",
+          headline: "Sub-Millisecond Execution",
+          subHeadline: "Real-time throughput metrics running on native threadpool",
+          urlBarText: "https://app.kinetrig.ai/telemetry/live",
           primaryColor: "#38BDF8",
           accentColor: "#10B981",
-          backgroundColor: "#0B0F19",
+          backgroundColor: "#020617",
         } as SaasMacroProps}
       />
     </>
