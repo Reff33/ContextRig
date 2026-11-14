@@ -195,20 +195,20 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="ActionFlow"
         component={ActionFlow}
-        durationInFrames={360} // 6.0 seconds matching exact kinet-flow.html
+        durationInFrames={480} // 8.0 seconds matching exact kinet-flow.html
         fps={60}
         width={1920}
         height={1080}
         defaultProps={{
-          zone1Title: "From Static Code to ",
-          zone1Highlight: "Fluid Cinema",
-          zone1Desc: "Motion graphics that breathe in real 3D space with continuous physics.",
-          zone2Title: "Zero PowerPoint Fades. ",
-          zone2Highlight: "Infinite Momentum.",
-          zone2Desc: "Persistent hero objects traversing across unified worlds without jump cuts.",
-          chip1Text: "FPS: 60 BROADCAST",
-          chip2Text: "VELOCITY: 3840PX/S",
-          primaryColor: "#A855F7",
+          zone1Title: "MOST TOOLS RELY ON",
+          zone1Highlight: "STATIC DECK FADES",
+          zone1Desc: "Traditional video templates change scenes by fading out sections. That looks like PowerPoint, not motion design.",
+          zone2Title: "KINETRIG TRAVELS",
+          zone2Highlight: "THROUGH ONE CONTINUOUS WORLD",
+          zone2Desc: "The camera pans smoothly across unified space while the hero object leads the viewer's eye into the climax.",
+          node1Text: "LATENCY: 0.00ms",
+          node2Text: "FPS: 240 HFR",
+          primaryColor: "#C084FC",
           backgroundColor: "#07050A",
         } as ActionFlowProps}
       />
@@ -217,20 +217,25 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="EditorialDossier"
         component={EditorialDossier}
-        durationInFrames={390} // 6.5 seconds matching exact kinet-editorial.html
+        durationInFrames={540} // 9.0 seconds matching exact kinet-editorial.html
         fps={60}
         width={1920}
         height={1080}
         defaultProps={{
           caseNumber: "CASE NO. 9042-ALPHA",
-          headlineWord1: "EVIDENCE HIDDEN",
-          headlineWord2: "BEHIND",
+          fieldVerification: "FIELD VERIFICATION: 100% CONFIRMED",
+          title1Top: "EVIDENCE HIDDEN",
           redactedText: "CLASSIFIED",
-          scene2Headline: "FIELD SURVEILLANCE LOG // CONFIRMED",
-          primaryColor: "#06B6D4",
-          accentYellow: "#EAB308",
-          accentRed: "#EF4444",
-          backgroundColor: "#090B10",
+          title1Bottom: "DOCUMENTS.",
+          desc1Text: "Traditional explainer videos present claims as static bulleted lists. Investigative journalism uses forensic pacing: reveal documents, pinpoint anomalies, and verify physical records.",
+          statusText: "STATUS: FORENSIC INVESTIGATION ACTIVE",
+          scene2TitleTop: "DATA DOES NOT LIE.",
+          scene2TitleHl: "EVERY FRAME MOTIVATED.",
+          desc2Text: "Case findings closed. Video storytelling elevated through cinematic pacing, high-contrast monospace typography, and authenticated archival evidence.",
+          cyanColor: "#06B6D4",
+          yellowColor: "#F59E0B",
+          redColor: "#EF4444",
+          backgroundColor: "#07090E",
         } as EditorialDossierProps}
       />
     </>
