@@ -10,6 +10,7 @@ import ReelHook, { ReelHookProps } from '../templates/remotion/ReelHook';
 import ProductShowcase, { ProductShowcaseProps } from '../templates/remotion/ProductShowcase';
 import ActionFlow, { ActionFlowProps } from '../templates/remotion/ActionFlow';
 import EditorialDossier, { EditorialDossierProps } from '../templates/remotion/EditorialDossier';
+import StudioCatalog, { StudioCatalogProps } from '../templates/remotion/StudioCatalog';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -240,6 +241,28 @@ export const RemotionRoot: React.FC = () => {
           redColor: "#EF4444",
           backgroundColor: "#07090E",
         } as EditorialDossierProps}
+      />
+
+      {/* 11. Studio Catalog (Swiss Minimalist Catalog & Camera Tracking Rig) */}
+      <Composition
+        id="StudioCatalog"
+        component={StudioCatalog}
+        durationInFrames={660} // 11.0 seconds matching exact kinet-catalog.html Scene 1
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          ghostYear: "1972",
+          headlinePart1: "Studio precision, ",
+          headlineHighlight: "two words.",
+          specLabel: "SPEC · MINIMALIST CATALOG",
+          handNote: "verified 64 px",
+          docSubtitle: "1972 · flagship release",
+          stampText: "VERIFIED",
+          primaryColor: "#FF3C2B",
+          yellowHighlight: "#FFE500",
+          inkColor: "#141414",
+        } as StudioCatalogProps}
       />
     </>
   );

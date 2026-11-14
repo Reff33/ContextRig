@@ -44,6 +44,7 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
    - **E-Commerce / Hardware / Physical Product Drops:** $\to$ Recommend `ProductShowcase`
    - **Continuous Vector Flow / Explainer / System Movement:** $\to$ Recommend `ActionFlow`
    - **Investigative Journalism / Classified Dossier / Evidence:** $\to$ Recommend `EditorialDossier`
+   - **Swiss Minimalist Catalog / Architecture / Spec Sheets:** $\to$ Recommend `StudioCatalog`
 2. **Setup Composition:** Update `Root.tsx` (in `remotion/Root.tsx` or `rigtools/kinet_rig/remotion/Root.tsx`) with the proposed concept.
 3. **Launch Studio Automatically:** Run:
    ```bash
@@ -79,3 +80,5 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
    - Exact 8.0s 3840px wide world with persistent hero orb, squash-and-stretch vertical launch, 3D horizon banking flight transition, and shockwave burst climax.
 10. **`templates/remotion/EditorialDossier.tsx`** (*Classified Editorial Dossier*):
     - Exact 9.0s forensic investigative desk with topographic grain, satellite recon photo, cyan laser sweep, red stamp slam, red yarn connector, and classified black marker redaction bar wipe.
+11. **`templates/remotion/StudioCatalog.tsx`** (*Swiss Minimalist Catalog*):
+    - Exact 11.0s high-key architectural white studio paper with 120px drafting grid, camera gliding rig between exhibits, specimen card fan-out stack, yellow felt highlighter, pencil circle annotation, archive document drop, and rubber stamp slam.
