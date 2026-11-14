@@ -6,21 +6,11 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
+import { ThreeLiquidOrb } from './ThreeLiquidOrb';
 
 /**
- * LiquidGlass — 100% Exact Remotion Port of `assets/kinet-ios-liquid-glass.html`.
- *
- * Exact specifications from original:
- *  - NO UNNATURAL ZOOM! Camera position z stays stable (7.5 -> 7.2 subtle push, never extreme zoom).
- *  - Real Liquid Wave Deformation Mesh:
- *    Matches Three.js MeshPhysicalMaterial with ACESFilmic transmission (opaque glass with specular lighting),
- *    surrounded by Apple Intelligence multi-color Siri fluid glow aura, and tilted concentric VisionOS wireframe rings.
- *  - Dynamic Island exact 2-phase:
- *    Phase 1: 220px x 50px pill with green live audio dot and 4 animated wave bars.
- *    Phase 2 (3.2s): Expands to 560px x 86px wide Spatial Music Widget with album art & LOSSLESS badge.
- *  - Left card (Spatial Audio Depth, 35% -> 84% resonance meter fill at 4.40s).
- *  - Right card (Apple Intelligence on-device neural metrics table).
- *  - Bottom typography synchronized with audio milestones (Spatial Audio -> Apple Intelligence Aura -> Face ID).
+ * LiquidGlass — 100% Exact Faithful Remotion Port of `assets/kinet-ios-liquid-glass.html`.
+ * Matches HTML5/Three.js/GSAP physical transmission glass, exact colors, and spatial UI layout.
  */
 export type LiquidGlassProps = {
   primaryColor?: string;
@@ -68,7 +58,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     islandRadius = interpolate(p, [0, 1], [32, 9999]);
   }
 
-  // 2. Exact Liquid Orb Scale & Sinusoidal Standing Waves
+  // 2. Liquid Orb Mesh Scale (Exact timing from kinet-ios-liquid-glass.html)
   let orbScale = 0.001;
   let ringsScale = 0.001;
   if (frame >= sec(1.10) && frame < sec(13.80)) {
@@ -87,17 +77,8 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     ringsScale = interpolate(frame, [sec(13.80), sec(14.50)], [1.0, 0.001], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower2InOut });
   }
 
-  // Physical sinusoidal wave deformation formulas from updateFluidMesh(t):
-  // wave1 = sin(ox * 2.2 + time) * 0.16; wave2 = cos(oy * 2.8 + time * 1.3) * 0.14
-  const tTime = (frame / fps) * 2.5;
-  const deformScaleX = 1.0 + Math.sin(tTime * 1.6) * 0.12;
-  const deformScaleY = 1.0 + Math.cos(tTime * 2.0) * 0.10;
-  const orbRotY = (frame * 0.7) % 360;
-  const orbRotX = Math.sin((frame / fps) * 1.5) * 8;
-
-  // Concentric VisionOS wireframe precession rings
-  const ring1RotZ = (-frame * 0.8) % 360;
-  const ring2RotZ = (frame * 0.5) % 360;
+  // Orb Material Roughness (0.08 -> 0.02 at 8.5s)
+  const roughness = frame >= sec(8.50) ? 0.02 : 0.08;
 
   // 3. Left & Right Cards
   let cardLeftP = 0;
@@ -117,7 +98,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     easing: easePower2InOut,
   });
 
-  // 4. Siri Iridescent Aura (Scene 3: 6.70s -> 10.20s)
+  // 4. Siri Iridescent Fluid Aura Glow (Starts at 6.70s -> 10.20s)
   let siriOpacity = 0;
   let siriScale = 1.0;
   if (frame >= sec(6.70) && frame < sec(10.20)) {
@@ -194,7 +175,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           }}
         />
 
-        {/* Siri Multi-color Fluid Glow Aura (Conic gradient behind the liquid orb) */}
+        {/* Siri Multi-color Fluid Glow Aura (Behind the liquid orb) */}
         <div
           style={{
             position: 'absolute',
@@ -202,7 +183,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
             top: '50%',
             width: 720,
             height: 720,
-            transform: `translate(-50%, -50%) scale(${siriScale}) rotate(${(frame * 1.5) % 360}deg)`,
+            transform: `translate(-50%, -50%) scale(${siriScale})`,
             borderRadius: '50%',
             background: 'conic-gradient(from 0deg, #FF375F, #BF5AF2, #0A84FF, #64D2FF, #30D158, #FF9F0A, #FF375F)',
             filter: 'blur(75px)',
@@ -212,91 +193,45 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           }}
         />
 
-        {/*
-          CENTRAL THREE.JS LIQUID GLASS ORB & CONCENTRIC RINGS (100% Faithful to kinet-ios-liquid-glass.html):
-          Exact organic fluid blob shape with physical glass reflection, transmission, and fluid deformation
-        */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            transform: `translate(-50%, -50%) scale(${orbScale})`,
-            zIndex: 5,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {/* Ring 1: Elliptical tilted wireframe ring (rotateX: 68deg) */}
+        {/* REAL THREE.JS PHYSICAL GLASS LIQUID ORB (Exact match to kinet-ios-liquid-glass.html) */}
+        <ThreeLiquidOrb
+          frame={frame}
+          fps={fps}
+          orbScale={orbScale}
+          ringsScale={ringsScale}
+          roughness={roughness}
+        />
+
+        {/* Face ID Biometric Spatial Ring (Scene 4) */}
+        {showFaceId && (
           <div
             style={{
               position: 'absolute',
-              width: 860,
-              height: 860,
-              borderRadius: '50%',
-              border: '1.5px dashed rgba(100, 210, 255, 0.38)',
-              transform: `rotateX(68deg) rotateZ(${ring1RotZ}deg) scale(${ringsScale})`,
+              left: '50%',
+              top: '50%',
+              width: 260,
+              height: 260,
+              borderRadius: 48,
+              border: '2px dashed rgba(100, 210, 255, 0.5)',
+              boxShadow: '0 0 40px rgba(100, 210, 255, 0.25)',
+              transform: `translate(-50%, -50%) scale(${faceIdP})`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
               pointerEvents: 'none',
             }}
-          />
-          {/* Ring 2: Secondary tilted ellipse (rotateX: 75deg, rotateY: 25deg) */}
-          <div
-            style={{
-              position: 'absolute',
-              width: 1040,
-              height: 1040,
-              borderRadius: '50%',
-              border: '1.5px dashed rgba(191, 90, 242, 0.32)',
-              transform: `rotateX(75deg) rotateY(25deg) rotateZ(${ring2RotZ}deg) scale(${ringsScale})`,
-              pointerEvents: 'none',
-            }}
-          />
+          >
+            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#64D2FF" strokeWidth="1.5">
+              <path d="M7 3H5a2 2 0 0 0-2 2v2M17 3h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2M17 21h2a2 2 0 0 0 2-2v-2" />
+              <circle cx="9" cy="9" r="1.5" fill="#64D2FF" />
+              <circle cx="15" cy="9" r="1.5" fill="#64D2FF" />
+              <path d="M9 15c1 1 3 1 4 0" strokeLinecap="round" />
+            </svg>
+          </div>
+        )}
 
-          {/* Central Fluid Liquid Orb with Organic Wobble & Physical Glass Specular Reflections */}
-          <div
-            style={{
-              width: 580,
-              height: 580,
-              borderRadius: '45% 55% 58% 42% / 55% 44% 56% 45%',
-              background: 'radial-gradient(circle at 35% 28%, rgba(255,255,255,0.85) 0%, rgba(186, 230, 253, 0.45) 20%, rgba(148, 163, 184, 0.4) 45%, rgba(51, 65, 85, 0.8) 75%, rgba(15, 23, 42, 0.95) 100%)',
-              border: '2px solid rgba(255, 255, 255, 0.45)',
-              boxShadow: '0 40px 100px rgba(0, 0, 0, 0.8), inset 0 0 50px rgba(255, 255, 255, 0.4)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              transform: `scale(${deformScaleX}, ${deformScaleY}) rotateY(${orbRotY}deg) rotateX(${orbRotX}deg)`,
-              willChange: 'transform',
-            }}
-          />
-
-          {/* Face ID Biometric Ring Overlay (Scene 4) */}
-          {showFaceId && (
-            <div
-              style={{
-                position: 'absolute',
-                width: 260,
-                height: 260,
-                borderRadius: 48,
-                border: '2px dashed rgba(100, 210, 255, 0.5)',
-                boxShadow: '0 0 40px rgba(100, 210, 255, 0.25)',
-                transform: `scale(${faceIdP})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10,
-              }}
-            >
-              <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#64D2FF" strokeWidth="1.5">
-                <path d="M7 3H5a2 2 0 0 0-2 2v2M17 3h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2M17 21h2a2 2 0 0 0 2-2v-2" />
-                <circle cx="9" cy="9" r="1.5" fill="#64D2FF" />
-                <circle cx="15" cy="9" r="1.5" fill="#64D2FF" />
-                <path d="M9 15c1 1 3 1 4 0" strokeLinecap="round" />
-              </svg>
-            </div>
-          )}
-        </div>
-
-        {/* Left Spatial Card (.spatial-card-left) */}
+        {/* Left Spatial Glass Card */}
         {showCards && (
           <div
             style={{
@@ -360,7 +295,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           </div>
         )}
 
-        {/* Right Spatial Card (.spatial-card-right) */}
+        {/* Right Spatial Glass Card */}
         {showCards && (
           <div
             style={{
@@ -404,7 +339,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           </div>
         )}
 
-        {/* Center Stage Typography (.center-text-wrap) */}
+        {/* Center Stage Typography */}
         <div
           style={{
             position: 'absolute',
@@ -427,7 +362,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           </p>
         </div>
 
-        {/* Top Dynamic Island (.island-wrap) */}
+        {/* Top Dynamic Island */}
         <div style={{ position: 'absolute', top: 44, left: '50%', transform: 'translateX(-50%)', zIndex: 40 }}>
           <div
             style={{
@@ -440,28 +375,38 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '0 24px',
+              padding: '0 20px',
               boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.04)',
               overflow: 'hidden',
-              transition: 'border-radius 0.2s',
+              boxSizing: 'border-box',
             }}
           >
-            {/* Compact View (.island-content-compact) */}
+            {/* Compact View: Single Row Text & Waveform */}
             {!showExpandedIsland && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: 13, fontWeight: 600 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#30D158', boxShadow: '0 0 10px #30D158' }} />
-                  <span style={{ color: '#FFF' }}>SPATIAL INTELLIGENCE</span>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#30D158', boxShadow: '0 0 8px #30D158' }} />
+                  <span style={{ color: '#FFF', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>SPATIAL INTELLIGENCE</span>
                 </div>
-                <div style={{ display: 'flex', gap: 3, alignItems: 'center', height: 16 }}>
+                <div style={{ display: 'flex', gap: 2.5, alignItems: 'center', height: 14 }}>
                   {[0, 1, 2, 3].map((i) => (
                     <div
                       key={i}
                       style={{
-                        width: 3,
-                        height: 6 + Math.sin(frame * 0.4 + i) * 6,
+                        width: 2.5,
+                        height: 5 + Math.sin(frame * 0.4 + i) * 4,
                         background: '#30D158',
-                        borderRadius: 2,
+                        borderRadius: 1.5,
                       }}
                     />
                   ))}
@@ -469,7 +414,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               </div>
             )}
 
-            {/* Expanded Spatial Music Widget View (.island-content-expanded) */}
+            {/* Expanded Spatial Music Widget View */}
             {showExpandedIsland && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
