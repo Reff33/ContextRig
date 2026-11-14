@@ -29,15 +29,25 @@ Intelligent motion graphics and video composition built for AI coding agents. Us
      - `Card / Frame Layer` (card bodies, mockups, containers)
      - `Icon / SVG Layer` (vectors, badges, symbols)
      - `Text / Typography Layer` (headlines, subtitles, monospace telemetry)
-   - **User Toggle & Re-positioning:** All text, cards, and icons must be controllable via boolean props or individual style offsets (e.g. `showIcon`, `showCard`, `titleOffset`, `cardX`, `cardY`) so the user can easily toggle off, move, or replace any element in Remotion Studio without breaking the animation timeline.
+   - **User Customization Freedom:**
+     - **Toggle On/Off:** Hide cards, sidebars, or icons directly via boolean props (e.g. `showCards={false}`, `showIcon={false}`) without breaking central animations or timeline flow.
+     - **Move Position / Coordinate Offsets:** Easily re-position headlines or cards (e.g. `titleOffset`, `cardX`, `cardY`).
+     - **Asset & Content Replacement:** Users can swap default SVG vectors with their own brand logos or customize typography freely.
 3. **Camera Fluidity Law (Never Start Extreme Close-up):**
    - Always establish the scene from a natural **Wide Framing (`z: 0.85 – 1.0`)**.
    - NEVER start clipped into a corner at an extreme zoom (`z >= 1.6`).
    - Camera motion must follow motivated cinematography: **Wide Establishing $\to$ Macro Dive In $\to$ Smooth Pan $\to$ Pull Back Wide**.
-4. **Remotion React Core:** Compositions are authored as pure, deterministic React components (`remotion`). All timing derives from `useCurrentFrame()` and `interpolate()`.
-5. **Deterministic Timeline:** Never use `Math.random()` or `Date.now()`. Use seeded pseudo-randomness or pure frame interpolation.
+4. **Cinematic Motion & Acoustic Laws:**
+   - **Anti-PowerPoint Motion:** No static slide deck fades. Scenes transition through continuous camera moves (push-through, whip-pan, 3D orbit) or motivated motion wipes.
+   - **1 Shot = 1 Statement:** Text under 5 words per beat. Max 2 text levels per scene (Headline + Subtitle).
+   - **3-Layer Acoustic Sandwich:** Layer 1 (Bed: -24dB ambient texture), Layer 2 (Foley: -10dB micro-clicks/taps), Layer 3 (Impact: 0dB hero drops/risers).
+   - **Dolly Zoom (Vertigo):** Counter-scale foreground when camera dollies on Z-axis (`S_hero * Z_cam = const`).
+   - **Smooth Chromatic Transitions:** Color / background changes interpolate over 0.4s–0.8s (`power2.inOut`). No instant 0s cuts.
+   - **9:16 Vertical Safe-Zone (Shorts / TikTok):** Center 80% box (864px width). Keep top 15% (288px) and bottom 20% (384px) clear.
+5. **Remotion React Core & Determinism:**
+   - Compositions are authored as pure, deterministic React components (`remotion`). All timing derives from `useCurrentFrame()` and `interpolate()`.
+   - Never use `Math.random()` or `Date.now()`. Use seeded pseudo-randomness or pure frame interpolation.
 6. **Zero OS Emojis (Strict Vector Quality):** NEVER use system emojis (`🤖`, `⚡`, `🐙`, `🧠`, `🎥`). Use clean inline SVG vectors with glowing filters, high-resolution typography, or brand assets.
-7. **Anti-PowerPoint Motion:** No static slide deck fades. Scenes transition through continuous camera moves (push-through, whip-pan, 3D orbit) or motivated motion wipes.
 
 ---
 
@@ -98,8 +108,8 @@ Whenever a user requests a video:
 11. **`templates/remotion/StudioCatalog.tsx`** (*Swiss Minimalist Catalog*):
     - Exact 11.0s Swiss architectural catalog with Wide $\to$ Macro Zoom In $\to$ Pan $\to$ Pull Back Wide camera choreography, fan-out card stack, yellow felt highlighter, and rubber stamp slam.
 12. **`templates/remotion/PaperCollage.tsx`** (*Stop-Motion Paper Scrapbook*):
-    - Exact 7.5s tactile paper scrapbook with Polaroid photo card slap, Scotch masking tape snap, torn newspaper scrap, postage stamp, rubber stamp slam, and physical paper rip tear wipe into Scene 2.
+    - Exact 9.0s tactile paper scrapbook with Polaroid photo card slap, Scotch masking tape snap, torn newspaper scrap, postage stamp, rubber stamp slam, and full-width physical paper rip tear wipe into Scene 2.
 13. **`templates/remotion/ProsceniumStage.tsx`** (*Theatrical Proscenium Puppet Stage*):
-    - Exact 8.0s velvet proscenium curtains parting open, theatrical sky & hills depth planes, animated character puppet with organic $T_{step} = 0.39s$ locomotion walk cycle, and stage backdrop slide transition.
-14. **`templates/remotion/LiquidGlass.tsx`** (*Apple iOS Spatial VisionOS Liquid Glass*):
-    - Exact 6.0s VisionOS fluid spatial design with Dynamic Island expansion, rotating multi-color Siri fluid glow aura, central refractive glass orb with orbital concentric rings, and floating glass telemetry cards.
+    - Exact 12.0s velvet proscenium curtains parting open, Mediterranean house, terracotta roof, hills & courtyard ground, and rigged character puppet with organic $T_{step} = 0.39s$ walk cycle.
+14. **`templates/remotion/LiquidGlass.tsx`** (*Apple VisionOS Liquid Glass & Dynamic Island*):
+    - Exact 15.0s VisionOS fluid spatial design with Three.js physical transmission liquid orb, standing sinusoidal waves, Dynamic Island morph (compact to wide music widget), Siri fluid glow aura, and Face ID biometric lock.
