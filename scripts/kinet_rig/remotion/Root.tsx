@@ -70,23 +70,29 @@ export const RemotionRoot: React.FC = () => {
         } as SaasMacroProps}
       />
 
-      {/* 4. Bento Grid (Modular Architecture) */}
+      {/* 4. Bento Grid (Modular Architecture - 100% Exact to kinet-bento-grid.html) */}
       <Composition
         id="BentoGrid"
         component={BentoGrid}
-        durationInFrames={240} // 4.0 seconds at 60fps
+        durationInFrames={390} // 6.5 seconds matching exact kinet-bento-grid.html
         fps={60}
         width={1920}
         height={1080}
         defaultProps={{
-          headline: "Modular Motion Intelligence",
-          metricBig: "99.98%",
-          metricLabel: "DETERMINISTIC FRAME SYNCHRONIZATION",
-          featureTitle1: "Sub-Pixel Kinematics",
-          featureTitle2: "3D Camera Trajectories",
+          card1Title: "Distributed Neural Rendering",
+          card1Desc: "Sub-millisecond frame synthesis executed on unified GPU compute clusters.",
+          card1Metric: "99.98%",
+          card2Title: "Zero Trust Core",
+          card2Desc: "Hardware-isolated enclave cryptographic guarantees.",
+          card2Badge: "AES-256-GCM",
+          card3Title: "Peak Bandwidth",
+          card3Desc: "Ultra-low latency pipe.",
+          card3Metric: "40 Gbps",
+          card4Title: "Deterministic 240 FPS Pipeline",
+          card4Desc: "Guaranteed zero jitter frame generation for production motion broadcast.",
           primaryColor: "#A855F7",
           accentColor: "#06B6D4",
-          backgroundColor: "#0B0814",
+          backgroundColor: "#09090E",
         } as BentoGridProps}
       />
 

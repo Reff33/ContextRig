@@ -62,7 +62,7 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
 3. **`templates/remotion/SaasMacro.tsx`** (*SaaS Macro Tour*):
    - Exact 7.0s 3D browser mockup perspective with dynamic SVG metric chart, animated metric drawing line, sidebar rack focus blur swap, and live pipeline status.
 4. **`templates/remotion/BentoGrid.tsx`** (*Modular Bento Grid*):
-   - 3x2 modern glassmorphism Bento Grid layout, staggered entry animation, animated progress fill line, and glowing accent telemetry.
+   - Exact 6.5s 3x2 modern glassmorphism Bento Grid layout, staggered spring pop entries, animated progress fill line, and glowing accent telemetry.
 5. **`templates/remotion/ChatDialogue.tsx`** (*Diegetic AI Chat*):
    - 3D tilted chat device, human keystroke simulation in input bar, pulsing typing dots, spring message popups, and verified reaction badges.
 6. **`templates/remotion/DataMetrics.tsx`** (*KPI & Area Chart Metrics*):
