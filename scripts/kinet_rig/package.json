@@ -1,13 +1,16 @@
 {
   "name": "kinetrig",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "studio": "node scripts/server.mjs",
-    "test": "node scripts/test-runtime.mjs"
+    "render": "node scripts/render-remotion.mjs",
+    "preview": "npx remotion preview remotion/index.ts"
   },
-  "devDependencies": {
-    "puppeteer-core": "^25.16.0"
+  "dependencies": {
+    "@remotion/cli": "^4.0.543",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.543"
   }
 }

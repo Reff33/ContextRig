@@ -1,34 +1,29 @@
 {
   "id": "kinet_rig",
-  "name": "KinetRig (Ultra-HFR 144–240 FPS Motion & Video Engine)",
-  "description": "Zero-dependency Ultra-HFR kinetic motion graphics & video engine (144–240 FPS) using HTML5, GSAP, Three.js & Studio Server with deterministic offline rendering and inline SVGs",
+  "name": "KinetRig (AI Remotion Video Production Engine)",
+  "description": "AI-powered motion graphics and cinematic video production engine using Remotion (React). Converts prompts, scene concepts, and parameters into high-quality Remotion compositions with automatic MP4 rendering and instant media player preview.",
   "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/kinet_rig.json",
-  "ai_instructions": "Follow the official KinetRig workflow (https://github.com/Reff33/KinetRig, full guide in rigtools/kinet_rig/SKILL.md):\n\n1. CORE PRINCIPLES:\n   • Zero Runtime Dependencies: Deliverable (index.html) requires ONLY a browser. No React/Remotion/Manim bloat.\n   • Deterministic Ultra-HFR Timeline: All animations strictly driven by tl.time(). Deterministic 144 FPS up to 240 FPS with zero dropped frames.\n   • Procedural Audio & Wyzowl SFX: Built-in Web Audio API synthesis + curated SFX library (`rigtools/kinet_rig/sfx/sounds.json` / `scripts/fetch-sfx.mjs`).\n   • Strict Vector Quality (Zero Emojis): NEVER use system emojis (🤖, ⚡, 🐙, 🧠, 🕷). ALWAYS use resolution-independent Inline SVG vectors (<svg viewBox=\"0 0 24 24\">) with currentColor or brand glow.\n   • Anti-PowerPoint Motion: No static slide deck fades. Continuous 3D camera travel (push-through, whip pan, yaw 3D) or motivated wipes.\n   • Clean Video Export: body.clean-capture auto-hides all UI and cursor during capture with combined video + audio stream.\n\n2. 6-PHASE AGENT WORKFLOW:\n   • Phase 1 (Brief): Topic, Duration (15-30s opener, 30-60s explainer/data), Aspect Ratio (16:9 vs 9:16).\n   • Phase 2 (Style Brief — Three Candidates, One Pick): DO NOT write code yet. Propose 3 candidates with Concept (Opener, Explainer, Data, E-Commerce, Chat), Style Direction, Palette (3 HEX), and Rationale.\n   • Phase 3 (User Approval): Wait for user confirmation.\n   • Phase 4 (Build from Official Starter): Adapt starter template from rigtools/kinet_rig/assets/ (21 official templates) into self-contained index.html.\n   • Phase 5 (Anti-PowerPoint Rules): Continuous world, max 2 text levels per scene, 1 shot = 1 statement (≤ 5 words).\n   • Phase 6 (Clean Ultra-HFR Export & Studio): Fixed top-right dual-state Export dropdown + Studio bridge (`node rigtools/kinet_rig/scripts/server.mjs`), Space/H/M/R keymap, and all-in-one studio render (`node rigtools/kinet_rig/scripts/render.mjs index.html output.mp4 240`).",
+  "ai_instructions": "Follow the official KinetRig Remotion workflow (https://github.com/Reff33/KinetRig):\n\n1. CORE PRINCIPLES:\n   • Remotion React Core: Compositions are authored as pure, deterministic React components using Remotion. Timing driven by useCurrentFrame() and interpolate().\n   • Deterministic Timeline: Never use Math.random() or Date.now(). Pure frame interpolation ensures 100% reproducible frame rendering.\n   • Strict Vector Quality (Zero Emojis): NEVER use system emojis (🤖, ⚡, 🐙, 🧠, 🕷). Use inline SVG vectors with glowing filters, high-resolution typography, or brand assets.\n   • Anti-PowerPoint Motion: Continuous camera moves (push-through, whip-pan, 3D orbit) or motivated motion wipes.\n   • Automatic Player Launch: Every render automatically opens the exported MP4 in the OS default media player.\n\n2. WORKFLOW:\n   • Step 1 (Plan): Determine title, messaging, archetype (Cinematic Dark, Minimal, etc.), colors (primary, accent, bg), and aspect ratio (16:9 or 9:16 at 60 FPS).\n   • Step 2 (Compose): Select or adapt template from `templates/remotion/` (e.g. `CinematicTitle.tsx`) or register composition in `remotion/Root.tsx`.\n   • Step 3 (Render & Open): Execute CLI command to render MP4 and auto-launch in default media player:\n     `node scripts/render-remotion.mjs <CompositionId> '{\"title\":\"...\",\"subtitle\":\"...\"}'`",
   "claude_command": {
     "name": "kinet-rig",
-    "content": "# /kinet-rig <brief> [aspect_ratio] [concept/style]\n\nGenerate zero-dependency Ultra-HFR browser motion graphics using KinetRig (144–240 FPS):\n\n1. **Read Full Spec:** Inspect `rigtools/kinet_rig/SKILL.md` and relevant guides under `rigtools/kinet_rig/references/`.\n2. **Style Brief (Three Candidates, One Pick):** Propose 3 Concept Candidates with 3-color palette and rationale. Wait for user approval.\n3. **Official Starters (21 Templates):** Adapt from `rigtools/kinet_rig/assets/` into self-contained `index.html`.\n4. **Anti-PowerPoint & Zero-Emoji Laws:** Continuous camera traveling, zero static slide fades. NEVER use OS emojis; use inline SVG vectors with neon glow.\n5. **Ultra-HFR & Studio Export:** Run Studio preview (`node rigtools/kinet_rig/scripts/server.mjs`) or all-in-one render (`node rigtools/kinet_rig/scripts/render.mjs <file.html> <output.mp4> [fps] [--audio=track.mp3]`)."
+    "content": "# /kinet-rig <brief> [aspect_ratio] [concept/style]\n\nGenerate AI-powered motion graphics and cinematic video with Remotion:\n\n1. **Read Spec:** Inspect `SKILL.md` and templates under `templates/remotion/`.\n2. **Plan Concept & Colors:** Establish title, subtitle, 3-color palette (primary, accent, background), and aspect ratio (16:9 or 9:16 @ 60 FPS).\n3. **Render & Auto-Launch:** Execute:\n   `node scripts/render-remotion.mjs CinematicTitle '{\"title\":\"...\",\"subtitle\":\"...\"}'`\n   This renders the MP4 and immediately opens it in the system media player."
   },
   "dependencies": {
-    "npm": [],
+    "npm": [
+      "remotion",
+      "@remotion/cli",
+      "react",
+      "react-dom"
+    ],
     "pip": []
   },
   "artifacts": [
-    "kinetrig/",
-    "rigmotion/",
-    "promo-video/",
-    "motion-out/",
     "renders/",
-    "sfx/",
-    ".motion/"
+    ".remotion/"
   ],
   "gitignore": [
-    "kinetrig/",
-    "rigmotion/",
-    "promo-video/",
-    "motion-out/",
     "renders/",
-    "sfx/",
-    ".motion/"
+    ".remotion/"
   ],
   "files_to_copy": [
     {
@@ -42,308 +37,34 @@
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/package.json"
     },
     {
-      "source": "scripts/kinet_rig/kinet.config.json",
-      "destination": "rigtools/kinet_rig/kinet.config.json",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/kinet.config.json"
+      "source": "scripts/kinet_rig/tsconfig.json",
+      "destination": "rigtools/kinet_rig/tsconfig.json",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/tsconfig.json"
     },
     {
-      "source": "scripts/kinet_rig/start-studio.bat",
-      "destination": "rigtools/kinet_rig/start-studio.bat",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/start-studio.bat"
+      "source": "scripts/kinet_rig/remotion/index.ts",
+      "destination": "rigtools/kinet_rig/remotion/index.ts",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/remotion/index.ts"
     },
     {
-      "source": "scripts/kinet_rig/preview.html",
-      "destination": "rigtools/kinet_rig/preview.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/preview.html"
+      "source": "scripts/kinet_rig/remotion/Root.tsx",
+      "destination": "rigtools/kinet_rig/remotion/Root.tsx",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/remotion/Root.tsx"
     },
     {
-      "source": "scripts/kinet_rig/api/bridge.php",
-      "destination": "rigtools/kinet_rig/api/bridge.php",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/api/bridge.php"
+      "source": "scripts/kinet_rig/templates/remotion/CinematicTitle.tsx",
+      "destination": "rigtools/kinet_rig/templates/remotion/CinematicTitle.tsx",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/templates/remotion/CinematicTitle.tsx"
     },
     {
-      "source": "scripts/kinet_rig/assets/kinet-audio-visualizer.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-audio-visualizer.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-audio-visualizer.html"
+      "source": "scripts/kinet_rig/scripts/render-remotion.mjs",
+      "destination": "rigtools/kinet_rig/scripts/render-remotion.mjs",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/render-remotion.mjs"
     },
     {
-      "source": "scripts/kinet_rig/assets/kinet-bento-grid.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-bento-grid.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-bento-grid.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-catalog.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-catalog.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-catalog.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-collage.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-collage.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-collage.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-dialogue.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-dialogue.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-dialogue.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-editorial.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-editorial.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-editorial.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-engraving.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-engraving.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-engraving.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-flow.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-flow.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-flow.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-glitch-terminal.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-glitch-terminal.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-glitch-terminal.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-hud-scifi.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-hud-scifi.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-hud-scifi.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-ios-liquid-glass.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-ios-liquid-glass.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-ios-liquid-glass.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-kinetic-lyrics.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-kinetic-lyrics.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-kinetic-lyrics.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-liquid-orb.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-liquid-orb.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-liquid-orb.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-metrics.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-metrics.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-metrics.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-opener.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-opener.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-opener.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-reel-hook.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-reel-hook.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-reel-hook.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-saas-macro.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-saas-macro.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-saas-macro.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-showcase.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-showcase.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-showcase.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-split-tiktok.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-split-tiktok.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-split-tiktok.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-stage.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-stage.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-stage.html"
-    },
-    {
-      "source": "scripts/kinet_rig/assets/kinet-typographic-montage.html",
-      "destination": "rigtools/kinet_rig/assets/kinet-typographic-montage.html",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/assets/kinet-typographic-montage.html"
-    },
-    {
-      "source": "scripts/kinet_rig/references/ae-bridge-higgsfield.md",
-      "destination": "rigtools/kinet_rig/references/ae-bridge-higgsfield.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/ae-bridge-higgsfield.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/aesthetic-qa.md",
-      "destination": "rigtools/kinet_rig/references/aesthetic-qa.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/aesthetic-qa.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/anti-ppt.md",
-      "destination": "rigtools/kinet_rig/references/anti-ppt.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/anti-ppt.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/architecture.md",
-      "destination": "rigtools/kinet_rig/references/architecture.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/architecture.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/cartoon-stage.md",
-      "destination": "rigtools/kinet_rig/references/cartoon-stage.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/cartoon-stage.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/explainer.md",
-      "destination": "rigtools/kinet_rig/references/explainer.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/explainer.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/mockups.md",
-      "destination": "rigtools/kinet_rig/references/mockups.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/mockups.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/opener-concepts.md",
-      "destination": "rigtools/kinet_rig/references/opener-concepts.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/opener-concepts.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/roadmap.md",
-      "destination": "rigtools/kinet_rig/references/roadmap.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/roadmap.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/sequences.md",
-      "destination": "rigtools/kinet_rig/references/sequences.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/sequences.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/shots.md",
-      "destination": "rigtools/kinet_rig/references/shots.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/shots.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/svg-icons.md",
-      "destination": "rigtools/kinet_rig/references/svg-icons.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/svg-icons.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/techniques.md",
-      "destination": "rigtools/kinet_rig/references/techniques.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/techniques.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/ultra-hfr-guide.md",
-      "destination": "rigtools/kinet_rig/references/ultra-hfr-guide.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/ultra-hfr-guide.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/01-cinematography-camera.md",
-      "destination": "rigtools/kinet_rig/references/modules/01-cinematography-camera.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/01-cinematography-camera.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/02-advanced-motion-graphics.md",
-      "destination": "rigtools/kinet_rig/references/modules/02-advanced-motion-graphics.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/02-advanced-motion-graphics.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/03-animation-physics.md",
-      "destination": "rigtools/kinet_rig/references/modules/03-animation-physics.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/03-animation-physics.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/04-transitions-choreography.md",
-      "destination": "rigtools/kinet_rig/references/modules/04-transitions-choreography.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/04-transitions-choreography.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/05-vfx-particles.md",
-      "destination": "rigtools/kinet_rig/references/modules/05-vfx-particles.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/05-vfx-particles.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/06-sound-design.md",
-      "destination": "rigtools/kinet_rig/references/modules/06-sound-design.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/06-sound-design.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/07-lighting-color.md",
-      "destination": "rigtools/kinet_rig/references/modules/07-lighting-color.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/07-lighting-color.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/08-3d-spatial-design.md",
-      "destination": "rigtools/kinet_rig/references/modules/08-3d-spatial-design.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/08-3d-spatial-design.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/09-editing-post-production.md",
-      "destination": "rigtools/kinet_rig/references/modules/09-editing-post-production.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/09-editing-post-production.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/10-ai-production-intelligence.md",
-      "destination": "rigtools/kinet_rig/references/modules/10-ai-production-intelligence.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/10-ai-production-intelligence.md"
-    },
-    {
-      "source": "scripts/kinet_rig/references/modules/11-character-facial-rigging-lipsync.md",
-      "destination": "rigtools/kinet_rig/references/modules/11-character-facial-rigging-lipsync.md",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/modules/11-character-facial-rigging-lipsync.md"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/audio-synth.mjs",
-      "destination": "rigtools/kinet_rig/scripts/audio-synth.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/audio-synth.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/director.mjs",
-      "destination": "rigtools/kinet_rig/scripts/director.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/director.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/export-frames.mjs",
-      "destination": "rigtools/kinet_rig/scripts/export-frames.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/export-frames.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/fetch-sfx.mjs",
-      "destination": "rigtools/kinet_rig/scripts/fetch-sfx.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/fetch-sfx.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/parse-timeline.mjs",
-      "destination": "rigtools/kinet_rig/scripts/parse-timeline.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/parse-timeline.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/render.mjs",
-      "destination": "rigtools/kinet_rig/scripts/render.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/render.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/server.mjs",
-      "destination": "rigtools/kinet_rig/scripts/server.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/server.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/snap.mjs",
-      "destination": "rigtools/kinet_rig/scripts/snap.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/snap.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/test-runtime.mjs",
-      "destination": "rigtools/kinet_rig/scripts/test-runtime.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/test-runtime.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/scripts/test-syntax.mjs",
-      "destination": "rigtools/kinet_rig/scripts/test-syntax.mjs",
-      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/test-syntax.mjs"
-    },
-    {
-      "source": "scripts/kinet_rig/sfx/sounds.json",
-      "destination": "rigtools/kinet_rig/sfx/sounds.json"
+      "source": "scripts/kinet_rig/references/laws-shared.md",
+      "destination": "rigtools/kinet_rig/references/laws-shared.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/references/laws-shared.md"
     }
   ]
 }
