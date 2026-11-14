@@ -11,6 +11,9 @@ import ProductShowcase, { ProductShowcaseProps } from '../templates/remotion/Pro
 import ActionFlow, { ActionFlowProps } from '../templates/remotion/ActionFlow';
 import EditorialDossier, { EditorialDossierProps } from '../templates/remotion/EditorialDossier';
 import StudioCatalog, { StudioCatalogProps } from '../templates/remotion/StudioCatalog';
+import PaperCollage, { PaperCollageProps } from '../templates/remotion/PaperCollage';
+import ProsceniumStage, { ProsceniumStageProps } from '../templates/remotion/ProsceniumStage';
+import LiquidGlass, { LiquidGlassProps } from '../templates/remotion/LiquidGlass';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -255,7 +258,6 @@ export const RemotionRoot: React.FC = () => {
           ghostYear: "1972",
           headlinePart1: "Studio precision, ",
           headlineHighlight: "two words.",
-          specLabel: "SPEC · MINIMALIST CATALOG",
           handNote: "verified 64 px",
           docSubtitle: "1972 · flagship release",
           stampText: "VERIFIED",
@@ -263,6 +265,65 @@ export const RemotionRoot: React.FC = () => {
           yellowHighlight: "#FFE500",
           inkColor: "#141414",
         } as StudioCatalogProps}
+      />
+
+      {/* 12. Paper Collage (Stop-Motion Paper Scrapbook) */}
+      <Composition
+        id="PaperCollage"
+        component={PaperCollage}
+        durationInFrames={450} // 7.5 seconds matching exact kinet-collage.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          polaroidCaption1: "analog print session '74",
+          scrapText1: "STOP-MOTION\nCOLLAGE",
+          stampText1: "★ VERIFIED PRINT ★",
+          headlinePart1: "PAPER TEXTURE WITH ",
+          headlineSticker: "STOP-MOTION RHYTHM",
+          scrapText2: "AUTHENTIC CRAFT\nNOT DIGITAL PPT",
+          polaroidCaption2: "press master copy #14",
+          primaryPaper: "#F5F0E6",
+          accentOrange: "#EA580C",
+          accentYellow: "#FDE047",
+          accentRed: "#DC2626",
+        } as PaperCollageProps}
+      />
+
+      {/* 13. Proscenium Stage (Theatrical Puppet Proscenium Stage) */}
+      <Composition
+        id="ProsceniumStage"
+        component={ProsceniumStage}
+        durationInFrames={480} // 8.0 seconds matching exact kinet-stage.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          characterName: "Maya",
+          stageTitle: "THEATRICAL PUPPET STAGE",
+          stageDesc: "Organic locomotion walk cycles with physically damped joint kinematics.",
+          primaryCurtain: "#5B1832",
+          accentCoral: "#E05347",
+          backgroundColor: "#1A0B14",
+        } as ProsceniumStageProps}
+      />
+
+      {/* 14. Liquid Glass (iOS Spatial VisionOS Liquid Glass) */}
+      <Composition
+        id="LiquidGlass"
+        component={LiquidGlass}
+        durationInFrames={360} // 6.0 seconds matching exact kinet-ios-liquid-glass.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          islandText: "SPATIAL INTELLIGENCE",
+          heroHeadline: "Fluid Spatial Vision",
+          heroSub: "Refractive liquid glass physics with VisionOS concentric orbital rings.",
+          primaryCyan: "#64D2FF",
+          accentPurple: "#BF5AF2",
+          backgroundColor: "#07090E",
+        } as LiquidGlassProps}
       />
     </>
   );
