@@ -318,6 +318,7 @@ export const RemotionRoot: React.FC = () => {
           primaryColor: "#0A84FF",
           accentPurple: "#BF5AF2",
           backgroundColor: "#020305",
+          showCards: true,
         } as LiquidGlassProps}
       />
     </>
