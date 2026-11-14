@@ -1,6 +1,6 @@
 import React from 'react';
 import { Composition } from 'remotion';
-import CinematicTitle, { CinematicTitleProps } from '../templates/remotion/CinematicTitle';
+import KinetOpener, { KinetOpenerProps } from '../templates/remotion/KinetOpener';
 import GlitchTerminal, { GlitchTerminalProps } from '../templates/remotion/GlitchTerminal';
 import SaasMacro, { SaasMacroProps } from '../templates/remotion/SaasMacro';
 import BentoGrid, { BentoGridProps } from '../templates/remotion/BentoGrid';
@@ -14,24 +14,27 @@ import EditorialDossier, { EditorialDossierProps } from '../templates/remotion/E
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      {/* 1. Cinematic Title (Opener & Brand Teaser) */}
+      {/* 1. KinetOpener (Exact 100% Remotion Port of assets/kinet-opener.html) */}
       <Composition
-        id="CinematicTitle"
-        component={CinematicTitle}
-        durationInFrames={180}
+        id="KinetOpener"
+        component={KinetOpener}
+        durationInFrames={600} // 10.0 seconds matching exact kinet-opener.html
         fps={60}
         width={1920}
         height={1080}
         defaultProps={{
-          title: 'NUR AQILAH ZAHIDAH',
-          subtitle: 'AI REMOTION PRODUCTION ENGINE',
-          primaryColor: '#FFFFFF',
-          accentColor: '#00F0FF',
-          backgroundColor: '#08090D',
-          fontSize: 120,
-          letterSpacing: 8,
-          zoomIntensity: 1.15,
-        } as CinematicTitleProps}
+          scene1HeroTop: "ULTRA FLUID.",
+          scene1HeroHighlight: "UP TO 240 FPS.",
+          scene1Subtitle: "Deterministic mathematical timeline stepping. Zero dropped frames.",
+          card1Text: "Zero Runtime Build",
+          card2Text: "100% Inline SVGs",
+          card3Text: "Lossless Headless Export",
+          scene2HeroTop: "CRAFTED FOR",
+          scene2HeroHighlight: "AI CODING AGENTS",
+          scene2Subtitle: "npx -y skills@latest add https://github.com/Reff33/KinetRig",
+          primaryColor: "#00F5FF",
+          backgroundColor: "#040810",
+        } as KinetOpenerProps}
       />
 
       {/* 2. Glitch Terminal (Cipher/Tech/Cybersecurity) */}

@@ -34,7 +34,7 @@ Intelligent motion graphics and video composition built for AI coding agents. Us
 Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran AI"*):
 
 1. **Analyze & Recommend:**
-   - **Opener / Brand Launch / Event:** $\to$ Recommend `CinematicTitle`
+   - **Opener / Brand Launch / Event:** $\to$ Recommend `KinetOpener`
    - **Cybersecurity / Terminal / Developer CLI / Hacker:** $\to$ Recommend `GlitchTerminal`
    - **SaaS / Analytics / Business Dashboard / UI Tour:** $\to$ Recommend `SaasMacro`
    - **Modular Features / Architecture / Product Capabilities:** $\to$ Recommend `BentoGrid`
@@ -59,8 +59,8 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
 
 ## 3. Templates Library
 
-1. **`templates/remotion/CinematicTitle.tsx`** (*Opener*):
-   - Full-bleed kinetic headline, character-by-character reveal with blur/slide, cinematic push-in, glowing accent beam, and dark vignette.
+1. **`templates/remotion/KinetOpener.tsx`** (*Exact 100% Opener*):
+   - Exact 10.0s 3D particle space opener, snappy headline slam with RGB split glitch transient, subtitle upward glide, 3 staggered vector cards, and camera push-through into Scene 2.
 2. **`templates/remotion/GlitchTerminal.tsx`** (*Decrypt Glitch Terminal*):
    - Exact 6.0s cybernetic terminal with memory hex dump stream, live memory bar, decrypting text scramble with RGB split glitch chromatic aberration, and status telemetry.
 3. **`templates/remotion/SaasMacro.tsx`** (*SaaS Macro Tour*):
@@ -76,6 +76,6 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
 8. **`templates/remotion/ProductShowcase.tsx`** (*3D E-Commerce Showcase*):
    - Exact 7.0s hardware showcase with 3D rotating card, specular shine sweep, animated spec grid, and bouncing CTA button.
 9. **`templates/remotion/ActionFlow.tsx`** (*Continuous Vector Flow*):
-   - Exact 6.0s 3840px wide world with persistent hero orb, squash-and-stretch vertical launch, 3D horizon banking flight transition, and shockwave burst climax.
+   - Exact 8.0s 3840px wide world with persistent hero orb, squash-and-stretch vertical launch, 3D horizon banking flight transition, and shockwave burst climax.
 10. **`templates/remotion/EditorialDossier.tsx`** (*Classified Editorial Dossier*):
-    - Exact 6.5s forensic investigative desk with topographic grain, satellite recon photo, cyan laser sweep, red stamp slam, red yarn connector, and classified black marker redaction bar wipe.
+    - Exact 9.0s forensic investigative desk with topographic grain, satellite recon photo, cyan laser sweep, red stamp slam, red yarn connector, and classified black marker redaction bar wipe.
