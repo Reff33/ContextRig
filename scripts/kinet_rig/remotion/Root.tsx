@@ -6,6 +6,8 @@ import SaasMacro, { SaasMacroProps } from '../templates/remotion/SaasMacro';
 import BentoGrid, { BentoGridProps } from '../templates/remotion/BentoGrid';
 import ChatDialogue, { ChatDialogueProps } from '../templates/remotion/ChatDialogue';
 import DataMetrics, { DataMetricsProps } from '../templates/remotion/DataMetrics';
+import ReelHook, { ReelHookProps } from '../templates/remotion/ReelHook';
+import ProductShowcase, { ProductShowcaseProps } from '../templates/remotion/ProductShowcase';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -135,6 +137,56 @@ export const RemotionRoot: React.FC = () => {
           primaryColor: "#10B981",
           backgroundColor: "#040810",
         } as DataMetricsProps}
+      />
+
+      {/* 7. Reel Hook (Shorts & High-Retention Hook) */}
+      <Composition
+        id="ReelHook"
+        component={ReelHook}
+        durationInFrames={360} // 6.0 seconds matching exact kinet-reel-hook.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          badgeText: "HIGH RETENTION HOOK",
+          word1: "Stop",
+          word2: "Scrolling.",
+          word3: "Watch",
+          word4: "This",
+          word5: "Move.",
+          statValue: 18.5,
+          statLabel: "Organic Video Impressions",
+          sticker1: "100% RETENTION",
+          sticker2: "60 FPS",
+          urgentColor: "#FF1E40",
+          accentColor: "#FFE600",
+          primaryColor: "#FF2E93",
+        } as ReelHookProps}
+      />
+
+      {/* 8. Product Showcase (3D E-Commerce Showcase) */}
+      <Composition
+        id="ProductShowcase"
+        component={ProductShowcase}
+        durationInFrames={420} // 7.0 seconds matching exact kinet-showcase.html
+        fps={60}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          categoryBadge: "FLAGSHIP AUDIO RIG",
+          productName: "KinetPro Spatial Headset",
+          productDesc: "Planar magnetic acoustic drivers with zero-latency spatial head tracking and aerospace titanium headband.",
+          price: "$349",
+          spec1Val: "0.4ms",
+          spec1Lbl: "Ultra Latency",
+          spec2Val: "10-48k",
+          spec2Lbl: "Frequency",
+          spec3Val: "42h",
+          spec3Lbl: "Battery Life",
+          ctaText: "Order Now — Free Worldwide Shipping",
+          primaryColor: "#F59E0B",
+          backgroundColor: "#000000",
+        } as ProductShowcaseProps}
       />
     </>
   );

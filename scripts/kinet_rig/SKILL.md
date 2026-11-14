@@ -40,6 +40,8 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
    - **Modular Features / Architecture / Product Capabilities:** $\to$ Recommend `BentoGrid`
    - **Conversational UI / AI Chatbot / Messaging App:** $\to$ Recommend `ChatDialogue`
    - **Financial Volume / KPI Cards / Growth Metrics:** $\to$ Recommend `DataMetrics`
+   - **Viral Short-Form / High-Retention Hook (Shorts/TikTok):** $\to$ Recommend `ReelHook`
+   - **E-Commerce / Hardware / Physical Product Drops:** $\to$ Recommend `ProductShowcase`
 2. **Setup Composition:** Update `Root.tsx` (in `remotion/Root.tsx` or `rigtools/kinet_rig/remotion/Root.tsx`) with the proposed concept.
 3. **Launch Studio Automatically:** Run:
    ```bash
@@ -67,3 +69,7 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
    - 3D tilted chat device, human keystroke simulation in input bar, pulsing typing dots, spring message popups, and verified reaction badges.
 6. **`templates/remotion/DataMetrics.tsx`** (*KPI & Area Chart Metrics*):
    - Exact 8.0s financial metrics dashboard with 3 KPI card popups, animated live number counters, and 6 elastic animated SVG bar charts with area glow.
+7. **`templates/remotion/ReelHook.tsx`** (*Viral Short-Form Hook*):
+   - Exact 6.0s high-retention social media hook with chromatic mood shift, radial bloom pulse wave, kinetic word slams, and floating sticker tags.
+8. **`templates/remotion/ProductShowcase.tsx`** (*3D E-Commerce Showcase*):
+   - Exact 7.0s hardware showcase with 3D rotating card, specular shine sweep, animated spec grid, and bouncing CTA button.
