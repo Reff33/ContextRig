@@ -37,6 +37,8 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
    - **Opener / Brand Launch / Event:** $\to$ Recommend `CinematicTitle`
    - **Cybersecurity / Terminal / Developer CLI / Hacker:** $\to$ Recommend `GlitchTerminal`
    - **SaaS / Analytics / Business Dashboard / UI Tour:** $\to$ Recommend `SaasMacro`
+   - **Modular Features / Architecture / Product Capabilities:** $\to$ Recommend `BentoGrid`
+   - **Conversational UI / AI Chatbot / Messaging App:** $\to$ Recommend `ChatDialogue`
 2. **Setup Composition:** Update `Root.tsx` (in `remotion/Root.tsx` or `rigtools/kinet_rig/remotion/Root.tsx`) with the proposed concept.
 3. **Launch Studio Automatically:** Run:
    ```bash
@@ -55,6 +57,10 @@ Whenever a user requests a video (e.g. *"Tolong buatkan video tentang pelancaran
 1. **`templates/remotion/CinematicTitle.tsx`** (*Opener*):
    - Full-bleed kinetic headline, character-by-character reveal with blur/slide, cinematic push-in, glowing accent beam, and dark vignette.
 2. **`templates/remotion/GlitchTerminal.tsx`** (*Decrypt Glitch Terminal*):
-   - Cybernetic terminal with memory hex dump stream, live memory bar, decrypting text scramble with RGB split glitch chromatic aberration, and status telemetry.
+   - Exact 6.0s cybernetic terminal with memory hex dump stream, live memory bar, decrypting text scramble with RGB split glitch chromatic aberration, and status telemetry.
 3. **`templates/remotion/SaasMacro.tsx`** (*SaaS Macro Tour*):
-   - 3D browser mockup perspective with dynamic SVG metric chart, animated metric drawing line, sidebar navigation, and live pipeline status.
+   - Exact 7.0s 3D browser mockup perspective with dynamic SVG metric chart, animated metric drawing line, sidebar rack focus blur swap, and live pipeline status.
+4. **`templates/remotion/BentoGrid.tsx`** (*Modular Bento Grid*):
+   - 3x2 modern glassmorphism Bento Grid layout, staggered entry animation, animated progress fill line, and glowing accent telemetry.
+5. **`templates/remotion/ChatDialogue.tsx`** (*Diegetic AI Chat*):
+   - 3D tilted chat device, human keystroke simulation in input bar, pulsing typing dots, spring message popups, and verified reaction badges.
