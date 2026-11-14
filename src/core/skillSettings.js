@@ -107,7 +107,7 @@ export function getSkillSchema(skill) {
 /**
  * Global settings file path: ~/.contextrig/skill-settings.json
  */
-function getSettingsFilePath() {
+export function getSettingsPath() {
   const home = os.homedir();
   return path.join(home, '.contextrig', 'skill-settings.json');
 }
@@ -116,7 +116,7 @@ function getSettingsFilePath() {
  * Loads all custom skill settings from the user's home directory.
  */
 export async function loadAllSkillSettings() {
-  const file = getSettingsFilePath();
+  const file = getSettingsPath();
   if (!existsSync(file)) return {};
   try {
     const raw = await fs.readFile(file, 'utf8');
@@ -126,38 +126,127 @@ export async function loadAllSkillSettings() {
   }
 }
 
+export async function saveAllSkillSettings(allSettings) {
+  const settingsPath = getSettingsPath();
+  await fs.mkdir(path.dirname(settingsPath), { recursive: true });
+  await fs.writeFile(settingsPath, JSON.stringify(allSettings, null, 2), 'utf8');
+}
+
 /**
  * Loads custom settings for a single skill. Returns defaults if not customized.
  */
 export async function getSkillSettings(skillId) {
   const all = await loadAllSkillSettings();
-  return all[skillId] || { values: {}, extraRule: '' };
+  const entry = all[skillId];
+  return {
+    values: entry?.values && typeof entry.values === 'object' ? { ...entry.values } : {},
+    extraRule: typeof entry?.extraRule === 'string' ? entry.extraRule : ''
+  };
 }
 
 /**
  * Saves custom settings for a single skill.
  */
-export async function saveSkillSettings(skillId, settings) {
-  const file = getSettingsFilePath();
-  const dir = path.dirname(file);
-  await fs.mkdir(dir, { recursive: true });
-
+export async function saveSkillSettings(skillId, { values = {}, extraRule = '' }) {
   const all = await loadAllSkillSettings();
-  all[skillId] = {
-    values: settings.values || {},
-    extraRule: settings.extraRule || ''
-  };
+  const cleanValues = Object.fromEntries(
+    Object.entries(values).filter(([, v]) => v !== undefined && v !== null && v !== '')
+  );
+  const cleanRule = typeof extraRule === 'string' ? extraRule.trim() : '';
 
-  await fs.writeFile(file, JSON.stringify(all, null, 2), 'utf8');
+  if (Object.keys(cleanValues).length === 0 && !cleanRule) {
+    delete all[skillId];
+  } else {
+    all[skillId] = {
+      ...(Object.keys(cleanValues).length > 0 ? { values: cleanValues } : {}),
+      ...(cleanRule ? { extraRule: cleanRule } : {})
+    };
+  }
+  await saveAllSkillSettings(all);
+  return all[skillId] || null;
 }
 
 /**
  * Resets settings for a single skill back to defaults.
  */
 export async function resetSkillSettings(skillId) {
-  const file = getSettingsFilePath();
-  if (!existsSync(file)) return;
   const all = await loadAllSkillSettings();
   delete all[skillId];
-  await fs.writeFile(file, JSON.stringify(all, null, 2), 'utf8');
+  await saveAllSkillSettings(all);
+}
+
+/**
+ * Returns a copy of the skill enriched with saved user settings & extra AI rule
+ * without mutating the source manifest on disk.
+ * @param {Object} skill
+ * @param {Object|null} entry
+ * @returns {Object}
+ */
+export function applySettingsToSkill(skill, entry) {
+  if (!entry) return skill;
+  const schema = getSkillSchema(skill);
+  const overrides = [];
+
+  if (entry.values && schema.fields?.length) {
+    for (const field of schema.fields) {
+      const val = entry.values[field.key];
+      if (val !== undefined && val !== field.default) {
+        overrides.push(`${field.label}: ${val}`);
+      }
+    }
+  }
+
+  let nextInstructions = skill.ai_instructions;
+  if (overrides.length > 0) {
+    nextInstructions += `\n  - **Configured Defaults:** ${overrides.join(', ')}.`;
+  }
+  if (entry.extraRule?.trim()) {
+    nextInstructions += `\n  - **Custom Rule:** ${entry.extraRule.trim()}`;
+  }
+
+  return nextInstructions === skill.ai_instructions
+    ? skill
+    : { ...skill, ai_instructions: nextInstructions };
+}
+
+export async function applySettingsToSkills(skills) {
+  const all = await loadAllSkillSettings();
+  return skills.map((s) => applySettingsToSkill(s, all[s.id]));
+}
+
+export function mergeConfigContent(rawJson, savedValues, schema) {
+  if (!savedValues || Object.keys(savedValues).length === 0) return rawJson;
+  let baseConfig = {};
+  try {
+    baseConfig = JSON.parse(rawJson);
+  } catch {
+    for (const field of schema?.fields || []) {
+      baseConfig[field.key] = field.default;
+    }
+  }
+  return JSON.stringify({ ...baseConfig, ...savedValues }, null, 2);
+}
+
+/**
+ * Writes saved JSON config overrides into a target project.
+ * @param {string} targetDir
+ * @param {Array<Object>} skills
+ */
+export async function syncProjectSkillConfigs(targetDir, skills) {
+  const all = await loadAllSkillSettings();
+  for (const skill of skills) {
+    const schema = getSkillSchema(skill);
+    const savedValues = all[skill.id]?.values;
+    if (!schema.configTarget || !savedValues || Object.keys(savedValues).length === 0) continue;
+
+    const configPath = path.resolve(targetDir, schema.configTarget);
+    let raw = '';
+    try {
+      raw = await fs.readFile(configPath, 'utf8');
+    } catch {}
+
+    const nextJson = mergeConfigContent(raw, savedValues, schema);
+    await fs.mkdir(path.dirname(configPath), { recursive: true });
+    await fs.writeFile(configPath, nextJson, 'utf8');
+  }
 }
