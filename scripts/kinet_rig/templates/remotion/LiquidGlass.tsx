@@ -8,6 +8,16 @@ import {
 } from 'remotion';
 import { ThreeLiquidOrb } from './ThreeLiquidOrb';
 
+// Thin visible tint on the card body; the ambient behind it comes from the blurred backdrop copy.
+const GLASS_TINT_BLUE =
+  'radial-gradient(120% 90% at 10% 0%, rgba(10,132,255,0.16) 0%, rgba(10,132,255,0) 55%), rgba(10,14,22,0.10)';
+const GLASS_TINT_PURPLE =
+  'radial-gradient(120% 90% at 90% 0%, rgba(191,90,242,0.14) 0%, rgba(191,90,242,0) 55%), rgba(10,14,22,0.10)';
+
+// Measured content heights of the two cards (padding 28 top+bottom included).
+const CARD_H_LEFT = 28 * 2 + 44 + 16 + 24 + 6 + 18 + 22 + 17 + 6 + 8 + 14 + 15; // ≈ 320
+const CARD_H_RIGHT = 28 * 2 + 26 + 4 + 18 + 16 + 4 * 41; // ≈ 320
+
 /**
  * LiquidGlass — 100% Exact Faithful Remotion Port of `assets/kinet-ios-liquid-glass.html`.
  * Matches HTML5/Three.js/GSAP physical transmission glass, exact colors, and spatial UI layout.
@@ -94,8 +104,8 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   let cardLeftP = 0;
   let cardRightP = 0;
   if (frame >= sec(3.30) && frame < sec(13.50)) {
-    cardLeftP = interpolate(frame, [sec(3.30), sec(4.15)], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower3Out });
-    cardRightP = interpolate(frame, [sec(3.40), sec(4.25)], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower3Out });
+    cardLeftP = interpolate(frame, [sec(3.30), sec(4.45)], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower2InOut });
+    cardRightP = interpolate(frame, [sec(3.40), sec(4.55)], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: easePower2InOut });
   } else if (frame >= sec(13.50)) {
     cardLeftP = interpolate(frame, [sec(13.50), sec(14.20)], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
     cardRightP = interpolate(frame, [sec(13.50), sec(14.20)], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
@@ -127,10 +137,11 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     easing: easeBackOut,
   });
 
-  // Dynamic Typography Text Switching (fade-in + slide-up on each switch)
-  const textSwitches = [sec(1.10), sec(7.00), sec(10.50)];
-  const switchStart = textSwitches.filter((f) => frame >= f).pop() ?? -99999;
-  const textP = interpolate(frame, [switchStart, switchStart + Math.round(0.4 * fps)], [0, 1], {
+  // Dynamic Typography Text Switching — static during Scene 1 (matches original),
+  // then fade-in + slide-up only when the text actually switches (7.00s / 10.50s)
+  const textSwitches = [sec(7.00), sec(10.50)];
+  const switchStart = textSwitches.filter((f) => frame >= f).pop();
+  const textP = switchStart === undefined ? 1 : interpolate(frame, [switchStart, switchStart + Math.round(0.62 * fps)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: easePower3Out,
@@ -223,6 +234,62 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           camZ={camZ}
         />
 
+        {/* Card glass ambient — exact copy of the orb-plane backdrop (aura + Siri conic), blurred.
+            Backdrop is z0 → cards z20, so this sits correctly behind the cards and stays in sync. */}
+        {showCards && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 15, overflow: 'hidden', pointerEvents: 'none' }}>
+            <div
+              style={{
+                position: 'absolute',
+                inset: -120,
+                background: 'radial-gradient(circle at 50% 48%, rgba(10, 132, 255, 0.18) 0%, transparent 55%), radial-gradient(circle at 35% 40%, rgba(191, 90, 242, 0.14) 0%, transparent 48%), radial-gradient(circle at 65% 55%, rgba(100, 210, 255, 0.12) 0%, transparent 48%)',
+                filter: 'blur(40px)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                width: 720,
+                height: 720,
+                transform: `translate(-50%, -50%) scale(${siriScale}) rotate(${(frame * 1.5) % 360}deg)`,
+                borderRadius: '50%',
+                background: 'conic-gradient(from 0deg, #FF375F, #BF5AF2, #0A84FF, #64D2FF, #30D158, #FF9F0A, #FF375F)',
+                filter: 'blur(75px)',
+                opacity: siriOpacity,
+              }}
+            />
+            {/* Frosted layer per card. Sized/positioned from the card's own padding geometry,
+                then blurred against the ambient copy sitting directly beneath it. */}
+            {[
+              { side: 'left' as const, p: cardLeftP },
+              { side: 'right' as const, p: cardRightP },
+            ].map(({ side, p }) => (
+              <div
+                key={side}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  [side]: 80,
+                  width: 380,
+                  // auto height: the frosted rect is generated from the same content box as the card
+                  height: side === 'left' ? CARD_H_LEFT : CARD_H_RIGHT,
+                  marginTop: -(side === 'left' ? CARD_H_LEFT : CARD_H_RIGHT) / 2,
+                  borderRadius: 28,
+                  overflow: 'hidden',
+                  backdropFilter: 'blur(22px)',
+                  WebkitBackdropFilter: 'blur(22px)',
+                  background:
+                    'linear-gradient(140deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.08) 100%)',
+                  opacity: p,
+                  transform: `translateX(${interpolate(p, [0, 1], [side === 'left' ? -60 : 60, 0])}px)`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Face ID Biometric Spatial Ring (Scene 4) */}
         {showFaceId && (
           <div
@@ -262,11 +329,11 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               width: 380,
               padding: 28,
               boxSizing: 'border-box',
-              background: 'rgba(255, 255, 255, 0.08)',
+              // ponytail: backdrop-filter can't sample the WebGL canvas in headless Chrome, so the
+              // ambient is composited explicitly by <GlassBackdrop> (same pixels as the orb → always in sync).
+              background: GLASS_TINT_BLUE,
               border: '1px solid rgba(255, 255, 255, 0.18)',
               borderRadius: 28,
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
               boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
               zIndex: 20,
               opacity: cardLeftP,
@@ -328,11 +395,10 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               width: 380,
               padding: 28,
               boxSizing: 'border-box',
-              background: 'rgba(255, 255, 255, 0.08)',
+              // Same glass treatment as left card so both react to the orb behind.
+              background: GLASS_TINT_PURPLE,
               border: '1px solid rgba(255, 255, 255, 0.18)',
               borderRadius: 28,
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
               boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
               zIndex: 20,
               opacity: cardRightP,
