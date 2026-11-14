@@ -127,7 +127,17 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     easing: easeBackOut,
   });
 
-  // Dynamic Typography Text Switching
+  // Dynamic Typography Text Switching (fade-in + slide-up on each switch)
+  const textSwitches = [sec(1.10), sec(7.00), sec(10.50)];
+  const switchStart = textSwitches.filter((f) => frame >= f).pop() ?? -99999;
+  const textP = interpolate(frame, [switchStart, switchStart + Math.round(0.4 * fps)], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: easePower3Out,
+  });
+  const textOpacity = textP;
+  const textShift = interpolate(textP, [0, 1], [26, 0]);
+
   let heroEyebrow = 'VISIONOS & DYNAMIC ISLAND';
   let heroTitle = 'Spatial Audio Resonance';
   let heroDesc = 'Multi-channel Dolby Atmos acoustic wave propagation';
@@ -259,7 +269,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
               zIndex: 20,
               opacity: cardLeftP,
-              transform: `translateY(-50%) translateX(${interpolate(cardLeftP, [0, 1], [-60, 0])}px)`,
+              transform: `translateY(-50%) translateX(${interpolate(cardLeftP, [0, 1], [-60, 0])}px) scale(${interpolate(cardLeftP, [0, 1], [0.92, 1])})`,
             }}
           >
             <div
@@ -323,7 +333,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
               zIndex: 20,
               opacity: cardRightP,
-              transform: `translateY(-50%) translateX(${interpolate(cardRightP, [0, 1], [60, 0])}px)`,
+              transform: `translateY(-50%) translateX(${interpolate(cardRightP, [0, 1], [60, 0])}px) scale(${interpolate(cardRightP, [0, 1], [0.92, 1])})`,
             }}
           >
             <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Apple Intelligence</div>
@@ -360,6 +370,8 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
             textAlign: 'center',
             zIndex: 25,
             width: 1200,
+            opacity: textOpacity,
+            transform: `translateX(-50%) translateY(${textShift}px)`,
           }}
         >
           <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.28em', color: primaryColor, textTransform: 'uppercase', marginBottom: 14 }}>
@@ -407,7 +419,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#30D158', boxShadow: '0 0 8px #30D158' }} />
-                  <span style={{ color: '#FFF', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>SPATIAL INTELLIGENCE</span>
+                  <span style={{ color: '#FFF', letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>Spatial Fluid</span>
                 </div>
                 <div style={{ display: 'flex', gap: 2.5, alignItems: 'center', height: 14 }}>
                   {[0, 1, 2, 3].map((i) => (
