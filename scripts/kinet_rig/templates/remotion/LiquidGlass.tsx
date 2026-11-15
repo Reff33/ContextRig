@@ -3,20 +3,16 @@ import {
   AbsoluteFill,
   Easing,
   interpolate,
+  Sequence,
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
 import { ThreeLiquidOrb } from './ThreeLiquidOrb';
+import { GlassCapture } from './GlassCapture';
+import { GlassBackdrop } from './GlassBackdrop';
 
-// Thin visible tint on the card body; the ambient behind it comes from the blurred backdrop copy.
-const GLASS_TINT_BLUE =
-  'radial-gradient(120% 90% at 10% 0%, rgba(10,132,255,0.16) 0%, rgba(10,132,255,0) 55%), rgba(10,14,22,0.10)';
-const GLASS_TINT_PURPLE =
-  'radial-gradient(120% 90% at 90% 0%, rgba(191,90,242,0.14) 0%, rgba(191,90,242,0) 55%), rgba(10,14,22,0.10)';
+// Cards are vertically centred and size to their own content; no fixed height.
 
-// Measured content heights of the two cards (padding 28 top+bottom included).
-const CARD_H_LEFT = 28 * 2 + 44 + 16 + 24 + 6 + 18 + 22 + 17 + 6 + 8 + 14 + 15; // ≈ 320
-const CARD_H_RIGHT = 28 * 2 + 26 + 4 + 18 + 16 + 4 * 41; // ≈ 320
 
 /**
  * LiquidGlass — 100% Exact Faithful Remotion Port of `assets/kinet-ios-liquid-glass.html`.
@@ -27,6 +23,14 @@ export type LiquidGlassProps = {
   accentPurple?: string;
   backgroundColor?: string;
   showCards?: boolean;
+  // Per-layer toggles (Modular Layer Decoupling Law).
+  showOrb?: boolean;
+  showFaceId?: boolean;
+  showText?: boolean;
+  showIsland?: boolean;
+  // Content offsets so text/cards can be repositioned without touching the animation.
+  textOffset?: { x?: number; y?: number };
+  islandOffset?: { x?: number; y?: number };
 };
 
 export const LiquidGlass: React.FC<LiquidGlassProps> = ({
@@ -34,9 +38,24 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   accentPurple = '#BF5AF2',
   backgroundColor = '#020305',
   showCards = true,
+  showOrb = true,
+  showFaceId: showFaceIdLayer = true,
+  showText = true,
+  showIsland = true,
+  textOffset,
+  islandOffset,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+
+  // Snapshot canvas produced by <GlassCapture>; cards sample their glass from it.
+  const glassRef = React.useRef<HTMLCanvasElement | null>(null);
+  const [glassVersion, setGlassVersion] = React.useState(0);
+  const setGlassSource = React.useCallback((c: HTMLCanvasElement) => {
+    glassRef.current = c;
+    setGlassVersion((v) => v + 1);
+  }, []);
+  const getGlass = React.useCallback(() => glassRef.current, []);
 
   const sec = (s: number) => Math.round(s * fps);
 
@@ -77,6 +96,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
       extrapolateRight: 'clamp',
       easing: easeElastic,
     });
+    // orb + rings scale
     ringsScale = interpolate(frame, [sec(1.30), sec(2.70)], [0.001, 1.0], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
@@ -130,7 +150,6 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   }
 
   // 5. Face ID Biometric Spatial Lock (Scene 4: 10.30s - 13.50s)
-  const showFaceId = frame >= sec(10.30) && frame < sec(13.50);
   const faceIdP = interpolate(frame, [sec(10.30), sec(10.80)], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -180,20 +199,20 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
         fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Plus Jakarta Sans', system-ui, sans-serif",
       }}
     >
-      {/* 1920x1080 Stage with Exact Radial Background */}
+      {/* 1920x1080 Stage. Uses inset:0 rather than centering with negative margins —
+          transforms/offsets on the ancestor kill backdrop-filter sampling in Chrome. */}
       <div
         style={{
           position: 'absolute',
-          left: '50%',
-          top: '50%',
+          inset: 0,
           width: 1920,
           height: 1080,
-          marginLeft: -960,
-          marginTop: -540,
           background: 'radial-gradient(circle at 50% 38%, #141B2D 0%, #07090E 75%, #020305 100%)',
           overflow: 'hidden',
         }}
       >
+        {/* Layer 1 — Aura & Liquid Orb (background composite) */}
+        {showOrb && <Sequence name="1 · Aura & Orb" from={0} durationInFrames={Infinity} layout="none">
         {/* Spatial Ambient Aura */}
         <div
           style={{
@@ -234,18 +253,10 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           camZ={camZ}
         />
 
-        {/* Card glass ambient — exact copy of the orb-plane backdrop (aura + Siri conic), blurred.
-            Backdrop is z0 → cards z20, so this sits correctly behind the cards and stays in sync. */}
+        {/* Siri aura sits behind the orb here; the card glass samples the finished composite
+            (aura + orb) via <GlassBackdrop>, because backdrop-filter is inert in this renderer. */}
         {showCards && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 15, overflow: 'hidden', pointerEvents: 'none' }}>
-            <div
-              style={{
-                position: 'absolute',
-                inset: -120,
-                background: 'radial-gradient(circle at 50% 48%, rgba(10, 132, 255, 0.18) 0%, transparent 55%), radial-gradient(circle at 35% 40%, rgba(191, 90, 242, 0.14) 0%, transparent 48%), radial-gradient(circle at 65% 55%, rgba(100, 210, 255, 0.12) 0%, transparent 48%)',
-                filter: 'blur(40px)',
-              }}
-            />
+          <div style={{ position: 'absolute', inset: 0, zIndex: 6, pointerEvents: 'none' }}>
             <div
               style={{
                 position: 'absolute',
@@ -260,38 +271,16 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
                 opacity: siriOpacity,
               }}
             />
-            {/* Frosted layer per card. Sized/positioned from the card's own padding geometry,
-                then blurred against the ambient copy sitting directly beneath it. */}
-            {[
-              { side: 'left' as const, p: cardLeftP },
-              { side: 'right' as const, p: cardRightP },
-            ].map(({ side, p }) => (
-              <div
-                key={side}
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  [side]: 80,
-                  width: 380,
-                  // auto height: the frosted rect is generated from the same content box as the card
-                  height: side === 'left' ? CARD_H_LEFT : CARD_H_RIGHT,
-                  marginTop: -(side === 'left' ? CARD_H_LEFT : CARD_H_RIGHT) / 2,
-                  borderRadius: 28,
-                  overflow: 'hidden',
-                  backdropFilter: 'blur(22px)',
-                  WebkitBackdropFilter: 'blur(22px)',
-                  background:
-                    'linear-gradient(140deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.08) 100%)',
-                  opacity: p,
-                  transform: `translateX(${interpolate(p, [0, 1], [side === 'left' ? -60 : 60, 0])}px)`,
-                }}
-              />
-            ))}
           </div>
         )}
 
-        {/* Face ID Biometric Spatial Ring (Scene 4) */}
-        {showFaceId && (
+        </Sequence>
+        }
+
+        {/* Layer 2 — Face ID Biometric Ring */}
+        {showFaceIdLayer && <Sequence name="2 · Face ID" from={0} durationInFrames={Infinity} layout="none">
+        {/* Face ID Biometric Spatial Glyph (Scene 4) — matches .face-id-ring in the HTML */}
+        {frame >= sec(10.30) && frame < sec(13.50) && (
           <div
             style={{
               position: 'absolute',
@@ -299,181 +288,192 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
               top: '50%',
               width: 260,
               height: 260,
+              marginLeft: -130,
+              marginTop: -130,
               borderRadius: 48,
               border: '2px dashed rgba(100, 210, 255, 0.5)',
               boxShadow: '0 0 40px rgba(100, 210, 255, 0.25)',
-              transform: `translate(-50%, -50%) scale(${faceIdP})`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 10,
+              opacity: faceIdP,
+              transform: `scale(${0.6 + faceIdP * 0.4})`,
+              zIndex: 30,
               pointerEvents: 'none',
             }}
           >
-            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#64D2FF" strokeWidth="1.5">
-              <path d="M7 3H5a2 2 0 0 0-2 2v2M17 3h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2M17 21h2a2 2 0 0 0 2-2v-2" />
-              <circle cx="9" cy="9" r="1.5" fill="#64D2FF" />
-              <circle cx="15" cy="9" r="1.5" fill="#64D2FF" />
-              <path d="M9 15c1 1 3 1 4 0" strokeLinecap="round" />
+            <svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#64D2FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h.01M15 9h.01M10 14a3.5 3.5 0 0 0 4 0" />
             </svg>
           </div>
         )}
+        </Sequence>
+        }
 
-        {/* Left Spatial Glass Card (exact .spatial-card-left: x-slide only, no scale) */}
-        {showCards && (
-          <div
-            style={{
-              position: 'absolute',
-              left: 80,
-              top: '50%',
-              width: 380,
-              padding: 28,
-              boxSizing: 'border-box',
-              // ponytail: backdrop-filter can't sample the WebGL canvas in headless Chrome, so the
-              // ambient is composited explicitly by <GlassBackdrop> (same pixels as the orb → always in sync).
-              background: GLASS_TINT_BLUE,
-              border: '1px solid rgba(255, 255, 255, 0.18)',
-              borderRadius: 28,
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
-              zIndex: 20,
-              opacity: cardLeftP,
-              transform: `translateY(-50%) translateX(${interpolate(cardLeftP, [0, 1], [-60, 0])}px)`,
-            }}
-          >
+        {/* Layer 3 — Glass Cards */}
+        {showCards && <Sequence name="3 · Glass Cards" from={0} durationInFrames={Infinity} layout="none">
+        <GlassCapture
+          frame={frame}
+          onReady={setGlassSource}
+          siri={{ opacity: siriOpacity, scale: siriScale, rotation: ((frame * 1.5) % 360) * (Math.PI / 180) }}
+        />
+
+        {/* Left Card — Spatial Audio Depth */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 80,
+            top: '50%',
+            translate: '0 -50%',
+            width: 380,
+            borderRadius: 28,
+            background: 'rgba(12, 16, 26, 0.34)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            boxSizing: 'border-box',
+            padding: 26,
+            overflow: 'hidden',
+            opacity: cardLeftP,
+            transform: `translateX(${(1 - cardLeftP) * -60}px)`,
+            zIndex: 6,
+          }}
+        >
+          <GlassBackdrop key={`left-${frame}-${glassVersion}`} rect={{ x: 80, y: 0, w: 380, h: 0 }} blur={26} sourceCanvas={getGlass} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
             <div
               style={{
                 width: 44,
                 height: 44,
                 borderRadius: 12,
-                background: 'rgba(10, 132, 255, 0.18)',
-                border: '1px solid rgba(10, 132, 255, 0.35)',
+                background: 'rgba(10, 132, 255, 0.16)',
+                border: '1px solid rgba(10, 132, 255, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#0A84FF',
-                marginBottom: 16,
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
                 <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
               </svg>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Spatial Audio Depth</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#8E8E93', marginBottom: 22 }}>Head-tracking acoustic wave field</div>
 
-            {/* Label row FIRST, then bar (exact original order) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: '#8E8E93', marginBottom: 6 }}>
+            <div style={{ marginTop: 18, fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>Spatial Audio Depth</div>
+            <div style={{ marginTop: 6, fontSize: 12, fontWeight: 500, color: '#8E8E93' }}>Head-tracking acoustic wave field</div>
+
+            <div style={{ marginTop: 26, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 600, color: '#8E8E93' }}>
               <span>Resonance Level</span>
               <span style={{ color: '#FFF' }}>{Math.round(resonanceP)}%</span>
             </div>
-            <div style={{ width: '100%', height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden' }}>
+            <div style={{ marginTop: 8, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
               <div
                 style={{
                   width: `${resonanceP}%`,
                   height: '100%',
-                  background: 'linear-gradient(90deg, #0A84FF, #64D2FF)',
                   borderRadius: 9999,
+                  background: `linear-gradient(90deg, ${primaryColor}, ${accentPurple})`,
                 }}
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64D2FF', fontWeight: 600, marginTop: 14 }}>
-              <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#64D2FF' }} />
+            <div style={{ marginTop: 22, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, fontWeight: 600, color: '#64D2FF' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#64D2FF', boxShadow: '0 0 8px #64D2FF' }} />
               Dynamic Island Link: Active
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Right Spatial Glass Card (Apple Intelligence) */}
-        {showCards && (
-          <div
-            style={{
-              position: 'absolute',
-              right: 80,
-              top: '50%',
-              width: 380,
-              padding: 28,
-              boxSizing: 'border-box',
-              // Same glass treatment as left card so both react to the orb behind.
-              background: GLASS_TINT_PURPLE,
-              border: '1px solid rgba(255, 255, 255, 0.18)',
-              borderRadius: 28,
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
-              zIndex: 20,
-              opacity: cardRightP,
-              transform: `translateY(-50%) translateX(${interpolate(cardRightP, [0, 1], [60, 0])}px)`,
-            }}
-          >
-            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Apple Intelligence</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#8E8E93', marginBottom: 16 }}>On-Device Neural Engine v18</div>
+        {/* Right Card — Apple Intelligence */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 1920 - 80 - 380,
+            top: '50%',
+            translate: '0 -50%',
+            width: 380,
+            borderRadius: 28,
+            background: 'rgba(12, 16, 26, 0.34)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            boxSizing: 'border-box',
+            padding: 26,
+            overflow: 'hidden',
+            opacity: cardRightP,
+            transform: `translateX(${(1 - cardRightP) * 60}px)`,
+            zIndex: 6,
+          }}
+        >
+          <GlassBackdrop key={`right-${frame}-${glassVersion}`} rect={{ x: 1920 - 80 - 380, y: 0, w: 380, h: 0 }} blur={26} sourceCanvas={getGlass} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>Apple Intelligence</div>
+            <div style={{ marginTop: 6, fontSize: 12, fontWeight: 500, color: '#8E8E93' }}>On-Device Neural Engine v18</div>
 
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#8E8E93' }}>Refractive Transmission</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>{transVal}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#8E8E93' }}>Chromatic Dispersion</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>{dispVal}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#8E8E93' }}>Spatial Gyro Tensor</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>{gyroVal}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#8E8E93' }}>Haptic Core Clock</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#30D158', fontFamily: "'JetBrains Mono', monospace" }}>{hapticVal}</span>
-              </div>
+            <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[
+                ['Refractive Transmission', transVal, '#FFF'],
+                ['Chromatic Dispersion', dispVal, '#FFF'],
+                ['Spatial Gyro Tensor', gyroVal, '#FFF'],
+                ['Haptic Core Clock', hapticVal, '#30D158'],
+              ].map(([label, val, color]) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 500 }}>
+                  <span style={{ color: '#8E8E93' }}>{label}</span>
+                  <span style={{ color, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{val}</span>
+                </div>
+              ))}
             </div>
           </div>
-        )}
+        </div>
+        </Sequence>
+        }
 
-        {/* Center Stage Typography */}
+        {/* Layer 4 — Typography */}
+        {showText && <Sequence name="4 · Typography" from={0} durationInFrames={Infinity} layout="none">
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 180,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            opacity: textOpacity,
+            translate: `${textOffset?.x ?? 0}px ${(textOffset?.y ?? 0) + textShift}px`,
+            zIndex: 7,
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.24em', color: primaryColor }}>{heroEyebrow}</div>
+          <div style={{ marginTop: 14, fontSize: 64, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05 }}>{heroTitle}</div>
+          <div style={{ marginTop: 14, fontSize: 18, fontWeight: 500, color: '#8E8E93' }}>{heroDesc}</div>
+        </div>
+        </Sequence>
+        }
+
+        {/* Layer 5 — Dynamic Island */}
+        {showIsland && <Sequence name="5 · Dynamic Island" from={0} durationInFrames={Infinity} layout="none">
         <div
           style={{
             position: 'absolute',
             left: '50%',
-            bottom: 100,
-            transform: 'translateX(-50%)',
-            textAlign: 'center',
-            zIndex: 25,
-            width: 1200,
-            opacity: textOpacity,
-            transform: `translateX(-50%) translateY(${textShift}px)`,
+            top: 60,
+            width: islandW,
+            height: islandH,
+            marginLeft: -islandW / 2,
+            borderRadius: islandRadius,
+            background: '#000',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            padding: showExpandedIsland ? 14 : '0 20px',
+            translate: `${islandOffset?.x ?? 0}px ${islandOffset?.y ?? 0}px`,
+            zIndex: 10,
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.28em', color: primaryColor, textTransform: 'uppercase', marginBottom: 14 }}>
-            {heroEyebrow}
-          </div>
-          <h1 style={{ fontSize: 64, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, color: '#fff', textShadow: '0 4px 30px rgba(0,0,0,0.5)', minHeight: 80, margin: '0 0 10px 0' }}>
-            {heroTitle}
-          </h1>
-          <p style={{ fontSize: 17, fontWeight: 500, color: '#8E8E93', margin: 0 }}>
-            {heroDesc}
-          </p>
-        </div>
-
-        {/* Top Dynamic Island */}
-        <div style={{ position: 'absolute', top: 44, left: '50%', transform: 'translateX(-50%)', zIndex: 40 }}>
-          <div
-            style={{
-              position: 'relative',
-              width: islandW,
-              height: islandH,
-              background: '#000',
-              borderRadius: islandRadius,
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 20px',
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.04)',
-              overflow: 'hidden',
-              boxSizing: 'border-box',
-            }}
-          >
-            {/* Compact View: Single-Row 1 Baris Tepat */}
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Compact Spatial Fluid View */}
             {!showExpandedIsland && (
               <div
                 style={{
@@ -525,6 +525,8 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
             )}
           </div>
         </div>
+        </Sequence>
+        }
       </div>
     </AbsoluteFill>
   );

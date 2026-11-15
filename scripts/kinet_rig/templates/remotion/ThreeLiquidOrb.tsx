@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
+import { capSources, registered } from './GlassCapture';
 
 export const ThreeLiquidOrb: React.FC<{
   frame: number;
@@ -28,9 +29,20 @@ export const ThreeLiquidOrb: React.FC<{
     const width = 1920;
     const height = 1080;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
-    renderer.setSize(width, height);
+    // preserveDrawingBuffer: the card glass reads this canvas with drawImage; without it the
+    // buffer is cleared after each compositor pass and reads back blank.
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance',
+      preserveDrawingBuffer: true,
+    });
     renderer.setPixelRatio(1);
+    renderer.setSize(width, height);
+    // Pin CSS size too — the canvas otherwise keeps its intrinsic 300x150 box, which is what
+    // the stray top-left pixels were: the renderer painting into an unsized element.
+    renderer.domElement.style.width = `${width}px`;
+    renderer.domElement.style.height = `${height}px`;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
 
@@ -111,9 +123,19 @@ export const ThreeLiquidOrb: React.FC<{
       orbGeo,
     };
 
+    // Force the canvas to fill and clip to the wrapper, so no stray pixels escape.
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.display = 'block';
     mountRef.current.appendChild(renderer.domElement);
+    // Register as a glass-sampling source so cards can sample the rendered orb.
+    registered.orb = renderer.domElement;
+    capSources.add(renderer.domElement);
 
     return () => {
+      capSources.delete(renderer.domElement);
+      registered.orb = undefined;
       renderer.dispose();
       orbGeo.dispose();
       orbMat.dispose();
@@ -171,5 +193,18 @@ export const ThreeLiquidOrb: React.FC<{
     renderer.render(scene, camera);
   }, [frame, fps, orbScale, ringsScale, roughness, camZ]);
 
-  return <div ref={mountRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }} />;
+  return (
+    <div
+      ref={mountRef}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        zIndex: 5,
+        // Clip the renderer canvas to the stage; without this its uninitialised top-left
+        // pixels composite as stray glyphs.
+        overflow: 'hidden',
+      }}
+    />
+  );
 };
