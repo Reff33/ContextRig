@@ -209,17 +209,17 @@ async function runTests() {
   assert(kinetRigSkill, 'kinet_rig skill should exist');
   assert.strictEqual(kinetRigSkill.claude_command?.name, 'kinet-rig');
   assert(kinetRigSkill.manifest_remote_url, 'kinet_rig must define manifest_remote_url');
-  assert(aggregateGitIgnorePatterns([kinetRigSkill]).includes('motion-out/'), 'motion-out/ must be recommended for .gitignore');
-  assert(kinetRigSkill.files_to_copy?.length >= 60, 'kinet_rig should include all starters, scripts, and references');
+  assert(aggregateGitIgnorePatterns([kinetRigSkill]).includes('renders/'), 'renders/ must be recommended for .gitignore');
+  assert(kinetRigSkill.files_to_copy?.length >= 20, 'kinet_rig should include all starters, scripts, and references');
   assert(kinetRigSkill.files_to_copy.some((f) => f.destination.endsWith('/SKILL.md')), 'kinet_rig must include SKILL.md');
-  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.endsWith('/scripts/server.mjs')), 'kinet_rig must include server.mjs');
-  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.endsWith('/assets/kinet-typographic-montage.html')), 'kinet_rig must include templates 11-21');
-  const openerItem = kinetRigSkill.files_to_copy.find((f) => f.destination.includes('kinet-opener.html'));
-  assert(openerItem && openerItem.remote_url && openerItem.remote_url.includes('/testing/'), 'kinet-opener.html must have testing remote_url');
+  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.endsWith('/scripts/render-remotion.mjs')), 'kinet_rig must include render-remotion.mjs');
+  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.includes('/templates/remotion/KinetOpener.tsx')), 'kinet_rig must include the Remotion template suite');
+  assert(kinetRigSkill.files_to_copy.some((f) => f.destination.includes('/scripts/preview-remotion.mjs')), 'kinet_rig must include preview-remotion.mjs');
+  assert(kinetRigSkill.ai_instructions.includes('preview-remotion.mjs'), 'kinet_rig must document the Remotion preview workflow');
   for (const item of kinetRigSkill.files_to_copy) {
     await fs.access(path.resolve(process.cwd(), item.source));
   }
-  assert(kinetRigSkill.ai_instructions.includes('144 FPS'), 'kinet_rig must document 144 FPS');
+  assert(kinetRigSkill.ai_instructions.includes('Remotion Studio'), 'kinet_rig must document the Remotion Studio workflow');
   console.log('✔ Test 7e: KinetRig skill definition, full manifest & local sources verified.');
 
   // Test 7f: Git Workflow skill definition and slash command verification
@@ -383,8 +383,8 @@ async function runTests() {
   // Test 10f: Skill Settings override (kinet.config.json + Extra AI Rule) without mutating master manifest
   const { saveSkillSettings, getSkillSettings, resetSkillSettings } = await import('./src/core/skillSettings.js');
   await saveSkillSettings('kinet_rig', {
-    values: { host: '0.0.0.0', encoder: 'nvenc' },
-    extraRule: 'Always export 144fps'
+    values: { defaultFps: 120, codec: 'prores', glBackend: 'swiftshader' },
+    extraRule: 'Always export 120fps'
   });
   await injectTemplate({
     targetDir: fullPath,
@@ -397,11 +397,8 @@ async function runTests() {
     copyAssets: true
   });
   const claudeWithCustom = await fs.readFile(claudeOut, 'utf8');
-  assert(claudeWithCustom.includes('Always export 144fps'), 'Custom extraRule must be injected into CLAUDE.md');
-  assert(claudeWithCustom.includes('Studio Host IP: 0.0.0.0'), 'Custom host override must appear in CLAUDE.md');
-  const kinetCfg = JSON.parse(await fs.readFile(path.join(fullPath, 'rigtools', 'kinet_rig', 'kinet.config.json'), 'utf8'));
-  assert.strictEqual(kinetCfg.host, '0.0.0.0', 'kinet.config.json should receive custom host override');
-  assert.strictEqual(kinetCfg.encoder, 'nvenc', 'kinet.config.json should receive custom encoder override');
+  assert(claudeWithCustom.includes('Always export 120fps'), 'Custom extraRule must be injected into CLAUDE.md');
+  assert(claudeWithCustom.includes('Video Codec: prores'), 'Custom field override must appear in CLAUDE.md');
   await resetSkillSettings('kinet_rig');
   const clearedSettings = await getSkillSettings('kinet_rig');
   assert.strictEqual(Object.keys(clearedSettings.values).length, 0);
@@ -524,8 +521,8 @@ async function runTests() {
   await fs.writeFile(siblingFile, '// keep', 'utf8');
 
   // Test 10c: Skill removal and artifact cleanup workflow
-  const fakePromoDir = path.join(fullPath, 'promo-video');
-  const fakeRigMotionDir = path.join(fullPath, 'rigmotion');
+  const fakePromoDir = path.join(fullPath, 'renders');
+  const fakeRigMotionDir = path.join(fullPath, '.remotion');
   await fs.mkdir(fakePromoDir, { recursive: true });
   await fs.writeFile(path.join(fakePromoDir, 'index.html'), '<html></html>', 'utf8');
   await fs.mkdir(fakeRigMotionDir, { recursive: true });
@@ -546,7 +543,7 @@ async function runTests() {
   } catch {
     promoDirExists = false;
   }
-  assert(!promoDirExists, 'promo-video/ artifact should be deleted when deleteArtifacts=true');
+  assert(!promoDirExists, 'renders/ artifact should be deleted when deleteArtifacts=true');
 
   let rigMotionDirExists = true;
   try {
@@ -554,7 +551,7 @@ async function runTests() {
   } catch {
     rigMotionDirExists = false;
   }
-  assert(!rigMotionDirExists, 'rigmotion/ artifact should be deleted when deleteArtifacts=true');
+  assert(!rigMotionDirExists, '.remotion/ artifact should be deleted when deleteArtifacts=true');
 
   let scrapeCmdExists = true;
   try {

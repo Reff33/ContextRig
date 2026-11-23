@@ -1,5 +1,6 @@
-import { exec } from 'node:child_process';
+import { exec, spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import inquirer from 'inquirer';
@@ -50,6 +51,130 @@ export function getAgentCliFlag(agent) {
     codex: 'codex'
   };
   return agentMap[agentVal] || 'claude-code';
+}
+
+/**
+ * Finds a Windows Python launcher that works (py, python, python3).
+ * Windows Store stub "python" fails, so each candidate is probed.
+ * @returns {Promise<string|null>}
+ */
+async function findPythonLauncher() {
+  const candidates = ['py', 'python', 'python3'];
+  for (const cmd of candidates) {
+    // exec() rejects on any non-zero exit (incl. Microsoft Store stub 9009)
+    try {
+      await execAsync(`${cmd} -m pip --version`);
+      return cmd;
+    } catch {}
+  }
+  // Fallback for non-PATH installs: Scripts\pip.exe under common Python roots
+  return findPythonPipOnDisk();
+}
+
+/**
+ * Locates python.exe inside standard Python install roots (used when PATH is stale).
+ * @returns {string|null} unquoted path to python.exe
+ */
+export function findPythonExeOnDisk() {
+  const exe = findInPythonRoots('Scripts', 'pip.exe');
+  return exe ? path.join(path.dirname(path.dirname(exe)), 'python.exe') : null;
+}
+
+/**
+ * Locates pip.exe inside standard Python install roots (used when PATH is stale).
+ * @returns {string|null} quoted path to pip.exe
+ */
+export function findPythonPipOnDisk() {
+  const exe = findInPythonRoots('Scripts', 'pip.exe');
+  return exe ? jsonQuote(exe) : null;
+}
+
+/**
+ * Scans per-user/per-machine Python roots for a file at <root>/<version>/<sub>/<file>.
+ * @returns {string|null} raw path
+ */
+function findInPythonRoots(sub, file) {
+  const local = process.env.LOCALAPPDATA || '';
+  const roots = [
+    path.join(local, 'Programs', 'Python'),
+    process.env.ProgramFiles ? path.join(process.env.ProgramFiles, 'Python') : ''
+  ].filter(Boolean);
+  // per-user installs register their install path here
+  try {
+    const out = fsSync.execFileSync('reg', ['query', 'HKCU\\Software\\Python\\PythonCore', '/s'], { encoding: 'utf8' });
+    for (const m of out.matchAll(/InstallPath\s+REG_SZ\s+(\S+)/g)) roots.push(m[1]);
+  } catch {}
+  for (const root of roots) {
+    // root itself may be the install dir, or contain versioned subdirs
+    const dirs = [''];
+    try {
+      dirs.push(...fsSync.readdirSync(root));
+    } catch {}
+    for (const d of dirs) {
+      const candidate = path.join(root, d, sub, file);
+      if (fsSync.existsSync(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+/** Quotes a path for cmd.exe; backslash-escaped quotes survive exec()'s own re-escaping. */
+function jsonQuote(p) {
+  return JSON.stringify(p);
+}
+
+/**
+ * Resolves a working Python command for shell use (quoted absolute path or bare launcher).
+ * Needed because a just-installed Python is not on this process's PATH.
+ * @returns {string|null}
+ */
+export function resolvePythonCmd() {
+  const exe = findPythonExeOnDisk();
+  if (exe) return jsonQuote(exe);
+  const candidates = process.platform === 'win32' ? ['py', 'python', 'python3'] : ['python3', 'python'];
+  for (const c of candidates) {
+    const r = spawnSync(c, ['-V'], { encoding: 'utf8' });
+    if (r.status === 0) return c;
+  }
+  return null;
+}
+
+/**
+ * Returns the exact winget package id of the latest stable Python 3, e.g. Python.Python.3.14.
+ * @returns {Promise<string|null>}
+ */
+async function latestPythonWingetId() {
+  try {
+    const { stdout } = await execAsync('winget search Python.Python.3 --exact', { maxBuffer: 4 * 1024 * 1024 });
+    const versions = [...stdout.matchAll(/^Python\.Python\.(3\.\d{1,2})\s+(\d+\.\d+(?:\.\d+)?)$/gm)]
+      .map(([, minor, ver]) => ({ id: `Python.Python.${minor}`, v: ver.split('.').map(Number) }));
+    if (!versions.length) return null;
+    versions.sort((a, b) => b.v[0] - a.v[0] || b.v[1] - a.v[1]);
+    return versions[0].id;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Installs the newest Python 3 via winget and returns the new pip launcher, if any.
+ * @returns {Promise<string|null>}
+ */
+async function installPython() {
+  const pkgId = (await latestPythonWingetId()) || 'Python.Python.3.14';
+  logger.step(`Installing ${pkgId} via winget...`);
+  try {
+    await execAsync(`winget install --id ${pkgId} --exact --silent --accept-package-agreements --accept-source-agreements`, {
+      maxBuffer: 8 * 1024 * 1024
+    });
+    logger.success('Python installed.');
+  } catch (err) {
+    logger.error(`Failed to install Python: ${err.message.split('\n')[0]}`);
+    logger.info(`Install manually: winget install --id ${pkgId} --exact`);
+    return null;
+  }
+  // PATH changes made by the installer are not visible to this process
+  return (await findPythonLauncher()) || findPythonPipOnDisk();
 }
 
 /**
@@ -114,7 +239,42 @@ export async function handleDependencies(targetDir, selectedSkills, agent = null
       if (stdout) console.log(stdout.trim());
       logger.success('Pip dependencies installed successfully.');
     } catch (err) {
-      logger.error(`Failed to install Pip dependencies: ${err.message}`);
+      // pip lives in Scripts\ on Windows and may not be on PATH
+      if (process.platform !== 'win32') {
+        logger.error(`Failed to install Pip dependencies: ${err.message}`);
+      } else {
+        let launcher = await findPythonLauncher();
+        logger.step(`pip check: ${launcher ? 'found ' + launcher : 'not found'}`);
+        if (!launcher) {
+          const { installPy } = await inquirer.prompt([
+            { type: 'confirm', name: 'installPy', message: 'Python not found. Install the latest Python 3 via winget?', default: true }
+          ]);
+          if (installPy) {
+            launcher = await installPython();
+            if (!launcher) {
+              logger.warn('Python installed but pip is not visible yet. Open a new terminal, then rerun ContextRig.');
+              return;
+            }
+          }
+        }
+        if (launcher) {
+          // fallback launcher is a quoted pip.exe path; bare launchers need -m pip
+          const altCmd = launcher.startsWith('"')
+            ? `${launcher} install ${pip.join(' ')}`
+            : `${launcher} -m pip install ${pip.join(' ')}`;
+          logger.step(`Retrying via Python launcher: ${altCmd}...`);
+          try {
+            const { stdout } = await execAsync(altCmd, { cwd: targetDir });
+            if (stdout) console.log(stdout.trim());
+            logger.success('Pip dependencies installed successfully.');
+            return;
+          } catch (retryErr) {
+            logger.error(`Failed to install Pip dependencies: ${retryErr.message}`);
+          }
+        }
+        logger.warn('pip not found on PATH, so Python dependencies were skipped.');
+        logger.info('Install Python 3 (with "Add to PATH") from https://www.python.org/downloads/ then run: python -m pip install ' + pip.join(' '));
+      }
     }
   }
 

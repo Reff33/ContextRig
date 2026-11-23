@@ -12,7 +12,7 @@ import { selectAgent } from './core/agentSelector.js';
 import { injectTemplate } from './core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
 import { inspectRemoteSkillRepo, commitImportedSkill } from './core/skillImporter.js';
-import { handleDependencies } from './core/dependencyInstaller.js';
+import { handleDependencies, resolvePythonCmd } from './core/dependencyInstaller.js';
 import { handleGitIgnore } from './core/gitIgnoreManager.js';
 import { detectInstalledSkills, detectConfiguredAgents, syncSkills, removeSkillsFromProject } from './core/skillUpdater.js';
 import { runSyncWorkflow } from './core/syncEngine.js';
@@ -261,9 +261,12 @@ async function handleInjectSkills() {
 
     if (shouldRunGraphify) {
       console.log();
-      const graphifyCmd = fs.existsSync(path.join(fullPath, 'rigtools', 'graphify.py'))
-        ? 'python rigtools/graphify.py .'
-        : 'python tools/graphify.py .';
+      const scriptPath = fs.existsSync(path.join(fullPath, 'rigtools', 'graphify.py'))
+        ? 'rigtools/graphify.py'
+        : 'tools/graphify.py';
+      // PATH may not see a Python installed in this same session, so resolve it explicitly
+      const pythonCmd = resolvePythonCmd();
+      const graphifyCmd = `${pythonCmd || 'python'} ${scriptPath} .`;
       logger.step(`Running: ${graphifyCmd} in ${fullPath}...`);
       try {
         const { stdout } = await execAsync(graphifyCmd, { cwd: fullPath });
