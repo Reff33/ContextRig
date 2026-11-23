@@ -1,11 +1,19 @@
 import chalk from 'chalk';
 
 export const logger = {
-  banner() {
+  banner(version = null) {
     console.log();
     console.log(chalk.cyan('  ┌──────────────────────────────────────────────────┐'));
     console.log(chalk.cyan('  │') + chalk.bold.white('                  CONTEXTRIG CLI                  ') + chalk.cyan('│'));
     console.log(chalk.cyan('  │') + chalk.gray('    AI Agent Context & Environment Scaffolder     ') + chalk.cyan('│'));
+    if (version) {
+      const tag = String(version).startsWith('0.') ? `v${version} (beta)` : `v${version}`;
+      const total = 50;
+      const left = Math.floor((total - tag.length) / 2);
+      const right = total - tag.length - left;
+      const line = ' '.repeat(left) + tag + ' '.repeat(right);
+      console.log(chalk.cyan('  │') + chalk.yellow(line) + chalk.cyan('│'));
+    }
     console.log(chalk.cyan('  └──────────────────────────────────────────────────┘'));
     console.log();
   },

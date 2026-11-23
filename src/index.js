@@ -26,7 +26,7 @@ import {
   resetSkillSettings
 } from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
-import { printUpdateBanner, runSelfUpdate } from './core/updateChecker.js';
+import { printUpdateBanner, runSelfUpdate, getCurrentVersionSync } from './core/updateChecker.js';
 
 const execAsync = promisify(exec);
 
@@ -1001,7 +1001,7 @@ function clearTerminal() {
  */
 async function mainMenu() {
   clearTerminal();
-  logger.banner();
+  logger.banner(getCurrentVersionSync());
   await printUpdateBanner();
 
   let keepRunning = true;
