@@ -6,6 +6,7 @@ import { ROOT_DIR, SUPPORTED_AGENTS } from '../config.js';
 import { injectTemplate } from './fileInjector.js';
 import { handleDependencies } from './dependencyInstaller.js';
 import { handleGitIgnore } from './gitIgnoreManager.js';
+import { getSkillCommands } from './slashCommands.js';
 import { logger } from '../utils/logger.js';
 
 /**
@@ -234,14 +235,14 @@ export async function removeSkillsFromProject(
     }
 
     // 2. Remove Claude slash commands (.claude/commands/<name>.md)
-    if (skill.claude_command?.name) {
-      const cmdPath = path.join(targetDir, '.claude', 'commands', `${skill.claude_command.name}.md`);
+    for (const cmd of getSkillCommands(skill)) {
+      const cmdPath = path.join(targetDir, '.claude', 'commands', `${cmd.name}.md`);
       try {
         await fs.unlink(cmdPath);
-        console.log(`  ${chalk.green('✔')} ${chalk.cyan(`[${skill.id}]`.padEnd(16))} ${chalk.dim(`Removed /${skill.claude_command.name}`)}`);
+        console.log(`  ${chalk.green('✔')} ${chalk.cyan(`[${skill.id}]`.padEnd(16))} ${chalk.dim(`Removed /${cmd.name}`)}`);
       } catch (err) {
         if (err.code !== 'ENOENT') {
-          logger.warn(`Could not delete Claude command: ${err.message}`);
+          logger.warn(`Could not delete Claude command /${cmd.name}: ${err.message}`);
         }
       }
     }

@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { getSkillCommandsLabel } from '../core/slashCommands.js';
 
 /**
  * Truncates and pads a string to fit exact column width.
@@ -24,7 +25,7 @@ export function printSkillsTable(skills) {
     id: 14,
     name: 36,
     desc: 38,
-    cmd: 10
+    cmd: 20
   };
 
   const topBorder = chalk.gray(`┌─${'─'.repeat(w.num)}─┬─${'─'.repeat(w.id)}─┬─${'─'.repeat(w.name)}─┬─${'─'.repeat(w.desc)}─┬─${'─'.repeat(w.cmd)}─┐`);
@@ -43,8 +44,9 @@ export function printSkillsTable(skills) {
     const idStr = chalk.cyan(fit(skill.id, w.id));
     const nameStr = chalk.white(fit(skill.name, w.name));
     const descStr = chalk.dim(fit(skill.description, w.desc));
-    const cmdStr = skill.claude_command?.name
-      ? chalk.green(fit(`/${skill.claude_command.name}`, w.cmd))
+    const cmdLabel = getSkillCommandsLabel(skill);
+    const cmdStr = cmdLabel
+      ? chalk.green(fit(cmdLabel.split(', ').map((n) => `/${n}`).join(','), w.cmd))
       : chalk.gray(fit('-', w.cmd));
 
     console.log(`${chalk.gray('│')} ${numStr} ${chalk.gray('│')} ${idStr} ${chalk.gray('│')} ${nameStr} ${chalk.gray('│')} ${descStr} ${chalk.gray('│')} ${cmdStr} ${chalk.gray('│')}`);

@@ -13,6 +13,7 @@ import { injectTemplate } from './core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
 import { inspectRemoteSkillRepo, commitImportedSkill } from './core/skillImporter.js';
 import { handleDependencies, resolvePythonCmd } from './core/dependencyInstaller.js';
+import { getSkillCommandsLabel } from './core/slashCommands.js';
 import { handleGitIgnore } from './core/gitIgnoreManager.js';
 import { detectInstalledSkills, detectConfiguredAgents, syncSkills, removeSkillsFromProject } from './core/skillUpdater.js';
 import { runSyncWorkflow } from './core/syncEngine.js';
@@ -449,7 +450,8 @@ async function configureSkillMenu(skill) {
     logger.step(`Skill Inspector: ${skill.name} (${skill.id})`);
     console.log();
     console.log(`  Description:      ${chalk.white(skill.description)}`);
-    console.log(`  Slash Command:    ${skill.claude_command?.name ? chalk.green(`/${skill.claude_command.name}`) : chalk.dim('None')}`);
+    const cmdLabel = getSkillCommandsLabel(skill);
+    console.log(`  Slash Command:    ${cmdLabel ? chalk.green(cmdLabel.split(', ').map((n) => `/${n}`).join(', ')) : chalk.dim('None')}`);
     const npmDeps = skill.dependencies?.npm?.length ? skill.dependencies.npm.join(', ') : 'none';
     const pipDeps = skill.dependencies?.pip?.length ? skill.dependencies.pip.join(', ') : 'none';
     console.log(`  Dependencies:     npm [${npmDeps}], pip [${pipDeps}]`);
@@ -774,7 +776,11 @@ async function handleImportSkillFromRepo() {
       }
     ]);
     skill.ai_instructions = manualInst.trim();
-    if (skill.claude_command) {
+    if (Array.isArray(skill.claude_commands)) {
+      for (const cmd of skill.claude_commands) {
+        cmd.content = `# /${cmd.name}\n\n${skill.ai_instructions}`;
+      }
+    } else if (skill.claude_command) {
       skill.claude_command.content = `# /${skill.claude_command.name}\n\n${skill.ai_instructions}`;
     }
   }

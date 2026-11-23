@@ -10,6 +10,7 @@ import { aggregateGitIgnorePatterns, isPatternIgnored } from './src/core/gitIgno
 import { detectInstalledSkills, syncSkills, removeSkillsFromProject } from './src/core/skillUpdater.js';
 import { loadCache, saveCache, calculateHash, syncMasterSkillLibrary } from './src/core/syncEngine.js';
 import { compareVersions, checkForUpdates, getCurrentVersionSync } from './src/core/updateChecker.js';
+import { getSkillCommands, getSkillCommandsLabel } from './src/core/slashCommands.js';
 
 async function runTests() {
   const isolatedRegistryPath = path.join(os.tmpdir(), `contextrig-test-registry-${Date.now()}.json`);
@@ -225,9 +226,15 @@ async function runTests() {
   // Test 7f: Git Workflow skill definition and slash command verification
   const gitWorkflowSkill = skills.find((s) => s.id === 'git_workflow');
   assert(gitWorkflowSkill, 'git_workflow skill should exist');
-  assert.strictEqual(gitWorkflowSkill.claude_command?.name, 'commit', 'git_workflow slash command should be /commit');
-  assert(gitWorkflowSkill.ai_instructions.includes('Change Detection & Metrics'), 'git_workflow should include metrics instructions');
-  console.log('✔ Test 7f: Git Workflow skill definition and /commit slash command verified.');
+  assert.strictEqual(getSkillCommands(gitWorkflowSkill)[0]?.name, 'commit', 'git_workflow slash command should be /commit');
+  assert.strictEqual(gitWorkflowSkill.ai_instructions.includes('Change Detection & Metrics'), true, 'git_workflow should include metrics instructions');
+  const gitCmds = getSkillCommands(gitWorkflowSkill).map((c) => c.name);
+  assert.deepStrictEqual(gitCmds, ['commit', 'commit-v'], 'git_workflow should expose /commit and /commit-v');
+  const commitV = getSkillCommands(gitWorkflowSkill).find((c) => c.name === 'commit-v');
+  assert(commitV.content.includes('never invent a version scheme') || commitV.content.includes('Never invent a version scheme'), '/commit-v must forbid inventing a version scheme');
+  assert(commitV.content.includes('git log --reverse'), '/commit-v must inspect repo history when no versioning exists');
+  assert(commitV.content.includes('Ask one question'), '/commit-v must ask the user before anchoring a baseline');
+  console.log('✔ Test 7f: Git Workflow skill definition, /commit and /commit-v verified.');
 
   // Test 7g: UI/UX Pro Max built-in trimmed bundle verification
   const uiUxSkill = skills.find((s) => s.id === 'ui_ux_pro_max');
@@ -576,7 +583,7 @@ async function runTests() {
   assert.strictEqual(compareVersions('1.2.0', '1.1.9'), 1);
   assert.strictEqual(compareVersions('v1.0.0', '1.0.0'), 0);
   assert.strictEqual(compareVersions('nope', '1.0.0'), null);
-  assert.strictEqual(getCurrentVersionSync(), '1.0.0');
+  assert.strictEqual(getCurrentVersionSync(), '0.2.0');
 
   const updateCachePath = path.join(os.tmpdir(), `contextrig-update-cache-${Date.now()}.json`);
   process.env.CONTEXTRIG_UPDATE_CACHE_PATH = updateCachePath;

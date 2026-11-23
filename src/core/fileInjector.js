@@ -6,6 +6,7 @@ import handlebars from 'handlebars';
 import { TEMPLATES_DIR, ROOT_DIR } from '../config.js';
 import { logger } from '../utils/logger.js';
 import { applySettingsToSkills, syncProjectSkillConfigs } from './skillSettings.js';
+import { getSkillCommands } from './slashCommands.js';
 
 function getCommonDestFolder(items) {
   const dirs = items
@@ -231,14 +232,14 @@ export async function injectTemplate({
   if (isClaude) {
     const generatedCmds = [];
     for (const skill of resolvedSkills) {
-      if (skill.claude_command?.name && skill.claude_command?.content) {
-        const cmdPath = path.join(targetDir, '.claude', 'commands', `${skill.claude_command.name}.md`);
+      for (const cmd of getSkillCommands(skill)) {
+        const cmdPath = path.join(targetDir, '.claude', 'commands', `${cmd.name}.md`);
         try {
           await fs.mkdir(path.dirname(cmdPath), { recursive: true });
-          await fs.writeFile(cmdPath, skill.claude_command.content.trim() + '\n', 'utf8');
-          generatedCmds.push(`/${skill.claude_command.name}`);
+          await fs.writeFile(cmdPath, cmd.content.trim() + '\n', 'utf8');
+          generatedCmds.push(`/${cmd.name}`);
         } catch (err) {
-          logger.warn(`Could not create Claude command for ${skill.name}: ${err.message}`);
+          logger.warn(`Could not create Claude command /${cmd.name} for ${skill.name}: ${err.message}`);
         }
       }
     }

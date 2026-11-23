@@ -7,7 +7,7 @@
 **Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
 Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
 
-[![Version](https://img.shields.io/badge/version-1.0.0-2f6fd6?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.0%20beta-f39c12?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
 [![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
 [![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
@@ -91,7 +91,9 @@ flowchart LR
 
 ## Quick Start
 
-### Installation
+#> **Beta (v0.2.0)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
+
+## Installation
 
 ```bash
 # Clone the repository

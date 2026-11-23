@@ -14,6 +14,7 @@ import { handleGitIgnore } from './gitIgnoreManager.js';
 import { detectInstalledSkills, detectConfiguredAgents } from './skillUpdater.js';
 import { registerProject, pruneMissingProjects } from './projectRegistry.js';
 import { getSkillSchema, getSkillSettings, mergeConfigContent, syncProjectSkillConfigs } from './skillSettings.js';
+import { getSkillCommands } from './slashCommands.js';
 import { logger } from '../utils/logger.js';
 
 const CACHE_FILE_NAME = '.contextrig_cache.json';
@@ -272,10 +273,10 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
     existsSync(path.join(targetDir, 'CLAUDE.md')) ||
     existsSync(path.join(targetDir, '.claude'));
 
-  if (hasClaudeProfile && skill.claude_command?.name && skill.claude_command?.content) {
-    const cmdRel = `.claude/commands/${skill.claude_command.name}.md`;
+  for (const cmd of (hasClaudeProfile ? getSkillCommands(skill) : [])) {
+    const cmdRel = `.claude/commands/${cmd.name}.md`;
     const cmdPath = path.join(targetDir, cmdRel);
-    const expectedCmd = skill.claude_command.content.trim() + '\n';
+    const expectedCmd = cmd.content.trim() + '\n';
     try {
       const existingCmd = await fs.readFile(cmdPath, 'utf8');
       if (calculateHash(existingCmd) !== calculateHash(expectedCmd)) {
