@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import chalk from 'chalk';
 
-const UPDATE_BRANCHES = ['main', 'testing'];
+const UPDATE_BRANCHES = ['main'];
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 1500;
 const PACKAGE_JSON_PATH = path.resolve(
@@ -85,23 +85,21 @@ async function writeCache(latestVersion) {
 }
 
 async function fetchLatestVersion() {
-  const fetchOne = async (branch) => {
-    const res = await axios.get(
-      `https://raw.githubusercontent.com/Reff33/ContextRig/${branch}/package.json`,
-      {
-        timeout: REQUEST_TIMEOUT_MS,
-        headers: { 'Cache-Control': 'no-cache' },
-        validateStatus: (s) => s === 200
-      }
-    );
-    return res.data?.version;
-  };
-
-  try {
-    const version = await Promise.any(UPDATE_BRANCHES.map(fetchOne));
-    if (typeof version === 'string' && parseVersion(version)) return version;
-  } catch {
-    // All branches failed (offline / 404) — update check is skipped silently.
+  for (const branch of UPDATE_BRANCHES) {
+    try {
+      const res = await axios.get(
+        `https://raw.githubusercontent.com/Reff33/ContextRig/${branch}/package.json`,
+        {
+          timeout: REQUEST_TIMEOUT_MS,
+          headers: { 'Cache-Control': 'no-cache' },
+          validateStatus: (s) => s === 200
+        }
+      );
+      const version = res.data?.version;
+      if (typeof version === 'string' && parseVersion(version)) return version;
+    } catch {
+      // Branch offline / 404 — try the next one, then skip silently.
+    }
   }
   return null;
 }
@@ -202,6 +200,13 @@ export async function runSelfUpdate() {
     return { ok: true, message: stdout.trim() || 'Already up to date.' };
   } catch (err) {
     const detail = (err.stderr || err.message || '').toString().trim();
+    // A stale install still on the retired `testing` branch cannot fast-forward into main.
+    if (/no tracking information|divergent|not possible to fast-forward/i.test(detail)) {
+      return {
+        ok: false,
+        message: `${detail}\nSwitch this install to the release branch: git -C "${repoRoot}" fetch origin main && git -C "${repoRoot}" checkout -B main origin/main`
+      };
+    }
     return { ok: false, message: detail || 'git pull failed.' };
   }
 }

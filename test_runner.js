@@ -599,6 +599,12 @@ async function runTests() {
   assert.strictEqual(updateState.fromCache, true);
   await fs.rm(updateCachePath, { force: true });
   delete process.env.CONTEXTRIG_UPDATE_CACHE_PATH;
+
+  // Test 12b: releases ship from main; the retired testing branch must not be consulted
+  const checkerSrc = await fs.readFile(path.resolve(process.cwd(), 'src', 'core', 'updateChecker.js'), 'utf8');
+  assert(/const UPDATE_BRANCHES = \['main'\];/.test(checkerSrc), 'update checker must only follow the main release branch');
+  assert(!checkerSrc.includes("'testing'"), 'update checker must not fetch from the retired testing branch');
+
   console.log('✔ Test 12: CLI update checker version compare & cache banner verified.');
 
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
