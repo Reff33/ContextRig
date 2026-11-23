@@ -257,6 +257,8 @@ async function runTests() {
   assert(artcraftSkill.files_to_copy.some((f) => f.destination.includes('filmcraft/SKILL.md')), 'artcraft must include filmcraft/SKILL.md');
   await fs.access(path.resolve(process.cwd(), 'scripts/artcraft/effectcraft/SKILL.md'));
   await fs.access(path.resolve(process.cwd(), 'scripts/artcraft/filmcraft/SKILL.md'));
+  assert(artcraftSkill.ai_instructions.includes('Offline-First Scaffolding'), 'artcraft must document offline-first scaffolding');
+  assert(artcraftSkill.ai_instructions.includes('kinet_rig'), 'artcraft must document kinet_rig zero-dependency fallback');
   console.log('✔ Test 7i: ArtCraft 19 creative apps bundle & MCP definition verified.');
 
   // Test 8: Skill update detection & sync
