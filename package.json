@@ -1,0 +1,41 @@
+{
+  "name": "contextrig",
+  "version": "0.3.0",
+  "description": "Developer CLI tool to rig & provision AI coding environments with context rules, tool scripts, and dependencies",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "contextrig": "./src/index.js",
+    "context-rig": "./src/index.js",
+    "rig": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test_runner.js"
+  },
+  "keywords": [
+    "cli",
+    "ai",
+    "agent",
+    "context",
+    "rig",
+    "claude",
+    "cursor",
+    "rules",
+    "scaffolding"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/three": "^0.187.0",
+    "axios": "^1.21.0",
+    "chalk": "^5.4.1",
+    "cheerio": "^1.2.0",
+    "handlebars": "^4.7.8",
+    "inquirer": "^12.4.2",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.16.0"
+  }
+}

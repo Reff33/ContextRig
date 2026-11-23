@@ -1,0 +1,233 @@
+{
+  "id": "ui_ux_pro_max",
+  "name": "UI/UX Pro Max (Design System & UX Intelligence)",
+  "description": "Searchable UI/UX design system generator, color/font pairings, 22 tech stacks, and pre-delivery UX audit",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/ui_ux_pro_max.json",
+  "ai_instructions": "Follow the UI/UX Pro Max workflow (full guide in rigtools/ui_ux_pro_max/SKILL.md; detailed rules in rigtools/ui_ux_pro_max/references/quick-reference.md and rigtools/ui_ux_pro_max/references/pro-rules.md). Before designing or building UI:\n1. Generate a cohesive design system first: run `python rigtools/ui_ux_pro_max/scripts/search.py \"<product_type> <industry> <keywords>\" --design-system -p \"<Project Name>\"` (add `--persist --output-dir .` to save `design-system/<slug>/MASTER.md`).\n2. Query stack or domain specifics as needed: `--stack <nextjs|react|html-tailwind|shadcn|vue|svelte|laravel|flutter|react-native>` or `--domain <style|color|typography|chart|landing|ux|icons|motion>`.\n3. Enforce pre-delivery checks: no OS emojis as UI icons (use SVG), minimum 4.5:1 text contrast, visible keyboard focus, `prefers-reduced-motion`, and responsive breakpoints (375px, 768px, 1024px, 1440px).",
+  "claude_command": {
+    "name": "ui-ux",
+    "content": "# /ui-ux <product_or_page_brief> [--stack <stack>]\n\nGenerate and apply a UI/UX Pro Max design system:\n\n1. Run: `python rigtools/ui_ux_pro_max/scripts/search.py \"<product_type> <industry> <keywords>\" --design-system -p \"<Project Name>\" --persist --output-dir .`\n2. If a tech stack applies, query stack guidelines: `python rigtools/ui_ux_pro_max/scripts/search.py \"<keywords>\" --stack <stack>`\n3. Consult `rigtools/ui_ux_pro_max/references/quick-reference.md` and `rigtools/ui_ux_pro_max/references/pro-rules.md` for accessibility, contrast, and interaction polish.\n4. Implement UI using only SVG icons (no OS emojis), verified color contrast, keyboard focus states, and responsive layout."
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "artifacts": [
+    "design-system/"
+  ],
+  "gitignore": [
+    "rigtools/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/ui_ux_pro_max/SKILL.md",
+      "destination": "rigtools/ui_ux_pro_max/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/SKILL.md"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/app-interface.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/app-interface.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/app-interface.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/charts.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/charts.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/charts.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/colors.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/colors.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/colors.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/google-fonts.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/google-fonts.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/google-fonts.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/icons.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/icons.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/icons.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/landing.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/landing.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/landing.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/motion.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/motion.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/motion.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/products.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/products.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/products.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/react-performance.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/react-performance.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/react-performance.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/angular.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/angular.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/angular.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/astro.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/astro.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/astro.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/avalonia.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/avalonia.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/avalonia.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/flutter.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/flutter.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/flutter.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/html-tailwind.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/html-tailwind.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/html-tailwind.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/javafx.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/javafx.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/javafx.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/jetpack-compose.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/jetpack-compose.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/jetpack-compose.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/laravel.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/laravel.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/laravel.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/nextjs.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/nextjs.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/nextjs.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/nuxt-ui.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/nuxt-ui.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/nuxt-ui.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/nuxtjs.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/nuxtjs.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/nuxtjs.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/react-native.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/react-native.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/react-native.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/react.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/react.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/react.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/shadcn.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/shadcn.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/shadcn.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/svelte.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/svelte.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/svelte.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/swiftui.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/swiftui.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/swiftui.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/threejs.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/threejs.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/threejs.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/uno.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/uno.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/uno.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/uwp.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/uwp.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/uwp.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/vue.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/vue.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/vue.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/winui.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/winui.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/winui.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/wpf.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/stacks/wpf.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/wpf.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/styles.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/styles.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/styles.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/typography.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/typography.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/typography.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/ui-reasoning.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/ui-reasoning.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/ui-reasoning.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/ux-guidelines.csv",
+      "destination": "rigtools/ui_ux_pro_max/data/ux-guidelines.csv",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/ux-guidelines.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/references/pro-rules.md",
+      "destination": "rigtools/ui_ux_pro_max/references/pro-rules.md",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/references/pro-rules.md"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/references/quick-reference.md",
+      "destination": "rigtools/ui_ux_pro_max/references/quick-reference.md",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/references/quick-reference.md"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/core.py",
+      "destination": "rigtools/ui_ux_pro_max/scripts/core.py",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/core.py"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/design_system.py",
+      "destination": "rigtools/ui_ux_pro_max/scripts/design_system.py",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/design_system.py"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/reasoning_contract.py",
+      "destination": "rigtools/ui_ux_pro_max/scripts/reasoning_contract.py",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/reasoning_contract.py"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/search.py",
+      "destination": "rigtools/ui_ux_pro_max/scripts/search.py",
+      "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/search.py"
+    }
+  ]
+}

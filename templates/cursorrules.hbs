@@ -1,0 +1,26 @@
+# Cursor Rules - {{projectName}}
+# Configured for Agent: {{agentName}}
+
+You are operating as an expert coding agent in {{projectName}}.
+
+{{#if skillsInstructions.length}}
+## Available Skills & Tools
+
+{{#each skillsInstructions}}
+### {{this.name}}
+- Description: {{this.description}}
+- Instructions: {{this.ai_instructions}}
+{{#if this.dependencies.npm.length}}
+- NPM Dependencies: {{#each this.dependencies.npm}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+{{/if}}
+{{#if this.dependencies.pip.length}}
+- Pip Dependencies: {{#each this.dependencies.pip}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+{{/if}}
+
+{{/each}}
+{{/if}}
+
+## Guidelines
+- Write clean, maintainable, and type-safe code.
+- Prefer explicit error handling and avoid silent failures.
+
