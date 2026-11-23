@@ -251,14 +251,17 @@ async function runTests() {
   const artcraftSkill = skills.find((s) => s.id === 'artcraft');
   assert(artcraftSkill, 'artcraft skill should exist');
   assert.strictEqual(getSkillCommands(artcraftSkill)[0]?.name, 'artcraft', 'artcraft slash command should be /artcraft');
-  assert.strictEqual(artcraftSkill.files_to_copy?.length, 90, 'artcraft should include all 90 files across 19 apps');
+  assert.strictEqual(artcraftSkill.files_to_copy?.length, 91, 'artcraft should include all 91 files across 19 apps');
   assert(artcraftSkill.mcp_servers?.effectcraft, 'artcraft should declare effectcraft MCP server');
   assert(artcraftSkill.files_to_copy.some((f) => f.destination.includes('effectcraft/SKILL.md')), 'artcraft must include effectcraft/SKILL.md');
   assert(artcraftSkill.files_to_copy.some((f) => f.destination.includes('filmcraft/SKILL.md')), 'artcraft must include filmcraft/SKILL.md');
+  assert(artcraftSkill.files_to_copy.some((f) => f.destination.includes('kinetic-typography.md')), 'artcraft must include kinetic-typography.md');
   await fs.access(path.resolve(process.cwd(), 'scripts/artcraft/effectcraft/SKILL.md'));
   await fs.access(path.resolve(process.cwd(), 'scripts/artcraft/filmcraft/SKILL.md'));
+  await fs.access(path.resolve(process.cwd(), 'scripts/artcraft/effectcraft/references/kinetic-typography.md'));
   assert(artcraftSkill.ai_instructions.includes('Offline-First Scaffolding'), 'artcraft must document offline-first scaffolding');
   assert(artcraftSkill.ai_instructions.includes('kinet_rig'), 'artcraft must document kinet_rig zero-dependency fallback');
+  assert(artcraftSkill.ai_instructions.includes('Kinetic Typography'), 'artcraft must document kinetic typography rules');
   console.log('✔ Test 7i: ArtCraft 19 creative apps bundle & MCP definition verified.');
 
   // Test 8: Skill update detection & sync
