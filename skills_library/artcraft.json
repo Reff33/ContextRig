@@ -1,0 +1,481 @@
+{
+  "id": "artcraft",
+  "name": "ArtCraft Suite (19 Creative Apps)",
+  "description": "Evidence-verified agent skills for EffectCraft, FilmCraft, AniCraft, PhotoCraft, DesignCraft, and 14 more creative apps",
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/testing/skills_library/artcraft.json",
+  "ai_instructions": "Follow the ArtCraft Creative Suite guidelines (19 open-source creative apps for motion graphics, video editing, vector, design, and 3D):\n1. Playbook Routing: When working with any ArtCraft app, immediately read its dedicated playbook in `rigtools/artcraft/<app>/SKILL.md` (e.g. `rigtools/artcraft/effectcraft/SKILL.md` for EffectCraft VFX/motion graphics, `rigtools/artcraft/filmcraft/SKILL.md` for FilmCraft NLE video editing, `rigtools/artcraft/anicraft/SKILL.md` for 2D animation).\n2. Automation Surfaces: Drive tools via their first-class automation surfaces (headless CLI, MCP server over stdio, or JSON control channels). Consult `<app>/references/` for CLI subcommands and scripts.\n3. EffectCraft & After Effects: EffectCraft reads `.aep`/`.aepx` as a verified subset — never promise an After Effects-identical render; always inspect and report unsupported features.\n4. CLI Setup: If `effectcraft-cli` or `filmcraft-cli` is not found on PATH, inform the user and consult the installation instructions in `<app>/SKILL.md` §Getting the CLI.",
+  "claude_commands": [
+    {
+      "name": "artcraft",
+      "content": "# /artcraft [app] [task]\n\nDrive ArtCraft creative applications (EffectCraft, FilmCraft, AniCraft, DesignCraft, etc.):\n\n1. Identify the target ArtCraft app from the user task or project format (`.ecproj`, `.fcproj`, `.aep`, `.psd`, etc.).\n2. Consult the relevant app guide at `rigtools/artcraft/<app>/SKILL.md` before generating commands or project files.\n3. For EffectCraft VFX/Motion:\n   - Use `effectcraft-cli` commands (`exec`, `run`, `render`, `replay`, `mcp`) or the `effectcraft` MCP server.\n   - Remember `.aep` interchange is a documented subset.\n4. For FilmCraft NLE Video:\n   - Use `filmcraft-cli` or timeline editing commands mirroring Premiere Pro workflow.\n5. If the CLI binary is missing on PATH, guide the user to download the release asset for their OS."
+    }
+  ],
+  "mcp_servers": {
+    "effectcraft": {
+      "command": "effectcraft-cli",
+      "args": [
+        "mcp",
+        "--autosave"
+      ]
+    }
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "gitignore": [
+    "rigtools/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/artcraft/anicraft/CHANGES.md",
+      "destination": "rigtools/artcraft/anicraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/SKILL.md",
+      "destination": "rigtools/artcraft/anicraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/anicraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/evidence.md",
+      "destination": "rigtools/artcraft/anicraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/references/cli.md",
+      "destination": "rigtools/artcraft/anicraft/references/cli.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/references/cli.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/references/commands.md",
+      "destination": "rigtools/artcraft/anicraft/references/commands.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/references/commands.md"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/cadcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/SKILL.md",
+      "destination": "rigtools/artcraft/cadcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/cadcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/evidence.md",
+      "destination": "rigtools/artcraft/cadcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/CHANGES.md",
+      "destination": "rigtools/artcraft/craft-anything/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/SKILL.md",
+      "destination": "rigtools/artcraft/craft-anything/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/agents/openai.yaml",
+      "destination": "rigtools/artcraft/craft-anything/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/evidence.md",
+      "destination": "rigtools/artcraft/craft-anything/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/deckcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/SKILL.md",
+      "destination": "rigtools/artcraft/deckcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/deckcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/evidence.md",
+      "destination": "rigtools/artcraft/deckcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/references/commands-and-formats.md",
+      "destination": "rigtools/artcraft/deckcraft/references/commands-and-formats.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/references/commands-and-formats.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/designcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/SKILL.md",
+      "destination": "rigtools/artcraft/designcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/designcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/evidence.md",
+      "destination": "rigtools/artcraft/designcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/references/agent-surfaces.md",
+      "destination": "rigtools/artcraft/designcraft/references/agent-surfaces.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/references/agent-surfaces.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/effectcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/SKILL.md",
+      "destination": "rigtools/artcraft/effectcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/effectcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/evidence.md",
+      "destination": "rigtools/artcraft/effectcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/references/after-effects-projects.md",
+      "destination": "rigtools/artcraft/effectcraft/references/after-effects-projects.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/references/after-effects-projects.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/references/extensions.md",
+      "destination": "rigtools/artcraft/effectcraft/references/extensions.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/references/extensions.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/figcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/SKILL.md",
+      "destination": "rigtools/artcraft/figcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/figcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/evidence.md",
+      "destination": "rigtools/artcraft/figcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/references/automation-surfaces.md",
+      "destination": "rigtools/artcraft/figcraft/references/automation-surfaces.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/references/automation-surfaces.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/filmcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/SKILL.md",
+      "destination": "rigtools/artcraft/filmcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/filmcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/evidence.md",
+      "destination": "rigtools/artcraft/filmcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/references/cli-and-protocol.md",
+      "destination": "rigtools/artcraft/filmcraft/references/cli-and-protocol.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/references/cli-and-protocol.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/references/formats.md",
+      "destination": "rigtools/artcraft/filmcraft/references/formats.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/references/formats.md"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/gridcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/SKILL.md",
+      "destination": "rigtools/artcraft/gridcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/gridcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/evidence.md",
+      "destination": "rigtools/artcraft/gridcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/lightcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/SKILL.md",
+      "destination": "rigtools/artcraft/lightcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/lightcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/evidence.md",
+      "destination": "rigtools/artcraft/lightcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/mailcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/SKILL.md",
+      "destination": "rigtools/artcraft/mailcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/mailcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/evidence.md",
+      "destination": "rigtools/artcraft/mailcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/references/automation-surface.md",
+      "destination": "rigtools/artcraft/mailcraft/references/automation-surface.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/references/automation-surface.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/materialcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/SKILL.md",
+      "destination": "rigtools/artcraft/materialcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/materialcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/evidence.md",
+      "destination": "rigtools/artcraft/materialcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/references/commands.md",
+      "destination": "rigtools/artcraft/materialcraft/references/commands.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/references/commands.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/references/library.md",
+      "destination": "rigtools/artcraft/materialcraft/references/library.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/references/library.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/pdfcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/SKILL.md",
+      "destination": "rigtools/artcraft/pdfcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/pdfcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/evidence.md",
+      "destination": "rigtools/artcraft/pdfcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/references/automation-tools.md",
+      "destination": "rigtools/artcraft/pdfcraft/references/automation-tools.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/references/automation-tools.md"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/CHANGES.md",
+      "destination": "rigtools/artcraft/photocraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/SKILL.md",
+      "destination": "rigtools/artcraft/photocraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/photocraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/evidence.md",
+      "destination": "rigtools/artcraft/photocraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/solidcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/SKILL.md",
+      "destination": "rigtools/artcraft/solidcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/solidcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/evidence.md",
+      "destination": "rigtools/artcraft/solidcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/soundcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/SKILL.md",
+      "destination": "rigtools/artcraft/soundcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/soundcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/evidence.md",
+      "destination": "rigtools/artcraft/soundcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/CHANGES.md",
+      "destination": "rigtools/artcraft/texturecraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/SKILL.md",
+      "destination": "rigtools/artcraft/texturecraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/texturecraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/evidence.md",
+      "destination": "rigtools/artcraft/texturecraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/references/automation-surfaces.md",
+      "destination": "rigtools/artcraft/texturecraft/references/automation-surfaces.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/references/automation-surfaces.md"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/vectorcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/SKILL.md",
+      "destination": "rigtools/artcraft/vectorcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/vectorcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/evidence.md",
+      "destination": "rigtools/artcraft/vectorcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/CHANGES.md",
+      "destination": "rigtools/artcraft/wordcraft/CHANGES.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/SKILL.md",
+      "destination": "rigtools/artcraft/wordcraft/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/agents/openai.yaml",
+      "destination": "rigtools/artcraft/wordcraft/agents/openai.yaml",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/evidence.md",
+      "destination": "rigtools/artcraft/wordcraft/evidence.md",
+      "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/evidence.md"
+    }
+  ]
+}

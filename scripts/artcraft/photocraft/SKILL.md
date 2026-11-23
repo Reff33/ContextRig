@@ -1,0 +1,232 @@
+---
+name: photocraft
+description: PhotoCraft is the ArtCraft clean-room, pure-Rust reimplementation of Adobe Photoshop — layers, masks, adjustment layers, layer styles, live type, vectors, smart objects, real PSD read/write and PDF-page import, with every action exposed as an engine command that the UI, a headless CLI, a JSON control channel and a 26-tool MCP server all drive. Trigger this skill whenever the user mentions PhotoCraft, asks what it can or cannot do, which file formats it reads or writes, its keyboard shortcuts, how to script, automate or batch it, how to prepare assets for it, how to inspect, verify or repair a .pcraft, PSD, XCF, PDF or .ora it produced, or how to troubleshoot it — and also when they never name the app but describe the job, such as "edit this photo", "open this PSD", "turn these PDF pages into layered artboards", "make a transparent PNG", "batch-resize a folder of images", "remove the background with a quick selection", "convert these HEIC/NEF/PCX files" or "check what is in this layered file". It is early alpha — never promise Photoshop-grade PSD fidelity, generative AI features or a stable UI, and prefer the headless CLI and MCP over driving the GUI blind.
+---
+
+# PhotoCraft
+
+**Audit basis.** Refreshed 2026-11-12 against tag **v0.23.1**, commit **`45066c48292e92229ada3459a83453439514c83d`** — `git rev-parse HEAD` in the pinned checkout confirms, and the installed bundle matches: `PhotoCraft --version` prints `photocraft 0.23.1 (45066c482, 2026-11-12)` and the bundled `photocraft-cli --version` prints `photocraft-cli 0.23.1 (45066c482, 2026-11-12)`. The previous release this skill described was v0.21.0 (`efb7ebd0c0dab1fc108ee4642aa47c22694271a8`).
+
+**v0.21.0 → v0.23.1 delta.** 1,347 files changed (+140,005/−122,246; `git diff --stat v0.21.0..HEAD`). The capability change is **PDF reading**: `crates/io/src/pdf_import.rs` renders pages through the shared pure-Rust `craft-pdf` (Hayro) crate and opens each page as one **raster artboard** on a shared canvas (16-page cap at `:51`, 300 DPI default, DPI lowered to fit the renderer's side/pixel bounds), routed at `crates/io/src/lib.rs:571`; `.ai` files whose bytes start with `%PDF-` take the same path, and experimental editable text/paths live behind the `pdf-editable` feature (`crates/io/src/pdf_editable.rs`), which only `apps/photocraft-cli` enables, so `--pdf-dpi/--pdf-pages/--pdf-editable` are CLI knobs and the GUI opens PDFs raster-only. **Ten new command ids**: `file.openAsSmartObject` (File › Open as Smart Object, `crates/engine/src/cmd/file_cmds/open_as_smart_object.rs`), `layer.copyCSS` (`crates/engine/src/cmd/layer_css_cmds.rs:38`), `layer.layerMask.moveTo` (`crates/engine/src/cmd.rs:831`), `path.intersectWithSelection` (`crates/engine/src/cmd/vector_cmds.rs:235`), and six Actions ids — `actions.menuItem` (`crates/engine/src/cmd/atn_cmds/menu_item.rs:33`), `actions.insertMenuItem`, `actions.insertPath`, `actions.recordAgain`, `actions.allowToolRecording`, `actions.duplicate` (`crates/engine/src/cmd/actions_edit_cmds.rs`). **1009 commands now answer** (`photocraft-cli commands | wc -l`; 993 at v0.21.0), **menu parity is 664/664** (`docs/parity-checklist.md:5`; the guard `FLOOR = 663` at `crates/ui-egui/src/menus/parity.rs:10` is a lower bound), **tools are 69** — the shape flyout's **Star Tool** is now `Tool::Star` (`crates/ui-egui/src/state/tool.rs:74`, `ALL: [Tool; 69]` at `:84`) — and **`actions.*` ids are 27** (21 before). The **`.atn` event table holds 206 rows** (`crates/engine/src/cmd/atn_cmds/events.rs:390`; 204 before). Automation gained **ordered, repeatable read roots** (`--automation-read-root` is a `Vec`, `crates/automation/src/workspace.rs:49`; a doc opened outside the write root has no implicit save target) and a **challenge handshake** for the control channel/bridge (`auth.challenge`, HMAC-SHA256 proofs, `crates/automation/src/security.rs:20,185`; the legacy `auth {token}` frame is still accepted). UI catalogs moved out to `storytold/craft-i18n` (`craft-i18n.rev`, embedded via `CRAFT_I18N_DIR`), and the non-English catalogs grew **27 → 34** (35 languages including English; `crates/ui-egui/src/i18n.rs:90` `LANGUAGE_COUNT: 35`). Menus now say **RAW Develop** / **RAW Develop Filter…** / **RAW Defaults…** while the id `filter.cameraRaw` is unchanged (`docs/feature-names.md`). CLI export flags went **12 → 14** (`--metadata none|all`, `--no-maximize-compatibility`), and dead preferences fell to **8 of 199** (`docs/scorecard.md:215`). Unchanged at v0.23.1: **124 `filter.*` ids**, 23 codec formats, 16 adjustment kinds, 10 layer effects, 34 blend modes, MCP 26 tools + 2 resources, 28 control methods, 19 serve methods, 14 fail-closed filesystem commands, plug-in ABI v1.
+
+**v0.20.1 → v0.21.0 delta.** 916 files changed; the registry grew from 953 to 993 commands and menu parity from 631 to 660. New: the Frame tool family `layer.frame.{set,setContent,fit,convert,info}`; OpenType Numerals and Stylistic Sets 1–20 (`crates/engine/src/cmd/type_extra_cmds.rs`); memory supervision — `file.approveMemory` (`crates/engine/src/cmd/file_cmds.rs`) behind a pre-flight gate (`crates/engine/src/memory_gate.rs`) plus native scratch storage (`crates/engine/src/scratch.rs`), with `--approve-high-memory` on the CLI. **JPEG XL became the 23rd codec format and is export-only** (`crates/codecs/src/format.rs:110`, `:287` `read: false`). Locale catalogs 26 → 27 (Bosnian). `filter.blur.shapeBlur` was new.
+
+**v0.19.0 → v0.20.1 delta.** 276 files changed; the wave was the Actions (`.atn`) surface — recorded Camera Raw Filter steps importing as `filter.cameraRaw`, string-class handling for Vibrance sets, a strict export of partial Levels edits refused, Stroke steps writing the settings they leave at default, and an Actions panel that records into the selected set (`crates/engine/src/actions_record.rs`, `crates/engine/src/cmd/atn_cmds/`) — plus editable arrowheads on the Line tool (`crates/vector/src/shapes.rs`). Older rounds (the bundled CLI and locale wave of v0.18.0, and v0.17.0) are folded into `CHANGES.md`; the facts from them that still matter live in the sections below.
+
+**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build may differ; every count quoted here was re-measured at this tag, and code paths that moved were re-cited. The measurement method for each count is in `evidence.md`.
+
+## Overview
+
+PhotoCraft is "Image editing; an open-source, clean-room reimplementation of Adobe Photoshop, rebuilt in pure Rust" (`README.md`), MIT/Apache-2.0 dual licence, `storytold/photocraft`. The native app is egui/eframe 0.37 on wgpu, using the shared `craft-ui` docking, with a CPU compositor kept as the reference oracle; the same engine and UI compile to WebAssembly (`apps/photocraft-web`). Every menu item, tool and dialog is one engine command, so the UI, `photocraft-cli`, the loopback JSON control channel and the MCP server run the same code (`crates/engine/src/cmd.rs` `build()`). Maturity is **early alpha**; `docs/gaps.md` is the ranked shortfall list against Photoshop 2026 (its header lags the code in three places this round — PDF read, tool count and dead preferences; the code and generated scorecard win). All 664 Photoshop menu items are *wired* to a command (`docs/parity-checklist.md:5`); wiring is dispatch, not behaviour.
+
+## Capabilities (verified)
+
+### Editing core
+
+- **Documents and colour**: RGB, Grayscale, CMYK, Lab, Bitmap, Indexed, Multichannel, Duotone at 8/16/32-bit; ICC management in pure Rust with Assign/Convert to Profile, four rendering intents, black-point compensation, soft proofing and Gamut Warning (`crates/cms`, CMYK compositing on stored inks).
+- **Layers**: pixel layers, groups, clipping masks, pixel and vector masks with Density/Feather, fill layers (solid/gradient/pattern), adjustment layers, live smart objects with smart filters and lossless transforms/warps, artboards, alpha channels, Quick Mask, layer comps, advanced blending (`crates/doc/src/lib.rs`). **Move Layer Mask** (`layer.layerMask.moveTo`, `crates/engine/src/cmd.rs:831`) moves a mask to another layer or group, with `copy`/`replace`; **Copy CSS** (`layer.copyCSS`, `crates/engine/src/cmd/layer_css_cmds.rs`) returns Photoshop-shaped CSS for the selected layers (class per layer, font/background/position/z-index; strokes, effects, gradients and blend modes are deliberately not written).
+- **16 adjustment layers** (unchanged at v0.23.1): `layer.newAdjustmentLayer.{brightnessContrast, levels, curves, exposure, vibrance, hueSaturation, colorBalance, blackWhite, photoFilter, channelMixer, invert, posterize, threshold, gradientMap, selectiveColor, colorLookup}` plus the same 16 as destructive `image.adjustments.*`, all generated from the 16-entry `ADJ` table (`crates/engine/src/cmd.rs:1209`). 22 destructive kinds in total (adding Desaturate, Equalize, Shadows/Highlights, Replace Color, Match Color, HDR Toning) plus `image.adjustments.colorLookup.list`.
+- **10 layer effects** (unchanged at v0.23.1), several instances per kind (DropShadow … BevelEmboss), driven by `layer.layerStyle.*` (`crates/doc/src/effects.rs`, `crates/engine/src/layer_style.rs`); `.asl` style libraries import.
+- **Blend modes** (unchanged at v0.23.1): PassThrough + 27 Photoshop modes + 6 Paint.NET-only = 34 enum variants (`crates/color/src/blend.rs`); Shift+Alt+letter picks one from the keyboard.
+- **69 tools** — `pub const ALL: [Tool; 69]` (`crates/ui-egui/src/state/tool.rs:84`), including the new **Star Tool** (`Tool::Star`, `:74`), plus Remove, Spot/Healing/Patch, Content-Aware Move, Mixer Brush, Magnetic Lasso, Object/Quick Selection, Pen/Freeform/Curvature Pen, Type and Type Mask, Perspective Crop, Frame, Slice, Count, Note.
+- **Selections**: marquee/lasso/wand, `select.quick`, `select.object`, `select.subject`, `select.colorRange`, `select.focusArea`, `select.refineEdge`, `select.magneticLasso`; Select and Mask refinement is guided-filter matting with Smooth/Feather/Contrast/Shift Edge and colour decontamination (`crates/algo/src/matting.rs`) — classical, no learned models; Select and Mask stays a **dialog**, not a workspace. Remove Background turns Select Subject + edge refinement into a layer mask in one history step.
+- **124 live `filter.*` command ids** (counted from the registry, unchanged at v0.23.1): 47 Filter Gallery filters from the `gallery!` table (`crates/algo/src/artistic.rs`), 64 pairwise filters (`crates/engine/src/filters.rs` and `crates/engine/src/filters_ext.rs`), and 13 workspace/lifecycle ids (`filter.blurGallery.{field,iris,path,spin,tiltShift}`, `filter.liquify`, `filter.adaptiveWideAngle`, `filter.cameraRaw`, `filter.vanishingPoint`, `filter.lensCorrection`, `filter.lastFilter`, `filter.convertForSmartFilters`). The Filter menu labels the raw filter **RAW Develop Filter…** while the id stays `filter.cameraRaw`. Filters on a smart object become re-editable smart filters; 53 PSD filter classes map one-to-one to 53 commands (`crates/io/src/smart_map/import.rs` `KNOWN: [Known; 53]`). Field/Iris/Tilt-Shift/Spin Blur are on-canvas; Path Blur is a parameter dialog.
+- **Type**: point/area/paragraph text on canvas, Character/Paragraph controls, manual+optical kerning with PSD round trip, variable-font axes, OpenType Numerals (9 ids) and Stylistic Sets 1–20 (`crates/engine/src/cmd/type_extra_cmds.rs`), `type.warpText`, `type.resolveMissingFonts`, headless editing via `type.editText`/`hitTest`/`caret`/`navigate`; type on a path follows path edits and round-trips through PSD `Txt2` (`crates/psd/src/tiff.rs`).
+- **Vectors**: Pen/Freeform/Curvature, anchor add/delete/convert, Paths panel, work paths, shape layers with dashed/aligned strokes, corner radii and gradient strokes, path↔selection including **Intersect Path with Selection** (`path.intersectWithSelection`, `crates/engine/src/cmd/vector_cmds.rs:235`), SVG as editable shape layers or vector smart object.
+- **Actions**: **27 live `actions.*` commands** — the 21 older ids plus `menuItem`, `insertMenuItem`, `insertPath`, `recordAgain`, `allowToolRecording` and `duplicate` — with nesting to 16 levels; **206 rows in the `EVENTS` table** (`crates/engine/src/cmd/atn_cmds/events.rs:390`) for `.atn` import/export; unsupported event kinds are preserved verbatim and fail at playback by name.
+- **History**: New Snapshot dialog, History Options with Allow Non-Linear History and undoable visibility changes.
+- **Photomerge**: `file.automate.photomerge` (reposition/perspective) as a cancellable background job. **Image Processor** accepts a folder, the current document or all open documents as sources (`file.scripts.imageProcessor`).
+- **Open as Smart Object**: `file.openAsSmartObject` opens a file as one embedded smart-object layer in a new untitled document named `<file>-N`, keeping its size, resolution, colour mode, depth and profile (`crates/engine/src/cmd/file_cmds/open_as_smart_object.rs`).
+- **Memory supervision**: `file.approveMemory` clears an operation the pre-flight gate refused (`crates/engine/src/memory_gate.rs`, `crates/engine/src/scratch.rs`); the CLI exposes the same approval as `--approve-high-memory`.
+- **Print**: File › Print renders one flattened page through an in-process pure-Rust IPP client, the Linux print portal, the Windows spooler or to a PDF file; `file.printers` lists queues, `"dryRun": true` previews (`crates/engine/src/cmd/print_cmds.rs`, `docs/printing.md`).
+- **Video-lite**: 7 `timeline.*` commands and `file.export.renderVideo` (PNG sequence or animated GIF); animated GIF and WebP open every frame through New Video Layer from File.
+- **Update check**: Help › Check for Updates, an opt-out once-per-launch release-feed check, and a startup self-update prompt (`crates/engine/src/cmd/updates_cmds.rs`, delegated to `craft-update`).
+
+### Files — read / write
+
+- **Native `.pcraft`**: directory bundle or zip of STORE entries = `manifest.json` (`format_version` **1** from the shared `craft-pcraft-format` crate) + content-addressed BLAKE3/zstd `tiles/`+`blobs/` + `thumb.png` + composite preview; incremental, atomic (temp/fsync/rename), crash-recovery autosaves (`crates/format/src/`). An optional `full_composite` member carries the flattened canvas (`--pcraft-full-composite`).
+- **PDF read (new)**: each page becomes one **raster artboard** on a shared canvas, with annotations and filled-in form fields drawn by default; up to **16 pages**, 300 DPI default, DPI lowered to fit the renderer's bounds, a truncated range reported as a warning (`crates/io/src/pdf_import.rs`). `.ai` files that begin with `%PDF-` take the PDF importer. **Editable** paths/embedded-font text import only through the `pdf-editable` feature (CLI `--pdf-editable`); unsupported constructs fall back to the raster page with a warning, never a half-imported page. PDF import needs the desktop build — the web build returns "PDF import needs the desktop build".
+- **PDF write**: one flattened page per file (ISO 32000-1 basics) with optional spot channels as overprinting `/Separation` plates, named after the channel; a Multichannel document saves as its plates alone; `pdfSpotPlates: false` writes the image only. No multi-page save, no layer-preserving PDF (`crates/io/src/pdf.rs`).
+- **Read + write**: PSD/PSB/PSDT, layered TIFF (alpha and spot channels as extra samples, global layer mask block; `crates/io/src/tiff_layers.rs`), OpenRaster `.ora`, and the flat codecs: PNG, JPEG, TIFF, WebP (lossless + own lossy VP8), GIF, BMP, TGA, ICO, Netpbm (PBM/PGM/PPM/PAM/PFM), QOI, DDS (uncompressed or BC1/BC2/BC3 + optional mip chain), OpenEXR, Radiance HDR, FITS, DPX, Cineon, Amiga IFF (24-bit ILBM writer) and JPEG XL (lossless export only).
+- **23 codec formats** (`crates/codecs/src/format.rs:110` `[Format; 23]`), unchanged at v0.23.1; every one is read+write except the documented asymmetries (`ASYMMETRIC_EXCEPTIONS`, `:75`): **read-only** PCX, XPM and DICOM, **JPEG XL write-only**, AVIF write-only behind the non-default `avif` feature, HEIF/HEIC read-only behind `heif` (on in official builds; the decoder is now the shared `craft-heif` crate).
+- **Layered imports (read-only)**: Paint.NET `.pdn`/PDN3, Krita `.kra`/`.krz`, GIMP `.xcf`/`.xcf.gz`, Affinity `.af*`, SVG; writing an import-only target is refused with a naming error (`crates/io/src/lib.rs`).
+- **Camera raw**: DNG (uncompressed/deflate/lossless-JPEG/lossy-JPEG/floating-point JPEG XL), CR2, TIFF/EP raws (NEF, ARW, PEF), Nikon compressed NEF, Sony cRAW, Panasonic RW2 (packed and vendor-compressed), uncompressed Olympus ORF, Fujifilm RAF (**now compressed lossless/lossy, X-Trans and Bayer**), Hasselblad 3FR/FFF (X2D II 100C’s uncompressed 16-bit CFA) (`crates/raw/src/lib.rs`). **CR3 remains preview-only** — a clean-room CRX decoder was assessed as not feasible. Camera Raw `.xmp` sidecars load, auto-fill the dialog, save, and a sidecar's crop crops the opened raw (`crates/io/src/camera_raw_xmp.rs`).
+- **Export As** offers exactly `png, jpg, webp, tif, tga, ico` (`crates/engine/src/cmd/export_preset_cmds.rs:13`); **Save for Web** offers `gif, png8, png24, jpeg, wbmp, webp`; Quick Export as PNG is a single menu item; the Save As picker lists every supported format.
+- **Honest exports**: `caps(format)` and `fidelity_warnings` report depth reduction, CMYK→RGB, dropped layers and missing fonts before writing; CLI/`info`/`app.save` surface them as warnings.
+
+### Automation surfaces (counts re-measured at v0.23.1)
+
+- **One command registry, 664/664 menu items live** (`crates/ui-egui/src/menus/parity.rs`, `docs/parity-checklist.md:5`). The live registry at this tag measures **1009 commands** (`photocraft-cli commands | wc -l` on the installed bundle). Table macros expand per row, so a static count stays uncertain by a few dozen — the CLI remains the authority. README's "500+" and `docs/architecture.md`'s "~700" are floors, not measurements.
+- **CLI `photocraft-cli` — 8 subcommands + `help`** (subcommands unchanged at v0.23.1): `convert, info, run, batch, droplet, commands, mcp, serve` (`apps/photocraft-cli/src/args.rs:31`), exit codes 0 ok / 1 failure / 2 usage. **14 export flags** shared by `convert`/`run`/`batch`: `--format --quality --tiff-layers --tiff-compression --tiff-transparency --tiff-pyramid --tga-bits --dpx-bits --dds-compression --dds-mipmaps --jpeg-format --pcraft-full-composite --metadata --no-maximize-compatibility` (the last two are new at v0.23.1); `convert`/`run` also take `--approve-high-memory` and `--gpu`/`--no-gpu`, and `convert` alone takes `--pdf-dpi`, `--pdf-pages`, `--pdf-editable`. `info` takes `--compact` and `--detail`; `batch` takes `--recursive`, `--naming`, `--start-serial`, `--stop-on-error`, `--error-log`.
+- **Control channel** (`photocraft --control <port>`, loopback only): first frame must authenticate. Two accepted forms: **challenge** — `{"method":"auth.challenge","params":{"clientNonce":"<64 hex>"}}` answered with `serverNonce`+`serverProof`, then `{"method":"auth","params":{"proof":"<64 hex>"}}` (HMAC-SHA256 keyed by the token; what `photocraft-cli mcp --bridge` uses, and it never sends the token) — or the legacy `{"id":"auth","method":"auth","params":{"token":"<64 hex>"}}` frame. Then **28 methods, unchanged at v0.23.1** — `engine.execute`, `engine.commands`, `jobs.list`, `jobs.cancel`, `ui.inspect`, `ui.set`, `ui.menu.invoke`, `ui.menu.list`, `ui.pointer`, `ui.click`, `ui.move`, `ui.key`, `ui.type`, `ui.resize`, `ui.focus`, `ui.screenshot`, `ui.context.choose`, `ui.dialog.open/set/confirm/apply/cancel`, `ui.window.open/close`, `ui.gpu.simulateLoss`, `app.open`, `app.save`, `app.quit` (`crates/ui-egui/src/control.rs:186` `METHODS`). Transports: `apps/photocraft/src/control_server.rs`; 60 s reply timeout, 1 MiB request cap, 16 connections.
+- **MCP — 26 tools, unchanged at v0.23.1** (`crates/automation/src/server.rs` `#[tool]` entries): `session_list`, `doc_open`, `doc_place`, `doc_replace_smart_object`, `doc_export_layers`, `doc_export_data_sets`, `doc_import_data_sets`, `doc_new`, `doc_save`, `doc_export`, `doc_inspect`, `doc_render_preview`, `render_preview`, `doc_select`, `doc_close`, `command_list`, `command_run`, `jobs_list`, `jobs_cancel`, `command_batch`, `ui_inspect`, `ui_screenshot`, `ui_pointer`, `ui_menu_invoke`, `ui_set`, `control_call`. **2 MCP resources** (`photocraft://document`, `photocraft://commands`). Bridge-only: the five `ui_*` tools + `control_call`; headless-only: `doc_select`, `doc_close`. `doc_save` gained optional `maximizeCompatibility` and `pdfSpotPlates` params, `doc_export_layers` gained `maximizeCompatibility`.
+- **Headless server** `photocraft-cli serve` (stdio or `--port`) answers **19 methods, unchanged at v0.23.1** (`crates/automation/src/rpc.rs:42` `METHODS`): `engine.execute`, `jobs.list`, `jobs.cancel`, `engine.commands`, `session.list`, `doc.open/place/replaceSmartObject/new/save/exportLayers/exportDataSets/importDataSets/inspect/render/select/close`, `batch`, `methods`.
+- **Read roots**: `--automation-read-root` repeats (ordered; both `--flag <dir>` and `--flag=<dir>` work). Headless reads take the first existing regular file and only a missing file tries the next root; directory, permission, escape and decoding errors are terminal. There is still exactly **one** `--automation-write-root`; repeating it is a usage error. Read and write authority are independent. A document opened through a read root that does not share the write root's directory capability has **no implicit save target** — use an explicit Save As beneath the write root (`docs/mcp.md`, `crates/automation/src/workspace.rs:49`).
+- **Automation budgets**: 8 MiB reply, 5 MiB PNG, preview `max_side` 2048, 64 M source pixels for renders, 256 batch steps, 30 s IO timeout, 10 s auth deadline (`crates/automation/src/{budgets,security}.rs`).
+- **Plug-ins**: WebAssembly **ABI v1** only — `plugin.list/install/remove/reload/run` (5 commands), wasmi sandbox, no WASI/filesystem/network/clock, 32 MiB module, 512 MiB memory, 50 M instructions + 4,000 per sample, 60 s per run (`docs/plugins.md`, `crates/plugins/src/runtime.rs:14`).
+- **Batch/droplets**: `photocraft-cli batch` takes an actions JSON, an Actions set (`--action` picks by name) or a `.atn` set, applies it to a folder with `{name}/{serial}/{date}` output templates, and refuses `--out == --in` unless `--in-place`. `.pcdroplet` droplets run via `file.automate.runDroplet`.
+
+### Platform
+
+- macOS (universal, signed+notarized), Windows x64/x86/ARM64 (per-user MSI), Linux x86_64/aarch64 (AppImage, Flatpak, deb, rpm, tarball), FreeBSD 14, and a WebAssembly web build (`README.md` Downloads; `docs/scorecard.md` DIST rows — Windows signing is skipped with a warning until the signing material exists; the web build has no PDF import).
+- GPU compositor on wgpu (Metal/Vulkan/DX12/WebGPU) with CPU fallback, `--safe-gpu`, automatic device-loss fallback, one place records why a view left the GPU, and `ui.gpu.simulateLoss` for testing.
+- Pen tablets (`docs/hardware-parity.md`, `crates/tablet`): macOS pressure/tilt/barrel-rotation (rotation not applied to tip angle); Windows **pressure only**; Linux X11 pressure+tilt with partial rotation; web pressure/tilt/twist; native Wayland tablet-v2 still open.
+- **35 UI languages** offered including English (`crates/ui-egui/src/i18n.rs:90` `LANGUAGE_COUNT: 35`; 34 non-English catalogs), catalogs in `storytold/craft-i18n` at `craft-i18n.rev` and embedded at build time from `CRAFT_I18N_DIR`; without that input the build is English-only. Engine messages stay English; Hindi is partial (`complete_menus: false`).
+
+## Known limitations and not-implemented
+
+Read this before assigning work — several of these are why agents must not promise Photoshop behaviour.
+
+- **Alpha, by measurement**: `docs/gaps.md` ranks the shortfalls; its header is stale in three places (it still lists PDF read as missing, 68 tools, and 11 of 183 dead preferences). Prefer `docs/scorecard.md` for measured numbers. The ROADMAP percentages were measured at 0.6.0 and have not been recomputed.
+- **PDF is raster-first.** The desktop app and MCP open pages as pixel artboards: no PDF page/DPI dialog, no editable text or vector layers unless the CLI build's `--pdf-editable` path is used (experimental; unsupported pages fall back to raster with a warning; embedded fonts may change when edited or reopened). PDF **write** is still one flattened page — no multi-page, no presentation, no layer preservation.
+- **PSD fidelity is the blocking gap (G1)**: enforced corpus floors are *minimums* — Photoshop-authored oracles ≥190/258, psd-tools ≥249/309, io corpus ≥148/170, round trips ≥169/170, ≥308/309, ≥258/258 (`crates/io/tests/it/corpus.rs:151-159`). A re-saved PSD is **never byte-identical** to its source, and Photoshop failing to reopen our files is tracked upstream.
+- **No generative AI**: no ONNX runtime or ML crate in the workspace; no Neural Filters, generative fill/expand, sky replacement or generative Remove. Select Subject/Remove Background and Refine Edge are classical algorithms; learned segmentation remains open.
+- **No native Photoshop plug-ins**: `.8BF`, CEP and UXP are not hosted; only the Wasm ABI v1 (ABI v2 with panels/progress still missing — scorecard AUTO-219-6).
+- **Workspaces that are dialogs**: Select and Mask is a dialog, no Content-Aware Fill sampling workspace, Vanishing Point has a plane editor but no clone-in-plane, and **Path Blur is a parameter dialog** while Field/Iris/Tilt-Shift/Spin are on-canvas.
+- **Type depth**: RTL visual caret and parts of the paragraph-direction UI remain open (`docs/gaps.md` G8); OpenType Numerals and Stylistic Sets 1–20 are live.
+- **Formats absent**: EPS/DCS and `.ai` files that carry no PDF content, Cloud PSD `.psdc`, JPEG 2000, Pixar, MPO/JPS, PICT, Scitex CT, Photoshop Raw, AVIF read, **JPEG XL read** (export-only), WBMP as a codec (Save for Web writes it). Affinity, Paint.NET, Krita and XCF are **import-only**. File › Open takes only a GIF/WebP animation's first frame (use New Video Layer from File for all frames) and per-frame delays are not kept in `.pcraft`.
+- **Camera raw partial**: CR3 sensor data no (preview only), "lossy after split" NEF no, no Fuji colour calibration, Olympus ORF only uncompressed. Compressed Fujifilm RAF and Hasselblad 3FR/FFF now decode; raw `.xmp` sidecars are camera-raw settings only, not a general XMP writer.
+- **Dead preferences**: 8 of 199 settings do nothing (`docs/scorecard.md:215`, generated by the prefs audit); read the scorecard rather than trusting older prose.
+- **Automation is fail-closed** (unchanged at v0.23.1): these 14 commands are refused over control/MCP/`serve` — `file.open`, `file.openAs`, `file.save`, `file.saveAs`, `file.saveACopy`, `file.export.saveForWebLegacy`, `pattern.import`, `layer.smartObjects.{exportContents, replaceContents, relinkToFile, convertToLinked}`, `measurementLog.export`, `layer.videoLayers.reloadFrame`, `edit.colorSettings`; path params of other commands (`layer.exportAs`, `filter.distort.displace` `mapPath`, preset imports, plug-in install, `layer.setAdjustment {"file": …}`, `prefs.set` on file-backed sections) are refused too, and the **desktop app additionally refuses `image.mode.*`** (`crates/automation/src/workspace/tests.rs:644`).
+- **Localization**: UI strings translated, engine messages stay English, and some catalogs remain partial (`docs/localization-parity.md`).
+- **Distribution gaps**: no in-app bug-report dialog, no periodic update recheck while the app stays open, Windows signing skipped without secrets.
+- **Wayland**: no drag-and-drop (winit limit) and XWayland fractional scaling is blurred (`README.md`).
+- **Docs lag the code** — verify against your installed version before asserting a feature is missing; the generated scorecard/parity-checklist numbers are trustworthy, hand-written prose in the same docs can lag.
+
+## How to operate
+
+### Launch (macOS)
+
+```sh
+open -a PhotoCraft                        # normal GUI launch
+open -a PhotoCraft /path/to/file.psd      # open a file in the running instance
+open -a PhotoCraft --args --control 7878 --control-token-file "$HOME/.photocraft/control.token" \
+     --automation-read-root "$PWD" --automation-write-root "$PWD"
+```
+
+- Binary: `Contents/MacOS/PhotoCraft` inside the app bundle. **The macOS bundle also ships `photocraft-cli` beside it** (`Contents/MacOS/photocraft-cli`) — *Getting the CLI* below covers that copy, the release download and the `PATH` step; other platforms also get a Linux `.deb`/`.rpm`.
+- App flags, parsed by clap so a typo is a usage error (exit 2): files, `-h/--help`, `--version`, `--safe-gpu`, `--in-window-menus`, `--new-instance`, `--present-mode <fifo|vsync|autovsync|novsync|immediate|mailbox|autonovsync>`, `--frame-latency <1..3>`, `--stroke-trace <stderr|FILE.csv>`, `--control <port>`, `--control-token <64-hex>`, `--control-token-file <path>`, `--automation-read-root <dir>` (repeatable), `--automation-write-root <dir>`, `--` (`apps/photocraft/src/launch_args.rs`). Env equivalents: `PHOTOCRAFT_CONTROL_PORT`, `PHOTOCRAFT_CONTROL_TOKEN(_FILE)`, `PHOTOCRAFT_AUTOMATION_{READ,WRITE}_ROOT` (one fallback read root only when no read flag is given), `PHOTOCRAFT_CONFIG_DIR`, `PHOTOCRAFT_NEW_INSTANCE`. A token flag given without a value fails the launch.
+- Without any token flag, a fresh 256-bit token is generated and printed to stderr; a token file is created mode 0600. Treat it as a credential: it grants the whole non-filesystem control surface over unencrypted loopback (`crates/automation/src/security.rs`, `docs/control-protocol.md`).
+- Never launch the GUI just to inspect a file — use the CLI. On macOS occluded windows stop rendering, and `ui.screenshot` raises the window and may steal focus (`ui.screenshot {focus:false}` avoids it).
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `PhotoCraft.app`; it does not put `photocraft-cli` on your `PATH`. It
+**does** ship a copy inside the bundle at `/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli`,
+the same build as the app, so a launcher install can use that binary directly. The CLI is
+published on the app's GitHub release, `photocraft-cli-0.23.1-macos-universal.zip` (120.5 MB), so
+`photocraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v photocraft-cli`. If it answers, `photocraft-cli --version` must report
+   the version this skill was written against (0.23.1). A different version means the CLI and the app
+   have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — `"/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli" --version`; to make
+   it callable as `photocraft-cli`, link it: `mkdir -p ~/.local/bin && ln -sf
+   "/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli" ~/.local/bin/photocraft-cli`.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.23.1
+REL="https://github.com/storytold/photocraft/releases/download/v$APP_VER"
+ASSET="photocraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/photocraft-cli" && cd "$HOME/Downloads/photocraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "photocraft-cli-$APP_VER-macos-universal/photocraft-cli" "$HOME/.local/bin/photocraft-cli"
+"$HOME/.local/bin/photocraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing
+`photocraft-cli` of a different version without telling the user. Prefer the bundle copy (step 2) — it
+is the same commit as the app; a downloaded CLI is only needed on a machine without the app. Building
+from source (`cargo install --path apps/photocraft-cli --locked`) is a developer path only — full Rust
+toolchain, minutes of compiling; prefer the release binary above.
+
+### Headless CLI
+
+```sh
+photocraft-cli convert in.pdf out.pcraft [--pdf-dpi 300] [--pdf-pages 2-7] [--pdf-editable]
+photocraft-cli convert in.psd out.pcraft [--format <ext>] [--quality 1-100] [--tiff-layers] \
+    [--tiff-compression none|lzw|zip] [--tiff-transparency on|off] [--tiff-pyramid] \
+    [--jpeg-format baseline|optimized|progressive] [--pcraft-full-composite] \
+    [--metadata none|all] [--no-maximize-compatibility] \
+    [--tga-bits 24|32] [--dpx-bits 8|10|12|16] [--dds-compression none|bc1|bc2|bc3] [--dds-mipmaps] \
+    [--in-place] [--approve-high-memory] [--gpu|--no-gpu]
+photocraft-cli info out.pcraft [--compact] [--detail]   # JSON: size, mode, depth, layer tree, warnings
+photocraft-cli run in.png --cmd layer.new.layer --params '{"name":"Ink"}' \
+                        --cmd filter.blur.gaussianBlur --params '{"radius":3}' \
+                        --out out.psd <same export flags>
+photocraft-cli run --new '{"width":800,"height":600,"background":"white"}' --cmd document.inspect --out new.pcraft
+photocraft-cli batch --actions actions.json [--action <name>] --in ./raw --out ./graded [--format jpg] [--in-place]
+photocraft-cli droplet job.pcdroplet ./images [--out ./done]
+photocraft-cli commands [--json] [--filter blur]
+photocraft-cli mcp [--bridge 127.0.0.1:7878] [--control-token <hex> | --control-token-file <path>] \
+                   [--automation-read-root <dir>]... [--automation-write-root <dir>]
+photocraft-cli serve [--port <port>] [--control-token <hex> | --control-token-file <path>] \
+                   [--automation-read-root <dir>]... [--automation-write-root <dir>]
+```
+
+Behaviour that bites: each `--params` belongs to the `--cmd` before it; `run` needs exactly one of `<FILE>` or `--new`, and at least one `--cmd` or `--out`; command results are one JSON line each on stdout while warnings go to stderr; `convert`/`run` refuse an `<OUT>` that is the `<IN>` unless `--in-place`; `batch` refuses an `--out` equal to `--in` (canonicalised, so symlinks count), refuses to overwrite a same-named output, and fails the file whose nested action fails; `--quality` sets JPEG and lossy WebP (without it WebP is lossless); `--metadata none` leaves the document's XMP and free-form text out of flat exports (PSD/PSB/`.pcraft` always keep XMP); `--no-maximize-compatibility` writes Photoshop's white placeholder into a layered PSD/PSB merged image (Bitmap, Indexed and Duotone still write the real image); `--pdf-dpi` must be a positive finite number, `--pdf-pages` is 1-based ("3" or "2-7"), and a range beyond the page count is refused by name; an operation the memory gate refuses needs `--approve-high-memory` here, or `file.approveMemory` over automation; MCP `--bridge` and `serve --port` refuse automation roots/token flags they cannot honour.
+
+### Document and window model
+
+One window holds the open documents as tabs (the control channel exposes them as `window.document.<index>` in tab order, active one checked); `ui.window.open` adds an extra window. On Windows and Linux a second launch hands its files to the running instance as new tabs; `--new-instance` and any `--control` launch start a separate process (macOS relies on LaunchServices). A PDF opens as one document whose artboards hold the pages side by side, 80 px apart.
+
+### Open / save / export flow
+
+- Open: File › Open (`Cmd+O`), drag-and-drop, `open -a PhotoCraft <file>`, `photocraft-cli`, or `app.open`/`doc.open` over automation. `.pdf` (and PDF-flavoured `.ai`) opens page-by-page as raster artboards; use the CLI for page ranges, DPI and editable import. Save (`Cmd+S`) writes back to the document's own PSD/PSB/`.pcraft`; Save As (`Cmd+Shift+S`) picks the format from the extension — `.pcraft` for lossless native, PSD/PSB for Photoshop handoff, any writable codec extension for flat output, `.pdf` for one flattened page, `.cin`, `.iff`, `.jxl` (lossless), `.dds`. A document opened through a read root outside the write root needs an explicit Save As.
+- Over the control channel/MCP use `app.open`/`app.save` (desktop) or `doc.*` (serve/MCP) with paths **relative to the automation roots** (or absolute beneath one); the refused ambient commands are listed above. Embedded smart objects are the exception that works: `layer.smartObjects.editContents`, `saveContents`, `convertToLayers` run pathless.
+- Modal workspaces gate menu invocation: while the RAW Develop workspace (`filter.cameraRaw`), Liquify, Content-Aware Fill, Filter Gallery or Adaptive Wide Angle is open, `ui.menu.invoke` refuses every other item and accepts only that workspace's `{"ui":{…}}` requests — finish with `{"ui":{"commit":true}}` or `{"ui":{"cancel":true}}` first (`docs/control-protocol.md`). `engine.execute` is *not* gated.
+- Keyboard shortcuts: authoritative tables are `crates/engine/src/shell_commands.rs` (shell + tool defaults) and the menu catalogue. Verified examples: `Cmd+O`/`Cmd+S`/`Cmd+Shift+S`, `Cmd+Shift+A` RAW Develop Filter, `Cmd+Alt+Shift+W` Export As, `Cmd+F` Search…, `Cmd+J` Layer via Copy, `Cmd+D` Deselect, `F5` Brush Settings, `F6` Color, `F7` Layers. Photoshop `.kys` sets import/export through `edit.keyboardShortcuts`.
+
+### State on disk
+
+- Settings: macOS `~/Library/Application Support/Photocraft/` (`preferences.json`, `Presets/` with `.pcbrushes`, `actions.json`, gradient/style presets, `.asl` style libraries, `ui.ron` for window and dock geometry); Windows `%APPDATA%\Photocraft`; Linux `$XDG_CONFIG_HOME/photocraft` or `~/.config/photocraft`. Override with `PHOTOCRAFT_CONFIG_DIR`; portable mode (`portable.txt` or `PhotoCraft.portable` beside the executable) keeps everything in `<exe dir>/PhotoCraftData` (`apps/photocraft/src/app_dirs.rs`).
+- Crash recovery: `<data dir>/Recovery/<key>.pcraft` directory bundles plus `<key>.json` metadata, offered at the next launch and deleted when the document is saved or closed. Autosave interval is preference `fileHandling.autosaveMinutes`, default 10, valid 1–240.
+
+## Working with an AI agent
+
+Preferred ladder — use the highest rung that answers the question:
+
+1. **Headless CLI** for convert/inspect/batch; no GUI, no token (`photocraft-cli convert|info|run|batch|droplet|commands`).
+2. **MCP headless** (`photocraft-cli mcp --automation-read-root … --automation-write-root …`) for command sequences plus inspection; without roots it has no file authority (by design).
+3. **Control channel on a live app** (`--bridge`, or `photocraft --control`) when UI state, dialogs, pointer gestures or screenshots are genuinely required. Authenticate with the challenge handshake where you can; the token frame sends the credential to whatever holds the port.
+4. **GUI pointer events last** — `ui.pointer`/`ui.key` are validated and replayable but depend on window focus on macOS.
+
+Legitimate work:
+
+- **Prepare inputs**: convert any supported source to `.pcraft`/PSD/PNG (or DDS textures with `--dds-compression`/`--dds-mipmaps`), resize/grade via `batch`, generate actions JSON or droplets, pre-export assets for other Craft apps. HEIC, NEF/CR2/DNG, XCF, KRA, PDN, Affinity and PDF files are *sources*, not deliverables; PDF arrives as raster artboards unless you use the CLI's experimental `--pdf-editable`.
+- **Read and interpret documents**: `photocraft-cli info <file>` JSON (add `--detail` for text runs, anti-aliasing and full layer effects), or `document.inspect`/`layer.list`/`document.pixel` over MCP; `.pcraft` `manifest.json` is plain JSON and can be read directly.
+- **Verify exports**: reopen with `photocraft-cli info`, read stderr warnings, probe pixels, compare size/alpha. Do not byte-compare a re-saved PSD to its source — PhotoCraft rewrites image resources, layer records and the composite, so only reopening the file tells you it is right. A PDF import has no "original" to compare to: check the artboard count, per-page size and DPI in `info`.
+- **Repair by regeneration, not by hand**: `.pcraft` tiles/blobs are content-addressed zstd objects — never edit them in place. Rebuild from the source image, an earlier bundle or the app; a bundle with a newer `format_version` is refused with a clear error (`crates/format/src/migrate.rs`).
+- **Batch safely**: `batch` will not silently overwrite and fails a file whose nested action fails; MCP `command_batch` is **not** atomic (earlier steps stay applied, no rollback), so inspect history afterwards and undo per entry. Long steps accept `wait: false` and are polled/cancelled with `jobs.list`/`jobs.cancel`.
+- **Mind the roots**: multiple read roots are searched in launch order, only a miss falls through, and a document opened from a root outside the write root has no implicit save target — write an explicit copy beneath the write root before editing in place.
+
+Do not: assign generative-AI work, expect Photoshop to always open our PSD exports, assume a format is supported because Photoshop has it, expect editable PDF layers from the desktop app or MCP, drive the GUI blind when a headless command exists, use `image.mode.*` from desktop automation, assume XCF/KRA/PDN/Affinity files can be saved back, or trust doc statements that the code contradicts.
+
+## Verification protocol
+
+PhotoCraft is alpha: verify every artefact, never trust a silent export.
+
+1. **Round-trip smoke test** in a scratch directory: `photocraft-cli run --new '{"width":64,"height":64,"background":"white"}' --cmd layer.new.layer --out t.pcraft`, then `photocraft-cli info t.pcraft`, then `photocraft-cli convert t.pcraft t.png` and open the PNG in another viewer. For edits, insert a command between `--new` and `--out` and read each command's JSON line.
+2. **PDF checks**: `photocraft-cli convert doc.pdf out.pcraft --pdf-dpi 150 --pdf-pages 2-4` then `info out.pcraft`; confirm the artboard count and per-page pixel size, and read the warning when the page limit or DPI cap kicked in. An editable import that falls back warns per page — never assume the text is text.
+3. **Read the warnings.** Depth reduction, CMYK→RGB, dropped layers, clipped values and missing fonts print to stderr on `convert`/`run`/`batch` and appear in `info`/`app.save` `warnings`. An export with no warning is the only export you should believe.
+4. **Version projects.** Keep the `.pcraft` for lossless re-edits and hand Photoshop the PSD/PSB; keep the original source. Re-saved PSDs are not byte-identical, and `.pcraft` migrates on load — never downgrade a bundle.
+5. **Update only between projects.** This skill documents 0.23.1 (`v0.23.1`, commit `45066c48`); a launcher auto-update can change how files save. If the installed app differs, re-verify formats and counts (`PhotoCraft --version` prints version, commit and build date — `crates/engine/src/build_info.rs`; the bundled `photocraft-cli --version` prints the same triple).
+6. **Prefer reversible operations.** Work on copies (`image.duplicate`, or `history.newDocument` which creates a new active document by default), inspect `document.inspect` history, and remember automation saves never fire script events.
+
+## Sources & evidence
+
+- Repo: https://github.com/storytold/photocraft — inspected at tag **`v0.23.1`**, commit **`45066c48292e92229ada3459a83453439514c83d`**, inspection date **2026-11-12**; the `v0.21.0` tree (`efb7ebd0c0dab1fc108ee4642aa47c22694271a8`) was read for the delta and for counting both sides of it.
+- Installed app: `/Applications/PhotoCraft.app` — version 0.23.1, bundle id `ai.storyteller.photocraft`, minimum macOS 11.0; `Contents/MacOS` holds `PhotoCraft` and the bundled `photocraft-cli`, both run read-only (`--version`, `commands`, `--help`, and a throwaway PDF conversion in a temp directory); the GUI was not launched.
+- Key files read: `README.md`, `ROADMAP.md`, `docs/{gaps,scorecard,parity-checklist,file-format-parity,control-protocol,mcp,plugins,printing,atn,feature-names,localization-parity,localization}.md`, `Cargo.toml`, `craft-i18n.rev`, `apps/photocraft/src/launch_args.rs`, `apps/photocraft-cli/src/{args,document}.rs`, `crates/engine/src/{cmd,actions_record,memory_gate,scratch,shell_commands,build_info}.rs`, `crates/engine/src/cmd/{file_cmds,file_cmds/open,file_cmds/open_as_smart_object,layer_css_cmds,vector_cmds,actions_edit_cmds,gallery_cmds,export_preset_cmds,web_cmds,cutout_cmds,updates_cmds,print_cmds}.rs`, `crates/engine/src/cmd/atn_cmds/{events,menu_item}.rs`, `crates/ui-egui/src/{state/tool,menus/parity,menu_catalog,control,i18n}.rs`, `crates/doc/src/effects.rs`, `crates/color/src/blend.rs`, `crates/algo/src/{artistic,matting}.rs`, `crates/codecs/src/format.rs`, `crates/io/src/{lib,pdf,pdf_import,pdf_editable,camera_raw_xmp,tiff_layers,puppet_map}.rs`, `crates/io/src/smart_map/import.rs`, `crates/io/tests/it/corpus.rs`, `crates/format/src/manifest.rs`, `crates/raw/src/lib.rs`, `crates/automation/src/{server,server/conventions,rpc,security,budgets,args,workspace}.rs`, `crates/automation/src/workspace/tests.rs`, `crates/plugins/src/runtime.rs`, `crates/vector/src/shapes.rs`.
+- Shared libraries: `storytold/craft-libs`, pinned in `Cargo.toml` — `craft-ui`, `craft-print`, `craft-pdf`, `craft-docpath`, `craft-jpeg`, `craft-i18n`, `craft-update` at rev `6e03f65bf45181db77ba6229716e6624db9eb25b`; `craft-heif` at `081078bb1b44aeedfa5bef3d4f13d978dc77510a`; `craft-pcraft-format` at `b8f7d93b00dfb8f172938f3d2d796ae62dcfe123`; interface catalogs in `storytold/craft-i18n` at the commit in `craft-i18n.rev`. Only the format/API facts needed above were consulted there, not shared-library behaviour.
+- Per-claim evidence, the count methods, this round's corrections and the doc-vs-code drift: `evidence.md` next to this file.

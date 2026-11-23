@@ -247,6 +247,18 @@ async function runTests() {
   }
   console.log('✔ Test 7g: UI/UX Pro Max built-in bundle & local sources verified.');
 
+  // Test 7i: ArtCraft 19 creative apps bundle & MCP definition verification
+  const artcraftSkill = skills.find((s) => s.id === 'artcraft');
+  assert(artcraftSkill, 'artcraft skill should exist');
+  assert.strictEqual(getSkillCommands(artcraftSkill)[0]?.name, 'artcraft', 'artcraft slash command should be /artcraft');
+  assert.strictEqual(artcraftSkill.files_to_copy?.length, 90, 'artcraft should include all 90 files across 19 apps');
+  assert(artcraftSkill.mcp_servers?.effectcraft, 'artcraft should declare effectcraft MCP server');
+  assert(artcraftSkill.files_to_copy.some((f) => f.destination.includes('effectcraft/SKILL.md')), 'artcraft must include effectcraft/SKILL.md');
+  assert(artcraftSkill.files_to_copy.some((f) => f.destination.includes('filmcraft/SKILL.md')), 'artcraft must include filmcraft/SKILL.md');
+  await fs.access(path.resolve(process.cwd(), 'scripts/artcraft/effectcraft/SKILL.md'));
+  await fs.access(path.resolve(process.cwd(), 'scripts/artcraft/filmcraft/SKILL.md'));
+  console.log('✔ Test 7i: ArtCraft 19 creative apps bundle & MCP definition verified.');
+
   // Test 8: Skill update detection & sync
   // Simulate an outdated version of scraper.py in the target project
   await fs.writeFile(copiedToolPath, '# outdated version\nprint("old")', 'utf8');
@@ -583,7 +595,7 @@ async function runTests() {
   assert.strictEqual(compareVersions('1.2.0', '1.1.9'), 1);
   assert.strictEqual(compareVersions('v1.0.0', '1.0.0'), 0);
   assert.strictEqual(compareVersions('nope', '1.0.0'), null);
-  assert.strictEqual(getCurrentVersionSync(), '0.2.0');
+  assert.strictEqual(getCurrentVersionSync(), '0.3.0');
 
   const updateCachePath = path.join(os.tmpdir(), `contextrig-update-cache-${Date.now()}.json`);
   process.env.CONTEXTRIG_UPDATE_CACHE_PATH = updateCachePath;

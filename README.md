@@ -7,7 +7,7 @@
 **Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
 Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
 
-[![Version](https://img.shields.io/badge/version-0.2.0%20beta-f39c12?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.0%20beta-f39c12?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
 [![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
 [![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
@@ -55,17 +55,20 @@ Global AI skill folders dump every tool into every repository, bloating context 
 ## Curated Skills Library
 
 <details open>
-<summary><b>7 built-in skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
+<summary><b>10 built-in skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
 
 | Skill ID | Name | Slash Command | Injected Assets | Purpose |
 |---|---|---|---|---|
+| `artcraft` | **ArtCraft Suite (19 Apps)** | `/artcraft` | `rigtools/artcraft/` | Evidence-verified playbooks & automation for EffectCraft (VFX), FilmCraft (NLE), AniCraft, and 16 more creative apps |
 | `kinet_rig` | **KinetRig (144–240 FPS)** | `/kinet-rig` | `rigtools/kinet_rig/` | Zero-dependency Ultra-HFR HTML5/GSAP/Three.js motion & video engine with live Web Audio capture |
+| `cut_rig` | **CutRig MCP** | `/cut` | `rigtools/cut_rig/` | NLE timeline automation & video editing adapters (CapCut, DaVinci, Premiere Pro, FFmpeg) |
+| `ui_ux_pro_max` | **UI/UX Pro Max** | `/ui-ux` | `rigtools/ui_ux_pro_max/` | UI/UX design intelligence, 141 guidelines, 194 palettes, token export & preview generation |
 | `archify` | **Archify** | `/archify` | *(Agent skill & rules)* | Interactive HTML architecture diagrams, ERD, sequence, and workflow visualizers |
 | `graphify` | **Graphify** | `/graphify` | `rigtools/graphify.py` | Codebase dependency graph (`graphify-out/graph.html`), God Nodes & architectural report |
 | `web_scraper` | **Web Scraper** | `/scrape` | `rigtools/scraper.py` | Clean webpage text extraction from URLs or docs straight in terminal |
 | `playwright` | **Playwright** | `/playwright` | `rigtools/playwright_runner.js` | Headless Chromium runner for E2E checks, screenshots, and console error inspection |
 | `db_inspector` | **DB Schema Inspector** | — | `rigtools/db_inspector.js` | Inspects SQLite databases & `.env` profiles into `docs/db_schema.md` |
-| `git_workflow` | **Git Workflow** | `/commit` | *(System rules & command)* | Enforces Conventional Commits, diff metrics, secret guards & commit confirmation |
+| `git_workflow` | **Git Workflow** | `/commit`, `/commit-v` | *(System rules & command)* | Enforces Conventional Commits, diff metrics, secret guards, and version contract detection |
 
 </details>
 
@@ -91,7 +94,7 @@ flowchart LR
 
 ## Quick Start
 
-#> **Beta (v0.2.0)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
+#> **Beta (v0.3.0)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
 
 ## Installation
 
