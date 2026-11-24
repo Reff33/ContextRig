@@ -1,18 +1,25 @@
 import chalk from 'chalk';
 
 export const logger = {
-  banner(version = null) {
+  banner(version = null, serverUrl = null) {
+    const total = 50;
+    const center = (text, plainLen = text.length) => {
+      const left = Math.max(0, Math.floor((total - plainLen) / 2));
+      const right = Math.max(0, total - plainLen - left);
+      return ' '.repeat(left) + text + ' '.repeat(right);
+    };
+
     console.log();
     console.log(chalk.cyan('  ┌──────────────────────────────────────────────────┐'));
-    console.log(chalk.cyan('  │') + chalk.bold.white('                  CONTEXTRIG CLI                  ') + chalk.cyan('│'));
-    console.log(chalk.cyan('  │') + chalk.gray('    AI Agent Context & Environment Scaffolder     ') + chalk.cyan('│'));
+    console.log(chalk.cyan('  │') + center(chalk.bold.white('CONTEXTRIG CLI'), 14) + chalk.cyan('│'));
     if (version) {
       const tag = String(version).startsWith('0.') ? `v${version} (beta)` : `v${version}`;
-      const total = 50;
-      const left = Math.floor((total - tag.length) / 2);
-      const right = total - tag.length - left;
-      const line = ' '.repeat(left) + tag + ' '.repeat(right);
-      console.log(chalk.cyan('  │') + chalk.yellow(line) + chalk.cyan('│'));
+      console.log(chalk.cyan('  │') + center(chalk.yellow(tag), tag.length) + chalk.cyan('│'));
+    }
+    if (serverUrl) {
+      const rawText = `🚀 Server: ${serverUrl}`;
+      const styledText = `${chalk.white('🚀 Server: ')}${chalk.green(serverUrl)}`;
+      console.log(chalk.cyan('  │') + center(styledText, rawText.length) + chalk.cyan('│'));
     }
     console.log(chalk.cyan('  └──────────────────────────────────────────────────┘'));
     console.log();

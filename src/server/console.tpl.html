@@ -1,0 +1,4554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContextRig Console · v__CONTRIG_VERSION__</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
+  <link rel="apple-touch-icon" sizes="128x128" href="/favicon-128.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+  />
+  <style>
+    /* =========================================================================
+       ContextRig Console — Disciplined Developer Tool Design System
+       - Single cobalt accent (#2F5CE0 light / #6D93F5 dark)
+       - Eye-comfortable Dimmed Slate Dark Mode (zero pitch-black glare)
+       - Zero fake macOS chrome, zero rainbow badges, zero awkward whitespace
+       ========================================================================= */
+    :root {
+      /* Light Mode Surfaces */
+      --bg-shell: #F3F5F8;
+      --bg-workspace: #F8F9FB;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #F5F7FA;
+      --bg-hover: #F1F4F9;
+      --bg-active-row: #EDF2FC;
+
+      /* Borders */
+      --border: #E2E6EE;
+      --border-strong: #CFD6E3;
+      --border-subtle: #ECEFF5;
+
+      /* Typography */
+      --text-1: #151922;
+      --text-2: #525D70;
+      --text-3: #7D8799;
+
+      /* Single Disciplined Accent (Cobalt) */
+      --accent: #2F5CE0;
+      --accent-hover: #254CC2;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(47, 92, 224, 0.09);
+      --accent-border: rgba(47, 92, 224, 0.24);
+
+      /* Neutral Slate Tags (Agents & Categories) */
+      --tag-bg: #F1F4F9;
+      --tag-text: #445063;
+      --tag-border: #E1E6EF;
+
+      /* Semantic Status ONLY (Synced / Pending-Custom / Orphan-Error) */
+      --ok-text: #157347;
+      --ok-bg: rgba(21, 115, 71, 0.09);
+      --ok-border: rgba(21, 115, 71, 0.22);
+      --ok-dot: #1F9D61;
+
+      --warn-text: #A16207;
+      --warn-bg: rgba(180, 114, 9, 0.09);
+      --warn-border: rgba(180, 114, 9, 0.24);
+      --warn-dot: #D98A1B;
+
+      --err-text: #B42334;
+      --err-bg: rgba(180, 35, 52, 0.08);
+      --err-border: rgba(180, 35, 52, 0.22);
+      --err-dot: #D63B4C;
+
+      /* Code & Preview Blocks */
+      --code-bg: #F1F4F9;
+      --code-header: #E9EEF5;
+      --code-text: #1D2433;
+      --code-key: #2F5CE0;
+      --code-str: #157347;
+      --code-num: #9A4D0A;
+
+      /* Modals & Elevation */
+      --scrim: rgba(21, 25, 34, 0.30);
+      --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.035);
+      --shadow-popover: 0 16px 40px -10px rgba(16, 24, 40, 0.16), 0 0 0 1px var(--border);
+
+      /* Geometry */
+      --r-card: 10px;
+      --r-ctrl: 7px;
+      --r-sm: 6px;
+      --sidebar-w: 264px;
+      --sidebar-collapsed: 56px;
+
+      /* Fonts */
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    /* =========================================================================
+       Eye-Comfortable Dimmed Slate Dark Mode (GitHub Dark Dimmed / Zed vibe)
+       Low glare, soft off-white ink, zero pure black #000 contrast strain
+       ========================================================================= */
+    html.dark {
+      --bg-shell: #15181E;
+      --bg-workspace: #191D24;
+      --bg-card: #20252F;
+      --bg-subtle: #252B36;
+      --bg-hover: #282F3C;
+      --bg-active-row: rgba(109, 147, 245, 0.08);
+
+      --border: #2F3644;
+      --border-strong: #3E4759;
+      --border-subtle: #282E3A;
+
+      --text-1: #DDE3EE;
+      --text-2: #9AA5B8;
+      --text-3: #6E798D;
+
+      --accent: #6D93F5;
+      --accent-hover: #82A4F8;
+      --accent-fg: #0F1420;
+      --accent-soft: rgba(109, 147, 245, 0.14);
+      --accent-border: rgba(109, 147, 245, 0.30);
+
+      --tag-bg: #272D39;
+      --tag-text: #B4BECE;
+      --tag-border: #343C4C;
+
+      --ok-text: #4EC98B;
+      --ok-bg: rgba(78, 201, 139, 0.12);
+      --ok-border: rgba(78, 201, 139, 0.25);
+      --ok-dot: #4EC98B;
+
+      --warn-text: #E5B454;
+      --warn-bg: rgba(229, 180, 84, 0.12);
+      --warn-border: rgba(229, 180, 84, 0.25);
+      --warn-dot: #E5B454;
+
+      --err-text: #EB6F7D;
+      --err-bg: rgba(235, 111, 125, 0.12);
+      --err-border: rgba(235, 111, 125, 0.26);
+      --err-dot: #EB6F7D;
+
+      --code-bg: #15181E;
+      --code-header: #1B2029;
+      --code-text: #CBD4E4;
+      --code-key: #82A4F8;
+      --code-str: #63CF98;
+      --code-num: #E5B454;
+
+      --scrim: rgba(10, 12, 16, 0.62);
+      --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.20);
+      --shadow-popover: 0 20px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--border-strong);
+    }
+
+    /* =========================================================================
+       Reset & Base Typography
+       ========================================================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg-workspace);
+      color: var(--text-1);
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { background: none; border: none; cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 5px; }
+
+    .mono { font-family: var(--font-mono); }
+    .tnum { font-variant-numeric: tabular-nums; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Quiet scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+    /* =========================================================================
+       Application Shell & Collapsible Sidebar
+       ========================================================================= */
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+      background: var(--bg-workspace);
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      flex: 0 0 var(--sidebar-w);
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-shell);
+      border-right: 1px solid var(--border);
+      transition: width 170ms ease, flex-basis 170ms ease;
+      z-index: 30;
+      user-select: none;
+    }
+    .app-shell.collapsed .sidebar {
+      width: var(--sidebar-collapsed);
+      flex-basis: var(--sidebar-collapsed);
+    }
+
+    .sidebar-head {
+      min-height: 64px;
+      padding: 10px 10px 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      flex: 0 0 auto;
+    }
+    .app-shell.collapsed .sidebar-head {
+      padding: 0;
+      justify-content: center;
+      min-height: 64px;
+    }
+    .app-shell.collapsed .sidebar-head .brand-text { display: none; }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      padding: 0;
+      transition: transform 120ms, box-shadow 120ms;
+    }
+    .brand-mark:hover { transform: scale(1.04); box-shadow: 0 0 0 2px var(--accent-soft); }
+    .brand-mark img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: block;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+    .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text-1);
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ver-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-3);
+      line-height: 1.3;
+      letter-spacing: 0.01em;
+    }
+    .app-shell.collapsed .brand-mark { width: 30px; height: 30px; flex: 0 0 30px; }
+    .app-shell.collapsed .brand-mark img { width: 30px; height: 30px; border-radius: 8px; }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--r-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-3);
+      transition: background 120ms, color 120ms;
+      flex: 0 0 28px;
+    }
+    .icon-btn:hover { background: var(--bg-hover); color: var(--text-1); }
+    .icon-btn svg { width: 15px; height: 15px; }
+
+    .collapse-btn { margin-left: auto; }
+    .app-shell.collapsed .brand-name,
+    .app-shell.collapsed .ver-badge,
+    .app-shell.collapsed .collapse-btn { display: none; }
+    .app-shell.collapsed .brand-mark { width: 34px; height: 34px; flex: 0 0 34px; }
+    .app-shell.collapsed .brand-mark img { width: 34px; height: 34px; border-radius: 9px; }
+
+    .expand-rail-btn { display: none; margin: 8px auto 2px; }
+    .app-shell.collapsed .expand-rail-btn { display: inline-flex; }
+
+    /* Compact Search Trigger */
+    .sidebar-search { padding: 10px 10px 8px; }
+    .app-shell.collapsed .sidebar-search { padding: 6px 0 8px; display: flex; justify-content: center; }
+    .search-trigger {
+      width: 100%;
+      height: 31px;
+      padding: 0 9px;
+      border-radius: var(--r-ctrl);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      transition: border-color 120ms, color 120ms;
+    }
+    .search-trigger:hover { border-color: var(--border-strong); color: var(--text-2); }
+    .search-trigger svg { width: 13.5px; height: 13.5px; flex: 0 0 13.5px; }
+    .app-shell.collapsed .search-trigger { justify-content: center; padding: 0; width: 38px; height: 34px; }
+    .app-shell.collapsed .search-trigger span { display: none; }
+
+    .kbd {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-3);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 0 5px;
+      border-radius: 4px;
+      line-height: 1.55;
+    }
+
+    /* Navigation Lists */
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2px 10px 12px;
+    }
+    .nav-list { display: flex; flex-direction: column; gap: 2px; }
+
+    .nav-item {
+      height: 38px;
+      width: 100%;
+      padding: 0 11px;
+      border-radius: var(--r-ctrl);
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-align: left;
+      position: relative;
+      transition: background 120ms, color 120ms;
+    }
+    .nav-item svg { width: 18px; height: 18px; flex: 0 0 18px; color: var(--text-3); transition: color 120ms; }
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-1); }
+    .nav-item:hover svg { color: var(--text-2); }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 7px;
+      bottom: 7px;
+      width: 2.5px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+    .nav-item.active svg { color: var(--accent); }
+    .nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-3);
+      font-variant-numeric: tabular-nums;
+    }
+    .nav-item.active .nav-count { color: var(--accent); }
+
+    .app-shell.collapsed .nav-item {
+      justify-content: center;
+      padding: 0;
+      height: 38px;
+      width: 38px;
+      margin: 0 auto;
+    }
+    .app-shell.collapsed .nav-item::before { display: none; }
+    .app-shell.collapsed .nav-item.active { background: var(--accent-soft); }
+    .app-shell.collapsed .nav-label,
+    .app-shell.collapsed .nav-count { display: none; }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 4px 10px;
+    }
+    .sidebar-sec-label {
+      padding: 0 9px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .app-shell.collapsed .sidebar-divider,
+    .app-shell.collapsed .sidebar-sec-label,
+    .app-shell.collapsed .sidebar-projects { display: none; }
+
+    .sidebar-proj-btn {
+      height: 30px;
+      width: 100%;
+      padding: 0 9px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12.5px;
+      color: var(--text-2);
+      text-align: left;
+      transition: background 120ms, color 120ms;
+    }
+    .sidebar-proj-btn:hover { background: var(--bg-hover); color: var(--text-1); }
+
+    /* Static 6px Status Dots */
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 6px; display: inline-block; }
+    .dot-ok   { background: var(--ok-dot); }
+    .dot-warn { background: var(--warn-dot); }
+    .dot-err  { background: var(--err-dot); }
+
+    /* Sidebar Footer */
+    .sidebar-foot {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    /* Sidebar update notice */
+    .update-notice {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; text-align: left;
+      padding: 8px 9px; border-radius: var(--r-ctrl);
+      border: 1px solid var(--warn-border);
+      background: var(--warn-bg);
+      color: var(--warn-text);
+    }
+    .update-notice[hidden] { display: none; }
+    .update-notice:hover { filter: brightness(1.04); }
+    .un-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--warn-dot); flex: 0 0 6px;
+    }
+    .un-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .un-title { font-size: 11.5px; font-weight: 600; line-height: 1.3; }
+    .un-sub { font-size: 10px; opacity: 0.85; line-height: 1.3; }
+    .un-arrow { flex: 0 0 12px; opacity: 0.7; }
+    .un-arrow svg { width: 12px; height: 12px; display: block; }
+    .app-shell.collapsed .update-notice { justify-content: center; padding: 8px 0; }
+    .app-shell.collapsed .un-text,
+    .app-shell.collapsed .un-arrow { display: none; }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      padding: 2px;
+      border-radius: var(--r-ctrl);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+    }
+    .seg-btn {
+      height: 26px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid transparent;
+      transition: color 120ms, background 120ms;
+    }
+    .seg-btn svg { width: 13px; height: 13px; }
+    .seg-btn:hover { color: var(--text-1); }
+    .seg-btn[aria-pressed="true"] {
+      background: var(--bg-card);
+      color: var(--text-1);
+      border-color: var(--border);
+      font-weight: 600;
+    }
+
+    .server-line {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 2px 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .collapsed-theme-btn { display: none; margin: 0 auto; }
+    .app-shell.collapsed .sidebar-foot { padding: 10px 0; align-items: center; }
+    .app-shell.collapsed .sidebar-foot .segmented,
+    .app-shell.collapsed .server-line span:last-child { display: none; }
+    .app-shell.collapsed .collapsed-theme-btn { display: inline-flex; }
+    .app-shell.collapsed .server-line { justify-content: center; padding: 2px 0; }
+
+    /* =========================================================================
+       Main Column & Topbar
+       ========================================================================= */
+    .main-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 68px;
+      padding: 0 24px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      flex: 0 0 auto;
+    }
+    .mobile-menu-btn { display: none; }
+
+    .topbar-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Topbar page title block */
+    .topbar-title {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+      flex: 1;
+    }
+    .tt-text { display: flex; flex-direction: column; min-width: 0; }
+    .tt-name {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--text-1);
+      white-space: nowrap;
+    }
+    .tt-sub {
+      font-size: 12px;
+      color: var(--text-3);
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 52ch;
+    }
+    @media (max-width: 1180px) {
+      .tt-sub { display: none; }
+    }
+    @media (max-width: 820px) {
+      .tt-sub { display: none; }
+    }
+    .search-top-btn {
+      gap: 7px;
+      color: var(--text-3);
+    }
+    .guide-btn {
+      width: 31px; height: 31px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: var(--r-ctrl);
+      color: var(--text-3);
+      background: none;
+      border: none;
+      transition: color 120ms, background 120ms;
+    }
+    .guide-btn:hover { color: var(--text-1); background: var(--bg-hover); }
+    .guide-btn svg { width: 17px; height: 17px; }
+    .search-top-btn svg { width: 14px; height: 14px; }
+    .search-top-btn:hover { color: var(--text-1); }
+    .search-top-btn .kbd { margin-left: 2px; }
+    @media (max-width: 900px) {
+      .search-top-label,
+      .search-top-btn .kbd { display: none; }
+    }
+
+    /* Buttons */
+    .btn {
+      height: 31px;
+      padding: 0 11px;
+      border-radius: var(--r-ctrl);
+      font-size: 12.5px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-card);
+      color: var(--text-1);
+      transition: background 120ms, border-color 120ms;
+    }
+    .btn svg { width: 13.5px; height: 13.5px; flex: 0 0 13.5px; }
+    .btn:hover:not(:disabled) { background: var(--bg-subtle); border-color: var(--border-strong); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-fg);
+      font-weight: 600;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-2);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--bg-hover);
+      border-color: transparent;
+      color: var(--text-1);
+    }
+
+    .btn-danger {
+      background: var(--bg-card);
+      border-color: var(--err-border);
+      color: var(--err-text);
+    }
+    .btn-danger:hover:not(:disabled) { background: var(--err-bg); }
+
+    .btn-sm { height: 27px; padding: 0 9px; font-size: 12px; border-radius: var(--r-sm); }
+    .spin { animation: spin360 550ms linear infinite; }
+    @keyframes spin360 { to { transform: rotate(360deg); } }
+
+    /* Workspace Container */
+    .workspace {
+      padding: 22px 24px 42px;
+      max-width: 1360px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .page-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .page-head-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .page-search {
+      display: flex; align-items: center; gap: 7px;
+      height: 31px; padding: 0 9px;
+      border: 1px solid var(--border); border-radius: var(--r-ctrl);
+      background: var(--bg-card); color: var(--text-3);
+      min-width: 190px;
+    }
+    .page-search:focus-within { border-color: var(--border-strong); }
+    .page-search svg { width: 14px; height: 14px; flex: 0 0 14px; }
+    .page-search input {
+      border: none; outline: none; background: transparent;
+      font-size: 12.5px; color: var(--text-1); width: 100%;
+    }
+    .page-search input::placeholder { color: var(--text-3); }
+    .page-title {
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      color: var(--text-1);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .ph-ico {
+      width: 30px; height: 30px; flex: 0 0 30px;
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      color: var(--text-1);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .ph-ico svg { width: 19px; height: 19px; stroke-width: 1.9; }
+    .page-sub { font-size: 13px; color: var(--text-2); margin-top: 3px; max-width: 68ch; }
+    .page-meta { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); }
+
+    /* =========================================================================
+       Slim Inline Attention Alert Bar (Overview Top Strip)
+       ========================================================================= */
+    .alert-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      font-size: 12.5px;
+      flex-wrap: wrap;
+    }
+    .alert-bar.alert-warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: var(--text-1);
+    }
+    .alert-bar.alert-ok {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+      color: var(--ok-text);
+    }
+    .alert-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex: 1;
+      min-width: 220px;
+    }
+    .alert-actions { display: flex; align-items: center; gap: 8px; }
+    .alert-link {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .alert-link:hover { text-decoration: underline; }
+
+    /* =========================================================================
+       Row 1: Unified 4-Column KPI Strip (No Floating Icon Boxes)
+       ========================================================================= */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--border);
+      border-radius: var(--r-card);
+      background: var(--bg-card);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .kpi-cell {
+      padding: 15px 18px;
+      border-right: 1px solid var(--border);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      transition: background 120ms;
+    }
+    .kpi-cell:last-child { border-right: none; }
+    .kpi-cell:hover { background: var(--bg-subtle); }
+    .kpi-label { font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .kpi-val {
+      font-size: 25px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-top: 5px;
+      color: var(--text-1);
+      font-variant-numeric: tabular-nums;
+    }
+    .kpi-meta {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--text-3);
+      flex-wrap: wrap;
+    }
+    .kpi-ok   { color: var(--ok-text); font-weight: 500; }
+    .kpi-warn { color: var(--warn-text); font-weight: 500; }
+    .kpi-err  { color: var(--err-text); font-weight: 500; }
+
+    /* =========================================================================
+       Cards & Balanced Multi-Column Grids (align-items: stretch)
+       ========================================================================= */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
+    }
+    .card-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: var(--text-1);
+    }
+    .card-subtitle { font-size: 12px; color: var(--text-3); }
+    .card-head .spacer { margin-left: auto; }
+    .card-body { padding: 15px 16px; }
+    .card-foot {
+      margin-top: auto;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-3);
+      flex: 0 0 auto;
+    }
+    .card-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      transition: opacity 120ms;
+    }
+    .card-link:hover { text-decoration: underline; }
+
+    /* Balanced Row Grids */
+    .overview-row-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+    .overview-row-3 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+    .ops-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+    .inject-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .stack { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Neutral Slate Tags & Semantic Status Badges */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 1.5px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--tag-text);
+      white-space: nowrap;
+      line-height: 1.45;
+    }
+    .tag.mono { font-size: 10.5px; font-weight: 400; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 1.5px 8px;
+      border-radius: 99px;
+      font-size: 11.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      line-height: 1.45;
+      border: 1px solid transparent;
+    }
+    .st-ok   { color: var(--ok-text);   background: var(--ok-bg);   border-color: var(--ok-border); }
+    .st-warn { color: var(--warn-text); background: var(--warn-bg); border-color: var(--warn-border); }
+    .st-err  { color: var(--err-text);  background: var(--err-bg);  border-color: var(--err-border); }
+
+    /* =========================================================================
+       Clean Data Tables
+       ========================================================================= */
+    .table-wrap { overflow-x: auto; flex: 1; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      text-align: left;
+      padding: 8.5px 15px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-3);
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: 10.5px 15px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+    .data-table tbody tr { transition: background 110ms; }
+    .data-table tbody tr.clickable { cursor: pointer; }
+    .data-table tbody tr.clickable:hover { background: var(--bg-hover); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    /* =========================================================================
+       Right Unified Card: Workspace Health & Agents
+       ========================================================================= */
+    .sub-section-head {
+      padding: 9px 16px;
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-3);
+    }
+    .kv-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8.5px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+    }
+    .kv-row:last-child { border-bottom: none; }
+    .kv-key { color: var(--text-2); }
+    .kv-val { font-family: var(--font-mono); font-size: 12px; color: var(--text-1); font-variant-numeric: tabular-nums; }
+
+    .agent-compact-list {
+      padding: 8px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .agent-compact-btn {
+      width: 100%;
+      text-align: left;
+      padding: 6px 8px;
+      border-radius: var(--r-sm);
+      transition: background 110ms;
+    }
+    .agent-compact-btn:hover { background: var(--bg-hover); }
+    .agent-compact-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .mini-rail {
+      height: 4px;
+      width: 100%;
+      border-radius: 99px;
+      background: var(--bg-subtle);
+      margin-top: 5px;
+      overflow: hidden;
+    }
+    .mini-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--accent);
+      transition: width 260ms ease;
+    }
+
+    /* =========================================================================
+       Row 3: Skill Coverage & Recent Activity (5 Rows Each -> Matched Height)
+       ========================================================================= */
+    .cov-list { display: flex; flex-direction: column; }
+    .cov-row {
+      width: 100%;
+      text-align: left;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 110ms;
+    }
+    .cov-row:last-child { border-bottom: none; }
+    .cov-row:hover { background: var(--bg-hover); }
+    .cov-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12.5px;
+    }
+
+    .act-list { display: flex; flex-direction: column; }
+    .act-row {
+      width: 100%;
+      text-align: left;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 110ms;
+    }
+    .act-row:last-child { border-bottom: none; }
+    .act-row:hover { background: var(--bg-hover); }
+    .act-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-3);
+      width: 62px;
+      flex: 0 0 62px;
+      font-variant-numeric: tabular-nums;
+    }
+    .act-name { font-size: 12.5px; font-weight: 500; color: var(--text-1); flex: 1; min-width: 0; }
+
+    /* =========================================================================
+       Row 4: Provisioning Matrix (Spreadsheet Table)
+       ========================================================================= */
+    .matrix-scroll { overflow-x: auto; }
+    .matrix-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .matrix-table th {
+      padding: 9px 10px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-align: center;
+      white-space: nowrap;
+      transition: background 90ms, color 90ms;
+    }
+    .matrix-table th:last-child { border-right: none; }
+    .matrix-table th.col-sticky {
+      text-align: left;
+      padding: 9px 16px;
+      position: sticky;
+      left: 0;
+      z-index: 4;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-3);
+      min-width: 190px;
+    }
+    .matrix-table th button:hover { color: var(--accent); }
+    .matrix-table th.col-hover { background: var(--accent-soft); color: var(--accent); }
+
+    .matrix-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      text-align: center;
+      vertical-align: middle;
+      transition: background 80ms;
+    }
+    .matrix-table td:last-child { border-right: none; }
+    .matrix-table tbody tr:last-child td { border-bottom: none; }
+    .matrix-table td.col-sticky {
+      text-align: left;
+      padding: 9px 16px;
+      position: sticky;
+      left: 0;
+      background: var(--bg-card);
+      z-index: 3;
+      white-space: nowrap;
+    }
+    .matrix-table tbody tr.row-hover td,
+    .matrix-table td.col-hover { background: var(--bg-hover); }
+    .matrix-table tbody tr.row-hover td.col-hover { background: var(--accent-soft); }
+
+    .m-cell {
+      width: 22px;
+      height: 22px;
+      margin: 0 auto;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .m-cell.on {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+    }
+    .m-cell.on svg { width: 13px; height: 13px; stroke-width: 2.3; }
+    .m-cell.off::after {
+      content: "";
+      width: 3.5px;
+      height: 3.5px;
+      border-radius: 50%;
+      background: var(--border-strong);
+    }
+    .m-cell.orphan {
+      background: var(--err-bg);
+      border: 1px solid var(--err-border);
+      color: var(--err-text);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    /* =========================================================================
+       Toolbars, Inputs & Filter Pills
+       ========================================================================= */
+    .toolbar {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-box {
+      flex: 1 1 210px;
+      min-width: 170px;
+      height: 32px;
+      padding: 0 10px;
+      border-radius: var(--r-ctrl);
+      border: 1px solid var(--border-strong);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: border-color 120ms, box-shadow 120ms;
+    }
+    .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2.5px var(--accent-soft); }
+    .search-box svg { width: 13.5px; height: 13.5px; color: var(--text-3); flex: 0 0 13.5px; }
+    .search-box input { width: 100%; border: none; outline: none; background: transparent; font-size: 12.5px; color: var(--text-1); }
+    .search-box input::placeholder { color: var(--text-3); }
+
+    .filter-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+    .pill-btn {
+      height: 28px;
+      padding: 0 10px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: background 110ms, border-color 110ms, color 110ms;
+    }
+    .pill-btn:hover { background: var(--bg-subtle); border-color: var(--border-strong); color: var(--text-1); }
+    .pill-btn[aria-pressed="true"] {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .pill-cnt { font-family: var(--font-mono); font-size: 10.5px; opacity: 0.78; }
+
+    .select-ctrl {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: var(--r-ctrl);
+      border: 1px solid var(--border-strong);
+      background: var(--bg-card);
+      color: var(--text-1);
+      font-size: 12.5px;
+      outline: none;
+      cursor: pointer;
+    }
+    .select-ctrl:focus { border-color: var(--accent); box-shadow: 0 0 0 2.5px var(--accent-soft); }
+
+    .proj-list-item {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      transition: background 110ms;
+    }
+    .proj-list-item:last-child { border-bottom: none; }
+    .proj-list-item:hover { background: var(--bg-hover); }
+
+    /* =========================================================================
+       Provisioning Actions Studio (Tab 2)
+       ========================================================================= */
+    .section-divider {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 22px 0 12px;
+      flex-wrap: wrap;
+    }
+    .section-heading { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-1); }
+    .section-sub { font-size: 12.5px; color: var(--text-2); }
+
+    .card-flash { animation: flashBorder 1.2s ease; }
+    @keyframes flashBorder {
+      0%   { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+      100% { border-color: var(--border); box-shadow: var(--shadow-card); }
+    }
+
+    .form-row { margin-bottom: 13px; display: flex; flex-direction: column; gap: 5px; }
+    .field-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .field-key { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); font-weight: 400; }
+    .field-hint { font-size: 11.5px; color: var(--text-3); line-height: 1.45; }
+
+    /* Default vs custom field state */
+    .field-ctl { position: relative; }
+    .field-state {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 4px; min-height: 16px; flex-wrap: wrap;
+    }
+    .fs-badge {
+      font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 1px 6px; border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .fs-custom { color: var(--warn-text); border-color: var(--warn-border); background: var(--warn-bg); }
+    .fs-default-badge { color: var(--text-3); background: transparent; }
+    .fs-default { font-size: 10.5px; color: var(--text-3); }
+    .fs-default .mono { color: var(--text-2); }
+
+    .field-input {
+      width: 100%;
+      height: 33px;
+      padding: 0 10px;
+      border-radius: var(--r-ctrl);
+      border: 1px solid var(--border-strong);
+      background: var(--bg-card);
+      color: var(--text-1);
+      font-size: 12.5px;
+      outline: none;
+      transition: border-color 120ms, box-shadow 120ms;
+    }
+    .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2.5px var(--accent-soft); }
+    textarea.field-input {
+      height: auto;
+      min-height: 90px;
+      padding: 9px 11px;
+      resize: vertical;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .check-list {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      max-height: 230px;
+      overflow-y: auto;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7.5px 11px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+      cursor: pointer;
+    }
+    .check-row:last-child { border-bottom: none; }
+    .check-row:hover { background: var(--bg-hover); }
+    .check-row input[type="checkbox"] {
+      width: 14.5px;
+      height: 14.5px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex: 0 0 14.5px;
+    }
+    .check-row .cr-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .check-row .cr-id { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3); }
+
+    .result-banner {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.55;
+      border: 1px solid transparent;
+    }
+    .result-banner[hidden] { display: none; }
+    .result-banner.ok  { background: var(--ok-bg);  border-color: var(--ok-border);  color: var(--ok-text); }
+    .result-banner.err { background: var(--err-bg); border-color: var(--err-border); color: var(--err-text); }
+
+    /* =========================================================================
+       Clean Understated CLI Code Blocks (ZERO fake traffic lights)
+       ========================================================================= */
+    .cli-block {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--code-bg);
+    }
+    .cli-head {
+      padding: 6px 10px 6px 12px;
+      background: var(--code-header);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+    .cli-pre {
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--code-text);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .cli-prompt { color: var(--text-3); margin-right: 8px; user-select: none; }
+
+    /* Health Check Rows */
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex: 0 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      border: 1px solid transparent;
+    }
+    .check-circle.ok   { background: var(--ok-bg);   border-color: var(--ok-border);   color: var(--ok-text); }
+    .check-circle.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+    .check-circle.err  { background: var(--err-bg);  border-color: var(--err-border);  color: var(--err-text); }
+    .check-circle svg { width: 11px; height: 11px; }
+
+    /* =========================================================================
+       Skills 3-Column Card Grid
+       ========================================================================= */
+    .skill-howto { margin: 0; }
+    .skill-howto > summary {
+      cursor: pointer; list-style: none;
+      font-size: 11.5px; font-weight: 500; color: var(--text-2);
+      padding: 3px 0; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .skill-howto > summary::-webkit-details-marker { display: none; }
+    .skill-howto > summary::before {
+      content: "+"; font-family: var(--font-mono); font-size: 11px;
+      color: var(--text-3); width: 9px; display: inline-block;
+    }
+    .skill-howto[open] > summary::before { content: "\2212"; }
+    .skill-howto > summary:hover { color: var(--text-1); }
+    .skill-howto > p {
+      margin: 4px 0 2px; padding: 8px 10px;
+      border-left: 2px solid var(--border-strong);
+      background: var(--surface-subtle); border-radius: 0 6px 6px 0;
+      font-size: 11.5px; line-height: 1.6; color: var(--text-2);
+      font-family: var(--font-mono);
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-subtle);
+    }
+    .skill-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 15px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 120ms;
+    }
+    .skill-card:hover { border-color: var(--accent-border); }
+    .skill-card-name { font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-1); }
+    .skill-card-id { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); margin-top: 1px; }
+    .skill-card-desc {
+      font-size: 12.5px;
+      color: var(--text-2);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .skill-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    /* =========================================================================
+       Skill status strip + card actions
+       ========================================================================= */
+    .skill-status {
+      display: inline-block; align-self: flex-start;
+      font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 2px 7px; border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--text-3); background: var(--surface-muted);
+    }
+    .skill-status.st-absent { color: var(--text-3); border-color: var(--border); background: transparent; }
+    .skill-status.st-live { color: var(--ok-text); border-color: var(--ok-border); background: var(--ok-bg); }
+    .skill-status.st-custom { color: var(--warn-text); border-color: var(--warn-border); background: var(--warn-bg); }
+    .skill-actions { display: flex; align-items: center; gap: 5px; }
+    .skill-more {
+      min-width: 26px; padding: 0 6px;
+      letter-spacing: 0.06em; line-height: 1;
+    }
+
+    /* Floating action menu */
+    .skill-menu {
+      position: fixed; z-index: 80;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      box-shadow: var(--shadow-popover);
+      padding: 4px;
+      display: flex; flex-direction: column;
+    }
+    .skill-menu-item {
+      text-align: left; padding: 7px 10px; border-radius: 5px;
+      font-size: 12.5px; color: var(--text-1); white-space: nowrap;
+    }
+    .skill-menu-item:hover { background: var(--hover); }
+    .skill-menu-item.danger { color: var(--err-text); }
+    .skill-menu-item.danger:hover { background: var(--err-bg); }
+
+    .skill-card-foot {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11.5px;      color: var(--text-3);
+    }
+
+    /* =========================================================================
+       Settings Studio (264px / 1fr)
+       ========================================================================= */
+    .settings-split {
+      display: grid;
+      grid-template-columns: 264px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .settings-list { max-height: 600px; overflow-y: auto; }
+    .settings-pick {
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      position: relative;
+      transition: background 110ms;
+    }
+    .settings-pick:last-child { border-bottom: none; }
+    .settings-pick:hover { background: var(--bg-hover); }
+    .settings-pick.active { background: var(--accent-soft); }
+    .settings-pick.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2.5px;
+      background: var(--accent);
+    }
+    .settings-pick.active .sp-name { color: var(--accent); font-weight: 600; }
+
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+      gap: 8px;
+    }
+    .preset-radio {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      text-align: left;
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      transition: border-color 120ms, background 120ms;
+    }
+    .preset-radio:hover { border-color: var(--border-strong); background: var(--bg-subtle); }
+    .preset-radio.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .radio-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-strong);
+      flex: 0 0 14px;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preset-radio.selected .radio-dot { border-color: var(--accent); }
+    .preset-radio.selected .radio-dot::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .form-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+    .preview-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+    .preview-head {
+      padding: 7px 12px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .preview-tab {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      color: var(--text-2);
+      border: 1px solid transparent;
+    }
+    .preview-tab:hover { color: var(--text-1); }
+    .preview-tab.active {
+      background: var(--bg-card);
+      border-color: var(--border);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .preview-pre {
+      padding: 12px 14px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.6;
+      overflow-x: auto;
+      max-height: 230px;
+    }
+    .tok-k { color: var(--code-key); }
+    .tok-s { color: var(--code-str); }
+    .tok-n { color: var(--code-num); }
+
+    .form-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* =========================================================================
+       Slide-Over Project Inspector Drawer & Command Palette (⌘K)
+       ========================================================================= */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: var(--scrim);
+      z-index: 60;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease;
+    }
+    .backdrop.open { opacity: 1; pointer-events: auto; }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 448px;
+      max-width: 94vw;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-popover);
+      z-index: 65;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 200ms ease;
+    }
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-head {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .drawer-body {
+      padding: 18px 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .drawer-sec-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+    .drawer-skill-row {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      margin-bottom: 6px;
+      transition: border-color 120ms, background 120ms;
+    }
+    .drawer-skill-row:hover { border-color: var(--accent-border); background: var(--bg-hover); }
+
+    .cmd-modal {
+      position: fixed;
+      top: 10vh;
+      left: 50%;
+      transform: translateX(-50%) scale(0.98);
+      width: clamp(640px, 62vw, 900px);
+      max-width: 94vw;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      box-shadow: var(--shadow-popover);
+      z-index: 75;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease, transform 140ms ease;
+    }
+    .cmd-modal.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
+
+    /* =========================================================================
+       Skill Documentation Modal
+       ========================================================================= */
+    .skill-modal {
+      position: fixed; top: 8vh; left: 50%;
+      transform: translateX(-50%) scale(0.98);
+      width: 660px; max-width: 94vw; max-height: 84vh;
+      display: flex; flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong); border-radius: 10px;
+      box-shadow: var(--shadow-popover); z-index: 76;
+      opacity: 0; pointer-events: none;
+      transition: opacity 120ms ease, transform 140ms ease;
+    }
+    .skill-modal.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
+    .skill-modal-head {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+    }
+    .skill-modal-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-1); }
+    .skill-modal-sub { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 11.5px; color: var(--text-3); }
+    .skill-modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .skill-modal-foot {
+      display: flex; align-items: center; gap: 8px;
+      padding: 11px 16px; border-top: 1px solid var(--border);
+      background: var(--surface-subtle); flex-wrap: wrap;
+    }
+    .skill-modal-foot .spacer { margin-left: auto; }
+    .doc-sec-head {
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;
+    }
+    .doc-prose { font-size: 12.5px; line-height: 1.65; color: var(--text-2); }
+    .doc-code {
+      margin: 0; padding: 10px 12px;
+      background: var(--surface-muted); border: 1px solid var(--border);
+      border-radius: 7px; font-family: var(--font-mono);
+      font-size: 11.5px; line-height: 1.65; color: var(--text-1);
+      white-space: pre-wrap; word-break: break-word;
+      max-height: 240px; overflow-y: auto;
+    }
+    .doc-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; font-size: 12px; }
+    .doc-row .k { color: var(--text-3); min-width: 96px; }
+    .doc-free {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 6px; padding: 8px 10px; border-radius: 7px;
+      background: var(--warn-bg); border: 1px solid var(--warn-border);
+      color: var(--warn-text); font-size: 11.5px; line-height: 1.5;
+    }
+    .guide-row {
+      display: grid; grid-template-columns: 132px 1fr;
+      gap: 12px; padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 12px; line-height: 1.55;
+    }
+    .guide-row:last-child { border-bottom: none; }
+    .guide-k { color: var(--text-1); font-weight: 500; }
+    .guide-v { color: var(--text-2); }
+    .guide-row .mono { color: var(--text-1); }
+
+    .cmd-input-row {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cmd-input-row svg { width: 16px; height: 16px; color: var(--text-3); flex: 0 0 16px; }
+    .cmd-input-row input { flex: 1; border: none; outline: none; background: transparent; font-size: 15px; color: var(--text-1); }
+    .cmd-list { max-height: min(56vh, 520px); overflow-y: auto; padding: 8px; }
+    .cmd-group {
+      padding: 9px 10px 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-3);
+    }
+    .cmd-item {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      color: var(--text-2);
+      text-align: left;
+    }
+    .cmd-item svg { width: 14px; height: 14px; color: var(--text-3); flex: 0 0 14px; }
+    .cmd-item.selected, .cmd-item:hover { background: var(--accent-soft); color: var(--accent); }
+    .cmd-item.selected svg, .cmd-item:hover svg { color: var(--accent); }
+    .cmd-meta { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+    .cmd-foot {
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      display: flex;
+      gap: 14px;
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    /* Toast Stack */
+    .toast-stack {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto;
+      padding: 9px 13px;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      color: var(--text-1);
+      font-size: 12.5px;
+      font-weight: 500;
+      box-shadow: var(--shadow-popover);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast svg { width: 14px; height: 14px; color: var(--ok-dot); flex: 0 0 14px; }
+
+    .empty-state { padding: 32px 18px; text-align: center; color: var(--text-3); font-size: 12.5px; }
+    .empty-state strong { display: block; color: var(--text-1); font-size: 13.5px; margin-bottom: 4px; font-weight: 600; }
+
+    /* =========================================================================
+       Responsive Rules (Tablet & Mobile Drawer)
+       ========================================================================= */
+    .mobile-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--scrim);
+      z-index: 45;
+    }
+    .mobile-backdrop.open { display: block; }
+
+    @media (max-width: 1140px) {
+      .overview-row-2, .overview-row-3, .ops-row, .inject-split { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kpi-cell:nth-child(2) { border-right: none; }
+      .kpi-cell:nth-child(1), .kpi-cell:nth-child(2) { border-bottom: 1px solid var(--border); }
+    }
+
+    @media (max-width: 900px) {
+      .settings-split, .form-grid-2 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 767px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 252px !important;
+        flex-basis: 252px !important;
+        transform: translateX(-100%);
+        transition: transform 200ms ease;
+        z-index: 50;
+      }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .collapse-btn, .expand-rail-btn { display: none !important; }
+      .mobile-menu-btn { display: inline-flex; }
+      .topbar { padding: 0 14px; }
+      .workspace { padding: 16px 14px 36px; }
+      .skills-grid, .kpi-strip { grid-template-columns: 1fr; }
+      .kpi-cell { border-right: none; border-bottom: 1px solid var(--border); }
+      .kpi-cell:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="appShell" class="app-shell">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobileBackdrop" class="mobile-backdrop"></div>
+
+    <!-- ==================== LEFT SIDEBAR ==================== -->
+    <aside id="sidebar" class="sidebar" aria-label="Workspace navigation">
+      <div class="sidebar-head">
+        <button id="brandHome" type="button" class="brand-mark" title="Go to Overview" aria-label="Go to Overview">
+          <img src="/favicon-64.png" width="38" height="38" alt="" decoding="async">
+        </button>
+        <span class="brand-text">
+          <span class="brand-name">ContextRig</span>
+          <span class="ver-badge">v__CONTRIG_VERSION__</span>
+        </span>
+        <button id="collapseBtn" type="button" class="icon-btn collapse-btn" title="Collapse sidebar ([)" aria-label="Collapse sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" />
+          </svg>
+        </button>
+      </div>
+
+      <button id="expandRailBtn" type="button" class="icon-btn expand-rail-btn" title="Expand sidebar ([)" aria-label="Expand sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" />
+        </svg>
+      </button>
+
+      <div class="sidebar-search">
+        <button id="sidebarSearchBtn" type="button" class="search-trigger" title="Command palette (Ctrl or Cmd + K)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" />
+          </svg>
+          <span class="truncate" style="flex:1;text-align:left">Search or jump...</span>
+          <span class="kbd" id="sidebarKbd">Ctrl K</span>
+        </button>
+      </div>
+
+      <div class="sidebar-scroll">
+        <nav id="primaryNav" class="nav-list" aria-label="Main sections"></nav>
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-sec-label">
+          <span>Projects</span>
+          <span id="sidebarProjCount" class="mono tnum"></span>
+        </div>
+        <div id="sidebarProjects" class="sidebar-projects nav-list"></div>
+      </div>
+
+      <div class="sidebar-foot">
+        <button id="updateNotice" type="button" class="update-notice" hidden>
+          <span class="un-dot"></span>
+          <span class="un-text">
+            <span class="un-title">Update available</span>
+            <span class="un-sub mono" id="updateNoticeVer"></span>
+          </span>
+          <span class="un-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </span>
+        </button>
+
+        <div class="segmented" role="group" aria-label="Theme">
+          <button id="themeLightBtn" type="button" class="seg-btn" data-theme="light" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            Light
+          </button>
+          <button id="themeDarkBtn" type="button" class="seg-btn" data-theme="dark" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            Dark
+          </button>
+        </div>
+
+        <button id="collapsedThemeBtn" type="button" class="icon-btn collapsed-theme-btn" title="Toggle Light / Dark" aria-label="Toggle Light / Dark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+
+        <div class="server-line" title="Connected to local ContextRig engine">
+          <span class="dot dot-ok"></span>
+          <span class="truncate">__CONTRIG_SERVER__</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN COLUMN ==================== -->
+    <div class="main-col">
+      <header class="topbar">
+        <button id="mobileMenuBtn" type="button" class="icon-btn mobile-menu-btn" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+
+        <div class="topbar-title" id="topbarTitle">
+          <span class="ph-ico" id="topbarIco" data-ico="overview"></span>
+          <span class="tt-text">
+            <span class="tt-name" id="topbarName">Overview</span>
+            <span class="tt-sub" id="topbarSub">Local registry snapshot, engine health, and skill provisioning across directories.</span>
+          </span>
+        </div>
+
+        <div class="topbar-actions">
+          <button id="topSearchBtn" type="button" class="btn search-top-btn" title="Command palette (Ctrl or Cmd + K)" aria-label="Open command palette">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span class="search-top-label">Search</span>
+            <span class="kbd" id="topSearchKbd">Ctrl K</span>
+          </button>
+          <button id="topThemeToggle" type="button" class="icon-btn" title="Toggle Light / Dark theme" aria-label="Toggle Light / Dark theme"></button>
+          <button id="guideBtn" type="button" class="guide-btn" title="Usage guide" aria-label="Open usage guide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </button>
+          <button type="button" class="btn btn-primary" data-copy="rig sync --all --yes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Sync All
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+
+        <!-- ==================== TAB 1: OVERVIEW ==================== -->
+        <section id="pane-overview" class="tab-pane active" role="tabpanel" aria-label="Overview">
+          
+          <!-- Slim Inline Attention Alert Bar -->
+          <div id="attentionBar"></div>
+
+          <!-- Row 1: Unified 4-Column KPI Strip -->
+          <div id="kpiStrip" class="kpi-strip"></div>
+
+          <!-- Row 2: Balanced 2-Column Split (Managed Projects | Unified Workspace Health & Agents) -->
+          <div class="overview-row-2">
+            <!-- Left Card: Managed Projects -->
+            <div class="card">
+              <div class="card-head">
+                <h2 class="card-title">Managed Projects</h2>
+                <span class="spacer"></span>
+                <button type="button" class="card-link" data-nav="projects">View all →</button>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Project</th>
+                      <th>Agents</th>
+                      <th>Skills</th>
+                      <th>Status</th>
+                      <th>Synced</th>
+                      <th style="text-align:right">CLI</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overviewProjectsBody"></tbody>
+                </table>
+              </div>
+              <div class="card-foot">
+                <span id="overviewProjFoot">5 directories · click any row to inspect</span>
+                <button type="button" class="card-link" data-jump-inject="true">Inject skills →</button>
+              </div>
+            </div>
+
+            <!-- Right Card: SINGLE Unified Card (Engine Integrity + AI Agent Footprint) -->
+            <div class="card">
+              <div class="card-head">
+                <h2 class="card-title">Workspace Health &amp; Agents</h2>
+                <span class="spacer"></span>
+                <button type="button" class="card-link" data-nav="sync">Sync &amp; Ops →</button>
+              </div>
+              <div id="overviewIntegrity"></div>
+              <div class="sub-section-head">
+                <span>AI Agent Footprint</span>
+                <span style="font-weight:400;text-transform:none;letter-spacing:0">Click to filter</span>
+              </div>
+              <div id="agentFootprint" class="agent-compact-list"></div>
+            </div>
+          </div>
+
+          <!-- Row 3: Balanced 2-Column Split (Skill Coverage 5 rows | Recent Activity 5 rows) -->
+          <div class="overview-row-3">
+            <div class="card">
+              <div class="card-head">
+                <h2 class="card-title">Skill Coverage</h2>
+                <span class="spacer"></span>
+                <button type="button" class="card-link" data-nav="skills">All skills →</button>
+              </div>
+              <div id="overviewCoverage" class="cov-list"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h2 class="card-title">Recent Activity</h2>
+                <span class="spacer"></span>
+                <span class="card-subtitle">Syncs &amp; overrides</span>
+              </div>
+              <div id="activityList" class="act-list"></div>
+            </div>
+          </div>
+
+          <!-- Row 4: Collapsible Provisioning Matrix -->
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Provisioning Matrix</h2>
+              <span class="card-subtitle">Project × skill presence</span>
+              <span class="spacer"></span>
+              <div id="matrixFilters" class="filter-pills" role="group" aria-label="Filter matrix category"></div>
+              <button id="toggleMatrixBtn" type="button" class="btn btn-sm btn-ghost"></button>
+            </div>
+            <div id="matrixScroll" class="matrix-scroll"></div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 2: PROJECTS ==================== -->
+        <section id="pane-projects" class="tab-pane" role="tabpanel" aria-label="Projects">
+          
+          <div class="card">
+            <div class="toolbar">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input id="projectSearch" type="search" placeholder="Filter by project name, path, agent, or skill…" aria-label="Filter projects" />
+              </div>
+              <div id="projectStatusFilters" class="filter-pills" role="group" aria-label="Filter by sync status"></div>
+
+              <div id="activeAgentFilterWrap" style="display:none"></div>
+
+              <div class="segmented" style="width:120px" role="group" aria-label="Projects layout">
+                <button id="projViewTable" type="button" class="seg-btn" data-proj-view="table" aria-pressed="true">Table</button>
+                <button id="projViewList" type="button" class="seg-btn" data-proj-view="list" aria-pressed="false">List</button>
+              </div>
+            </div>
+
+            <div id="projectsContainer"></div>
+          </div>
+
+          <!-- Provisioning Actions Studio -->
+          <div class="section-divider">
+            <div>
+              <h2 class="section-heading">Provisioning Actions</h2>
+              <p class="section-sub">Inject skills into a directory, remove installed skills, or import from GitHub / skills.sh.</p>
+            </div>
+          </div>
+
+          <div class="inject-split">
+            <!-- Left: Inject into project -->
+            <div id="injectCard" class="card">
+              <div class="card-head">
+                <h3 class="card-title">Inject into project</h3>
+                <span class="spacer"></span>
+                <span class="card-subtitle">Creates missing folder</span>
+              </div>
+              <div class="card-body">
+                <div class="form-row">
+                  <label class="field-label" for="injectPath">Target directory</label>
+                  <input id="injectPath" class="field-input mono" type="text" placeholder="/Users/dev/workspace/my-project" autocomplete="off" spellcheck="false" />
+                  <p class="field-hint">Absolute path or relative to engine directory. Missing folders are created automatically.</p>
+                </div>
+
+                <div class="form-grid-2">
+                  <div class="form-row">
+                    <label class="field-label" for="injectAgent">AI agent profile</label>
+                    <select id="injectAgent" class="field-input">
+                      <option value="claude">Claude Code — CLAUDE.md</option>
+                      <option value="cursor">Cursor — .cursorrules</option>
+                      <option value="copilot">GitHub Copilot — copilot-instructions.md</option>
+                      <option value="opencode">OpenCode — AGENTS.md</option>
+                      <option value="chatgpt">ChatGPT — CHATGPT.md</option>
+                    </select>
+                  </div>
+
+                  <div class="form-row">
+                    <label class="field-label" for="injectMerge">Write mode</label>
+                    <select id="injectMerge" class="field-input">
+                      <option value="merge">Smart merge — keep custom rules</option>
+                      <option value="overwrite">Overwrite — replace managed file</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <span class="field-label">
+                    <span>Skills to inject</span>
+                    <span id="injectCount" class="mono" style="font-size:11px;color:var(--text-3)"></span>
+                  </span>
+                  <div id="injectSkillList" class="check-list"></div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <button id="injectBtn" type="button" class="btn btn-primary">Inject selected skills</button>
+                  <button id="injectClearBtn" type="button" class="btn btn-ghost">Clear</button>
+                </div>
+                <div id="injectResult" class="result-banner" hidden></div>
+              </div>
+            </div>
+
+            <!-- Right Stacked: Remove + Import -->
+            <div class="stack">
+              <div id="removeCard" class="card">
+                <div class="card-head">
+                  <h3 class="card-title">Remove from project</h3>
+                  <span class="spacer"></span>
+                  <span class="card-subtitle">Preserves registry entry</span>
+                </div>
+                <div class="card-body">
+                  <div class="form-row">
+                    <label class="field-label" for="removeProject">Registered project</label>
+                    <select id="removeProject" class="field-input"></select>
+                  </div>
+                  <div class="form-row">
+                    <span class="field-label">Installed skills</span>
+                    <div id="removeSkillList" class="check-list" style="max-height:165px"></div>
+                  </div>
+                  <div>
+                    <button id="removeBtn" type="button" class="btn btn-danger">Remove selected</button>
+                  </div>
+                  <div id="removeResult" class="result-banner" hidden></div>
+                </div>
+              </div>
+
+              <div id="importCard" class="card">
+                <div class="card-head">
+                  <h3 class="card-title">Import skill from URL</h3>
+                  <span class="spacer"></span>
+                  <span class="card-subtitle">GitHub or skills.sh</span>
+                </div>
+                <div class="card-body">
+                  <div class="form-row">
+                    <label class="field-label" for="importUrl">Source URL</label>
+                    <input id="importUrl" class="field-input mono" type="text" placeholder="https://github.com/owner/repo" autocomplete="off" spellcheck="false" />
+                    <p class="field-hint">Downloads the manifest, copies scripts, and adds the skill into <span class="mono">skills_library/</span>.</p>
+                  </div>
+                  <div>
+                    <button id="importBtn" type="button" class="btn btn-primary">Import into library</button>
+                  </div>
+                  <div id="importResult" class="result-banner" hidden></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 3: SYNC & OPS ==================== -->
+        <section id="pane-sync" class="tab-pane" role="tabpanel" aria-label="Sync and Operations">
+          
+          <div class="ops-row">
+            <!-- Left: Engine Health Checks -->
+            <div class="card">
+              <div class="card-head">
+                <h2 class="card-title">Engine Health Checks</h2>
+                <span class="spacer"></span>
+                <span id="opsHealthPill"></span>
+              </div>
+              <div id="opsChecksList"></div>
+            </div>
+
+            <!-- Right: Clean Bordered CLI Blocks (Zero macOS traffic lights) -->
+            <div class="card">
+              <div class="card-head">
+                <h2 class="card-title">CLI Commands</h2>
+                <span class="spacer"></span>
+                <span class="card-subtitle">Run from terminal</span>
+              </div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+                <div>
+                  <div class="cli-block">
+                    <div class="cli-head">
+                      <span>Sync all registered projects</span>
+                      <button type="button" class="btn btn-sm" data-copy="rig sync --all --yes">Copy</button>
+                    </div>
+                    <pre class="cli-pre"><span class="cli-prompt">$</span>rig sync --all --yes</pre>
+                  </div>
+                  <p class="field-hint" style="margin-top:5px">Non-interactive. Re-injects skills, slash commands, and MCP manifests across every registered target.</p>
+                </div>
+
+                <div>
+                  <div class="cli-block">
+                    <div class="cli-head">
+                      <span>Single project sync</span>
+                      <button type="button" class="btn btn-sm" data-copy="rig sync <path> --yes">Copy</button>
+                    </div>
+                    <pre class="cli-pre"><span class="cli-prompt">$</span>rig sync &lt;path&gt; --yes</pre>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="cli-block">
+                    <div class="cli-head">
+                      <span>Update master templates (main)</span>
+                      <button type="button" class="btn btn-sm" data-copy="rig --update">Copy</button>
+                    </div>
+                    <pre class="cli-pre"><span class="cli-prompt">$</span>rig --update</pre>
+                  </div>
+                  <p class="field-hint" style="margin-top:5px">Pulls latest manifests on <span class="mono">main</span> into <span class="mono">skills_library/</span> without altering projects until synced.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Project Sync Matrix -->
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Project Sync Matrix</h2>
+              <span class="spacer"></span>
+              <span class="card-subtitle">Click any row to inspect project details</span>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Project</th>
+                    <th>Agents</th>
+                    <th>Skills</th>
+                    <th>Last Synced</th>
+                    <th>Status</th>
+                    <th style="text-align:right">Command</th>
+                  </tr>
+                </thead>
+                <tbody id="syncMatrixBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 4: SKILLS ==================== -->
+        <section id="pane-skills" class="tab-pane" role="tabpanel" aria-label="Skills">
+          
+          <div class="card">
+            <div class="toolbar">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input id="skillSearch" type="search" placeholder="Search skill name, id, or description…" aria-label="Search skills" />
+              </div>
+              <div id="skillCategoryFilters" class="filter-pills" role="group" aria-label="Filter skill categories"></div>
+
+              <select id="skillSort" class="select-ctrl" aria-label="Sort skills">
+                <option value="name">Name A–Z</option>
+                <option value="deployed">Most Deployed</option>
+                <option value="custom">Customized First</option>
+              </select>
+            </div>
+
+            <div id="skillsGrid" class="skills-grid"></div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 5: SETTINGS ==================== -->
+        <section id="pane-settings" class="tab-pane" role="tabpanel" aria-label="Settings">
+          
+          <div class="settings-split">
+            <div class="card">
+              <div class="card-head" style="padding:10px 12px">
+                <div class="search-box" style="height:30px">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                  <input id="settingsSearch" type="search" placeholder="Filter skills…" aria-label="Filter skills in settings" />
+                </div>
+              </div>
+              <div id="settingsSkillList" class="settings-list"></div>
+            </div>
+
+            <div class="card">
+              <div id="settingsFormHead" class="card-head"></div>
+              <div id="settingsFormBody" class="card-body"></div>
+              <div id="settingsFormFooter" class="form-footer"></div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== SLIDE-OVER PROJECT INSPECTOR DRAWER ==================== -->
+  <div id="drawerBackdrop" class="backdrop"></div>
+  <aside id="projectDrawer" class="drawer" aria-hidden="true" aria-label="Project details">
+    <div class="drawer-head">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <h3 id="drawerTitle" style="font-size:16px;font-weight:600;letter-spacing:-0.02em"></h3>
+          <span id="drawerStatus"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <span id="drawerPath" class="mono truncate" style="font-size:11.5px;color:var(--text-3)"></span>
+          <button id="drawerCopyPathBtn" type="button" class="btn btn-sm btn-ghost" style="height:22px;padding:0 6px">Copy</button>
+        </div>
+      </div>
+      <button id="drawerCloseBtn" type="button" class="icon-btn" aria-label="Close drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="drawerBody" class="drawer-body"></div>
+  </aside>
+
+  <!-- ==================== COMMAND PALETTE (⌘K) ==================== -->
+  <div id="cmdBackdrop" class="backdrop" style="z-index:70"></div>
+  <div id="cmdModal" class="cmd-modal" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="cmd-input-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="cmdInput" type="text" autocomplete="off" placeholder="Jump to tab, project, skill, or command…" />
+      <span class="kbd">ESC</span>
+    </div>
+    <div id="cmdList" class="cmd-list"></div>
+    <div class="cmd-foot">
+      <span><strong class="mono" style="color:var(--text-2)">↑↓</strong> Navigate</span>
+      <span><strong class="mono" style="color:var(--text-2)">↵</strong> Open</span>
+      <span><strong class="mono" style="color:var(--text-2)">[</strong> Sidebar</span>
+      <span><strong class="mono" style="color:var(--text-2)" id="saveKbd">Ctrl S</strong> Save</span>
+    </div>
+  </div>
+
+  <!-- ==================== SKILL DOCS MODAL ==================== -->
+  <div id="skillModalBackdrop" class="backdrop" style="z-index:72"></div>
+  <div id="skillModal" class="skill-modal" role="dialog" aria-modal="true" aria-labelledby="skillModalTitle">
+    <div class="skill-modal-head">
+      <div style="min-width:0;flex:1">
+        <h2 id="skillModalTitle" class="skill-modal-title">Skill</h2>
+        <div class="skill-modal-sub">
+          <span id="skillModalId" class="mono"></span>
+          <span id="skillModalCat" class="tag mono"></span>
+        </div>
+      </div>
+      <button id="skillModalClose" type="button" class="icon-btn" aria-label="Close documentation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="skillModalBody" class="skill-modal-body"></div>
+    <div class="skill-modal-foot">
+      <button id="skillModalInject" type="button" class="btn btn-primary">Inject into project…</button>
+      <button id="skillModalConfigure" type="button" class="btn">Configure parameters</button>
+      <span class="spacer"></span>
+      <button id="skillModalCopyCmd" type="button" class="btn btn-ghost">Copy slash command</button>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST STACK ==================== -->
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* =====================================================================
+         Crisp Monochrome Line SVG Icons (15px, stroke-width 1.7)
+         ===================================================================== */
+      const ICONS = {
+        overview: '<rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><rect x="14" y="14" width="7" height="7" rx="1.2"/>',
+        projects: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+        sync: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+        skills: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+        settings: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+        check: '<polyline points="20 6 9 17 4 12"/>',
+        alert: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+        copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+        terminal: '<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>',
+        chevRight: '<polyline points="9 18 15 12 9 6"/>',
+        sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+        moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'
+      };
+
+      function svg(name, size) {
+        const s = size || 15;
+        return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || ICONS.skills) + '</svg>';
+      }
+
+      function esc(v) {
+        return String(v ?? '').replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      const TABS = [
+        { id: 'overview', label: 'Overview',   icon: 'overview',
+          sub: 'Local registry snapshot, engine health, and skill provisioning across directories.' },
+        { id: 'projects', label: 'Projects',   icon: 'projects',
+          sub: 'Registered local directories, AI agent targets, and provisioning actions.' },
+        { id: 'sync',     label: 'Sync & Ops', icon: 'sync',
+          sub: 'Local engine health checks, CLI sync commands, and target sync state.' },
+        { id: 'skills',   label: 'Skills',     icon: 'skills',
+          sub: 'Master skill library manifests, dependencies, and workspace deployment counts.' },
+        { id: 'settings', label: 'Settings',   icon: 'settings',
+          sub: 'Configure skill parameters and extra AI instructions persisted to local overrides.' }
+      ];
+
+      /* Neutral Agent Labels & Output Files (Zero rainbow colors) */
+      const AGENT_META = {
+        claude:   { label: 'Claude Code', file: 'CLAUDE.md' },
+        cursor:   { label: 'Cursor',      file: '.cursorrules' },
+        copilot:  { label: 'Copilot',     file: 'copilot-instructions.md' },
+        opencode: { label: 'OpenCode',    file: 'AGENTS.md' },
+        chatgpt:  { label: 'ChatGPT',     file: 'CHATGPT.md' }
+      };
+
+      function agentLabel(key) {
+        return (AGENT_META[key] && AGENT_META[key].label) || key;
+      }
+
+      /* =====================================================================
+         Realistic Developer Sample Dataset (5 Projects, 8 Skills, 3 Overrides)
+         ===================================================================== */
+      /* Seed dataset removed — state is hydrated from /api/* at boot. */
+
+
+      /* =====================================================================
+         Application State
+         ===================================================================== */
+      const state = {
+        activeTab: 'overview',
+        theme: 'light',
+        sidebarCollapsed: false,
+        projects: [],
+        skills: [],
+        settings: {},
+        snapshotAt: new Date().toISOString(),
+
+        // Filters & Layouts
+        matrixCat: 'all',
+        matrixExpanded: true,
+        projectQuery: '',
+        projectStatus: 'all',
+        projectAgent: 'all',
+        projectView: 'table',
+        skillQuery: '',
+        skillCat: 'all',
+        skillSort: 'name',
+
+        // Settings Studio
+        settingsQuery: '',
+        selectedSkillId: null,
+        draftValues: {},
+        draftExtraRule: '',
+        formDirty: false,
+        previewOpen: true,
+        previewTab: 'json',
+
+        // Drawer & Command Palette
+        drawerProjectId: null,
+        docsSkillId: null,
+        lastDocsSkillId: null,
+        modalKind: 'skill',
+        updateInfo: null,
+        cmdOpen: false,
+        cmdQuery: '',
+        cmdIdx: 0
+      };
+
+      /* =====================================================================
+         Helpers
+         ===================================================================== */
+      function skillById(id) { return state.skills.find((s) => s.id === id) || null; }
+      function projectById(id) { return state.projects.find((p) => p.id === id) || null; }
+      function isCustom(skillId) { return Boolean(state.settings[skillId]); }
+
+      function skillCategory(s) {
+        if (Array.isArray(s.mcp_servers) && s.mcp_servers.length > 0) return 'mcp';
+        const deps = s.dependencies || {};
+        if ((deps.pip || []).length > 0) return 'python';
+        if ((deps.npm || []).length > 0) return 'node';
+        return 'workflow';
+      }
+
+      function getUsageCounts() {
+        const map = new Map();
+        state.projects.forEach((p) => {
+          p.skills.forEach((sid) => map.set(sid, (map.get(sid) || 0) + 1));
+        });
+        return map;
+      }
+
+      function getOrphans() {
+        const out = [];
+        state.projects.forEach((p) => {
+          p.skills.forEach((sid) => {
+            if (!skillById(sid)) out.push({ projectId: p.id, projectName: p.name, skillId: sid });
+          });
+        });
+        return out;
+      }
+
+      function relTime(iso) {
+        if (!iso) return 'Never';
+        const diff = Date.now() - new Date(iso).getTime();
+        if (diff < 60000) return 'just now';
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return mins + 'm ago';
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return hrs + 'h ago';
+        return Math.floor(hrs / 24) + 'd ago';
+      }
+
+      function absTime(iso) {
+        if (!iso) return 'Not synced';
+        const d = new Date(iso);
+        const pad = (n) => String(n).padStart(2, '0');
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      }
+
+      function copyText(text, label) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.top = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          toast(label || 'Copied to clipboard');
+        } catch (err) {
+          toast('Unable to copy automatically');
+        }
+      }
+
+      function toast(message) {
+        const stack = document.getElementById('toastStack');
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.innerHTML = svg('check', 14) + '<span>' + esc(message) + '</span>';
+        stack.appendChild(el);
+        setTimeout(() => {
+          el.style.transition = 'opacity 150ms ease';
+          el.style.opacity = '0';
+          setTimeout(() => el.remove(), 160);
+        }, 2200);
+      }
+
+      function flashCard(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('card-flash');
+        void el.offsetWidth;
+        el.classList.add('card-flash');
+      }
+
+      /* =====================================================================
+         Theme & Sidebar State
+         ===================================================================== */
+      function setTheme(mode, notify) {
+        state.theme = mode === 'dark' ? 'dark' : 'light';
+        const dark = state.theme === 'dark';
+        document.documentElement.classList.toggle('dark', dark);
+        document.getElementById('themeLightBtn').setAttribute('aria-pressed', String(!dark));
+        document.getElementById('themeDarkBtn').setAttribute('aria-pressed', String(dark));
+        const topBtn = document.getElementById('topThemeToggle');
+        if (topBtn) {
+          topBtn.innerHTML = svg(dark ? 'sun' : 'moon', 15);
+          topBtn.title = dark ? 'Switch to Light mode' : 'Switch to Soft Dark mode';
+        }
+        try { localStorage.setItem('contextrig-preview-theme', state.theme); } catch (e) {}
+        if (notify) toast('Theme set to ' + (dark ? 'Dark (Dimmed Slate)' : 'Light'));
+      }
+
+      function toggleSidebar() {
+        state.sidebarCollapsed = !state.sidebarCollapsed;
+        document.getElementById('appShell').classList.toggle('collapsed', state.sidebarCollapsed);
+      }
+
+      function setMobileSidebar(open) {
+        document.getElementById('sidebar').classList.toggle('mobile-open', open);
+        document.getElementById('mobileBackdrop').classList.toggle('open', open);
+      }
+
+      /* =====================================================================
+         Sidebar & Navigation Render
+         ===================================================================== */
+      function renderSidebar() {
+        const customCount = Object.keys(state.settings).length;
+        const countMap = {
+          projects: state.projects.length,
+          skills: state.skills.length,
+          settings: customCount
+        };
+
+        document.getElementById('primaryNav').innerHTML = TABS.map((t) => {
+          const active = state.activeTab === t.id;
+          const cnt = countMap[t.id];
+          return '<button type="button" class="nav-item' + (active ? ' active' : '') + '" data-nav="' + t.id + '" title="' + esc(t.label) + '">' +
+            svg(t.icon, 15) +
+            '<span class="nav-label">' + esc(t.label) + '</span>' +
+            (cnt !== undefined ? '<span class="nav-count">' + cnt + '</span>' : '') +
+          '</button>';
+        }).join('');
+
+        document.getElementById('sidebarProjCount').textContent = String(state.projects.length);
+        document.getElementById('sidebarProjects').innerHTML = state.projects.map((p) => {
+          const hasOrphan = p.skills.some((sid) => !skillById(sid));
+          const dotCls = hasOrphan ? 'dot-err' : (p.lastSynced ? 'dot-ok' : 'dot-warn');
+          return '<button type="button" class="sidebar-proj-btn" data-inspect-project="' + esc(p.id) + '" title="' + esc(p.path) + '">' +
+            '<span class="dot ' + dotCls + '"></span>' +
+            '<span class="truncate">' + esc(p.name) + '</span>' +
+          '</button>';
+        }).join('');
+
+        const curTab = TABS.find((t) => t.id === state.activeTab) || TABS[0];
+        const tName = document.getElementById('topbarName');
+        const tSub = document.getElementById('topbarSub');
+        const tIco = document.getElementById('topbarIco');
+        if (tName) tName.textContent = curTab.label;
+        if (tSub) tSub.textContent = curTab.sub || '';
+        if (tIco) {
+          tIco.setAttribute('data-ico', curTab.icon);
+          tIco.innerHTML = svg(curTab.icon, 19);
+        }
+
+        document.querySelectorAll('.tab-pane').forEach((pane) => {
+          pane.classList.toggle('active', pane.id === 'pane-' + state.activeTab);
+        });
+      }
+
+      function switchTab(tabId) {
+        if (!TABS.some((t) => t.id === tabId)) return;
+        state.activeTab = tabId;
+        setMobileSidebar(false);
+        renderSidebar();
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+
+      /* =====================================================================
+         TAB 1: OVERVIEW (Perfectly Balanced Rows, Zero Awkward Gaps)
+         ===================================================================== */
+      function renderOverview() {
+        const syncedCount = state.projects.filter((p) => Boolean(p.lastSynced)).length;
+        const pendingProjects = state.projects.filter((p) => !p.lastSynced);
+        const totalInstalls = state.projects.reduce((s, p) => s + p.skills.length, 0);
+        const customCount = Object.keys(state.settings).length;
+        const orphans = getOrphans();
+        const usage = getUsageCounts();
+
+        var _ts = document.getElementById('overviewTimestamp'); if (_ts) _ts.textContent = 'Updated ' + absTime(state.snapshotAt);
+
+        /* Top Strip: Slim Inline Attention Alert Bar */
+        const alertHost = document.getElementById('attentionBar');
+        if (orphans.length > 0 || pendingProjects.length > 0) {
+          const parts = [];
+          if (orphans.length > 0) {
+            parts.push('<strong>' + orphans.length + ' orphan skill</strong> (<span class="mono">' + esc(orphans[0].skillId) + '</span>) in <span class="mono">' + esc(orphans[0].projectName) + '</span>');
+          }
+          if (pendingProjects.length > 0) {
+            parts.push('<strong>' + pendingProjects.length + ' project</strong> pending sync');
+          }
+          const resolveAttr = orphans.length > 0
+            ? 'data-resolve-orphan="' + esc(orphans[0].projectId) + '|' + esc(orphans[0].skillId) + '"'
+            : 'data-inspect-project="' + esc(pendingProjects[0].id) + '"';
+          alertHost.innerHTML =
+            '<div class="alert-bar alert-warn">' +
+              '<div class="alert-left">' +
+                '<span class="dot ' + (orphans.length ? 'dot-err' : 'dot-warn') + '"></span>' +
+                '<span>' + parts.join(' &middot; ') + '</span>' +
+              '</div>' +
+              '<div class="alert-actions">' +
+                '<button type="button" class="alert-link" ' + resolveAttr + '>Resolve in Projects →</button>' +
+              '</div>' +
+            '</div>';
+        } else {
+          alertHost.innerHTML =
+            '<div class="alert-bar alert-ok">' +
+              '<div class="alert-left">' +
+                '<span class="dot dot-ok"></span>' +
+                '<span>Workspace healthy &mdash; all ' + state.projects.length + ' projects synced and all skill references valid.</span>' +
+              '</div>' +
+            '</div>';
+        }
+
+        /* Row 1: Unified 4-Column KPI Strip */
+        const kpis = [
+          {
+            label: 'Registered Projects',
+            value: state.projects.length,
+            src: 'projects.json',
+            note: syncedCount + '/' + state.projects.length + ' synced',
+            noteCls: pendingProjects.length === 0 ? 'kpi-ok' : 'kpi-warn',
+            nav: 'projects'
+          },
+          {
+            label: 'Master Skills',
+            value: state.skills.length,
+            src: 'skills_library/',
+            note: orphans.length ? orphans.length + ' orphan ref' : 'All refs valid',
+            noteCls: orphans.length ? 'kpi-err' : 'kpi-ok',
+            nav: 'skills'
+          },
+          {
+            label: 'Active Installs',
+            value: totalInstalls,
+            src: 'skill × project',
+            note: (totalInstalls / Math.max(state.projects.length, 1)).toFixed(1) + ' avg / project',
+            noteCls: '',
+            nav: 'sync'
+          },
+          {
+            label: 'Custom Overrides',
+            value: customCount,
+            src: 'skill-settings.json',
+            note: customCount + ' of ' + state.skills.length + ' tuned',
+            noteCls: '',
+            nav: 'settings'
+          }
+        ];
+
+        document.getElementById('kpiStrip').innerHTML = kpis.map((k) =>
+          '<button type="button" class="kpi-cell" data-nav="' + k.nav + '">' +
+            '<span class="kpi-label">' + esc(k.label) + '</span>' +
+            '<span class="kpi-val">' + k.value + '</span>' +
+            '<div class="kpi-meta">' +
+              '<span class="mono">' + esc(k.src) + '</span>' +
+              '<span class="' + k.noteCls + '">' + esc(k.note) + '</span>' +
+            '</div>' +
+          '</button>'
+        ).join('');
+
+        /* Row 2 Left: Managed Projects Table */
+        document.getElementById('overviewProjectsBody').innerHTML = state.projects.map((p) => {
+          const synced = Boolean(p.lastSynced);
+          const hasOrphan = p.skills.some((sid) => !skillById(sid));
+          const cmd = 'rig sync "' + p.path + '" --yes';
+          let pill = '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Synced</span>';
+          if (hasOrphan) pill = '<span class="status-badge st-err"><span class="dot dot-err"></span>' + (synced ? 'Orphan' : 'Pending · Orphan') + '</span>';
+          else if (!synced) pill = '<span class="status-badge st-warn"><span class="dot dot-warn"></span>Pending</span>';
+
+          return '<tr class="clickable" data-inspect-project="' + esc(p.id) + '">' +
+            '<td>' +
+              '<div style="font-weight:500;color:var(--text-1)">' + esc(p.name) + '</div>' +
+              '<div class="mono truncate" style="font-size:11px;color:var(--text-3);max-width:225px">' + esc(p.path) + '</div>' +
+            '</td>' +
+            '<td><div style="display:flex;flex-wrap:wrap;gap:4px">' + p.agents.map((a) => '<span class="tag">' + esc(agentLabel(a)) + '</span>').join('') + '</div></td>' +
+            '<td class="mono tnum" style="font-size:12px;color:var(--text-2)">' + p.skills.length + '</td>' +
+            '<td>' + pill + '</td>' +
+            '<td class="mono tnum" style="font-size:11.5px;color:var(--text-3);white-space:nowrap">' + esc(relTime(p.lastSynced)) + '</td>' +
+            '<td style="text-align:right">' +
+              '<button type="button" class="icon-btn" style="margin-left:auto" data-copy="' + esc(cmd) + '" data-stop="true" title="Copy sync command">' + svg('copy', 13.5) + '</button>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+
+        document.getElementById('overviewProjFoot').textContent = state.projects.length + ' directories · click any row to inspect';
+
+        /* Row 2 Right: Unified Card — Engine Integrity + AI Agent Footprint */
+        const mcpCount = state.skills.reduce((n, s) => n + (s.mcp_servers || []).length, 0);
+        const latestSync = state.projects.map((p) => p.lastSynced).filter(Boolean).sort().pop();
+
+        document.getElementById('overviewIntegrity').innerHTML =
+          '<div class="kv-row"><span class="kv-key">Reference integrity</span>' +
+            (orphans.length === 0
+              ? '<span class="status-badge st-ok">Clean</span>'
+              : '<span class="status-badge st-err">' + orphans.length + ' orphan</span>') +
+          '</div>' +
+          '<div class="kv-row"><span class="kv-key">Sync coverage</span>' +
+            '<span class="status-badge ' + (pendingProjects.length === 0 ? 'st-ok' : 'st-warn') + '">' + syncedCount + '/' + state.projects.length + ' synced</span>' +
+          '</div>' +
+          '<div class="kv-row"><span class="kv-key">Config overrides</span><span class="kv-val">' + customCount + ' active</span></div>' +
+          '<div class="kv-row"><span class="kv-key">MCP servers</span><span class="kv-val">' + mcpCount + ' bound</span></div>' +
+          '<div class="kv-row"><span class="kv-key">Last sync</span><span class="kv-val">' + esc(latestSync ? relTime(latestSync) : 'Never') + '</span></div>';
+
+        const agentCounts = new Map();
+        Object.keys(AGENT_META).forEach((k) => agentCounts.set(k, 0));
+        state.projects.forEach((p) => {
+          p.agents.forEach((a) => agentCounts.set(a, (agentCounts.get(a) || 0) + 1));
+        });
+        const sortedAgents = Array.from(agentCounts.entries())
+          .filter(([, count]) => count > 0)
+          .sort((a, b) => b[1] - a[1]);
+
+        document.getElementById('agentFootprint').innerHTML = sortedAgents.map(([key, count]) => {
+          const meta = AGENT_META[key] || { label: key, file: 'RULES.md' };
+          const pct = Math.round((count / Math.max(state.projects.length, 1)) * 100);
+          return '<button type="button" class="agent-compact-btn" data-filter-agent="' + esc(key) + '" title="Filter Projects by ' + esc(meta.label) + '">' +
+            '<div class="agent-compact-top">' +
+              '<span style="display:flex;align-items:center;gap:7px;min-width:0">' +
+                '<span style="font-weight:500;color:var(--text-1)">' + esc(meta.label) + '</span>' +
+                '<span class="mono truncate" style="font-size:11px;color:var(--text-3)">' + esc(meta.file) + '</span>' +
+              '</span>' +
+              '<span class="mono tnum" style="font-size:11.5px;color:var(--text-2)">' + count + '</span>' +
+            '</div>' +
+            '<div class="mini-rail"><div class="mini-fill" style="width:' + pct + '%"></div></div>' +
+          '</button>';
+        }).join('');
+
+        /* Row 3 Left: Skill Coverage (5 rows) */
+        const topSkills = state.skills.slice()
+          .sort((a, b) => (usage.get(b.id) || 0) - (usage.get(a.id) || 0) || a.name.localeCompare(b.name))
+          .slice(0, 5);
+
+        document.getElementById('overviewCoverage').innerHTML = topSkills.map((s) => {
+          const count = usage.get(s.id) || 0;
+          const pct = Math.round((count / Math.max(state.projects.length, 1)) * 100);
+          return '<button type="button" class="cov-row" data-open-skill="' + esc(s.id) + '">' +
+            '<div class="cov-top">' +
+              '<span style="font-weight:500;color:var(--text-1)" class="truncate">' + esc(s.name) + '</span>' +
+              '<span class="mono tnum" style="font-size:11.5px;color:var(--text-3)">' + count + '/' + state.projects.length + '</span>' +
+            '</div>' +
+            '<div class="mini-rail"><div class="mini-fill" style="width:' + pct + '%"></div></div>' +
+          '</button>';
+        }).join('');
+
+        /* Row 3 Right: Recent Activity (5 rows) */
+        const events = [];
+        state.projects.forEach((p) => {
+          if (p.lastSynced) {
+            events.push({ at: p.lastSynced, title: p.name, kind: 'registry.sync', attr: 'data-inspect-project="' + esc(p.id) + '"' });
+          }
+        });
+        Object.entries(state.settings).forEach(([sid, cfg]) => {
+          const s = skillById(sid);
+          events.push({ at: cfg.updatedAt || state.snapshotAt, title: s ? s.name : sid, kind: 'settings.custom', attr: 'data-open-skill="' + esc(sid) + '"' });
+        });
+        events.sort((a, b) => new Date(b.at) - new Date(a.at));
+
+        document.getElementById('activityList').innerHTML = events.slice(0, 5).map((ev) =>
+          '<button type="button" class="act-row" ' + ev.attr + '>' +
+            '<span class="act-time">' + esc(relTime(ev.at)) + '</span>' +
+            '<span class="act-name truncate">' + esc(ev.title) + '</span>' +
+            '<span class="tag mono">' + esc(ev.kind) + '</span>' +
+          '</button>'
+        ).join('');
+
+        /* Row 4: Provisioning Matrix */
+        renderMatrix();
+      }
+
+      /* Provisioning Matrix */
+      function renderMatrix() {
+        const toggleBtn = document.getElementById('toggleMatrixBtn');
+        toggleBtn.textContent = state.matrixExpanded ? 'Collapse' : 'Expand';
+
+        const filtersEl = document.getElementById('matrixFilters');
+        const container = document.getElementById('matrixScroll');
+        filtersEl.style.display = state.matrixExpanded ? 'flex' : 'none';
+        container.style.display = state.matrixExpanded ? 'block' : 'none';
+        if (!state.matrixExpanded) return;
+
+        const cats = [
+          ['all', 'All'],
+          ['workflow', 'Workflow'],
+          ['node', 'Node'],
+          ['python', 'Python'],
+          ['mcp', 'MCP']
+        ];
+        filtersEl.innerHTML = cats.map(([id, label]) =>
+          '<button type="button" class="pill-btn" data-matrix-cat="' + id + '" aria-pressed="' + (state.matrixCat === id) + '">' + label + '</button>'
+        ).join('');
+
+        const visibleSkills = state.skills.filter((s) => state.matrixCat === 'all' || skillCategory(s) === state.matrixCat);
+        const orphanIds = state.matrixCat === 'all' ? Array.from(new Set(getOrphans().map((o) => o.skillId))) : [];
+
+        let thead = '<tr><th class="col-sticky">Project</th>';
+        visibleSkills.forEach((s, ci) => {
+          thead += '<th data-col="' + ci + '"><button type="button" data-open-skill="' + esc(s.id) + '" title="Configure ' + esc(s.name) + '">' + esc(s.id) + '</button></th>';
+        });
+        orphanIds.forEach((oid, idx) => {
+          const ci = visibleSkills.length + idx;
+          thead += '<th data-col="' + ci + '" style="color:var(--err-text)" title="Orphan skill not in library">' + esc(oid) + '</th>';
+        });
+        thead += '<th style="text-align:right;padding-right:16px">Total</th></tr>';
+
+        const tbody = state.projects.map((p, ri) => {
+          const owned = new Set(p.skills);
+          const hasOrphan = p.skills.some((sid) => !skillById(sid));
+          const dotCls = hasOrphan ? 'dot-err' : (p.lastSynced ? 'dot-ok' : 'dot-warn');
+
+          let row = '<tr data-row="' + ri + '">';
+          row += '<td class="col-sticky"><button type="button" data-inspect-project="' + esc(p.id) + '" style="display:inline-flex;align-items:center;gap:8px;font-weight:500;color:var(--text-1)">' +
+            '<span class="dot ' + dotCls + '"></span>' + esc(p.name) +
+          '</button></td>';
+
+          visibleSkills.forEach((s, ci) => {
+            const on = owned.has(s.id);
+            row += '<td data-col="' + ci + '" data-row="' + ri + '">' +
+              '<div class="m-cell ' + (on ? 'on' : 'off') + '" data-inspect-project="' + esc(p.id) + '" title="' + esc(p.name) + ' · ' + esc(s.name) + ': ' + (on ? 'Installed' : 'Absent') + '">' +
+                (on ? svg('check', 13) : '') +
+              '</div>' +
+            '</td>';
+          });
+
+          orphanIds.forEach((oid, idx) => {
+            const ci = visibleSkills.length + idx;
+            const on = owned.has(oid);
+            row += '<td data-col="' + ci + '" data-row="' + ri + '">' +
+              '<div class="m-cell ' + (on ? 'orphan' : 'off') + '" data-inspect-project="' + esc(p.id) + '" title="' + esc(p.name) + ' · ' + esc(oid) + (on ? ': Orphan skill' : ': Absent') + '">' +
+                (on ? '!' : '') +
+              '</div>' +
+            '</td>';
+          });
+
+          row += '<td class="mono tnum" style="text-align:right;padding-right:16px;color:var(--text-2)">' + p.skills.length + '</td></tr>';
+          return row;
+        }).join('');
+
+        container.innerHTML = '<table id="matrixTable" class="matrix-table"><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
+
+        const tbl = document.getElementById('matrixTable');
+        function clearHover() {
+          tbl.querySelectorAll('.row-hover').forEach((el) => el.classList.remove('row-hover'));
+          tbl.querySelectorAll('.col-hover').forEach((el) => el.classList.remove('col-hover'));
+        }
+        tbl.addEventListener('mouseover', (e) => {
+          const cell = e.target.closest('td[data-col]');
+          if (!cell) return;
+          const r = cell.getAttribute('data-row');
+          const c = cell.getAttribute('data-col');
+          clearHover();
+          const tr = tbl.querySelector('tbody tr[data-row="' + r + '"]');
+          if (tr) tr.classList.add('row-hover');
+          tbl.querySelectorAll('[data-col="' + c + '"]').forEach((el) => el.classList.add('col-hover'));
+        });
+        tbl.addEventListener('mouseleave', clearHover);
+      }
+
+      /* =====================================================================
+         TAB 2: PROJECTS + PROVISIONING STUDIO
+         ===================================================================== */
+      function renderProjects() {
+        const syncedCnt = state.projects.filter((p) => Boolean(p.lastSynced)).length;
+        const pendingCnt = state.projects.length - syncedCnt;
+
+        const pills = [
+          ['all', 'All', state.projects.length],
+          ['synced', 'Synced', syncedCnt],
+          ['pending', 'Pending', pendingCnt]
+        ];
+        document.getElementById('projectStatusFilters').innerHTML = pills.map(([id, label, cnt]) =>
+          '<button type="button" class="pill-btn" data-proj-status="' + id + '" aria-pressed="' + (state.projectStatus === id) + '">' +
+            label + ' <span class="pill-cnt">' + cnt + '</span>' +
+          '</button>'
+        ).join('');
+
+        const agentWrap = document.getElementById('activeAgentFilterWrap');
+        if (state.projectAgent !== 'all') {
+          agentWrap.style.display = 'inline-flex';
+          agentWrap.innerHTML =
+            '<button type="button" class="pill-btn" aria-pressed="true" data-clear-agent="true" title="Clear agent filter">' +
+              'Agent: ' + esc(agentLabel(state.projectAgent)) + ' <span>×</span>' +
+            '</button>';
+        } else {
+          agentWrap.style.display = 'none';
+          agentWrap.innerHTML = '';
+        }
+
+        document.getElementById('projViewTable').setAttribute('aria-pressed', String(state.projectView === 'table'));
+        document.getElementById('projViewList').setAttribute('aria-pressed', String(state.projectView === 'list'));
+
+        const q = state.projectQuery.trim().toLowerCase();
+        const rows = state.projects.filter((p) => {
+          if (state.projectStatus === 'synced' && !p.lastSynced) return false;
+          if (state.projectStatus === 'pending' && p.lastSynced) return false;
+          if (state.projectAgent !== 'all' && !p.agents.includes(state.projectAgent)) return false;
+          if (!q) return true;
+          return [p.name, p.path, p.stack, ...p.agents, ...p.skills].join(' ').toLowerCase().includes(q);
+        });
+
+        var _pm = document.getElementById('projectsMeta'); if (_pm) _pm.textContent = rows.length + ' of ' + state.projects.length + ' registered · projects.json';
+        const host = document.getElementById('projectsContainer');
+
+        if (!rows.length) {
+          host.innerHTML = '<div class="empty-state"><strong>No projects found</strong>Adjust your search query, status, or agent filter.</div>';
+          return;
+        }
+
+        if (state.projectView === 'table') {
+          const tbody = rows.map((p) => {
+            const synced = Boolean(p.lastSynced);
+            const hasOrphan = p.skills.some((sid) => !skillById(sid));
+            const cmd = 'rig sync "' + p.path + '" --yes';
+            const pill = hasOrphan
+              ? '<span class="status-badge st-err"><span class="dot dot-err"></span>' + (synced ? 'Orphan' : 'Pending · Orphan') + '</span>'
+              : !synced
+                ? '<span class="status-badge st-warn"><span class="dot dot-warn"></span>Pending</span>'
+                : '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Synced</span>';
+
+            return '<tr class="clickable" data-inspect-project="' + esc(p.id) + '">' +
+              '<td>' +
+                '<div style="font-weight:500;color:var(--text-1)">' + esc(p.name) + '</div>' +
+                '<div class="mono truncate" style="font-size:11px;color:var(--text-3);max-width:270px">' + esc(p.path) + '</div>' +
+              '</td>' +
+              '<td><div style="display:flex;flex-wrap:wrap;gap:4px">' + p.agents.map((a) => '<span class="tag">' + esc(agentLabel(a)) + '</span>').join('') + '</div></td>' +
+              '<td><div style="display:flex;flex-wrap:wrap;gap:4px">' +
+                p.skills.slice(0, 3).map((sid) => !skillById(sid)
+                  ? '<span class="status-badge st-err mono" style="font-size:10.5px;padding:1px 6.5px">' + esc(sid) + '</span>'
+                  : '<span class="tag mono">' + esc(sid) + '</span>'
+                ).join('') +
+                (p.skills.length > 3 ? '<span class="tag">+' + (p.skills.length - 3) + '</span>' : '') +
+              '</div></td>' +
+              '<td>' + pill + '</td>' +
+              '<td class="mono tnum" style="font-size:11.5px;color:var(--text-2)">' + esc(relTime(p.lastSynced)) + '</td>' +
+              '<td style="text-align:right">' +
+                '<button type="button" class="btn btn-sm" data-copy="' + esc(cmd) + '" data-stop="true">' + svg('copy', 12.5) + ' Copy</button>' +
+              '</td>' +
+            '</tr>';
+          }).join('');
+
+          host.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+            '<th>Project &amp; Path</th><th>Agents</th><th>Provisioned Skills</th><th>Status</th><th>Last Synced</th><th style="text-align:right">Command</th>' +
+          '</tr></thead><tbody>' + tbody + '</tbody></table></div>';
+        } else {
+          host.innerHTML = rows.map((p) => {
+            const synced = Boolean(p.lastSynced);
+            const hasOrphan = p.skills.some((sid) => !skillById(sid));
+            const cmd = 'rig sync "' + p.path + '" --yes';
+            return '<div class="proj-list-item" data-inspect-project="' + esc(p.id) + '">' +
+              '<div style="min-width:0;flex:1">' +
+                '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+                  '<span style="font-weight:600;color:var(--text-1)">' + esc(p.name) + '</span>' +
+                  '<span class="tag">' + esc(p.stack) + '</span>' +
+                  (!synced ? '<span class="status-badge st-warn"><span class="dot dot-warn"></span>Pending</span>' : '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Synced</span>') +
+                  (hasOrphan ? '<span class="status-badge st-err">1 orphan</span>' : '') +
+                '</div>' +
+                '<div class="mono truncate" style="font-size:11.5px;color:var(--text-3);margin-top:3px">' + esc(p.path) + '</div>' +
+                '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">' +
+                  p.agents.map((a) => '<span class="tag">' + esc(agentLabel(a)) + '</span>').join('') +
+                  p.skills.map((sid) => !skillById(sid)
+                    ? '<span class="status-badge st-err mono" style="font-size:10.5px;padding:1px 6.5px">' + esc(sid) + '</span>'
+                    : '<span class="tag mono">' + esc(sid) + '</span>'
+                  ).join('') +
+                '</div>' +
+              '</div>' +
+              '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">' +
+                '<span class="mono tnum" style="font-size:11.5px;color:var(--text-3)">' + esc(relTime(p.lastSynced)) + '</span>' +
+                '<button type="button" class="btn btn-sm" data-copy="' + esc(cmd) + '" data-stop="true">' + svg('copy', 12.5) + ' Copy</button>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+      }
+
+      /* Provisioning Studio Logic */
+      function selectedCheckboxes(id) {
+        const box = document.getElementById(id);
+        if (!box) return [];
+        return Array.from(box.querySelectorAll('input[type="checkbox"]:checked')).map((el) => el.value);
+      }
+
+      function renderProvisioningLists() {
+        const injectBox = document.getElementById('injectSkillList');
+        if (injectBox) {
+          const prev = new Set(selectedCheckboxes('injectSkillList'));
+          injectBox.innerHTML = state.skills.map((s) =>
+            '<label class="check-row">' +
+              '<input type="checkbox" value="' + esc(s.id) + '"' + (prev.has(s.id) ? ' checked' : '') + ' />' +
+              '<span class="cr-name">' + esc(s.name) + '</span>' +
+              '<span class="cr-id">' + esc(s.id) + '</span>' +
+            '</label>'
+          ).join('');
+          updateInjectCounter();
+        }
+
+        const sel = document.getElementById('removeProject');
+        if (sel) {
+          const prev = sel.value;
+          sel.innerHTML = state.projects.length
+            ? state.projects.map((p) => '<option value="' + esc(p.id) + '">' + esc(p.name) + ' — ' + esc(p.path) + '</option>').join('')
+            : '<option value="">No registered projects</option>';
+          if (prev && state.projects.some((p) => p.id === prev)) sel.value = prev;
+          renderRemoveSkillList();
+        }
+      }
+
+      function updateInjectCounter() {
+        const n = selectedCheckboxes('injectSkillList').length;
+        const el = document.getElementById('injectCount');
+        if (el) el.textContent = n + ' of ' + state.skills.length + ' selected';
+      }
+
+      function renderRemoveSkillList(precheckSkillId) {
+        const sel = document.getElementById('removeProject');
+        const box = document.getElementById('removeSkillList');
+        if (!sel || !box) return;
+        const p = projectById(sel.value);
+        if (!p || !p.skills.length) {
+          box.innerHTML = '<div class="empty-state" style="padding:16px">No provisioned skills in this project.</div>';
+          return;
+        }
+        const prev = new Set(precheckSkillId ? [precheckSkillId] : selectedCheckboxes('removeSkillList'));
+        box.innerHTML = p.skills.map((sid) => {
+          const sk = skillById(sid);
+          return '<label class="check-row">' +
+            '<input type="checkbox" value="' + esc(sid) + '"' + (prev.has(sid) ? ' checked' : '') + ' />' +
+            '<span class="cr-name">' + esc(sk ? sk.name : sid) + '</span>' +
+            (!sk ? '<span class="status-badge st-err" style="font-size:10px;padding:0.5px 6px">Orphan</span>' : '') +
+            '<span class="cr-id">' + esc(sid) + '</span>' +
+          '</label>';
+        }).join('');
+      }
+
+      function showResult(id, ok, html) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'result-banner ' + (ok ? 'ok' : 'err');
+        el.innerHTML = html;
+        el.hidden = false;
+      }
+
+      function runInject() {
+        const rawPath = (document.getElementById('injectPath').value || '').trim();
+        const agentVal = document.getElementById('injectAgent').value;
+        const mergeMode = document.getElementById('injectMerge').value;
+        const skillIds = selectedCheckboxes('injectSkillList');
+
+        if (!rawPath) { showResult('injectResult', false, 'Enter a target directory path first.'); return; }
+        if (!skillIds.length) { showResult('injectResult', false, 'Select at least one skill to inject.'); return; }
+
+        const name = rawPath.split(/[\\/]/).filter(Boolean).pop() || 'project';
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'proj-' + Date.now();
+        const file = (AGENT_META[agentVal] && AGENT_META[agentVal].file) || 'CLAUDE.md';
+
+        let proj = state.projects.find((p) => p.path.toLowerCase() === rawPath.toLowerCase() || p.id === slug);
+        let created = false;
+        if (proj) {
+          if (!proj.agents.includes(agentVal)) proj.agents.push(agentVal);
+          proj.skills = mergeMode === 'overwrite'
+            ? skillIds.slice()
+            : Array.from(new Set(proj.skills.concat(skillIds)));
+          proj.lastSynced = new Date().toISOString();
+        } else {
+          created = true;
+          proj = {
+            id: slug,
+            name: name,
+            stack: 'Local',
+            path: rawPath,
+            agents: [agentVal],
+            skills: skillIds.slice(),
+            lastSynced: new Date().toISOString()
+          };
+          state.projects.unshift(proj);
+        }
+
+        const npm = new Set();
+        const pip = new Set();
+        skillIds.forEach((id) => {
+          const s = skillById(id);
+          if (!s || !s.dependencies) return;
+          (s.dependencies.npm || []).forEach((d) => npm.add(d));
+          (s.dependencies.pip || []).forEach((d) => pip.add(d));
+        });
+        const depNotes = [];
+        if (npm.size) depNotes.push('npm: ' + Array.from(npm).join(', '));
+        if (pip.size) depNotes.push('pip: ' + Array.from(pip).join(', '));
+
+        showResult('injectResult', true,
+          '<strong>Injected ' + skillIds.length + ' skill(s)</strong> into <span class="mono">' + esc(file) + '</span>' +
+          (created ? ' (registered new project)' : ' (' + esc(mergeMode) + ')') +
+          '<br><span class="mono">' + esc(proj.path) + '</span>' +
+          (depNotes.length ? '<br>Dependencies — <span class="mono">' + esc(depNotes.join(' · ')) + '</span>' : '')
+        );
+
+        renderAll();
+        toast('Injected ' + skillIds.length + ' skill(s) into ' + proj.name);
+      }
+
+      function runRemove() {
+        const projId = document.getElementById('removeProject').value;
+        const skillIds = selectedCheckboxes('removeSkillList');
+        const p = projectById(projId);
+        if (!p) { showResult('removeResult', false, 'Select a registered project.'); return; }
+        if (!skillIds.length) { showResult('removeResult', false, 'Select at least one skill to remove.'); return; }
+
+        p.skills = p.skills.filter((sid) => !skillIds.includes(sid));
+        p.lastSynced = new Date().toISOString();
+
+        showResult('removeResult', true,
+          '<strong>Removed ' + skillIds.length + ' skill(s)</strong> from <span class="mono">' + esc(p.name) + '</span>.<br>' +
+          'Remaining: <span class="mono">' + (p.skills.length ? esc(p.skills.join(', ')) : 'none') + '</span>'
+        );
+
+        renderAll();
+        toast('Removed ' + skillIds.length + ' skill(s) from ' + p.name);
+      }
+
+      function runImport() {
+        const inp = document.getElementById('importUrl');
+        const rawUrl = (inp.value || '').trim();
+        if (!rawUrl || !/^https?:\/\//i.test(rawUrl)) {
+          showResult('importResult', false, 'Enter a valid GitHub or skills.sh URL starting with https://.');
+          return;
+        }
+        const slug = rawUrl.replace(/\/+$/, '').split('/').pop().replace(/\.git$/i, '').toLowerCase().replace(/[^a-z0-9-]+/g, '-') || 'imported-skill';
+        if (skillById(slug)) {
+          showResult('importResult', false, 'Skill <span class="mono">' + esc(slug) + '</span> already exists in the library.');
+          return;
+        }
+        const title = slug.split('-').map((w) => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ');
+        const isMcp = slug.includes('mcp');
+        const isPy = slug.includes('py') || slug.includes('django') || slug.includes('fastapi');
+
+        state.skills.push({
+          id: slug,
+          name: title,
+          description: 'Imported from ' + rawUrl + ' into skills_library/ with validated manifest and prompt rules.',
+          files_to_copy: ['rules/' + slug + '.md', 'scripts/setup.mjs'],
+          dependencies: { npm: isPy ? [] : [slug], pip: isPy ? [slug] : [] },
+          mcp_servers: isMcp ? [slug + '-server'] : [],
+          settings_schema: {
+            presets: [{ name: 'Default Profile', description: 'Upstream manifest defaults', values: { mode: 'standard' } }],
+            fields: [{ key: 'mode', label: 'Execution Mode', type: 'choice', default: 'standard', choices: [{ value: 'standard', name: 'Standard' }, { value: 'strict', name: 'Strict' }] }]
+          }
+        });
+
+        inp.value = '';
+        showResult('importResult', true,
+          '<strong>Imported ' + esc(title) + '</strong> <span class="mono">(' + esc(slug) + ')</span><br>' +
+          'Manifest saved to <span class="mono">skills_library/' + esc(slug) + '.json</span> · 2 files downloaded.'
+        );
+
+        renderAll();
+        toast('Imported ' + title + ' into library');
+      }
+
+      /* =====================================================================
+         TAB 3: SYNC & OPS
+         ===================================================================== */
+      function renderSyncOps() {
+        const orphans = getOrphans();
+        const customCount = Object.keys(state.settings).length;
+        const syncedCount = state.projects.filter((p) => Boolean(p.lastSynced)).length;
+        const latest = state.projects.map((p) => p.lastSynced).filter(Boolean).sort().pop();
+
+        document.getElementById('opsHealthPill').innerHTML = orphans.length
+          ? '<span class="status-badge st-err"><span class="dot dot-err"></span>Attention needed</span>'
+          : '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Healthy</span>';
+
+        const row = (tone, title, sub, side, extra) =>
+          '<div class="check-item">' +
+            '<span class="check-circle ' + tone + '">' + svg(tone === 'ok' ? 'check' : 'alert', 11) + '</span>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-size:13px;font-weight:500;color:var(--text-1)">' + esc(title) + '</div>' +
+              '<div class="mono" style="font-size:11px;color:var(--text-3);margin-top:2px">' + esc(sub) + '</div>' +
+              (extra || '') +
+            '</div>' +
+            '<span class="mono tnum" style="font-size:11.5px;color:var(--text-2);white-space:nowrap">' + esc(side) + '</span>' +
+          '</div>';
+
+        const orphanExtra = orphans.length
+          ? '<div style="margin-top:8px;padding:8px 10px;border-radius:6px;background:var(--err-bg);border:1px solid var(--err-border);font-size:12px;color:var(--err-text);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
+              '<span>Missing <code class="mono" style="font-weight:600">' + esc(orphans[0].skillId) + '</code> in <span class="mono">' + esc(orphans[0].projectName) + '</span></span>' +
+              '<button type="button" class="alert-link" style="color:inherit;text-decoration:underline" data-resolve-orphan="' + esc(orphans[0].projectId) + '|' + esc(orphans[0].skillId) + '">Fix in Projects →</button>' +
+            '</div>'
+          : '';
+
+        document.getElementById('opsChecksList').innerHTML =
+          row('ok', 'Project registry', '~/.contextrig/projects.json', state.projects.length + ' entries') +
+          row('ok', 'Master skill library', 'skills_library/*.json', state.skills.length + ' manifests') +
+          row('ok', 'Configuration overrides', '~/.contextrig/skill-settings.json', customCount + ' tuned') +
+          row(orphans.length ? 'err' : 'ok', 'Skill reference integrity', orphans.length ? 'Unresolved skill IDs found' : 'All provisioned IDs resolve', orphans.length ? orphans.length + ' orphan' : 'clean', orphanExtra) +
+          row(syncedCount === state.projects.length ? 'ok' : 'warn', 'Project sync coverage', latest ? 'Latest: ' + absTime(latest) : 'No sync recorded', syncedCount + '/' + state.projects.length + ' synced');
+
+        document.getElementById('syncMatrixBody').innerHTML = state.projects.map((p) => {
+          const synced = Boolean(p.lastSynced);
+          const hasOrphan = p.skills.some((sid) => !skillById(sid));
+          const cmd = 'rig sync "' + p.path + '" --yes';
+          return '<tr class="clickable" data-inspect-project="' + esc(p.id) + '">' +
+            '<td><div style="font-weight:500">' + esc(p.name) + '</div><div class="mono" style="font-size:11px;color:var(--text-3)">' + esc(p.path) + '</div></td>' +
+            '<td style="font-size:12px;color:var(--text-2)">' + esc(p.agents.map(agentLabel).join(', ')) + '</td>' +
+            '<td class="mono tnum" style="font-size:12px">' + p.skills.length + '</td>' +
+            '<td class="mono tnum" style="font-size:11.5px;color:var(--text-2)">' + esc(relTime(p.lastSynced)) + '</td>' +
+            '<td>' + (hasOrphan
+              ? '<span class="status-badge st-err"><span class="dot dot-err"></span>' + (synced ? 'Orphan' : 'Pending · Orphan') + '</span>'
+              : !synced
+                ? '<span class="status-badge st-warn"><span class="dot dot-warn"></span>Pending</span>'
+                : '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Synced</span>') + '</td>' +
+            '<td style="text-align:right"><button type="button" class="btn btn-sm" data-copy="' + esc(cmd) + '" data-stop="true">Copy</button></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      /* =====================================================================
+         TAB 4: SKILLS
+         ===================================================================== */
+      /* =====================================================================
+         SKILL DOCUMENTATION MODAL
+         ===================================================================== */
+      function projectsUsingSkill(skillId) {
+        return state.projects.filter((p) => p.skills.indexOf(skillId) >= 0);
+      }
+
+      function skillSlashCommand(s) {
+        if (s.claude_command && s.claude_command.name) {
+          return '/' + s.claude_command.name + '\n\n' + (s.claude_command.content || '');
+        }
+        if (Array.isArray(s.claude_commands) && s.claude_commands.length) {
+          return s.claude_commands.map((c) => '/' + c.name).join('  ');
+        }
+        return '';
+      }
+
+      function openSkillDocs(skillId) {
+        const s = skillById(skillId);
+        if (!s) return;
+        state.docsSkillId = skillId;
+
+        const users = projectsUsingSkill(s.id);
+        const cat = skillCategory(s);
+        const npm = (s.dependencies.npm || []);
+        const pip = (s.dependencies.pip || []);
+        const mcp = (s.mcp_servers || []);
+        const cmd = skillSlashCommand(s);
+
+        document.getElementById('skillModalTitle').textContent = s.name;
+        document.getElementById('skillModalId').textContent = s.id;
+        document.getElementById('skillModalCat').textContent = cat;
+
+        let body = '';
+
+        body += '<section><div class="doc-sec-head">Purpose</div>' +
+          '<div class="doc-prose">' + esc(s.description || 'No description provided.') + '</div></section>';
+
+        body += '<section><div class="doc-sec-head">How to use</div>' +
+          (s.ai_instructions
+            ? '<pre class="doc-code">' + esc(s.ai_instructions) + '</pre>'
+            : '<div class="doc-prose">This skill ships no AI instructions.</div>') +
+          '</section>';
+
+        if (cmd) {
+          body += '<section><div class="doc-sec-head">Slash command</div>' +
+            '<pre class="doc-code">' + esc(cmd) + '</pre></section>';
+        }
+
+        body += '<section><div class="doc-sec-head">What gets installed</div>' +
+          '<div class="doc-row"><span class="k">Files</span><span class="mono">' + s.files_to_copy.length + '</span></div>' +
+          (npm.length ? '<div class="doc-row"><span class="k">npm</span><span class="mono">' + esc(npm.join(', ')) + '</span></div>' : '') +
+          (pip.length ? '<div class="doc-row"><span class="k">pip</span><span class="mono">' + esc(pip.join(', ')) + '</span></div>' : '') +
+          (mcp.length ? '<div class="doc-row"><span class="k">MCP servers</span><span class="mono">' + esc(mcp.join(', ')) + '</span></div>' : '') +
+          (Array.isArray(s.gitignore) && s.gitignore.length
+            ? '<div class="doc-row"><span class="k">Gitignore</span><span class="mono">' + esc(s.gitignore.join(', ')) + '</span></div>'
+            : '') +
+          (npm.length || pip.length
+            ? '<div class="doc-free">' +
+                svg('alert', 13) +
+                '<span>Dependencies are listed, not installed. Run <span class="mono">npm install</span> / <span class="mono">pip install</span> in the target project after injecting.</span>' +
+              '</div>'
+            : '') +
+          '</section>';
+
+        body += '<section><div class="doc-sec-head">Installed in (' + users.length + ')</div>' +
+          (users.length
+            ? users.map((p) =>
+                '<button type="button" class="doc-row" style="width:100%;text-align:left;background:none;border:none;padding:3px 0;cursor:pointer" data-inspect-project="' + esc(p.id) + '">' +
+                  svg('chevRight', 12) + '<span style="font-weight:500;color:var(--text-1)">' + esc(p.name) + '</span>' +
+                  '<span class="mono" style="margin-left:auto;font-size:11px;color:var(--text-3)">' + esc(p.stack) + '</span>' +
+                '</button>'
+              ).join('')
+            : '<div class="doc-prose">Not provisioned in any project yet.</div>') +
+          '</section>';
+
+        if (s.manifest_remote_url) {
+          body += '<section><div class="doc-sec-head">Manifest source</div>' +
+            '<div class="doc-prose mono" style="font-size:11px;word-break:break-all">' + esc(s.manifest_remote_url) + '</div>' +
+            '</section>';
+        }
+
+        document.getElementById('skillModalBody').innerHTML = body;
+
+        state.modalKind = 'skill';
+        const injectBtn = document.getElementById('skillModalInject');
+        injectBtn.hidden = false;
+        injectBtn.textContent = users.length ? 'Inject into another project…' : 'Inject into project…';
+        document.getElementById('skillModalConfigure').hidden = false;
+        const copyBtn = document.getElementById('skillModalCopyCmd');
+        copyBtn.hidden = false;
+        copyBtn.textContent = 'Copy slash command';
+        copyBtn.disabled = !cmd;
+        copyBtn.style.opacity = cmd ? '1' : '0.45';
+
+        document.getElementById('skillModal').classList.add('open');
+        document.getElementById('skillModalBackdrop').classList.add('open');
+      }
+
+      function closeSkillDocs() {
+        if (state.docsSkillId) state.lastDocsSkillId = state.docsSkillId;
+        state.docsSkillId = null;
+        document.getElementById('skillModal').classList.remove('open');
+        document.getElementById('skillModalBackdrop').classList.remove('open');
+      }
+
+      /* ---------- Lightweight action menu ---------- */
+      function closeSkillMenu() {
+        const m = document.getElementById('skillMenu');
+        if (m) m.remove();
+        document.removeEventListener('click', onSkillMenuDocClick, true);
+        window.removeEventListener('resize', closeSkillMenu);
+        window.removeEventListener('scroll', closeSkillMenu, true);
+      }
+
+      function onSkillMenuDocClick(ev) {
+        const menu = document.getElementById('skillMenu');
+        if (!menu) return;
+        if (menu.contains(ev.target) || ev.target.closest('[data-more-skill]')) return;
+        closeSkillMenu();
+      }
+
+      function showSkillMenu(anchor, items) {
+        closeSkillMenu();
+        const rect = anchor.getBoundingClientRect();
+        const menu = document.createElement('div');
+        menu.id = 'skillMenu';
+        menu.className = 'skill-menu';
+        menu.setAttribute('role', 'menu');
+        menu.innerHTML = items.map((it, i) =>
+          '<button type="button" role="menuitem" class="skill-menu-item' + (it.danger ? ' danger' : '') + '" data-menu-idx="' + i + '">' +
+            esc(it.label) +
+          '</button>'
+        ).join('');
+
+        const width = 232;
+        let left = Math.min(rect.right - width, window.innerWidth - width - 12);
+        left = Math.max(12, left);
+        let top = rect.bottom + 6;
+        if (top + 260 > window.innerHeight) top = Math.max(12, rect.top - 260);
+
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+        menu.style.width = width + 'px';
+        document.body.appendChild(menu);
+
+        menu.addEventListener('click', (ev) => {
+          const btn = ev.target.closest('[data-menu-idx]');
+          if (!btn) return;
+          const it = items[Number(btn.getAttribute('data-menu-idx'))];
+          closeSkillMenu();
+          if (it) it.run();
+        });
+
+        setTimeout(() => {
+          document.addEventListener('click', onSkillMenuDocClick, true);
+          window.addEventListener('resize', closeSkillMenu);
+          window.addEventListener('scroll', closeSkillMenu, true);
+        }, 0);
+      }
+
+      function renderSkills() {
+        const usage = getUsageCounts();
+        const catCounts = { workflow: 0, node: 0, python: 0, mcp: 0 };
+        state.skills.forEach((s) => { catCounts[skillCategory(s)]++; });
+
+        const pills = [
+          ['all', 'All', state.skills.length],
+          ['workflow', 'Workflow', catCounts.workflow],
+          ['node', 'Node', catCounts.node],
+          ['python', 'Python', catCounts.python],
+          ['mcp', 'MCP', catCounts.mcp],
+          ['custom', 'Customized', Object.keys(state.settings).length]
+        ];
+        document.getElementById('skillCategoryFilters').innerHTML = pills.map(([id, label, cnt]) =>
+          '<button type="button" class="pill-btn" data-skill-cat="' + id + '" aria-pressed="' + (state.skillCat === id) + '">' +
+            label + ' <span class="pill-cnt">' + cnt + '</span>' +
+          '</button>'
+        ).join('');
+
+        const q = state.skillQuery.trim().toLowerCase();
+        const list = state.skills.filter((s) => {
+          if (state.skillCat === 'custom' && !isCustom(s.id)) return false;
+          if (state.skillCat !== 'all' && state.skillCat !== 'custom' && skillCategory(s) !== state.skillCat) return false;
+          if (!q) return true;
+          return [s.id, s.name, s.description].join(' ').toLowerCase().includes(q);
+        });
+
+        if (state.skillSort === 'deployed') {
+          list.sort((a, b) => (usage.get(b.id) || 0) - (usage.get(a.id) || 0) || a.name.localeCompare(b.name));
+        } else if (state.skillSort === 'custom') {
+          list.sort((a, b) => Number(isCustom(b.id)) - Number(isCustom(a.id)) || a.name.localeCompare(b.name));
+        } else {
+          list.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        var _sm = document.getElementById('skillsMeta'); if (_sm) _sm.textContent = state.skills.length + ' master skills · skills_library/';
+        const grid = document.getElementById('skillsGrid');
+
+        if (!list.length) {
+          grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><strong>No skills match</strong>Clear the search or pick another category.</div>';
+          return;
+        }
+
+        grid.innerHTML = list.map((s) => {
+          const cat = skillCategory(s);
+          const count = usage.get(s.id) || 0;
+          const npm = (s.dependencies.npm || []).length;
+          const pip = (s.dependencies.pip || []).length;
+          const mcp = (s.mcp_servers || []).length;
+          const custom = isCustom(s.id);
+          const status = count === 0
+            ? '<span class="skill-status st-absent">Not installed</span>'
+            : custom
+              ? '<span class="skill-status st-custom">Installed · customized</span>'
+              : '<span class="skill-status st-live">Installed</span>';
+
+          return '<article class="skill-card">' +
+            status +
+            '<div>' +
+              '<div class="skill-card-name">' + esc(s.name) + '</div>' +
+              '<div class="skill-card-id">' + esc(s.id) + '</div>' +
+            '</div>' +
+            '<p class="skill-card-desc">' + esc(s.description) + '</p>' +
+            '<div class="skill-card-tags">' +
+              '<span class="tag mono">' + esc(cat) + '</span>' +
+              '<span class="tag mono">' + s.files_to_copy.length + ' files</span>' +
+              (npm ? '<span class="tag mono">npm ' + npm + '</span>' : '') +
+              (pip ? '<span class="tag mono">pip ' + pip + '</span>' : '') +
+              (mcp ? '<span class="tag mono">MCP ' + mcp + '</span>' : '') +
+            '</div>' +
+            '<div class="skill-card-foot">' +
+              '<span class="tnum" style="color:var(--text-3)">' + count + (count === 1 ? ' project' : ' projects') + '</span>' +
+              '<span class="skill-actions">' +
+                '<button type="button" class="btn btn-sm ' + (count === 0 ? 'btn-primary' : '') + '" data-docs-skill="' + esc(s.id) + '">' +
+                  (count === 0 ? 'Details &amp; docs' : 'Details') +
+                '</button>' +
+                '<button type="button" class="btn btn-sm btn-ghost skill-more" data-more-skill="' + esc(s.id) + '" aria-label="More actions for ' + esc(s.name) + '">···</button>' +
+              '</span>' +
+            '</div>' +
+          '</article>';
+        }).join('');
+      }
+
+      /* =====================================================================
+         TAB 5: SETTINGS STUDIO
+         ===================================================================== */
+      function loadDraft(skillId) {
+        const s = skillById(skillId);
+        if (!s) return;
+        const saved = state.settings[s.id];
+        const fields = (s.settings_schema && s.settings_schema.fields) || [];
+        const vals = {};
+        fields.forEach((f) => {
+          vals[f.key] = (saved && saved.values && saved.values[f.key] !== undefined) ? saved.values[f.key] : f.default;
+        });
+        state.draftValues = vals;
+        state.draftExtraRule = saved ? (saved.extraRule || '') : '';
+        state.formDirty = false;
+      }
+
+      function computeDirty(s) {
+        const saved = state.settings[s.id];
+        const fields = (s.settings_schema && s.settings_schema.fields) || [];
+        const base = {};
+        fields.forEach((f) => {
+          base[f.key] = (saved && saved.values && saved.values[f.key] !== undefined) ? saved.values[f.key] : f.default;
+        });
+        const baseRule = saved ? (saved.extraRule || '') : '';
+        return JSON.stringify(state.draftValues) !== JSON.stringify(base) || state.draftExtraRule !== baseRule;
+      }
+
+      function highlightJson(obj) {
+        const raw = JSON.stringify(obj, null, 2);
+        return esc(raw).replace(/(&quot;[^&]*?&quot;)(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?)/g, function (m, str, colon, bool, num) {
+          if (str) return colon ? '<span class="tok-k">' + str + '</span>' + colon : '<span class="tok-s">' + str + '</span>';
+          if (bool) return '<span class="tok-n">' + bool + '</span>';
+          if (num) return '<span class="tok-n">' + num + '</span>';
+          return m;
+        });
+      }
+
+      function buildMarkdownPreview(skill) {
+        const fields = (skill.settings_schema && skill.settings_schema.fields) || [];
+        const lines = [
+          '<!-- contextrig:' + skill.id + ' -->',
+          '## ' + skill.name + ' (`' + skill.id + '`)'
+        ];
+        if (fields.length) {
+          lines.push('');
+          fields.forEach((f) => lines.push('- `' + f.key + '`: `' + state.draftValues[f.key] + '`'));
+        }
+        if (state.draftExtraRule.trim()) {
+          lines.push('', '### Extra Instructions', state.draftExtraRule.trim());
+        }
+        lines.push('<!-- /contextrig:' + skill.id + ' -->');
+        return lines.join('\n');
+      }
+
+      function updateSettingsLive() {
+        const s = skillById(state.selectedSkillId);
+        if (!s) return;
+        state.formDirty = computeDirty(s);
+
+        const dirtyEl = document.getElementById('dirtyNote');
+        if (dirtyEl) dirtyEl.style.display = state.formDirty ? 'inline-flex' : 'none';
+
+        const presets = (s.settings_schema && s.settings_schema.presets) || [];
+        presets.forEach((p, idx) => {
+          const btn = document.querySelector('[data-preset-idx="' + idx + '"]');
+          if (!btn) return;
+          const match = Object.entries(p.values).every(([k, v]) => String(state.draftValues[k]) === String(v));
+          btn.classList.toggle('selected', match);
+        });
+
+        const pre = document.getElementById('settingsPreviewPre');
+        if (pre) {
+          if (state.previewTab === 'json') {
+            const payload = {};
+            payload[s.id] = { values: state.draftValues, extraRule: state.draftExtraRule.trim() };
+            pre.innerHTML = highlightJson(payload);
+          } else {
+            pre.textContent = buildMarkdownPreview(s);
+          }
+        }
+      }
+
+      function renderSettingsList() {
+        const q = state.settingsQuery.trim().toLowerCase();
+        const list = state.skills.filter((s) => !q || (s.name + ' ' + s.id).toLowerCase().includes(q));
+        document.getElementById('settingsSkillList').innerHTML = list.map((s) => {
+          const active = s.id === state.selectedSkillId;
+          const custom = isCustom(s.id);
+          return '<button type="button" class="settings-pick' + (active ? ' active' : '') + '" data-select-skill="' + esc(s.id) + '">' +
+            '<div style="min-width:0;flex:1">' +
+              '<div class="sp-name truncate" style="font-size:12.5px;font-weight:500;color:var(--text-1)">' + esc(s.name) + '</div>' +
+              '<div class="mono truncate" style="font-size:10.5px;color:var(--text-3)">' + esc(s.id) + '</div>' +
+            '</div>' +
+            (custom ? '<span class="dot dot-warn" title="Customized"></span>' : '') +
+          '</button>';
+        }).join('');
+      }
+
+      function renderSettingsForm() {
+        const s = skillById(state.selectedSkillId);
+        if (!s) return;
+        const custom = isCustom(s.id);
+        const schema = s.settings_schema || { presets: [], fields: [] };
+        const presets = schema.presets || [];
+        const fields = schema.fields || [];
+
+        document.getElementById('settingsFormHead').innerHTML =
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+            '<h2 class="card-title" style="font-size:14.5px">' + esc(s.name) + '</h2>' +
+            '<span class="mono" style="font-size:11.5px;color:var(--text-3)">' + esc(s.id) + '</span>' +
+            (custom ? '<span class="status-badge st-warn" style="padding:1px 7px;font-size:11px">Customized</span>' : '') +
+          '</div>';
+
+        let html = '<p style="font-size:12.5px;color:var(--text-2);margin-bottom:16px">' + esc(s.description) + '</p>';
+
+        if (presets.length) {
+          html += '<div class="form-row">' +
+            '<div class="field-label"><span>Presets</span><span class="field-key">Quick profile</span></div>' +
+            '<div class="presets-grid">' +
+              presets.map((p, i) =>
+                '<button type="button" class="preset-radio" data-preset-idx="' + i + '">' +
+                  '<span class="radio-dot"></span>' +
+                  '<div style="min-width:0">' +
+                    '<div style="font-size:12.5px;font-weight:500;color:var(--text-1)">' + esc(p.name) + '</div>' +
+                    '<div style="font-size:11px;color:var(--text-3);margin-top:2px">' + esc(p.description) + '</div>' +
+                  '</div>' +
+                '</button>'
+              ).join('') +
+            '</div>' +
+          '</div>';
+        }
+
+        if (fields.length) {
+          html += '<div class="form-grid-2" style="margin-bottom:14px">';
+          fields.forEach((f) => {
+            const val = state.draftValues[f.key];
+            const savedVal = (state.settings[s.id] && state.settings[s.id].values) || {};
+            const isChanged = Object.prototype.hasOwnProperty.call(savedVal, f.key) &&
+              String(savedVal[f.key]) !== String(f.default);
+            html += '<div>' +
+              '<label class="field-label" style="margin-bottom:5px" for="fld-' + esc(f.key) + '">' +
+                '<span>' + esc(f.label) + '</span>' +
+                '<span class="field-key">' + esc(f.key) + '</span>' +
+              '</label>' +
+              '<div class="field-ctl">';
+            if (f.type === 'choice') {
+              html += '<select id="fld-' + esc(f.key) + '" class="field-input" data-fkey="' + esc(f.key) + '" data-ftype="choice">' +
+                f.choices.map((c) => '<option value="' + esc(c.value) + '"' + (String(c.value) === String(val) ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('') +
+              '</select>';
+            } else if (f.type === 'number') {
+              html += '<input id="fld-' + esc(f.key) + '" class="field-input mono tnum" type="number" value="' + esc(val) + '" data-fkey="' + esc(f.key) + '" data-ftype="number" />';
+            } else {
+              html += '<input id="fld-' + esc(f.key) + '" class="field-input mono" type="text" value="' + esc(val) + '" data-fkey="' + esc(f.key) + '" data-ftype="text" />';
+            }
+            html += '</div>' +
+              '<div class="field-state">' +
+                (isChanged
+                  ? '<span class="fs-badge fs-custom">Custom</span><span class="fs-default">default <span class="mono">' + esc(f.default) + '</span></span>'
+                  : '<span class="fs-badge fs-default-badge">Default</span>') +
+              '</div>' +
+            '</div>';
+          });
+          html += '</div>';
+        }
+
+        html += '<div class="form-row" style="margin-bottom:0">' +
+          '<label class="field-label" for="extraRuleInput"><span>Extra AI Instructions</span><span class="field-key">CLAUDE.md / .cursorrules</span></label>' +
+          '<textarea id="extraRuleInput" class="field-input" placeholder="Add workspace-wide instructions for this skill…">' + esc(state.draftExtraRule) + '</textarea>' +
+          '<div class="field-hint">Appended under this skill’s section on the next <span class="mono">rig sync</span>.</div>' +
+        '</div>';
+
+        html += '<div class="preview-box">' +
+          '<div class="preview-head">' +
+            '<span style="font-size:12px;font-weight:500;color:var(--text-1);margin-right:4px">Live Preview</span>' +
+            '<button type="button" class="preview-tab' + (state.previewTab === 'json' ? ' active' : '') + '" data-preview-tab="json">skill-settings.json</button>' +
+            '<button type="button" class="preview-tab' + (state.previewTab === 'md' ? ' active' : '') + '" data-preview-tab="md">Rule Markdown</button>' +
+            '<button id="togglePreviewBtn" type="button" class="card-link" style="margin-left:auto">' + (state.previewOpen ? 'Hide' : 'Show') + '</button>' +
+          '</div>' +
+          '<pre id="settingsPreviewPre" class="preview-pre"' + (state.previewOpen ? '' : ' style="display:none"') + '></pre>' +
+        '</div>';
+
+        document.getElementById('settingsFormBody').innerHTML = html;
+
+        document.getElementById('settingsFormFooter').innerHTML =
+          '<button id="saveSkillBtn" type="button" class="btn btn-primary">Save changes</button>' +
+          (custom ? '<button id="resetSkillBtn" type="button" class="btn btn-danger">Reset to default</button>' : '') +
+          '<span id="dirtyNote" class="status-badge st-warn" style="display:none;margin-left:auto">Unsaved changes</span>';
+
+        document.getElementById('settingsFormBody').querySelectorAll('[data-fkey]').forEach((el) => {
+          const onChange = () => {
+            const k = el.getAttribute('data-fkey');
+            const t = el.getAttribute('data-ftype');
+            state.draftValues[k] = t === 'number' ? (Number.isFinite(Number(el.value)) ? Number(el.value) : 0) : el.value;
+            updateSettingsLive();
+          };
+          el.addEventListener('input', onChange);
+          el.addEventListener('change', onChange);
+        });
+
+        document.getElementById('extraRuleInput').addEventListener('input', (e) => {
+          state.draftExtraRule = e.target.value;
+          updateSettingsLive();
+        });
+
+        document.getElementById('settingsFormBody').querySelectorAll('[data-preset-idx]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const p = presets[Number(btn.getAttribute('data-preset-idx'))];
+            if (!p) return;
+            Object.entries(p.values).forEach(([k, v]) => {
+              state.draftValues[k] = v;
+              const inp = document.getElementById('fld-' + k);
+              if (inp) inp.value = v;
+            });
+            updateSettingsLive();
+          });
+        });
+
+        document.getElementById('togglePreviewBtn').addEventListener('click', () => {
+          state.previewOpen = !state.previewOpen;
+          document.getElementById('settingsPreviewPre').style.display = state.previewOpen ? 'block' : 'none';
+          document.getElementById('togglePreviewBtn').textContent = state.previewOpen ? 'Hide' : 'Show';
+        });
+
+        document.getElementById('saveSkillBtn').addEventListener('click', saveSkillSettings);
+        const resetBtn = document.getElementById('resetSkillBtn');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            delete state.settings[s.id];
+            loadDraft(s.id);
+            renderAll();
+            toast('Reset ' + s.name + ' to default');
+          });
+        }
+
+        updateSettingsLive();
+      }
+
+      function saveSkillSettings() {
+        const s = skillById(state.selectedSkillId);
+        if (!s) return;
+        state.settings[s.id] = {
+          values: JSON.parse(JSON.stringify(state.draftValues)),
+          extraRule: state.draftExtraRule.trim(),
+          updatedAt: new Date().toISOString()
+        };
+        state.formDirty = false;
+        renderAll();
+        toast('Saved settings for ' + s.name);
+      }
+
+      function openSkillInSettings(skillId) {
+        if (!skillById(skillId)) return;
+        closeDrawer();
+        closeCmd();
+        state.selectedSkillId = skillId;
+        loadDraft(skillId);
+        state.activeTab = 'settings';
+        renderSidebar();
+        renderSettingsList();
+        renderSettingsForm();
+      }
+
+      /* =====================================================================
+         SLIDE-OVER PROJECT INSPECTOR DRAWER
+         ===================================================================== */
+      function renderDrawer() {
+        const p = projectById(state.drawerProjectId);
+        if (!p) return;
+        const synced = Boolean(p.lastSynced);
+        const orphans = p.skills.filter((sid) => !skillById(sid));
+        const cmd = 'rig sync "' + p.path + '" --yes';
+
+        document.getElementById('drawerTitle').textContent = p.name;
+        document.getElementById('drawerPath').textContent = p.path;
+        document.getElementById('drawerStatus').innerHTML = orphans.length
+          ? '<span class="status-badge st-err"><span class="dot dot-err"></span>' + (synced ? 'Orphan' : 'Pending · Orphan') + '</span>'
+          : !synced
+            ? '<span class="status-badge st-warn"><span class="dot dot-warn"></span>Pending</span>'
+            : '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Synced</span>';
+
+        document.getElementById('drawerBody').innerHTML =
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+            '<div style="padding:11px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-subtle)">' +
+              '<div style="font-size:11px;color:var(--text-3)">Last synced</div>' +
+              '<div class="mono tnum" style="font-size:12.5px;font-weight:500;margin-top:3px">' + esc(relTime(p.lastSynced)) + '</div>' +
+              '<div class="mono tnum" style="font-size:10.5px;color:var(--text-3);margin-top:1px">' + esc(absTime(p.lastSynced)) + '</div>' +
+            '</div>' +
+            '<div style="padding:11px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-subtle)">' +
+              '<div style="font-size:11px;color:var(--text-3)">Provisioned</div>' +
+              '<div class="mono tnum" style="font-size:12.5px;font-weight:500;margin-top:3px">' + p.skills.length + ' skills</div>' +
+              '<div style="font-size:11px;color:var(--text-3);margin-top:1px">' + esc(p.stack) + '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div>' +
+            '<div class="drawer-sec-title">Active Agents</div>' +
+            '<div style="display:flex;flex-wrap:wrap;gap:6px">' + p.agents.map((a) => '<span class="tag" style="padding:2.5px 9px;font-size:12px">' + esc(agentLabel(a)) + '</span>').join('') + '</div>' +
+          '</div>' +
+
+          '<div>' +
+            '<div class="drawer-sec-title">Single-Project Sync Command</div>' +
+            '<div class="cli-block">' +
+              '<div class="cli-head"><span>Terminal</span><button type="button" class="btn btn-sm" data-copy="' + esc(cmd) + '">Copy</button></div>' +
+              '<pre class="cli-pre"><span class="cli-prompt">$</span>' + esc(cmd) + '</pre>' +
+            '</div>' +
+          '</div>' +
+
+          '<div>' +
+            '<div class="drawer-sec-title">Installed Skills (' + p.skills.length + ')</div>' +
+            p.skills.map((sid) => {
+              const s = skillById(sid);
+              if (!s) {
+                return '<div style="padding:10px 12px;border-radius:7px;border:1px solid var(--err-border);background:var(--err-bg);margin-bottom:6px">' +
+                  '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+                    '<span class="mono" style="font-size:12px;font-weight:500;color:var(--err-text)">' + esc(sid) + '</span>' +
+                    '<span class="status-badge st-err" style="padding:1px 7px;font-size:10.5px">Orphan skill</span>' +
+                  '</div>' +
+                  '<div style="font-size:11.5px;color:var(--err-text);margin-top:4px">Not found in master skills_library/. Remove or re-sync this directory.</div>' +
+                '</div>';
+              }
+              return '<button type="button" class="drawer-skill-row" data-open-skill="' + esc(s.id) + '">' +
+                '<div style="min-width:0">' +
+                  '<div style="font-size:12.5px;font-weight:500;color:var(--text-1)">' + esc(s.name) + '</div>' +
+                  '<div class="mono" style="font-size:11px;color:var(--text-3)">' + esc(s.id) + '</div>' +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">' +
+                  (isCustom(s.id) ? '<span class="status-badge st-warn" style="padding:1px 7px;font-size:10.5px">Custom</span>' : '') +
+                  '<span style="color:var(--text-3)">' + svg('chevRight', 14) + '</span>' +
+                '</div>' +
+              '</button>';
+            }).join('') +
+          '</div>' +
+
+          '<div>' +
+            '<div class="drawer-sec-title">Manage This Project</div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+              '<button type="button" class="btn btn-primary" data-inject-for="' + esc(p.path) + '">Inject skills here</button>' +
+              '<button type="button" class="btn btn-danger" data-remove-for="' + esc(p.id) + '">Remove a skill here</button>' +
+            '</div>' +
+          '</div>';
+      }
+
+      function openDrawer(projectId) {
+        if (!projectById(projectId)) return;
+        closeCmd();
+        setMobileSidebar(false);
+        state.drawerProjectId = projectId;
+        renderDrawer();
+        document.getElementById('drawerBackdrop').classList.add('open');
+        const dr = document.getElementById('projectDrawer');
+        dr.classList.add('open');
+        dr.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeDrawer() {
+        state.drawerProjectId = null;
+        document.getElementById('drawerBackdrop').classList.remove('open');
+        const dr = document.getElementById('projectDrawer');
+        dr.classList.remove('open');
+        dr.setAttribute('aria-hidden', 'true');
+      }
+
+      /* =====================================================================
+         COMMAND PALETTE (⌘K)
+         ===================================================================== */
+      function getCmdItems() {
+        const items = [];
+        TABS.forEach((t) => items.push({
+          group: 'Navigation',
+          title: t.label,
+          meta: 'Tab',
+          icon: t.icon,
+          run: () => { switchTab(t.id); closeCmd(); }
+        }));
+        state.projects.forEach((p) => items.push({
+          group: 'Projects',
+          title: p.name,
+          meta: p.lastSynced ? relTime(p.lastSynced) : 'Pending',
+          icon: 'projects',
+          run: () => openDrawer(p.id)
+        }));
+        state.skills.forEach((s) => items.push({
+          group: 'Skills',
+          title: s.name,
+          meta: s.id,
+          icon: 'skills',
+          run: () => openSkillInSettings(s.id)
+        }));
+        items.push(
+          {
+            group: 'Actions',
+            title: 'Toggle Light / Soft Dark theme',
+            meta: state.theme === 'light' ? 'Dark' : 'Light',
+            icon: state.theme === 'light' ? 'moon' : 'sun',
+            run: () => { setTheme(state.theme === 'light' ? 'dark' : 'light', true); closeCmd(); }
+          },
+          {
+            group: 'Actions',
+            title: 'Copy: rig sync --all --yes',
+            meta: 'CLI',
+            icon: 'terminal',
+            run: () => { copyText('rig sync --all --yes', 'Copied: rig sync --all --yes'); closeCmd(); }
+          },
+          {
+            group: 'Actions',
+            title: 'Copy: rig --update',
+            meta: 'CLI',
+            icon: 'terminal',
+            run: () => { copyText('rig --update', 'Copied: rig --update'); closeCmd(); }
+          }
+        );
+
+        const q = state.cmdQuery.trim().toLowerCase();
+        if (!q) return items;
+        return items.filter((it) => (it.title + ' ' + it.meta + ' ' + it.group).toLowerCase().includes(q));
+      }
+
+      function renderCmd() {
+        const items = getCmdItems();
+        if (state.cmdIdx >= items.length) state.cmdIdx = Math.max(0, items.length - 1);
+        const list = document.getElementById('cmdList');
+        if (!items.length) {
+          list.innerHTML = '<div class="empty-state" style="padding:24px"><strong>No results</strong>Try searching a project, skill, or command.</div>';
+          return;
+        }
+        let lastGroup = '';
+        let html = '';
+        items.forEach((it, idx) => {
+          if (it.group !== lastGroup) {
+            lastGroup = it.group;
+            html += '<div class="cmd-group">' + esc(it.group) + '</div>';
+          }
+          html += '<button type="button" class="cmd-item' + (idx === state.cmdIdx ? ' selected' : '') + '" data-cmd-idx="' + idx + '">' +
+            svg(it.icon, 14) +
+            '<span class="truncate" style="flex:1">' + esc(it.title) + '</span>' +
+            '<span class="cmd-meta">' + esc(it.meta) + '</span>' +
+          '</button>';
+        });
+        list.innerHTML = html;
+        const active = list.querySelector('.cmd-item.selected');
+        if (active) active.scrollIntoView({ block: 'nearest' });
+      }
+
+      function openCmd() {
+        closeDrawer();
+        setMobileSidebar(false);
+        state.cmdOpen = true;
+        state.cmdQuery = '';
+        state.cmdIdx = 0;
+        const inp = document.getElementById('cmdInput');
+        inp.value = '';
+        renderCmd();
+        document.getElementById('cmdBackdrop').classList.add('open');
+        document.getElementById('cmdModal').classList.add('open');
+        setTimeout(() => inp.focus(), 15);
+      }
+
+      function closeCmd() {
+        state.cmdOpen = false;
+        document.getElementById('cmdBackdrop').classList.remove('open');
+        document.getElementById('cmdModal').classList.remove('open');
+      }
+
+      /* =====================================================================
+         Cross-Tab Jump Helpers & Master Render
+         ===================================================================== */
+      function jumpToInject(prefillPath) {
+        closeDrawer();
+        switchTab('projects');
+        const inp = document.getElementById('injectPath');
+        if (inp) {
+          if (prefillPath !== undefined) inp.value = prefillPath;
+          setTimeout(() => {
+            inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            inp.focus();
+            flashCard('injectCard');
+          }, 60);
+        }
+      }
+
+      function jumpToRemove(projectId, precheckSkillId) {
+        closeDrawer();
+        switchTab('projects');
+        const sel = document.getElementById('removeProject');
+        if (sel) {
+          sel.value = projectId;
+          renderRemoveSkillList(precheckSkillId);
+          setTimeout(() => {
+            const card = document.getElementById('removeCard');
+            if (card) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            flashCard('removeCard');
+          }, 60);
+        }
+      }
+
+      async function triggerRefresh() {
+        try {
+          await loadLiveData();
+        } catch (err) {
+          toast('Could not reach the local engine');
+          return;
+        }
+        renderAll();
+        checkUpdateNotice();
+        toast('Workspace refreshed');
+      }
+
+      function renderPageIcons() {
+        document.querySelectorAll('.ph-ico').forEach((el) => {
+          const name = el.getAttribute('data-ico');
+          if (name && !el.innerHTML.trim()) el.innerHTML = svg(name, 15);
+        });
+      }
+
+      function renderAll() {
+        renderPageIcons();
+        renderSidebar();
+        renderOverview();
+        renderProjects();
+        renderProvisioningLists();
+        renderSyncOps();
+        renderSkills();
+        renderSettingsList();
+        renderSettingsForm();
+        if (state.drawerProjectId) renderDrawer();
+      }
+
+      /* =====================================================================
+         Event Delegation & Controls
+         ===================================================================== */
+      document.addEventListener('click', (e) => {
+        const copyBtn = e.target.closest('[data-copy]');
+        if (copyBtn) {
+          if (copyBtn.getAttribute('data-stop') === 'true') e.stopPropagation();
+          const txt = copyBtn.getAttribute('data-copy');
+          copyText(txt, 'Copied: ' + txt);
+          return;
+        }
+        const navBtn = e.target.closest('[data-nav]');
+        if (navBtn) { switchTab(navBtn.getAttribute('data-nav')); return; }
+
+        const themeBtn = e.target.closest('[data-theme]');
+        if (themeBtn) { setTheme(themeBtn.getAttribute('data-theme'), true); return; }
+
+        const resolveBtn = e.target.closest('[data-resolve-orphan]');
+        if (resolveBtn) {
+          const [projId, skillId] = resolveBtn.getAttribute('data-resolve-orphan').split('|');
+          jumpToRemove(projId, skillId);
+          return;
+        }
+
+        const jumpInj = e.target.closest('[data-jump-inject]');
+        if (jumpInj) { jumpToInject(''); return; }
+
+        const filterAg = e.target.closest('[data-filter-agent]');
+        if (filterAg) {
+          state.projectAgent = filterAg.getAttribute('data-filter-agent');
+          state.projectStatus = 'all';
+          switchTab('projects');
+          renderProjects();
+          toast('Filtered projects by ' + agentLabel(state.projectAgent));
+          return;
+        }
+
+        const clearAg = e.target.closest('[data-clear-agent]');
+        if (clearAg) { state.projectAgent = 'all'; renderProjects(); return; }
+
+        const matCat = e.target.closest('[data-matrix-cat]');
+        if (matCat) { state.matrixCat = matCat.getAttribute('data-matrix-cat'); renderMatrix(); return; }
+
+        const projSt = e.target.closest('[data-proj-status]');
+        if (projSt) { state.projectStatus = projSt.getAttribute('data-proj-status'); renderProjects(); return; }
+
+        const projVw = e.target.closest('[data-proj-view]');
+        if (projVw) { state.projectView = projVw.getAttribute('data-proj-view'); renderProjects(); return; }
+
+        const skCat = e.target.closest('[data-skill-cat]');
+        if (skCat) { state.skillCat = skCat.getAttribute('data-skill-cat'); renderSkills(); return; }
+
+        const selSk = e.target.closest('[data-select-skill]');
+        if (selSk) {
+          state.selectedSkillId = selSk.getAttribute('data-select-skill');
+          loadDraft(state.selectedSkillId);
+          renderSettingsList();
+          renderSettingsForm();
+          return;
+        }
+
+        const prevTab = e.target.closest('[data-preview-tab]');
+        if (prevTab) {
+          state.previewTab = prevTab.getAttribute('data-preview-tab');
+          state.previewOpen = true;
+          document.querySelectorAll('[data-preview-tab]').forEach((b) => b.classList.toggle('active', b === prevTab));
+          document.getElementById('settingsPreviewPre').style.display = 'block';
+          document.getElementById('togglePreviewBtn').textContent = 'Hide';
+          updateSettingsLive();
+          return;
+        }
+
+        const openSk = e.target.closest('[data-open-skill]');
+        if (openSk) { openSkillInSettings(openSk.getAttribute('data-open-skill')); return; }
+
+        const injectFor = e.target.closest('[data-inject-for]');
+        if (injectFor) { jumpToInject(injectFor.getAttribute('data-inject-for')); return; }
+
+        const removeFor = e.target.closest('[data-remove-for]');
+        if (removeFor) { jumpToRemove(removeFor.getAttribute('data-remove-for')); return; }
+
+        const docsBtn = e.target.closest('[data-docs-skill]');
+        if (docsBtn) { openSkillDocs(docsBtn.getAttribute('data-docs-skill')); return; }
+
+        const moreBtn = e.target.closest('[data-more-skill]');
+        if (moreBtn) {
+          e.preventDefault();
+          const sid = moreBtn.getAttribute('data-more-skill');
+          const s = skillById(sid);
+          const count = s ? projectsUsingSkill(s.id).length : 0;
+          const items = [
+            { label: 'Details & documentation', run: () => openSkillDocs(sid) },
+            { label: 'Configure parameters', run: () => openSkillInSettings(sid) },
+            { label: 'Copy slash command', run: () => copyText(skillSlashCommand(s || {}) ? String(skillSlashCommand(s)).split('\n')[0] : '/' + sid, 'Copied slash command') },
+            { label: 'Inject into project…', run: () => { switchTab('projects'); const el = document.getElementById('injectPath'); if (el) { el.focus(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } }
+          ];
+          if (s && s.manifest_remote_url) {
+            items.push({ label: 'Open manifest on GitHub', run: () => window.open(s.manifest_remote_url, '_blank', 'noopener') });
+          }
+          if (count > 0) {
+            items.push({ label: 'Remove from a project…', danger: true, run: () => { switchTab('projects'); const el = document.getElementById('removeProject'); if (el) { el.value = projectsUsingSkill(sid)[0].path; renderRemoveSkills(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } });
+          }
+          showSkillMenu(moreBtn, items);
+          return;
+        }
+
+        const inspProj = e.target.closest('[data-inspect-project]');
+        if (inspProj) { openDrawer(inspProj.getAttribute('data-inspect-project')); return; }
+
+        const cmdBtn = e.target.closest('[data-cmd-idx]');
+        if (cmdBtn) {
+          const items = getCmdItems();
+          const it = items[Number(cmdBtn.getAttribute('data-cmd-idx'))];
+          if (it) it.run();
+        }
+      });
+
+      document.getElementById('collapseBtn').addEventListener('click', toggleSidebar);
+      document.getElementById('expandRailBtn').addEventListener('click', toggleSidebar);
+      document.getElementById('collapsedThemeBtn').addEventListener('click', () => setTheme(state.theme === 'light' ? 'dark' : 'light', true));
+      document.getElementById('topThemeToggle').addEventListener('click', () => setTheme(state.theme === 'light' ? 'dark' : 'light', true));
+      document.getElementById('mobileMenuBtn').addEventListener('click', () => setMobileSidebar(true));
+      document.getElementById('mobileBackdrop').addEventListener('click', () => setMobileSidebar(false));
+      document.getElementById('sidebarSearchBtn').addEventListener('click', openCmd);
+      var topSearchEl = document.getElementById('topSearchBtn');
+      if (topSearchEl) topSearchEl.addEventListener('click', openCmd);
+      document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
+
+      /* Skill docs modal */
+      document.getElementById('skillModalClose').addEventListener('click', closeSkillDocs);
+      document.getElementById('skillModalBackdrop').addEventListener('click', closeSkillDocs);
+      document.getElementById('skillModalConfigure').addEventListener('click', () => {
+        const id = state.docsSkillId;
+        closeSkillDocs();
+        if (id) openSkillInSettings(id);
+      });
+      document.getElementById('skillModalInject').addEventListener('click', () => {
+        closeSkillDocs();
+        switchTab('projects');
+        const box = document.getElementById('injectSkillList');
+        if (box) {
+          const cb = box.querySelector('input[type=checkbox][value="' + state.lastDocsSkillId + '"]');
+          if (cb) cb.checked = true;
+        }
+        const pathEl = document.getElementById('injectPath');
+        if (pathEl) { pathEl.focus(); pathEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+      });
+      document.getElementById('skillModalCopyCmd').addEventListener('click', () => {
+        if (state.modalKind === 'update') {
+          copyText('rig --update', 'Copied: rig --update');
+          return;
+        }
+        const s = skillById(state.docsSkillId);
+        if (!s) return;
+        const cmd = skillSlashCommand(s).split('\n')[0];
+        if (cmd) copyText(cmd, 'Copied slash command');
+      });
+
+      var updateNoticeEl = document.getElementById('updateNotice');
+      if (updateNoticeEl) updateNoticeEl.addEventListener('click', openUpdateModal);
+
+      var guideBtnEl = document.getElementById('guideBtn');
+      if (guideBtnEl) guideBtnEl.addEventListener('click', openGuide);
+
+      var brandHomeEl = document.getElementById('brandHome');
+      if (brandHomeEl) brandHomeEl.addEventListener('click', function () {
+        if (state.activeTab === 'overview') {
+          triggerRefresh();
+          return;
+        }
+        switchTab('overview');
+      });
+      document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+      document.getElementById('cmdBackdrop').addEventListener('click', closeCmd);
+      document.getElementById('toggleMatrixBtn').addEventListener('click', () => {
+        state.matrixExpanded = !state.matrixExpanded;
+        renderMatrix();
+      });
+
+      document.getElementById('drawerCopyPathBtn').addEventListener('click', () => {
+        const p = projectById(state.drawerProjectId);
+        if (p) copyText(p.path, 'Copied project path');
+      });
+
+      // Provisioning Studio bindings
+      document.getElementById('injectBtn').addEventListener('click', runInject);
+      document.getElementById('injectClearBtn').addEventListener('click', () => {
+        document.getElementById('injectSkillList').querySelectorAll('input[type="checkbox"]').forEach((el) => { el.checked = false; });
+        document.getElementById('injectResult').hidden = true;
+        updateInjectCounter();
+      });
+      document.getElementById('injectSkillList').addEventListener('change', updateInjectCounter);
+      document.getElementById('removeProject').addEventListener('change', () => renderRemoveSkillList());
+      document.getElementById('removeBtn').addEventListener('click', runRemove);
+      document.getElementById('importBtn').addEventListener('click', runImport);
+
+      // Search & Sort listeners
+      document.getElementById('projectSearch').addEventListener('input', (e) => { state.projectQuery = e.target.value; renderProjects(); });
+      document.getElementById('skillSearch').addEventListener('input', (e) => { state.skillQuery = e.target.value; renderSkills(); });
+      document.getElementById('skillSort').addEventListener('change', (e) => { state.skillSort = e.target.value; renderSkills(); });
+      document.getElementById('settingsSearch').addEventListener('input', (e) => { state.settingsQuery = e.target.value; renderSettingsList(); });
+      document.getElementById('cmdInput').addEventListener('input', (e) => { state.cmdQuery = e.target.value; state.cmdIdx = 0; renderCmd(); });
+
+      /* Keyboard Shortcuts */
+      document.addEventListener('keydown', (e) => {
+        const mod = e.metaKey || e.ctrlKey;
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+
+        if (mod && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          if (state.cmdOpen) closeCmd(); else openCmd();
+          return;
+        }
+        if (mod && e.key.toLowerCase() === 's' && state.activeTab === 'settings') {
+          e.preventDefault();
+          saveSkillSettings();
+          return;
+        }
+        if (e.key === 'Escape') {
+          if (state.docsSkillId) { closeSkillDocs(); return; }
+          if (document.getElementById('skillMenu')) { closeSkillMenu(); return; }
+          if (state.cmdOpen) { closeCmd(); return; }
+          if (state.drawerProjectId) { closeDrawer(); return; }
+          setMobileSidebar(false);
+        }
+
+        if (state.cmdOpen) {
+          const items = getCmdItems();
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            state.cmdIdx = (state.cmdIdx + 1) % Math.max(items.length, 1);
+            renderCmd();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            state.cmdIdx = (state.cmdIdx - 1 + Math.max(items.length, 1)) % Math.max(items.length, 1);
+            renderCmd();
+          } else if (e.key === 'Enter' && items[state.cmdIdx]) {
+            e.preventDefault();
+            items[state.cmdIdx].run();
+          }
+          return;
+        }
+
+        if (!typing && !mod && !e.altKey && e.key === '[') {
+          toggleSidebar();
+        }
+      });
+
+      /* ---------- Live data (/api/*) ---------- */
+      function projectKey(p) {
+        const raw = p.path || p.id || p.name || '';
+        return String(raw).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project';
+      }
+
+      function normaliseProject(p) {
+        const skills = Array.isArray(p.skills) ? p.skills.slice() : [];
+        const agents = Array.isArray(p.agents) ? p.agents.filter(Boolean) : [];
+        return {
+          id: p.id || projectKey(p),
+          name: p.name || (p.path ? String(p.path).split(/[\\/]/).filter(Boolean).pop() : 'Untitled project'),
+          stack: p.stack || (agents[0] || 'local'),
+          path: p.path || '',
+          agents: agents,
+          skills: skills,
+          lastSynced: p.lastSynced || null
+        };
+      }
+
+      function normaliseSkill(s) {
+        const mcp = s.mcp_servers;
+        const mcpList = Array.isArray(mcp) ? mcp : (mcp && typeof mcp === 'object' ? Object.keys(mcp) : []);
+        return Object.assign({}, s, { mcp_servers: mcpList });
+      }
+
+      async function loadLiveData() {
+        const res = await Promise.all([
+          fetch('/api/projects').then((r) => r.json()),
+          fetch('/api/skills').then((r) => r.json()),
+          fetch('/api/settings').then((r) => r.json())
+        ]);
+        state.projects = (Array.isArray(res[0].projects) ? res[0].projects : []).map(normaliseProject);
+        state.skills = (Array.isArray(res[1].skills) ? res[1].skills : []).map(normaliseSkill);
+        state.settings = (res[2].settings && typeof res[2].settings === 'object') ? res[2].settings : {};
+        state.snapshotAt = new Date().toISOString();
+        if (!state.selectedSkillId && state.skills.length) state.selectedSkillId = state.skills[0].id;
+      }
+
+      /* ---------- Update notice (sidebar) ---------- */
+      async function checkUpdateNotice() {
+        const btn = document.getElementById('updateNotice');
+        if (!btn) return;
+        try {
+          const res = await fetch('/api/update-check');
+          const info = await res.json();
+          state.updateInfo = info;
+          if (!info.updateAvailable) { btn.hidden = true; return; }
+          const ver = document.getElementById('updateNoticeVer');
+          if (ver) ver.textContent = 'v' + info.currentVersion + ' → v' + info.latestVersion;
+          btn.hidden = false;
+          btn.title = 'Update available: run rig --update';
+        } catch (err) {
+          btn.hidden = true;
+        }
+      }
+
+      /* ---------- Usage guide modal ---------- */
+      function guideSection(title, rows) {
+        return '<section><div class="doc-sec-head">' + esc(title) + '</div>' +
+          rows.map(function (r) {
+            return '<div class="guide-row">' +
+              '<span class="guide-k">' + r[0] + '</span>' +
+              '<span class="guide-v">' + r[1] + '</span>' +
+            '</div>';
+          }).join('') +
+        '</section>';
+      }
+
+      function openGuide() {
+        state.modalKind = 'guide';
+        document.getElementById('skillModalTitle').textContent = 'Usage guide';
+        document.getElementById('skillModalId').textContent = 'how this console works';
+        document.getElementById('skillModalCat').textContent = 'help';
+
+        document.getElementById('skillModalBody').innerHTML =
+          '<section><div class="doc-sec-head">The four steps</div>' +
+            '<div class="doc-prose">ContextRig provisions AI context files into your projects. The console reads and writes the same local state as the CLI — nothing is synced to a server.</div>' +
+          '</section>' +
+          guideSection('1 · Choose a skill', [
+            ['Skills tab', 'Browse the master library. Each card shows its status and how many projects use it.'],
+            ['Details', 'Opens purpose, how-to-use, slash command, dependencies and install list for that skill.']
+          ]) +
+          guideSection('2 · Configure (optional)', [
+            ['Settings tab', 'Pin runtime values per skill. Fields marked <span class="fs-badge fs-default-badge">Default</span> are untouched; <span class="fs-badge fs-custom">Custom</span> means you changed it.'],
+            ['Extra AI Instructions', 'Appended to the skill section inside CLAUDE.md / .cursorrules on the next sync.']
+          ]) +
+          guideSection('3 · Inject', [
+            ['Projects → Provisioning', 'Type a directory (or use "Inject skills here" from a project drawer), pick the agent profile and skills, then Inject.'],
+            ['Smart merge', 'Keeps your existing custom rules and only rewrites the managed section.']
+          ]) +
+          guideSection('4 · Keep it current', [
+            ['Sync &amp; Ops', 'Health checks and the exact CLI commands. The console cannot run npm install for you.'],
+            ['Update notice', 'Appears in the sidebar when a newer release exists. Run <span class="mono">rig --update</span> in your terminal, then Refresh.']
+          ]) +
+          guideSection('Keyboard', [
+            ['<span class="kbd">Ctrl K</span>', 'Command palette — jump to any tab, project or skill.'],
+            ['<span class="kbd">Ctrl S</span>', 'Save skill settings (on the Settings tab).'],
+            ['<span class="kbd">[</span>', 'Collapse or expand the sidebar.'],
+            ['<span class="kbd">Esc</span>', 'Close any dialog.']
+          ]);
+
+        document.getElementById('skillModalInject').hidden = true;
+        document.getElementById('skillModalConfigure').hidden = true;
+        const copyBtn = document.getElementById('skillModalCopyCmd');
+        copyBtn.hidden = true;
+
+        document.getElementById('skillModal').classList.add('open');
+        document.getElementById('skillModalBackdrop').classList.add('open');
+      }
+
+      function openUpdateModal() {
+        state.modalKind = 'update';
+        const info = state.updateInfo || {};
+        document.getElementById('skillModalTitle').textContent = 'Update available';
+        document.getElementById('skillModalId').textContent = 'v' + (info.currentVersion || '?') + ' → v' + (info.latestVersion || '?');
+        document.getElementById('skillModalCat').textContent = 'engine';
+
+        const cmd = 'rig --update';
+        document.getElementById('skillModalBody').innerHTML =
+          '<section><div class="doc-sec-head">What this does</div>' +
+            '<div class="doc-prose">Fast-forwards this ContextRig installation to the latest release on the <span class="mono">main</span> branch and clears the update-check cache. Project files are not touched until you run <span class="mono">rig sync</span>.</div>' +
+          '</section>' +
+          '<section><div class="doc-sec-head">Run it in your terminal</div>' +
+            '<pre class="doc-code">' + esc(cmd) + '</pre>' +
+            '<div class="doc-free">' +
+              svg('alert', 13) +
+              '<span>The browser cannot update the engine itself. Run the command in the terminal where ContextRig is installed, then press Refresh here.</span>' +
+            '</div>' +
+          '</section>';
+
+        document.getElementById('skillModalInject').hidden = true;
+        document.getElementById('skillModalConfigure').hidden = true;
+        const copyBtn = document.getElementById('skillModalCopyCmd');
+        copyBtn.hidden = false;
+        copyBtn.disabled = false;
+        copyBtn.style.opacity = '1';
+        copyBtn.textContent = 'Copy command';
+
+        document.getElementById('skillModal').classList.add('open');
+        document.getElementById('skillModalBackdrop').classList.add('open');
+      }
+
+      /* Platform-correct shortcut labels ---------- */
+      (function labelShortcuts() {
+        var isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
+        if (!isMac) return;
+        ['sidebarKbd', 'topSearchKbd'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = '⌘K';
+        });
+        var save = document.getElementById('saveKbd');
+        if (save) save.textContent = '⌘S';
+      })();
+
+      /* Initial Boot */
+      let savedTheme = 'light';
+      try {
+        const stored = localStorage.getItem('contextrig-preview-theme');
+        if (stored === 'dark' || stored === 'light') savedTheme = stored;
+      } catch (e) {}
+
+      (async function boot() {
+        try {
+          await loadLiveData();
+        } catch (err) {
+          toast('Could not load workspace data');
+        }
+        loadDraft(state.selectedSkillId);
+        setTheme(savedTheme, false);
+        renderAll();
+        checkUpdateNotice();
+      })();
+    })();
+  </script>
+</body>
+</html>

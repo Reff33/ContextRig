@@ -4,7 +4,6 @@ import { existsSync, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import chalk from 'chalk';
 
 const UPDATE_BRANCHES = ['main'];
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -64,6 +63,17 @@ async function readCache() {
   try {
     const parsed = JSON.parse(await fs.readFile(cachePath, 'utf8'));
     if (!parsed?.checkedAt || !parsed?.latestVersion) return null;
+    // Invalidate stale or corrupt future timestamps (> 1 day in the future)
+    const now = Date.now();
+    if (parsed.checkedAt > now + 24 * 60 * 60 * 1000) {
+      await fs.rm(cachePath, { force: true }).catch(() => {});
+      return null;
+    }
+    // Invalidate any stale v1.0.0 artifact while repo is on 0.x
+    if (parsed.latestVersion === '1.0.0') {
+      await fs.rm(cachePath, { force: true }).catch(() => {});
+      return null;
+    }
     return parsed;
   } catch {
     return null;
@@ -151,21 +161,7 @@ export async function checkForUpdates(options = {}) {
 export async function printUpdateBanner(options = {}) {
   try {
     const result = await checkForUpdates(options);
-    if (!result?.updateAvailable) return result;
-
-    const line1 = `Update available: v${result.currentVersion} → v${result.latestVersion}`;
-    const line2 = 'Run: rig --update';
-    const width = Math.max(line1.length, line2.length) + 2;
-    const bar = '─'.repeat(width);
-
-    console.log();
-    console.log(chalk.yellow(`  ┌${bar}┐`));
-    console.log(
-      chalk.yellow('  │ ') + chalk.bold.white(line1.padEnd(width - 1)) + chalk.yellow('│')
-    );
-    console.log(chalk.yellow('  │ ') + chalk.gray(line2.padEnd(width - 1)) + chalk.yellow('│'));
-    console.log(chalk.yellow(`  └${bar}┘`));
-    return result;
+    return result?.updateAvailable ? result : null;
   } catch {
     return null;
   }

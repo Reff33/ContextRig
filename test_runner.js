@@ -624,6 +624,19 @@ async function runTests() {
 
   console.log('✔ Test 12: CLI update checker version compare & cache banner verified.');
 
+  // Test 13: Web UI native server & endpoints
+  const { startWebServer } = await import('./src/server/webServer.js');
+  const testServer = await startWebServer({ port: 0 });
+  assert(testServer.url.startsWith('http://localhost:'), 'Web server URL must start with http://localhost:');
+  const resHtml = await fetch(testServer.url).then((r) => r.text());
+  assert(/contextrig/i.test(resHtml), 'Dashboard HTML must render title');
+  const resSkills = await fetch(`${testServer.url}/api/skills`).then((r) => r.json());
+  assert(Array.isArray(resSkills.skills), 'API /api/skills must return skills array');
+  const resProjects = await fetch(`${testServer.url}/api/projects`).then((r) => r.json());
+  assert(Array.isArray(resProjects.projects), 'API /api/projects must return projects array');
+  testServer.stop();
+  console.log('✔ Test 13: Web server native HTTP endpoints verified.');
+
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
   } finally {
     await fs.rm(isolatedRegistryPath, { force: true }).catch(() => {});

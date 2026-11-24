@@ -3,6 +3,7 @@
 import { exec, execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import readline from 'node:readline';
 import { promisify } from 'node:util';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
@@ -27,6 +28,7 @@ import {
 } from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
 import { printUpdateBanner, runSelfUpdate, getCurrentVersionSync } from './core/updateChecker.js';
+import { startWebServer, openBrowser } from './server/webServer.js';
 
 const execAsync = promisify(exec);
 
@@ -51,7 +53,14 @@ inquirer.prompt = function (questions, answers) {
     ? questions.map(patchQuestion)
     : patchQuestion(questions);
 
-  return rawPrompt.call(this, patched, answers);
+  return rawPrompt.call(this, patched, answers).catch((err) => {
+    if (/SIGINT|User force closed|ExitPromptError/i.test(err?.message ?? '') || err?.name === 'ExitPromptError') {
+      console.log();
+      logger.info('Thank you for using ContextRig CLI. Goodbye!');
+      process.exit(0);
+    }
+    throw err;
+  });
 };
 
 /**
@@ -997,32 +1006,57 @@ function clearTerminal() {
 }
 
 /**
- * Main Interactive Menu Loop
+ * Terminal UI Interactive Menu
  */
-async function mainMenu() {
+async function terminalMenu(serverUrl = null) {
   clearTerminal();
-  logger.banner(getCurrentVersionSync());
-  await printUpdateBanner();
+  logger.banner(getCurrentVersionSync(), serverUrl);
 
   let keepRunning = true;
+  const updateInfo = (await printUpdateBanner()) ?? null;
+  let updateDismissed = false;
 
   while (keepRunning) {
     try {
+      const choices = [];
+      if (updateInfo?.updateAvailable && !updateDismissed) {
+        choices.push(
+          {
+            name: `${chalk.yellow('[!]')} Update available: v${updateInfo.currentVersion} → v${updateInfo.latestVersion} (run: rig --update)`,
+            value: 'update-notice'
+          },
+          new inquirer.Separator()
+        );
+      }
+      choices.push(
+        { name: '[1] Inject Skills to Project', value: 'inject' },
+        { name: '[2] Sync Skills to Projects', value: 'sync' },
+        { name: '[3] Remove Skills from Project', value: 'remove' },
+        { name: '[4] Manage Skills Library', value: 'manage' },
+        new inquirer.Separator(),
+        { name: '← Return to Interface Menu', value: 'back' }
+      );
+
       const { choice } = await inquirer.prompt([
         {
           type: 'list',
           name: 'choice',
           message: 'What would you like to do?',
-          choices: [
-            { name: '[1] Inject Skills to Project', value: 'inject' },
-            { name: '[2] Sync Skills to Projects', value: 'sync' },
-            { name: '[3] Remove Skills from Project', value: 'remove' },
-            { name: '[4] Manage Skills Library', value: 'manage' },
-            new inquirer.Separator(),
-            { name: '[5] Exit', value: 'exit' }
-          ]
+          choices
         }
       ]);
+
+      if (choice === 'update-notice') {
+        updateDismissed = true;
+        clearTerminal();
+        logger.banner(getCurrentVersionSync(), serverUrl);
+        continue;
+      }
+
+      if (choice === 'back') {
+        keepRunning = false;
+        break;
+      }
 
       switch (choice) {
         case 'inject':
@@ -1037,12 +1071,6 @@ async function mainMenu() {
         case 'manage':
           await handleManageSkills();
           break;
-        case 'exit':
-          console.log();
-          logger.info('Thank you for using ContextRig CLI. Goodbye!');
-          keepRunning = false;
-          process.exit(0);
-          break;
       }
       if (keepRunning) {
         console.log();
@@ -1053,6 +1081,9 @@ async function mainMenu() {
       if (err.isTtyError) {
         logger.error('Prompt could not be rendered in the current environment.');
         keepRunning = false;
+      } else if (/SIGINT|User force closed/i.test(err.message ?? '')) {
+        keepRunning = false;
+        break;
       } else {
         logger.error(`An unexpected error occurred: ${err.message}`);
       }
@@ -1060,12 +1091,112 @@ async function mainMenu() {
   }
 }
 
+/**
+ * Landing: Choose Interface (Web UI vs Terminal UI)
+ */
+async function chooseInterfaceMenu() {
+  let serverInstance = null;
+  let serverUrl = 'http://localhost:7474';
+
+  try {
+    serverInstance = await startWebServer({ port: 7474 });
+    serverUrl = serverInstance.url;
+  } catch (err) {
+    logger.warn(`Could not start Web server: ${err.message}`);
+  }
+
+  const cleanupAndExit = () => {
+    if (serverInstance?.stop) {
+      try { serverInstance.stop(); } catch {}
+    }
+    console.log();
+    logger.info('Thank you for using ContextRig. Goodbye!');
+    process.exit(0);
+  };
+
+  process.on('SIGINT', cleanupAndExit);
+
+  let keepRunning = true;
+  const updateInfo = (await printUpdateBanner()) ?? null;
+  let updateDismissed = false;
+
+  while (keepRunning) {
+    clearTerminal();
+    logger.banner(getCurrentVersionSync(), serverUrl);
+
+    try {
+      const choices = [];
+      if (updateInfo?.updateAvailable && !updateDismissed) {
+        choices.push(
+          {
+            name: `${chalk.yellow('[!]')} Update available: v${updateInfo.currentVersion} → v${updateInfo.latestVersion} (run: rig --update)`,
+            value: 'update-notice'
+          },
+          new inquirer.Separator()
+        );
+      }
+      choices.push(
+        { name: '[1] Web UI (Open in Browser)', value: 'web' },
+        { name: '[2] Terminal UI (Interactive CLI)', value: 'terminal' },
+        { name: '[3] Exit', value: 'exit' }
+      );
+
+      const { iface } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'iface',
+          message: 'Choose Interface:',
+          choices
+        }
+      ]);
+
+      if (iface === 'update-notice') {
+        updateDismissed = true;
+        continue;
+      }
+
+      if (iface === 'exit' || !iface) {
+        keepRunning = false;
+        cleanupAndExit();
+        return;
+      }
+
+      if (iface === 'web') {
+        openBrowser(serverUrl);
+        console.log();
+        logger.success(`Opened ContextRig Web UI in browser: ${serverUrl}`);
+        console.log(chalk.gray('  Web server is actively running in background.'));
+        console.log();
+        await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'returnMenu',
+            message: 'Press Enter to return to interface menu...'
+          }
+        ]);
+      } else if (iface === 'terminal') {
+        await terminalMenu(serverUrl);
+      }
+    } catch (err) {
+      if (/SIGINT|User force closed/i.test(err?.message ?? '')) {
+        cleanupAndExit();
+      } else {
+        logger.error(`An unexpected error occurred: ${err.message}`);
+      }
+    }
+  }
+
+  cleanupAndExit();
+}
+
 function printCliHelp() {
   console.log(`
 ContextRig CLI — AI Agent Context & Skill Provisioner
 
 Usage:
-  rig                                Launch interactive menu
+  rig                                Launch interface selector (Web / Terminal UI)
+  rig --web                          Launch Web UI dashboard directly
+  rig --tui                          Launch Terminal UI directly
   rig sync                           Open sync hub (Check & Update All / One Project / One Skill)
   rig sync --all [--yes]             Check & update all registered projects
   rig sync --skill <id> [--yes]      Update a specific skill across registered projects
@@ -1082,6 +1213,18 @@ async function runCli(argv) {
   }
 
   const cmd = argv[0];
+  if (cmd === '--web' || cmd === '-w') {
+    const s = await startWebServer();
+    openBrowser(s.url);
+    logger.success(`ContextRig Web UI running at ${s.url}`);
+    return;
+  }
+
+  if (cmd === '--tui' || cmd === '-t') {
+    await terminalMenu(null);
+    return;
+  }
+
   if (cmd === '--update' || cmd === 'update') {
     logger.info('Pulling latest ContextRig source from GitHub...');
     const result = await runSelfUpdate();
@@ -1128,5 +1271,5 @@ if (cliArgs.length > 0) {
     process.exit(1);
   });
 } else {
-  mainMenu();
+  chooseInterfaceMenu();
 }
