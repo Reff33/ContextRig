@@ -7,13 +7,13 @@
 **Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
 Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
 
-[![Version](https://img.shields.io/badge/version-0.3.0%20beta-f39c12?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.4.1%20beta-f39c12?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
 [![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
 [![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
 [![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20OpenCode%20%C2%B7%20Copilot-7a5af5?style=flat-square)](#quick-start)
 
-[Why](#why) · [Supported agents](#supported-ai-agent-profiles) · [Skills library](#curated-skills-library) · [Workflow](#recommended-workflow) · [Quick start](#quick-start) · [Cloud sync](#cloud-sync--project-registry) · [Layout](#repository-layout) · [FAQ](#faq)
+[Why](#why) · [Supported agents](#supported-ai-agent-profiles) · [Skills library](#curated-skills-library) · [Workflow](#recommended-workflow) · [Quick start](#quick-start) · [Web console](#web-console) · [Cloud sync](#cloud-sync--project-registry) · [Layout](#repository-layout) · [FAQ](#faq)
 
 </div>
 
@@ -55,7 +55,7 @@ Global AI skill folders dump every tool into every repository, bloating context 
 ## Curated Skills Library
 
 <details open>
-<summary><b>10 built-in skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
+<summary><b>10 catalog skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
 
 | Skill ID | Name | Slash Command | Injected Assets | Purpose |
 |---|---|---|---|---|
@@ -71,6 +71,8 @@ Global AI skill folders dump every tool into every repository, bloating context 
 | `git_workflow` | **Git Workflow** | `/commit`, `/commit-v` | *(System rules & command)* | Enforces Conventional Commits, diff metrics, secret guards, and version contract detection |
 
 </details>
+
+> Skill assets are **not** bundled with the npm package. The catalog ships metadata only; the Web Console installs a skill into `~/.contextrig/` when you click **Install**, or automatically on first injection of a selected skill from the CLI.
 
 ---
 
@@ -94,16 +96,30 @@ flowchart LR
 
 ## Quick Start
 
-#> **Beta (v0.3.0)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
+#> **Beta (v0.4.1)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
 
 ## Installation
 
+The npm package ships **only the engine** (`src/`, `templates/`, `skills_catalog.json`) — roughly 130 kB. No skill assets are bundled; you install the skills you want on demand.
+
 ```bash
-# Clone the repository
+npm install -g contextrig
+rig
+```
+
+Running `rig` opens the interface selector: **Web Console** (`http://localhost:7474`) or **Terminal UI**.
+
+First run flow:
+
+1. Open the **Skills** tab and click **Install** on any card. A confirmation dialog shows the file count and estimated storage before anything is downloaded.
+2. Installed skills land in `~/.contextrig/skills_library/` (manifests) and `~/.contextrig/scripts/` (tool files). Remove them with `···` → **Remove from device**; reinstall any time.
+3. Go to **Projects → Inject into project**, type a directory, pick the agent profile and skills, then Inject.
+
+### Install from source (development)
+
+```bash
 git clone https://github.com/Reff33/ContextRig.git
 cd ContextRig
-
-# Install dependencies & link global CLI ('rig' / 'contextrig')
 npm install
 npm link
 ```
@@ -111,8 +127,14 @@ npm link
 ### Interactive & Direct CLI Commands
 
 ```bash
-# Launch interactive menu
+# Launch interface selector (Web / Terminal UI)
 rig
+
+# Open the Web Console directly
+rig --web
+
+# Open the Terminal UI directly
+rig --tui
 
 # Open Sync Hub (Sync All / Update by Skill / Current Folder / Registered Projects)
 rig sync
@@ -127,6 +149,22 @@ rig sync --skill kinet_rig
 # Sync a specific folder directly
 rig sync ./my-project
 ```
+
+---
+
+## Web Console
+
+`rig --web` serves a local, single-page console at `http://localhost:7474`. It reads and writes the exact same local state as the CLI — nothing leaves your machine.
+
+| Tab | What you can do |
+|---|---|
+| **Overview** | KPI cards, health/agent footprint, top adopted skills, recent activity, provisioning matrix |
+| **Projects** | Browse, filter and paginate registered projects; inject into any directory; remove skills (real file deletion); import skills from GitHub / skills.sh |
+| **Sync & Ops** | Engine health checks, **Sync Now** per project, **Sync All Projects**, copyable CLI commands |
+| **Skills** | Catalog with per-skill status (`Not on device` / `On device` / `In projects · uncached` / `Installed`), Install / Update / Remove from device, custom image per skill |
+| **Settings** | Accent palettes (5 core + more), per-skill parameters with `DEFAULT` vs `CUSTOM` badges, extra AI instructions, live JSON/Markdown preview |
+
+Also included: `Ctrl/⌘ K` command palette, `Ctrl/⌘ S` to save settings, `[` to collapse the sidebar, and Light/Dark modes that work with every palette.
 
 ---
 
@@ -158,15 +196,31 @@ ContextRig/
 │   │   ├── skillManager.js          Skill schema loader & creator
 │   │   ├── skillUpdater.js          Installed skill detection, sync & safe removal
 │   │   ├── syncEngine.js            ETag/SHA-256 remote sync, Sync All & Skill-First
+│   │   ├── skillCatalog.js          On-demand catalog: install/update/remove skills on device
+│   │   ├── skillImporter.js         GitHub / skills.sh inspector & validator
 │   │   ├── dependencyInstaller.js   Automated npm/pip & custom install_command runner
 │   │   └── gitIgnoreManager.js      Automated .gitignore pattern management
+│   ├── server/
+│   │   ├── webServer.js             Local HTTP console + JSON REST API (port 7474)
+│   │   └── console.tpl.html         Single-page console UI (themes, panels, palette)
 │   └── utils/
 │       ├── logger.js                Formatted console output & banners
 │       └── table.js                 Boxed CLI skill table renderer
 ├── templates/                       Handlebars templates for 5 AI agent profiles
-├── skills_library/                  JSON definitions & remote_url manifests
-├── scripts/                         Local master scripts & skill toolkits
+├── skills_catalog.json              Shipped skill index (metadata only, no assets)
+├── skills_library/                  Dev-only JSON definitions & remote_url manifests
+├── scripts/                         Dev-only master scripts & skill toolkits
 └── test_runner.js                   Automated integration test suite
+```
+
+Installed skills live in `~/.contextrig/`:
+
+```text
+~/.contextrig/
+├── projects.json                    Global project registry
+├── skill-settings.json              Per-skill parameter overrides & extra AI rules
+├── skills_library/*.json            Installed skill manifests
+└── scripts/                         Installed skill tool files
 ```
 
 ---
@@ -196,7 +250,19 @@ No. Projects are auto-registered in `~/.contextrig/projects.json` when you injec
 <details>
 <summary><b>How does ContextRig update ContextRig's own local scripts/ library?</b></summary>
 
-Choose **Update by Skill → ContextRig Master Library** (under `[2] Sync` or `[4] Manage Skills Library`) to pull updated skill JSON manifests (`manifest_remote_url`) and remote files straight into `skills_library/` and `scripts/`.
+Choose **Update by Skill → ContextRig Master Library** (under `[2] Sync` or `[4] Manage Skills Library`) to pull updated skill JSON manifests (`manifest_remote_url`) and remote files into your device library at `~/.contextrig/`.
+</details>
+
+<details>
+<summary><b>Why is the npm package so small?</b></summary>
+
+Because skill assets are downloaded on demand. `npm install -g contextrig` installs the engine (~130 kB) and `skills_catalog.json`. Nothing is written into your projects until you install a skill and inject it.
+</details>
+
+<details>
+<summary><b>How do I remove a skill from my machine?</b></summary>
+
+Web Console → **Skills** → `···` → **Remove from device**. This deletes the manifest and tool files from `~/.contextrig/`. Projects that already received the skill are left untouched; reinstall any time with **Install**.
 </details>
 
 ---
