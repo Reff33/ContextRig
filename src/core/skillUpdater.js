@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import chalk from 'chalk';
 import { SUPPORTED_AGENTS, resolveAssetSourcePath } from '../config.js';
-import { injectTemplate } from './fileInjector.js';
+import { injectTemplate, stripManagedSection } from './fileInjector.js';
 import { handleDependencies } from './dependencyInstaller.js';
 import { handleGitIgnore } from './gitIgnoreManager.js';
 import { getSkillCommands } from './slashCommands.js';
@@ -204,7 +204,7 @@ export async function removeSkillsFromProject(
   projectName,
   skillsToRemove,
   remainingSkills,
-  { deleteArtifacts = true } = {}
+  { deleteArtifacts = true, rewriteRules = true } = {}
 ) {
   if (skillsToRemove.length === 0) return;
 
@@ -281,6 +281,21 @@ export async function removeSkillsFromProject(
   // 3. Re-sync AI rules in all detected agents with remaining skills
   const existingAgents = await detectConfiguredAgents(targetDir);
   for (const agent of existingAgents) {
+    const outputPath = path.join(targetDir, agent.outputFile);
+
+    // Total removal: strip the managed block instead of re-rendering the template,
+    // so the user keeps their own rules and no ContextRig boilerplate remains.
+    if (rewriteRules && remainingSkills.length === 0) {
+      try {
+        const existing = await fs.readFile(outputPath, 'utf8');
+        await fs.writeFile(outputPath, stripManagedSection(existing), 'utf8');
+        logger.success(`Cleaned managed section from ${agent.outputFile}`);
+      } catch {
+        // file missing — nothing to clean
+      }
+      continue;
+    }
+
     logger.step(`Re-syncing AI rules in ${agent.outputFile}...`);
     await injectTemplate({
       targetDir,

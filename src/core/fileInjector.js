@@ -43,6 +43,30 @@ export function formatSkillBlock(skill) {
 }
 
 /**
+ * Removes the managed `## Available AI Skills & Tools` section while keeping
+ * every hand-written rule the user added around it.
+ * @param {string} content
+ * @returns {string}
+ */
+export function stripManagedSection(content) {
+  let out = String(content || '');
+  const header = '## Available AI Skills & Tools';
+  const idx = out.indexOf(header);
+  if (idx === -1) return out;
+
+  const after = out.slice(idx + header.length);
+  const next = after.match(/\n##\s+[^#]/);
+  const end = next && next.index !== undefined ? idx + header.length + next.index : out.length;
+  const leadIn = 'The following skills and tools are configured for this environment:';
+
+  let head = out.slice(0, idx);
+  head = head.replace(new RegExp(`\\n?${leadIn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n?`, 'g'), '\n');
+  let tail = out.slice(end);
+
+  return (head + tail).replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
+/**
  * Safely merges selected skills into an existing rules file without duplicating skills or deleting custom rules.
  * @param {string} existingContent
  * @param {Array<Object>} skillsInstructions

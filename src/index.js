@@ -13,6 +13,7 @@ import { selectAgent } from './core/agentSelector.js';
 import { injectTemplate } from './core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
 import { getCatalogAndDeviceSkills, ensureSkillInstalled } from './core/skillCatalog.js';
+import { previewPurge, purgeWorkspace, printPurgeReport } from './core/purgeEngine.js';
 import { inspectRemoteSkillRepo, commitImportedSkill } from './core/skillImporter.js';
 import { handleDependencies, resolvePythonCmd } from './core/dependencyInstaller.js';
 import { getSkillCommandsLabel } from './core/slashCommands.js';
@@ -1218,6 +1219,7 @@ Usage:
   rig sync --skill <id> [--yes]      Update a specific skill across registered projects
   rig sync <path> [--yes]            Sync a specific project directory
   rig --update                       Pull the latest ContextRig source from GitHub
+  rig --uninstall                    Strip ContextRig from every project & delete ~/.contextrig
   rig --help                         Show this help message
 `);
 }
@@ -1250,6 +1252,41 @@ async function runCli(argv) {
       logger.error(result.message);
       process.exitCode = 1;
     }
+    return;
+  }
+
+  if (cmd === '--uninstall' || cmd === 'uninstall') {
+    const autoYes = argv.includes('--yes') || argv.includes('-y');
+    const preview = await previewPurge();
+
+    logger.section('Uninstall ContextRig');
+    console.log(`  Projects registered : ${preview.projectCount}`);
+    for (const p of preview.projects) {
+      console.log(`    ${p.onDisk ? chalk.white(p.name) : chalk.dim(p.name + ' (missing)')} — ${p.skillCount} skill(s)`);
+    }
+    console.log(`  Device library      : ${preview.deviceDir} (${preview.deviceExists ? preview.deviceFiles + ' files' : 'absent'})`);
+    console.log();
+    logger.warn('Your own hand-written rules are kept. ContextRig-owned files, caches and ~/.contextrig are deleted.');
+
+    if (!autoYes) {
+      const { proceed } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'proceed',
+          message: 'Continue with the full uninstall?',
+          default: false
+        }
+      ]);
+      if (!proceed) {
+        logger.info('Uninstall cancelled. Nothing was changed.');
+        return;
+      }
+    }
+
+    const report = await purgeWorkspace({ deleteDevice: true });
+    printPurgeReport(report);
+    console.log();
+    logger.info('Finally, remove the global package: npm uninstall -g contextrig');
     return;
   }
 

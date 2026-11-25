@@ -23,6 +23,7 @@ import {
   resetSkillSettings,
   getSkillSchema
 } from '../core/skillSettings.js';
+import { previewPurge, purgeWorkspace } from '../core/purgeEngine.js';
 
 export function openBrowser(url) {
   const startCmd = process.platform === 'win32'
@@ -402,6 +403,29 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost' } = {})
         sendJson(200, await syncProjectsFromWeb(body));
       } catch (err) {
         sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/purge/preview') {
+      try {
+        sendJson(200, await previewPurge());
+      } catch (err) {
+        sendJson(500, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/purge' && req.method === 'POST') {
+      try {
+        const body = await readBody();
+        if (body?.confirm !== true) {
+          sendJson(400, { ok: false, message: 'Set confirm: true to run a full uninstall.' });
+          return;
+        }
+        sendJson(200, { ok: true, report: await purgeWorkspace({ deleteDevice: body.deleteDevice !== false }) });
+      } catch (err) {
+        sendJson(500, { ok: false, message: err.message });
       }
       return;
     }

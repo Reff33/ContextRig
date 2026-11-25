@@ -2887,6 +2887,24 @@
               <div id="settingsFormFooter" class="form-footer"></div>
             </div>
           </div>
+
+          <div class="card" id="dangerZoneCard" style="margin-top:16px">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title" style="color:var(--err-text)">Uninstall ContextRig</h2>
+                <div class="card-subtitle">Strip every managed rule and injected file from all projects, then clear this device</div>
+              </div>
+              <span class="spacer"></span>
+              <button id="purgePreviewBtn" type="button" class="btn btn-danger">Review what will be removed…</button>
+            </div>
+            <div class="card-body">
+              <p class="field-hint" style="margin:0">
+                Your own hand-written rules stay. Only ContextRig's managed skill block, the injected <span class="mono">rigtools/</span> files,
+                slash commands, caches, and the local library at <span class="mono">~/.contextrig/</span> are deleted.
+                The global npm package itself is removed with <span class="mono">npm uninstall -g contextrig</span>.
+              </p>
+            </div>
+          </div>
         </section>
 
       </main>
@@ -5474,6 +5492,8 @@
       if (topSearchEl) topSearchEl.addEventListener('click', openCmd);
       var topSyncAllEl = document.getElementById('topSyncAllBtn');
       if (topSyncAllEl) topSyncAllEl.addEventListener('click', () => runSyncNow({ all: true }, topSyncAllEl));
+      var purgeBtnEl = document.getElementById('purgePreviewBtn');
+      if (purgeBtnEl) purgeBtnEl.addEventListener('click', openPurgePreview);
       var opsSyncAllEl = document.getElementById('opsSyncAllBtn');
       if (opsSyncAllEl) opsSyncAllEl.addEventListener('click', () => runSyncNow({ all: true }, opsSyncAllEl));
       document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
@@ -5654,6 +5674,87 @@
         } catch (err) {
           btn.hidden = true;
         }
+      }
+
+      /* ---------- Full uninstall (purge) ---------- */
+      async function openPurgePreview() {
+        state.modalKind = 'purge';
+        const thumbSlot = document.getElementById('skillModalThumb');
+        if (thumbSlot) { thumbSlot.style.display = 'none'; thumbSlot.innerHTML = ''; }
+        const foot = document.querySelector('.skill-modal-foot');
+        if (foot) foot.style.display = 'none';
+
+        document.getElementById('skillModalTitle').textContent = 'Uninstall ContextRig';
+        document.getElementById('skillModalId').textContent = 'preview';
+        document.getElementById('skillModalCat').textContent = 'danger';
+        document.getElementById('skillModalBody').innerHTML = '<section><div class="doc-prose">Scanning workspace…</div></section>';
+        document.getElementById('skillModal').classList.add('open');
+        document.getElementById('skillModalBackdrop').classList.add('open');
+
+        let p;
+        try {
+          p = await (await fetch('/api/purge/preview')).json();
+        } catch (err) {
+          document.getElementById('skillModalBody').innerHTML =
+            '<section><div class="doc-free">' + svg('alert', 13) + '<span>Could not scan the workspace: ' + esc(err.message) + '</span></div></section>';
+          return;
+        }
+
+        const rows = p.projects.map((pr) =>
+          '<div class="doc-row"><span class="k">' + (pr.onDisk ? 'Project' : 'Missing') + '</span>' +
+            '<span class="mono" style="color:' + (pr.onDisk ? 'var(--text-1)' : 'var(--text-3)') + '">' + esc(pr.name) + ' · ' + pr.skillCount + ' skill(s)</span>' +
+          '</div>'
+        ).join('');
+
+        document.getElementById('skillModalBody').innerHTML =
+          '<section><div class="doc-sec-head">Projects to clean (' + p.projectCount + ')</div>' +
+            (rows || '<div class="doc-prose">No registered projects.</div>') +
+          '</section>' +
+          '<section><div class="doc-sec-head">Device library</div>' +
+            '<div class="doc-row"><span class="k">Location</span><span class="mono">' + esc(p.deviceDir) + '</span></div>' +
+            '<div class="doc-row"><span class="k">Files</span><span class="mono">' + (p.deviceExists ? p.deviceFiles : 0) + '</span></div>' +
+            '<div class="doc-row"><span class="k">Folders</span><span class="mono">' + (p.deviceDirs.join(', ') || 'none') + '</span></div>' +
+            '<div class="doc-row"><span class="k">Settings</span><span class="mono">' + (p.settingsExist ? 'skill-settings.json' : 'none') + '</span></div>' +
+          '</section>' +
+          '<section><div class="doc-sec-head">What is kept</div>' +
+            '<div class="doc-prose">Your hand-written code, rules added outside the managed block, and git history. Only ContextRig-owned files are removed.</div>' +
+          '</section>' +
+          '<section><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;padding-top:4px">' +
+            '<button id="purgeCancelBtn" type="button" class="btn">Cancel</button>' +
+            '<button id="purgeConfirmBtn" type="button" class="btn btn-danger">Uninstall from this device</button>' +
+          '</div></section>';
+
+        document.getElementById('purgeCancelBtn').addEventListener('click', closeSkillDocs);
+        document.getElementById('purgeConfirmBtn').addEventListener('click', async function () {
+          const btn = this;
+          btn.disabled = true;
+          btn.textContent = 'Uninstalling…';
+          try {
+            const res = await fetch('/api/purge', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ confirm: true, deleteDevice: true })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.message || 'Uninstall failed');
+            const r = data.report;
+            document.getElementById('skillModalBody').innerHTML =
+              '<section><div class="doc-sec-head">Done</div>' +
+                '<div class="doc-row"><span class="k">Projects cleaned</span><span class="mono">' + r.projectsCleaned.length + '</span></div>' +
+                '<div class="doc-row"><span class="k">Skipped</span><span class="mono">' + r.projectsSkipped.length + '</span></div>' +
+                '<div class="doc-row"><span class="k">Device library</span><span class="mono">' + (r.deviceDeleted ? 'deleted' : 'kept') + '</span></div>' +
+                (r.errors.length ? '<div class="doc-free">' + svg('alert', 13) + '<span>' + esc(r.errors.map((e) => e.name + ': ' + e.message).join(' · ')) + '</span></div>' : '') +
+              '</section>' +
+              '<section><pre class="doc-code">npm uninstall -g contextrig</pre></section>';
+            btn.textContent = 'Closed';
+            await loadLiveData();
+            renderAll();
+          } catch (err) {
+            btn.disabled = false;
+            btn.textContent = 'Uninstall from this device';
+            toast('Uninstall failed: ' + err.message);
+          }
+        });
       }
 
       /* ---------- Usage guide modal ---------- */
