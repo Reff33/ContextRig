@@ -151,6 +151,182 @@
     }
 
     /* =========================================================================
+       9 Curated Accent Palettes (Independent Light & Dark Mode)
+       ========================================================================= */
+    /* 1. Slate & Cyan (Default) */
+    html:not(.dark)[data-accent="cyan"] {
+      --accent: #0E7490;
+      --accent-hover: #0B5D74;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(14, 116, 144, 0.10);
+      --accent-border: rgba(14, 116, 144, 0.28);
+      --bg-active-row: #ECFEFF;
+      --code-key: #0E7490;
+    }
+    html.dark[data-accent="cyan"] {
+      --accent: #22D3EE;
+      --accent-hover: #38E0FA;
+      --accent-fg: #082026;
+      --accent-soft: rgba(34, 211, 238, 0.14);
+      --accent-border: rgba(34, 211, 238, 0.30);
+      --bg-active-row: rgba(34, 211, 238, 0.08);
+      --code-key: #67E8F9;
+    }
+
+    /* 2. Amber & Obsidian */
+    html:not(.dark)[data-accent="amber"] {
+      --accent: #B45309;
+      --accent-hover: #92400E;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(180, 83, 9, 0.10);
+      --accent-border: rgba(180, 83, 9, 0.28);
+      --bg-active-row: #FFFBEB;
+      --code-key: #B45309;
+    }
+    html.dark[data-accent="amber"] {
+      --accent: #F59E0B;
+      --accent-hover: #FBBF24;
+      --accent-fg: #1C1102;
+      --accent-soft: rgba(245, 158, 11, 0.15);
+      --accent-border: rgba(245, 158, 11, 0.32);
+      --bg-active-row: rgba(245, 158, 11, 0.09);
+      --code-key: #FBBF24;
+    }
+
+    /* 3. Emerald Terminal */
+    html:not(.dark)[data-accent="emerald"] {
+      --accent: #047857;
+      --accent-hover: #065F46;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(4, 120, 87, 0.10);
+      --accent-border: rgba(4, 120, 87, 0.26);
+      --bg-active-row: #ECFDF5;
+      --code-key: #047857;
+    }
+    html.dark[data-accent="emerald"] {
+      --accent: #34D399;
+      --accent-hover: #4ADE80;
+      --accent-fg: #042116;
+      --accent-soft: rgba(52, 211, 153, 0.14);
+      --accent-border: rgba(52, 211, 153, 0.30);
+      --bg-active-row: rgba(52, 211, 153, 0.08);
+      --code-key: #6EE7B7;
+    }
+
+    /* 4. Cobalt & Indigo */
+    html:not(.dark)[data-accent="cobalt"] {
+      --accent: #2F5CE0;
+      --accent-hover: #254CC2;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(47, 92, 224, 0.09);
+      --accent-border: rgba(47, 92, 224, 0.24);
+      --bg-active-row: #EDF2FC;
+      --code-key: #2F5CE0;
+    }
+    html.dark[data-accent="cobalt"] {
+      --accent: #6D93F5;
+      --accent-hover: #82A4F8;
+      --accent-fg: #0F1420;
+      --accent-soft: rgba(109, 147, 245, 0.14);
+      --accent-border: rgba(109, 147, 245, 0.30);
+      --bg-active-row: rgba(109, 147, 245, 0.08);
+      --code-key: #82A4F8;
+    }
+
+    /* 5. Violet & Amethyst */
+    html:not(.dark)[data-accent="violet"] {
+      --accent: #6D28D9;
+      --accent-hover: #5B21B6;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(109, 40, 217, 0.09);
+      --accent-border: rgba(109, 40, 217, 0.25);
+      --bg-active-row: #F5F3FF;
+      --code-key: #6D28D9;
+    }
+    html.dark[data-accent="violet"] {
+      --accent: #A78BFA;
+      --accent-hover: #C4B5FD;
+      --accent-fg: #140B29;
+      --accent-soft: rgba(167, 139, 250, 0.15);
+      --accent-border: rgba(167, 139, 250, 0.32);
+      --bg-active-row: rgba(167, 139, 250, 0.09);
+      --code-key: #C4B5FD;
+    }
+
+    /* 6. Rose & Graphite */
+    html:not(.dark)[data-accent="rose"] {
+      --accent: #BE123C;
+      --accent-hover: #9F1239;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(190, 18, 60, 0.09);
+      --accent-border: rgba(190, 18, 60, 0.25);
+      --bg-active-row: #FFF1F2;
+      --code-key: #BE123C;
+    }
+    html.dark[data-accent="rose"] {
+      --accent: #FB7185;
+      --accent-hover: #FDA4AF;
+      --accent-fg: #24060D;
+      --accent-soft: rgba(251, 113, 133, 0.15);
+      --accent-border: rgba(251, 113, 133, 0.32);
+      --bg-active-row: rgba(251, 113, 133, 0.09);
+      --code-key: #FDA4AF;
+    }
+
+    /* 7. Mocha & Sand (Earthy Warm Editorial) */
+    html:not(.dark)[data-accent="mocha"] {
+      --bg-shell: #F1EBE2;
+      --bg-workspace: #F7F3EC;
+      --bg-card: #FFFDFA;
+      --bg-subtle: #EFE8DD;
+      --bg-hover: #EAE1D4;
+      --bg-active-row: #F3E9DC;
+      --border: #E2D8C8;
+      --border-strong: #CFC2AE;
+      --border-subtle: #ECE4D7;
+      --text-1: #231B15;
+      --text-2: #5C4E43;
+      --text-3: #857467;
+      --accent: #7A4B2E;
+      --accent-hover: #623B23;
+      --accent-fg: #FFFFFF;
+      --accent-soft: rgba(122, 75, 46, 0.11);
+      --accent-border: rgba(122, 75, 46, 0.28);
+      --tag-bg: #EDE5D9;
+      --tag-text: #4F4035;
+      --tag-border: #DDD2C1;
+      --code-bg: #EFE9DF;
+      --code-text: #2A2019;
+      --code-key: #7A4B2E;
+    }
+    html.dark[data-accent="mocha"] {
+      --bg-shell: #171310;
+      --bg-workspace: #1C1713;
+      --bg-card: #241E19;
+      --bg-subtle: #2C241E;
+      --bg-hover: #332A23;
+      --bg-active-row: rgba(200, 146, 107, 0.10);
+      --border: #3B3128;
+      --border-strong: #4C3F34;
+      --border-subtle: #2F2720;
+      --text-1: #EAE0D5;
+      --text-2: #B3A394;
+      --text-3: #827366;
+      --accent: #C8926B;
+      --accent-hover: #D6A47E;
+      --accent-fg: #1A120C;
+      --accent-soft: rgba(200, 146, 107, 0.16);
+      --accent-border: rgba(200, 146, 107, 0.34);
+      --tag-bg: #2C241E;
+      --tag-text: #C9BAAB;
+      --tag-border: #3F342B;
+      --code-bg: #15110E;
+      --code-text: #DFD3C6;
+      --code-key: #D6A47E;
+    }
+
+
+    /* =========================================================================
        Reset & Base Typography
        ========================================================================= */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -168,6 +344,7 @@
 
     button, input, select, textarea { font: inherit; color: inherit; }
     button { background: none; border: none; cursor: pointer; }
+    [hidden] { display: none !important; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 5px; }
 
     .mono { font-family: var(--font-mono); }
@@ -521,7 +698,33 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
+      position: relative;
+      isolation: isolate;
+      background-image:
+        radial-gradient(ellipse 52% 42% at 96% 68px, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 72%),
+        radial-gradient(ellipse 28% 22% at 3% 76px, color-mix(in srgb, var(--accent) 4.5%, transparent) 0%, transparent 65%);
     }
+
+    /* Directional Architectural Hex Mesh (top-right sweep + subtle top-left corner) */
+    .hex-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      color: var(--accent);
+      opacity: 0.12;
+      z-index: 0;
+      transition: color 180ms ease;
+      -webkit-mask-image:
+        radial-gradient(ellipse 50% 44% at 96% 72px, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 45%, transparent 78%),
+        radial-gradient(ellipse 24% 20% at 3% 80px, rgba(0,0,0,0.7) 0%, transparent 72%);
+      mask-image:
+        radial-gradient(ellipse 50% 44% at 96% 72px, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 45%, transparent 78%),
+        radial-gradient(ellipse 24% 20% at 3% 80px, rgba(0,0,0,0.7) 0%, transparent 72%);
+    }
+    html.dark .hex-bg { opacity: 0.16; }
+    .workspace { position: relative; z-index: 1; }
 
     .topbar {
       height: 68px;
@@ -756,40 +959,68 @@
     .alert-link:hover { text-decoration: underline; }
 
     /* =========================================================================
-       Row 1: Unified 4-Column KPI Strip (No Floating Icon Boxes)
+       Row 1: 4 Interactive KPI Cards with Sparklines
        ========================================================================= */
     .kpi-strip {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .kpi-cell {
+      padding: 15px 17px;
       border: 1px solid var(--border);
       border-radius: var(--r-card);
       background: var(--bg-card);
       box-shadow: var(--shadow-card);
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-    .kpi-cell {
-      padding: 15px 18px;
-      border-right: 1px solid var(--border);
       text-align: left;
       display: flex;
       flex-direction: column;
-      transition: background 120ms;
+      gap: 10px;
+      transition: border-color 140ms, transform 140ms, background 140ms;
     }
-    .kpi-cell:last-child { border-right: none; }
-    .kpi-cell:hover { background: var(--bg-subtle); }
+    .kpi-cell:hover {
+      border-color: var(--accent-border);
+      background: var(--bg-card);
+      transform: translateY(-1.5px);
+    }
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
     .kpi-label { font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .kpi-ico {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 28px;
+    }
+    .kpi-mid {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+    }
     .kpi-val {
-      font-size: 25px;
+      font-size: 26px;
       font-weight: 600;
       letter-spacing: -0.03em;
-      line-height: 1.2;
-      margin-top: 5px;
+      line-height: 1.1;
       color: var(--text-1);
       font-variant-numeric: tabular-nums;
     }
+    .kpi-spark { width: 72px; height: 24px; flex: 0 0 72px; color: var(--accent); opacity: 0.9; }
     .kpi-meta {
-      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -801,6 +1032,96 @@
     .kpi-ok   { color: var(--ok-text); font-weight: 500; }
     .kpi-warn { color: var(--warn-text); font-weight: 500; }
     .kpi-err  { color: var(--err-text); font-weight: 500; }
+
+    .proj-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      font-size: 11.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 28px;
+      text-transform: uppercase;
+    }
+    .agent-ico {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 22px;
+    }
+    .health-bar-box {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .health-bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 7px;
+    }
+    .health-bar-sub {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+    .adopted-row {
+      width: 100%;
+      text-align: left;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: background 110ms;
+    }
+    .adopted-row:last-child { border-bottom: none; }
+    .adopted-row:hover { background: var(--bg-hover); }
+    .adopted-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .rank-pill {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text-2);
+      flex: 0 0 auto;
+    }
+    .rank-pill.top1 {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+    .adopted-targets {
+      font-size: 11px;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     /* =========================================================================
        Cards & Balanced Multi-Column Grids (align-items: stretch)
@@ -1431,12 +1752,72 @@
       text-align: left;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 9px;
       transition: border-color 120ms;
     }
     .skill-card:hover { border-color: var(--accent-border); }
-    .skill-card-name { font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-1); }
-    .skill-card-id { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); margin-top: 1px; }
+    .skill-card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+    }
+    .skill-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--accent-soft);
+      color: var(--accent);
+      flex: 0 0 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      padding: 0;
+      transition: border-color 120ms, transform 120ms;
+    }
+    button.skill-thumb:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .skill-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .skill-thumb-fallback { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+    .skill-thumb-edit {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 20, 32, 0.56);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 120ms;
+    }
+    button.skill-thumb:hover .skill-thumb-edit,
+    button.skill-thumb:focus-visible .skill-thumb-edit { opacity: 1; }
+    .skill-img-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg-subtle);
+    }
+    .skill-img-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex: 0 0 64px;
+    }
+    .skill-img-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .skill-card-name { font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-1); line-height: 1.3; }
+    .skill-card-id { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); margin-top: 2px; }
     .skill-card-desc {
       font-size: 12.5px;
       color: var(--text-2);
@@ -1480,9 +1861,10 @@
       text-align: left; padding: 7px 10px; border-radius: 5px;
       font-size: 12.5px; color: var(--text-1); white-space: nowrap;
     }
-    .skill-menu-item:hover { background: var(--hover); }
+    .skill-menu-item:hover { background: var(--bg-hover); }
     .skill-menu-item.danger { color: var(--err-text); }
     .skill-menu-item.danger:hover { background: var(--err-bg); }
+    .skill-menu-sep { height: 1px; background: var(--border); margin: 4px 6px; }
 
     .skill-card-foot {
       margin-top: auto;
@@ -1894,6 +2276,108 @@
       .kpi-cell { border-right: none; border-bottom: 1px solid var(--border); }
       .kpi-cell:last-child { border-bottom: none; }
     }
+
+    /* Appearance Theme Swatches & Settings Section Grouping */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(186px, 1fr));
+      gap: 9px;
+    }
+    .theme-swatch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      text-align: left;
+      transition: border-color 120ms, background 120ms, transform 120ms;
+      position: relative;
+    }
+    .theme-swatch:hover { border-color: var(--border-strong); background: var(--bg-hover); }
+    .theme-swatch.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 1px var(--accent-border);
+    }
+    .theme-chip {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      border: 1px solid rgba(128, 128, 128, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    .theme-chip-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45);
+    }
+    .theme-meta { min-width: 0; flex: 1; }
+    .theme-name { font-size: 12.5px; font-weight: 600; color: var(--text-1); line-height: 1.25; }
+    .theme-tag { font-size: 10.5px; color: var(--text-3); margin-top: 1px; }
+    .theme-check { color: var(--accent); flex: 0 0 14px; display: none; }
+    .theme-swatch.active .theme-check { display: inline-flex; }
+
+    .settings-sec {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px 16px;
+      background: var(--bg-subtle);
+      margin-bottom: 14px;
+    }
+    .settings-sec:last-of-type { margin-bottom: 0; }
+    .settings-sec-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .settings-sec-title { font-size: 12.5px; font-weight: 600; color: var(--text-1); letter-spacing: -0.01em; }
+    .settings-sec-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+    /* Pagination Bar */
+    .pager-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      font-size: 12px;
+      color: var(--text-3);
+      flex-wrap: wrap;
+    }
+    .pager-controls { display: inline-flex; align-items: center; gap: 4px; }
+    .pager-btn {
+      min-width: 28px;
+      height: 27px;
+      padding: 0 8px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-2);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 120ms, border-color 120ms, color 120ms;
+    }
+    .pager-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text-1); border-color: var(--border-strong); }
+    .pager-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+    .pager-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -1981,6 +2465,20 @@
 
     <!-- ==================== MAIN COLUMN ==================== -->
     <div class="main-col">
+      <svg class="hex-bg" aria-hidden="true">
+        <defs>
+          <pattern id="hexNet" width="84" height="48.5" patternUnits="userSpaceOnUse">
+            <path d="M28 0 L56 0 L70 24.25 L56 48.5 L28 48.5 L14 24.25 Z M0 24.25 L14 24.25 M70 24.25 L84 24.25" fill="none" stroke="currentColor" stroke-width="0.9"/>
+            <circle cx="14" cy="24.25" r="1.6" fill="currentColor"/>
+            <circle cx="28" cy="0" r="1.6" fill="currentColor"/>
+            <circle cx="56" cy="0" r="1.6" fill="currentColor"/>
+            <circle cx="70" cy="24.25" r="1.6" fill="currentColor"/>
+            <circle cx="56" cy="48.5" r="1.6" fill="currentColor"/>
+            <circle cx="28" cy="48.5" r="1.6" fill="currentColor"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hexNet)"/>
+      </svg>
       <header class="topbar">
         <button id="mobileMenuBtn" type="button" class="icon-btn mobile-menu-btn" aria-label="Open menu">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -2004,9 +2502,9 @@
           <button id="guideBtn" type="button" class="guide-btn" title="Usage guide" aria-label="Open usage guide">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           </button>
-          <button type="button" class="btn btn-primary" data-copy="rig sync --all --yes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy Sync All
+          <button id="topSyncAllBtn" type="button" class="btn btn-primary" title="Sync all registered projects now">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sync All
           </button>
         </div>
       </header>
@@ -2068,29 +2566,43 @@
             </div>
           </div>
 
-          <!-- Row 3: Balanced 2-Column Split (Skill Coverage 5 rows | Recent Activity 5 rows) -->
+          <!-- Row 3: Balanced 2-Column Split (Top Adopted Skills | Recent Activity) -->
           <div class="overview-row-3">
             <div class="card">
               <div class="card-head">
-                <h2 class="card-title">Skill Coverage</h2>
+                <div>
+                  <h2 class="card-title">Top Adopted Skills</h2>
+                  <div class="card-subtitle">Ranked by deployment frequency across projects</div>
+                </div>
                 <span class="spacer"></span>
                 <button type="button" class="card-link" data-nav="skills">All skills →</button>
               </div>
-              <div id="overviewCoverage" class="cov-list"></div>
+              <div id="overviewCoverage" style="flex:1"></div>
+              <div class="card-foot">
+                <span>Click any skill to configure</span>
+                <span id="adoptedFootCount" class="mono tnum"></span>
+              </div>
             </div>
 
             <div class="card">
               <div class="card-head">
-                <h2 class="card-title">Recent Activity</h2>
+                <div>
+                  <h2 class="card-title">Recent Activity</h2>
+                  <div class="card-subtitle">Syncs &amp; config overrides</div>
+                </div>
                 <span class="spacer"></span>
-                <span class="card-subtitle">Syncs &amp; overrides</span>
+                <button type="button" class="card-link" data-nav="sync">Sync &amp; Ops →</button>
               </div>
-              <div id="activityList" class="act-list"></div>
+              <div id="activityList" class="act-list" style="flex:1"></div>
+              <div class="card-foot">
+                <span id="activityFootTime">Engine ready</span>
+                <button type="button" class="card-link" data-nav="projects">Manage →</button>
+              </div>
             </div>
           </div>
 
           <!-- Row 4: Collapsible Provisioning Matrix -->
-          <div class="card">
+          <div id="matrixCard" class="card">
             <div class="card-head">
               <h2 class="card-title">Provisioning Matrix</h2>
               <span class="card-subtitle">Project × skill presence</span>
@@ -2099,6 +2611,7 @@
               <button id="toggleMatrixBtn" type="button" class="btn btn-sm btn-ghost"></button>
             </div>
             <div id="matrixScroll" class="matrix-scroll"></div>
+            <div id="matrixPager"></div>
           </div>
         </section>
 
@@ -2122,6 +2635,7 @@
             </div>
 
             <div id="projectsContainer"></div>
+            <div id="projectsPager"></div>
           </div>
 
           <!-- Provisioning Actions Studio -->
@@ -2290,9 +2804,12 @@
           <!-- Project Sync Matrix -->
           <div class="card">
             <div class="card-head">
-              <h2 class="card-title">Project Sync Matrix</h2>
+              <div>
+                <h2 class="card-title">Project Sync Matrix</h2>
+                <div class="card-subtitle">Click Sync Now to update a project directly from the console</div>
+              </div>
               <span class="spacer"></span>
-              <span class="card-subtitle">Click any row to inspect project details</span>
+              <button id="opsSyncAllBtn" type="button" class="btn btn-sm btn-primary">Sync All Projects</button>
             </div>
             <div class="table-wrap">
               <table class="data-table">
@@ -2309,6 +2826,7 @@
                 <tbody id="syncMatrixBody"></tbody>
               </table>
             </div>
+            <div id="syncPager"></div>
           </div>
         </section>
 
@@ -2331,12 +2849,27 @@
             </div>
 
             <div id="skillsGrid" class="skills-grid"></div>
+            <div id="skillsPager"></div>
           </div>
         </section>
 
         <!-- ==================== TAB 5: SETTINGS ==================== -->
         <section id="pane-settings" class="tab-pane" role="tabpanel" aria-label="Settings">
-          
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Appearance &amp; Accent Palette</h2>
+                <div class="card-subtitle">5 core palettes — all compatible with both Light &amp; Dark modes</div>
+              </div>
+              <span class="spacer"></span>
+              <span id="activeThemePill" class="tag mono"></span>
+            </div>
+            <div class="card-body">
+              <div id="themeSwatchGrid" class="theme-grid"></div>
+              <div id="themeMoreWrap" style="margin-top:10px;display:flex;justify-content:flex-end"></div>
+            </div>
+          </div>
+
           <div class="settings-split">
             <div class="card">
               <div class="card-head" style="padding:10px 12px">
@@ -2402,6 +2935,7 @@
   <div id="skillModalBackdrop" class="backdrop" style="z-index:72"></div>
   <div id="skillModal" class="skill-modal" role="dialog" aria-modal="true" aria-labelledby="skillModalTitle">
     <div class="skill-modal-head">
+      <div id="skillModalThumb" style="display:none"></div>
       <div style="min-width:0;flex:1">
         <h2 id="skillModalTitle" class="skill-modal-title">Skill</h2>
         <div class="skill-modal-sub">
@@ -2444,7 +2978,18 @@
         terminal: '<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>',
         chevRight: '<polyline points="9 18 15 12 9 6"/>',
         sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-        moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'
+        moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+        edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+        node: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+        python: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+        mcp: '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>',
+        activity: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+        agent_claude: '<path d="M12 2.5v4.2M12 17.3v4.2M3.8 7.2l3.6 2.1M16.6 14.7l3.6 2.1M3.8 16.8l3.6-2.1M16.6 9.3l3.6-2.1M7.2 3.8l2.1 3.6M14.7 16.6l2.1 3.6M16.8 3.8l-2.1 3.6M9.3 16.6l-2.1 3.6" stroke-width="2"/>',
+        agent_cursor: '<polygon points="4 3 20 11 13 13 11 20 4 3"/>',
+        agent_copilot: '<circle cx="9" cy="12" r="3"/><circle cx="15" cy="12" r="3"/><path d="M4 10c0-3 3.5-5 8-5s8 2 8 5v4c0 2.2-1.8 4-4 4H8c-2.2 0-4-1.8-4-4v-4z"/>',
+        agent_opencode: '<polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/><line x1="14" y1="4" x2="10" y2="20"/>',
+        agent_chatgpt: '<circle cx="12" cy="12" r="9"/><path d="M9 9h6v6H9z"/>'
       };
 
       function svg(name, size) {
@@ -2496,10 +3041,13 @@
       const state = {
         activeTab: 'overview',
         theme: 'light',
+        accent: 'cyan',
+        morePalettes: false,
         sidebarCollapsed: false,
         projects: [],
         skills: [],
         settings: {},
+        skillImages: {},
         snapshotAt: new Date().toISOString(),
 
         // Filters & Layouts
@@ -2509,9 +3057,13 @@
         projectStatus: 'all',
         projectAgent: 'all',
         projectView: 'table',
+        projectPage: 1,
+        matrixPage: 1,
+        syncPage: 1,
         skillQuery: '',
         skillCat: 'all',
         skillSort: 'name',
+        skillPage: 1,
 
         // Settings Studio
         settingsQuery: '',
@@ -2546,6 +3098,37 @@
         if ((deps.pip || []).length > 0) return 'python';
         if ((deps.npm || []).length > 0) return 'node';
         return 'workflow';
+      }
+
+      function paginateItems(items, pageKey, pageSize) {
+        const total = items.length;
+        const totalPages = Math.max(1, Math.ceil(total / pageSize));
+        let page = Number(state[pageKey]) || 1;
+        if (page > totalPages) page = totalPages;
+        if (page < 1) page = 1;
+        state[pageKey] = page;
+        const start = (page - 1) * pageSize;
+        const end = Math.min(total, start + pageSize);
+        return { slice: items.slice(start, end), page, totalPages, total, start, end };
+      }
+
+      function renderPager(hostId, pageKey, pg) {
+        const host = document.getElementById(hostId);
+        if (!host) return;
+        if (!pg.total || pg.totalPages <= 1) { host.innerHTML = ''; return; }
+        let btns = '<button type="button" class="pager-btn" data-page-key="' + pageKey + '" data-page-to="' + (pg.page - 1) + '"' + (pg.page <= 1 ? ' disabled' : '') + ' aria-label="Previous page">&lsaquo;</button>';
+        for (let p = 1; p <= pg.totalPages; p++) {
+          if (pg.totalPages > 7 && p !== 1 && p !== pg.totalPages && Math.abs(p - pg.page) > 1) {
+            if (p === 2 || p === pg.totalPages - 1) btns += '<span style="padding:0 4px;color:var(--text-3)">…</span>';
+            continue;
+          }
+          btns += '<button type="button" class="pager-btn' + (p === pg.page ? ' active' : '') + '" data-page-key="' + pageKey + '" data-page-to="' + p + '">' + p + '</button>';
+        }
+        btns += '<button type="button" class="pager-btn" data-page-key="' + pageKey + '" data-page-to="' + (pg.page + 1) + '"' + (pg.page >= pg.totalPages ? ' disabled' : '') + ' aria-label="Next page">&rsaquo;</button>';
+        host.innerHTML = '<div class="pager-bar">' +
+          '<span class="mono tnum">Showing ' + (pg.start + 1) + '–' + pg.end + ' of ' + pg.total + '</span>' +
+          '<div class="pager-controls">' + btns + '</div>' +
+        '</div>';
       }
 
       function getUsageCounts() {
@@ -2623,8 +3206,61 @@
       }
 
       /* =====================================================================
-         Theme & Sidebar State
+         Theme, Accent Palette & Sidebar State
          ===================================================================== */
+      const ACCENT_THEMES = [
+        { id: 'cyan',     name: 'Slate & Cyan',      tag: 'Default',   core: true,  lightBg: '#F8F9FB', lightAcc: '#0E7490', darkBg: '#191D24', darkAcc: '#22D3EE' },
+        { id: 'cobalt',   name: 'Cobalt & Indigo',   tag: 'Classic',   core: true,  lightBg: '#F8F9FB', lightAcc: '#2F5CE0', darkBg: '#191D24', darkAcc: '#6D93F5' },
+        { id: 'emerald',  name: 'Emerald Terminal',  tag: 'Terminal',  core: true,  lightBg: '#F8F9FB', lightAcc: '#047857', darkBg: '#191D24', darkAcc: '#34D399' },
+        { id: 'amber',    name: 'Amber & Obsidian',  tag: 'Industrial',core: true,  lightBg: '#F8F9FB', lightAcc: '#B45309', darkBg: '#191D24', darkAcc: '#F59E0B' },
+        { id: 'mocha',    name: 'Mocha & Sand',      tag: 'Warm Earth',core: true,  lightBg: '#F7F3EC', lightAcc: '#7A4B2E', darkBg: '#1C1713', darkAcc: '#C8926B' },
+        { id: 'violet',   name: 'Violet & Amethyst', tag: 'Studio',    core: false, lightBg: '#F8F9FB', lightAcc: '#6D28D9', darkBg: '#191D24', darkAcc: '#A78BFA' },
+        { id: 'rose',     name: 'Rose & Graphite',   tag: 'Editorial', core: false, lightBg: '#F8F9FB', lightAcc: '#BE123C', darkBg: '#191D24', darkAcc: '#FB7185' }
+      ];
+
+      function renderAccentPicker() {
+        const grid = document.getElementById('themeSwatchGrid');
+        const pill = document.getElementById('activeThemePill');
+        const cur = ACCENT_THEMES.find((t) => t.id === state.accent) || ACCENT_THEMES[0];
+        if (pill) pill.textContent = cur.name + ' · ' + (state.theme === 'dark' ? 'Dark' : 'Light');
+        if (!grid) return;
+        const dark = state.theme === 'dark';
+        const coreThemes = ACCENT_THEMES.filter((t) => t.core);
+        const visibleThemes = state.morePalettes ? ACCENT_THEMES : coreThemes;
+        const moreWrap = document.getElementById('themeMoreWrap');
+        if (moreWrap) {
+          const hiddenCount = ACCENT_THEMES.length - coreThemes.length;
+          moreWrap.innerHTML = hiddenCount > 0
+            ? '<button type="button" class="card-link" data-toggle-palettes="true">' +
+                (state.morePalettes ? 'Show fewer palettes' : 'More palettes (' + hiddenCount + ') →') +
+              '</button>'
+            : '';
+        }
+        grid.innerHTML = visibleThemes.map((t) => {
+          const active = t.id === cur.id;
+          const bg = dark ? t.darkBg : t.lightBg;
+          const acc = dark ? t.darkAcc : t.lightAcc;
+          return '<button type="button" class="theme-swatch' + (active ? ' active' : '') + '" data-accent-pick="' + t.id + '" aria-pressed="' + active + '">' +
+            '<span class="theme-chip" style="background:' + bg + '"><span class="theme-chip-dot" style="background:' + acc + '"></span></span>' +
+            '<span class="theme-meta">' +
+              '<span class="theme-name" style="display:block">' + esc(t.name) + '</span>' +
+              '<span class="theme-tag" style="display:block">' + esc(t.tag) + '</span>' +
+            '</span>' +
+            '<span class="theme-check">' + svg('check', 14) + '</span>' +
+          '</button>';
+        }).join('');
+      }
+
+      function setAccent(id, notify) {
+        const found = ACCENT_THEMES.find((t) => t.id === id) || ACCENT_THEMES[0];
+        state.accent = found.id;
+        if (!found.core) state.morePalettes = true;
+        document.documentElement.setAttribute('data-accent', state.accent);
+        try { localStorage.setItem('contextrig-accent-theme', state.accent); } catch (e) {}
+        renderAccentPicker();
+        if (notify) toast('Palette set to ' + found.name);
+      }
+
       function setTheme(mode, notify) {
         state.theme = mode === 'dark' ? 'dark' : 'light';
         const dark = state.theme === 'dark';
@@ -2637,6 +3273,7 @@
           topBtn.title = dark ? 'Switch to Light mode' : 'Switch to Soft Dark mode';
         }
         try { localStorage.setItem('contextrig-preview-theme', state.theme); } catch (e) {}
+        renderAccentPicker();
         if (notify) toast('Theme set to ' + (dark ? 'Dark (Dimmed Slate)' : 'Light'));
       }
 
@@ -2751,46 +3388,63 @@
             '</div>';
         }
 
-        /* Row 1: Unified 4-Column KPI Strip */
+        /* Row 1: 4 Interactive KPI Cards with Sparklines */
         const kpis = [
           {
             label: 'Registered Projects',
             value: state.projects.length,
+            icon: 'projects',
+            spark: 'M2 20 L16 17 L30 18 L44 11 L58 12 L70 5',
             src: 'projects.json',
             note: syncedCount + '/' + state.projects.length + ' synced',
             noteCls: pendingProjects.length === 0 ? 'kpi-ok' : 'kpi-warn',
-            nav: 'projects'
+            attr: 'data-nav="projects"'
           },
           {
             label: 'Master Skills',
             value: state.skills.length,
+            icon: 'skills',
+            spark: 'M2 19 L18 16 L34 15 L50 10 L70 6',
             src: 'skills_library/',
             note: orphans.length ? orphans.length + ' orphan ref' : 'All refs valid',
             noteCls: orphans.length ? 'kpi-err' : 'kpi-ok',
-            nav: 'skills'
+            attr: 'data-nav="skills"'
           },
           {
             label: 'Active Installs',
             value: totalInstalls,
+            icon: 'activity',
+            spark: 'M2 20 L15 14 L28 16 L42 9 L56 11 L70 4',
             src: 'skill × project',
             note: (totalInstalls / Math.max(state.projects.length, 1)).toFixed(1) + ' avg / project',
-            noteCls: '',
-            nav: 'sync'
+            noteCls: 'kpi-ok',
+            attr: 'data-scroll-matrix="true"'
           },
           {
             label: 'Custom Overrides',
             value: customCount,
+            icon: 'settings',
+            spark: customCount > 0 ? 'M2 20 L18 18 L36 13 L52 14 L70 7' : 'M2 20 L70 20',
             src: 'skill-settings.json',
             note: customCount + ' of ' + state.skills.length + ' tuned',
             noteCls: '',
-            nav: 'settings'
+            attr: 'data-nav="settings"'
           }
         ];
 
         document.getElementById('kpiStrip').innerHTML = kpis.map((k) =>
-          '<button type="button" class="kpi-cell" data-nav="' + k.nav + '">' +
-            '<span class="kpi-label">' + esc(k.label) + '</span>' +
-            '<span class="kpi-val">' + k.value + '</span>' +
+          '<button type="button" class="kpi-cell" ' + k.attr + '>' +
+            '<div class="kpi-top">' +
+              '<span class="kpi-label">' + esc(k.label) + '</span>' +
+              '<span class="kpi-ico">' + svg(k.icon, 14) + '</span>' +
+            '</div>' +
+            '<div class="kpi-mid">' +
+              '<span class="kpi-val">' + k.value + '</span>' +
+              '<svg class="kpi-spark" viewBox="0 0 72 24" fill="none" aria-hidden="true">' +
+                '<path d="' + k.spark + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"' + (k.value === 0 ? ' stroke-dasharray="3 3" opacity="0.45"' : '') + '/>' +
+                '<circle cx="70" cy="' + (k.value === 0 ? '20' : k.spark.split(' ').pop()) + '" r="2.6" fill="currentColor"/>' +
+              '</svg>' +
+            '</div>' +
             '<div class="kpi-meta">' +
               '<span class="mono">' + esc(k.src) + '</span>' +
               '<span class="' + k.noteCls + '">' + esc(k.note) + '</span>' +
@@ -2798,37 +3452,62 @@
           '</button>'
         ).join('');
 
-        /* Row 2 Left: Managed Projects Table */
-        document.getElementById('overviewProjectsBody').innerHTML = state.projects.map((p) => {
+        /* Row 2 Left: Managed Projects Table (5 latest) */
+        const latestProjects = state.projects.slice().sort((a, b) => {
+          const ta = a.lastSynced ? new Date(a.lastSynced).getTime() : 0;
+          const tb = b.lastSynced ? new Date(b.lastSynced).getTime() : 0;
+          return tb - ta;
+        }).slice(0, 5);
+
+        document.getElementById('overviewProjectsBody').innerHTML = latestProjects.map((p) => {
           const synced = Boolean(p.lastSynced);
           const hasOrphan = p.skills.some((sid) => !skillById(sid));
           const cmd = 'rig sync "' + p.path + '" --yes';
+          const initial = (p.name || 'P').trim().charAt(0).toUpperCase();
           let pill = '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Synced</span>';
           if (hasOrphan) pill = '<span class="status-badge st-err"><span class="dot dot-err"></span>' + (synced ? 'Orphan' : 'Pending · Orphan') + '</span>';
           else if (!synced) pill = '<span class="status-badge st-warn"><span class="dot dot-warn"></span>Pending</span>';
 
           return '<tr class="clickable" data-inspect-project="' + esc(p.id) + '">' +
             '<td>' +
-              '<div style="font-weight:500;color:var(--text-1)">' + esc(p.name) + '</div>' +
-              '<div class="mono truncate" style="font-size:11px;color:var(--text-3);max-width:225px">' + esc(p.path) + '</div>' +
+              '<div style="display:flex;align-items:center;gap:10px;min-width:0">' +
+                '<span class="proj-avatar">' + esc(initial) + '</span>' +
+                '<div style="min-width:0">' +
+                  '<div style="font-weight:500;color:var(--text-1)">' + esc(p.name) + '</div>' +
+                  '<div class="mono truncate" style="font-size:11px;color:var(--text-3);max-width:210px">' + esc(p.path) + '</div>' +
+                '</div>' +
+              '</div>' +
             '</td>' +
             '<td><div style="display:flex;flex-wrap:wrap;gap:4px">' + p.agents.map((a) => '<span class="tag">' + esc(agentLabel(a)) + '</span>').join('') + '</div></td>' +
             '<td class="mono tnum" style="font-size:12px;color:var(--text-2)">' + p.skills.length + '</td>' +
             '<td>' + pill + '</td>' +
             '<td class="mono tnum" style="font-size:11.5px;color:var(--text-3);white-space:nowrap">' + esc(relTime(p.lastSynced)) + '</td>' +
             '<td style="text-align:right">' +
-              '<button type="button" class="icon-btn" style="margin-left:auto" data-copy="' + esc(cmd) + '" data-stop="true" title="Copy sync command">' + svg('copy', 13.5) + '</button>' +
+              '<button type="button" class="btn btn-sm" style="height:24px;padding:0 8px;font-size:11px" data-copy="' + esc(cmd) + '" data-stop="true" title="Copy sync command">Copy CLI</button>' +
             '</td>' +
           '</tr>';
         }).join('');
 
-        document.getElementById('overviewProjFoot').textContent = state.projects.length + ' directories · click any row to inspect';
+        document.getElementById('overviewProjFoot').textContent = state.projects.length + ' directories · showing ' + latestProjects.length + ' latest';
 
         /* Row 2 Right: Unified Card — Engine Integrity + AI Agent Footprint */
         const mcpCount = state.skills.reduce((n, s) => n + (s.mcp_servers || []).length, 0);
         const latestSync = state.projects.map((p) => p.lastSynced).filter(Boolean).sort().pop();
+        const syncPct = Math.round((syncedCount / Math.max(state.projects.length, 1)) * 100);
 
         document.getElementById('overviewIntegrity').innerHTML =
+          '<div class="health-bar-box">' +
+            '<div class="health-bar-top">' +
+              '<span style="color:var(--text-1)">Sync Health &amp; Coverage</span>' +
+              '<span class="mono ' + (pendingProjects.length === 0 ? 'kpi-ok' : 'kpi-warn') + '">' + syncPct + '% ' + (pendingProjects.length === 0 && orphans.length === 0 ? 'OK' : 'Active') + '</span>' +
+            '</div>' +
+            '<div class="mini-rail" style="height:7px"><div class="mini-fill" style="width:' + syncPct + '%;background:' + (pendingProjects.length === 0 ? 'var(--ok-dot)' : 'var(--accent)') + '"></div></div>' +
+            '<div class="health-bar-sub">' +
+              '<span>' + syncedCount + ' Synced</span>' +
+              '<span>' + pendingProjects.length + ' Pending</span>' +
+              '<span>' + orphans.length + ' Missing</span>' +
+            '</div>' +
+          '</div>' +
           '<div class="kv-row"><span class="kv-key">Reference integrity</span>' +
             (orphans.length === 0
               ? '<span class="status-badge st-ok">Clean</span>'
@@ -2865,22 +3544,31 @@
           '</button>';
         }).join('');
 
-        /* Row 3 Left: Skill Coverage (5 rows) */
+        /* Row 3 Left: Top Adopted Skills (#1..#5 in theme --accent) */
         const topSkills = state.skills.slice()
           .sort((a, b) => (usage.get(b.id) || 0) - (usage.get(a.id) || 0) || a.name.localeCompare(b.name))
           .slice(0, 5);
+        const opacities = [1, 0.84, 0.70, 0.58, 0.46];
 
-        document.getElementById('overviewCoverage').innerHTML = topSkills.map((s) => {
+        document.getElementById('overviewCoverage').innerHTML = topSkills.map((s, idx) => {
           const count = usage.get(s.id) || 0;
           const pct = Math.round((count / Math.max(state.projects.length, 1)) * 100);
-          return '<button type="button" class="cov-row" data-open-skill="' + esc(s.id) + '">' +
-            '<div class="cov-top">' +
-              '<span style="font-weight:500;color:var(--text-1)" class="truncate">' + esc(s.name) + '</span>' +
-              '<span class="mono tnum" style="font-size:11.5px;color:var(--text-3)">' + count + '/' + state.projects.length + '</span>' +
+          const usingProjects = state.projects.filter((p) => p.skills.indexOf(s.id) >= 0).map((p) => p.name);
+          const targetsText = usingProjects.length ? usingProjects.join(', ') : 'Not yet assigned to a project';
+          return '<button type="button" class="adopted-row" data-open-skill="' + esc(s.id) + '">' +
+            '<div class="adopted-top">' +
+              '<span style="display:flex;align-items:center;gap:8px;min-width:0">' +
+                '<span class="rank-pill' + (idx === 0 ? ' top1' : '') + '">#' + (idx + 1) + '</span>' +
+                '<span style="font-weight:600;color:var(--text-1)" class="truncate">' + esc(s.name) + '</span>' +
+              '</span>' +
+              '<span class="mono tnum" style="font-size:11.5px;color:var(--accent);white-space:nowrap">' + count + '/' + state.projects.length + ' (' + pct + '%)</span>' +
             '</div>' +
-            '<div class="mini-rail"><div class="mini-fill" style="width:' + pct + '%"></div></div>' +
+            '<div class="mini-rail" style="height:6px"><div class="mini-fill" style="width:' + pct + '%;opacity:' + opacities[idx] + '"></div></div>' +
+            '<div class="adopted-targets">' + esc(targetsText) + '</div>' +
           '</button>';
         }).join('');
+        const adoptedFoot = document.getElementById('adoptedFootCount');
+        if (adoptedFoot) adoptedFoot.textContent = totalInstalls + ' total installs';
 
         /* Row 3 Right: Recent Activity (5 rows) */
         const events = [];
@@ -2895,13 +3583,18 @@
         });
         events.sort((a, b) => new Date(b.at) - new Date(a.at));
 
-        document.getElementById('activityList').innerHTML = events.slice(0, 5).map((ev) =>
-          '<button type="button" class="act-row" ' + ev.attr + '>' +
-            '<span class="act-time">' + esc(relTime(ev.at)) + '</span>' +
-            '<span class="act-name truncate">' + esc(ev.title) + '</span>' +
-            '<span class="tag mono">' + esc(ev.kind) + '</span>' +
-          '</button>'
-        ).join('');
+        document.getElementById('activityList').innerHTML = events.length
+          ? events.slice(0, 5).map((ev) =>
+              '<button type="button" class="act-row" ' + ev.attr + '>' +
+                '<span class="act-time">' + esc(relTime(ev.at)) + '</span>' +
+                '<span class="act-name truncate">' + esc(ev.title) + '</span>' +
+                '<span class="tag mono">' + esc(ev.kind) + '</span>' +
+              '</button>'
+            ).join('')
+          : '<div class="empty-state" style="padding:24px">No recent sync events yet.</div>';
+
+        const actFoot = document.getElementById('activityFootTime');
+        if (actFoot) actFoot.textContent = latestSync ? ('Last synced ' + relTime(latestSync)) : 'Waiting for first sync';
 
         /* Row 4: Provisioning Matrix */
         renderMatrix();
@@ -2914,8 +3607,10 @@
 
         const filtersEl = document.getElementById('matrixFilters');
         const container = document.getElementById('matrixScroll');
+        const pagerEl = document.getElementById('matrixPager');
         filtersEl.style.display = state.matrixExpanded ? 'flex' : 'none';
         container.style.display = state.matrixExpanded ? 'block' : 'none';
+        if (pagerEl) pagerEl.style.display = state.matrixExpanded ? 'block' : 'none';
         if (!state.matrixExpanded) return;
 
         const cats = [
@@ -2942,7 +3637,8 @@
         });
         thead += '<th style="text-align:right;padding-right:16px">Total</th></tr>';
 
-        const tbody = state.projects.map((p, ri) => {
+        const pgMatrix = paginateItems(state.projects, 'matrixPage', 8);
+        const tbody = pgMatrix.slice.map((p, ri) => {
           const owned = new Set(p.skills);
           const hasOrphan = p.skills.some((sid) => !skillById(sid));
           const dotCls = hasOrphan ? 'dot-err' : (p.lastSynced ? 'dot-ok' : 'dot-warn');
@@ -2976,6 +3672,7 @@
         }).join('');
 
         container.innerHTML = '<table id="matrixTable" class="matrix-table"><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
+        renderPager('matrixPager', 'matrixPage', pgMatrix);
 
         const tbl = document.getElementById('matrixTable');
         function clearHover() {
@@ -3042,11 +3739,15 @@
 
         if (!rows.length) {
           host.innerHTML = '<div class="empty-state"><strong>No projects found</strong>Adjust your search query, status, or agent filter.</div>';
+          renderPager('projectsPager', 'projectPage', { totalPages: 1, total: 0 });
           return;
         }
 
+        const pgProj = paginateItems(rows, 'projectPage', 10);
+        const pageRows = pgProj.slice;
+
         if (state.projectView === 'table') {
-          const tbody = rows.map((p) => {
+          const tbody = pageRows.map((p) => {
             const synced = Boolean(p.lastSynced);
             const hasOrphan = p.skills.some((sid) => !skillById(sid));
             const cmd = 'rig sync "' + p.path + '" --yes';
@@ -3081,7 +3782,7 @@
             '<th>Project &amp; Path</th><th>Agents</th><th>Provisioned Skills</th><th>Status</th><th>Last Synced</th><th style="text-align:right">Command</th>' +
           '</tr></thead><tbody>' + tbody + '</tbody></table></div>';
         } else {
-          host.innerHTML = rows.map((p) => {
+          host.innerHTML = pageRows.map((p) => {
             const synced = Boolean(p.lastSynced);
             const hasOrphan = p.skills.some((sid) => !skillById(sid));
             const cmd = 'rig sync "' + p.path + '" --yes';
@@ -3109,6 +3810,7 @@
             '</div>';
           }).join('');
         }
+        renderPager('projectsPager', 'projectPage', pgProj);
       }
 
       /* Provisioning Studio Logic */
@@ -3122,13 +3824,16 @@
         const injectBox = document.getElementById('injectSkillList');
         if (injectBox) {
           const prev = new Set(selectedCheckboxes('injectSkillList'));
-          injectBox.innerHTML = state.skills.map((s) =>
-            '<label class="check-row">' +
-              '<input type="checkbox" value="' + esc(s.id) + '"' + (prev.has(s.id) ? ' checked' : '') + ' />' +
-              '<span class="cr-name">' + esc(s.name) + '</span>' +
-              '<span class="cr-id">' + esc(s.id) + '</span>' +
-            '</label>'
-          ).join('');
+          const available = state.skills.filter((s) => s.on_device !== false);
+          injectBox.innerHTML = available.length
+            ? available.map((s) =>
+                '<label class="check-row">' +
+                  '<input type="checkbox" value="' + esc(s.id) + '"' + (prev.has(s.id) ? ' checked' : '') + ' />' +
+                  '<span class="cr-name">' + esc(s.name) + '</span>' +
+                  '<span class="cr-id">' + esc(s.id) + '</span>' +
+                '</label>'
+              ).join('')
+            : '<div class="empty-state" style="padding:14px">No skills on this device yet. Install skills in the Skills tab first.</div>';
           updateInjectCounter();
         }
 
@@ -3145,8 +3850,9 @@
 
       function updateInjectCounter() {
         const n = selectedCheckboxes('injectSkillList').length;
+        const total = state.skills.filter((s) => s.on_device !== false).length;
         const el = document.getElementById('injectCount');
-        if (el) el.textContent = n + ' of ' + state.skills.length + ' selected';
+        if (el) el.textContent = n + ' of ' + total + ' selected';
       }
 
       function renderRemoveSkillList(precheckSkillId) {
@@ -3178,120 +3884,123 @@
         el.hidden = false;
       }
 
-      function runInject() {
+      async function runInject() {
         const rawPath = (document.getElementById('injectPath').value || '').trim();
         const agentVal = document.getElementById('injectAgent').value;
         const mergeMode = document.getElementById('injectMerge').value;
         const skillIds = selectedCheckboxes('injectSkillList');
+        const btn = document.getElementById('injectBtn');
 
         if (!rawPath) { showResult('injectResult', false, 'Enter a target directory path first.'); return; }
         if (!skillIds.length) { showResult('injectResult', false, 'Select at least one skill to inject.'); return; }
 
-        const name = rawPath.split(/[\\/]/).filter(Boolean).pop() || 'project';
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'proj-' + Date.now();
-        const file = (AGENT_META[agentVal] && AGENT_META[agentVal].file) || 'CLAUDE.md';
+        const origText = btn ? btn.textContent : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Injecting…'; }
+        try {
+          const res = await fetch('/api/inject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetPath: rawPath, agentValue: agentVal, mergeMode, skillIds })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Injection failed');
 
-        let proj = state.projects.find((p) => p.path.toLowerCase() === rawPath.toLowerCase() || p.id === slug);
-        let created = false;
-        if (proj) {
-          if (!proj.agents.includes(agentVal)) proj.agents.push(agentVal);
-          proj.skills = mergeMode === 'overwrite'
-            ? skillIds.slice()
-            : Array.from(new Set(proj.skills.concat(skillIds)));
-          proj.lastSynced = new Date().toISOString();
-        } else {
-          created = true;
-          proj = {
-            id: slug,
-            name: name,
-            stack: 'Local',
-            path: rawPath,
-            agents: [agentVal],
-            skills: skillIds.slice(),
-            lastSynced: new Date().toISOString()
-          };
-          state.projects.unshift(proj);
+          const npm = (data.dependencies && data.dependencies.npm) || [];
+          const pip = (data.dependencies && data.dependencies.pip) || [];
+          const depNotes = [];
+          if (npm.length) depNotes.push('npm: ' + npm.join(', '));
+          if (pip.length) depNotes.push('pip: ' + pip.join(', '));
+
+          showResult('injectResult', true,
+            '<strong>Injected ' + data.injected.length + ' skill(s)</strong> into <span class="mono">' + esc(data.outputFile || '') + '</span>' +
+            (data.created ? ' (registered new project)' : ' (' + esc(mergeMode) + ')') +
+            '<br><span class="mono">' + esc(data.path) + '</span>' +
+            (depNotes.length ? '<br>Dependencies listed (not installed) — <span class="mono">' + esc(depNotes.join(' · ')) + '</span>' : '')
+          );
+
+          await loadLiveData();
+          renderAll();
+          toast('Injected ' + data.injected.length + ' skill(s) into ' + data.projectName);
+        } catch (err) {
+          showResult('injectResult', false, esc(err.message));
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = origText; }
         }
-
-        const npm = new Set();
-        const pip = new Set();
-        skillIds.forEach((id) => {
-          const s = skillById(id);
-          if (!s || !s.dependencies) return;
-          (s.dependencies.npm || []).forEach((d) => npm.add(d));
-          (s.dependencies.pip || []).forEach((d) => pip.add(d));
-        });
-        const depNotes = [];
-        if (npm.size) depNotes.push('npm: ' + Array.from(npm).join(', '));
-        if (pip.size) depNotes.push('pip: ' + Array.from(pip).join(', '));
-
-        showResult('injectResult', true,
-          '<strong>Injected ' + skillIds.length + ' skill(s)</strong> into <span class="mono">' + esc(file) + '</span>' +
-          (created ? ' (registered new project)' : ' (' + esc(mergeMode) + ')') +
-          '<br><span class="mono">' + esc(proj.path) + '</span>' +
-          (depNotes.length ? '<br>Dependencies — <span class="mono">' + esc(depNotes.join(' · ')) + '</span>' : '')
-        );
-
-        renderAll();
-        toast('Injected ' + skillIds.length + ' skill(s) into ' + proj.name);
       }
 
-      function runRemove() {
+      async function runRemove() {
         const projId = document.getElementById('removeProject').value;
         const skillIds = selectedCheckboxes('removeSkillList');
         const p = projectById(projId);
+        const btn = document.getElementById('removeBtn');
         if (!p) { showResult('removeResult', false, 'Select a registered project.'); return; }
         if (!skillIds.length) { showResult('removeResult', false, 'Select at least one skill to remove.'); return; }
 
-        p.skills = p.skills.filter((sid) => !skillIds.includes(sid));
-        p.lastSynced = new Date().toISOString();
+        const origText = btn ? btn.textContent : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Removing…'; }
+        try {
+          const res = await fetch('/api/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectPath: p.path, skillIds })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Removal failed');
 
-        showResult('removeResult', true,
-          '<strong>Removed ' + skillIds.length + ' skill(s)</strong> from <span class="mono">' + esc(p.name) + '</span>.<br>' +
-          'Remaining: <span class="mono">' + (p.skills.length ? esc(p.skills.join(', ')) : 'none') + '</span>'
-        );
+          showResult('removeResult', true,
+            '<strong>Removed ' + data.removed.length + ' skill(s)</strong> from <span class="mono">' + esc(p.name) + '</span>.<br>' +
+            'Files deleted from <span class="mono">rigtools/</span> and slash commands cleaned.<br>' +
+            'Remaining: <span class="mono">' + (data.remaining.length ? esc(data.remaining.join(', ')) : 'none') + '</span>'
+          );
 
-        renderAll();
-        toast('Removed ' + skillIds.length + ' skill(s) from ' + p.name);
+          await loadLiveData();
+          renderAll();
+          toast('Removed ' + data.removed.length + ' skill(s) from ' + p.name);
+        } catch (err) {
+          showResult('removeResult', false, esc(err.message));
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = origText; }
+        }
       }
 
-      function runImport() {
+      async function runImport() {
         const inp = document.getElementById('importUrl');
         const rawUrl = (inp.value || '').trim();
+        const btn = document.getElementById('importBtn');
         if (!rawUrl || !/^https?:\/\//i.test(rawUrl)) {
           showResult('importResult', false, 'Enter a valid GitHub or skills.sh URL starting with https://.');
           return;
         }
-        const slug = rawUrl.replace(/\/+$/, '').split('/').pop().replace(/\.git$/i, '').toLowerCase().replace(/[^a-z0-9-]+/g, '-') || 'imported-skill';
-        if (skillById(slug)) {
-          showResult('importResult', false, 'Skill <span class="mono">' + esc(slug) + '</span> already exists in the library.');
-          return;
+
+        const origText = btn ? btn.textContent : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Importing…'; }
+        try {
+          const res = await fetch('/api/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sourceUrl: rawUrl })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Import failed');
+
+          const warnNote = (data.warnings && data.warnings.length)
+            ? '<br><span style="color:var(--warn-text)">Warnings: ' + esc(data.warnings.join(' · ')) + '</span>'
+            : '';
+          showResult('importResult', true,
+            '<strong>Imported ' + esc(data.name) + '</strong> <span class="mono">(' + esc(data.skillId) + ')</span><br>' +
+            'Manifest saved to <span class="mono">' + esc(data.manifestPath) + '</span> · ' + data.downloadedCount + ' file(s) downloaded.' +
+            warnNote
+          );
+
+          inp.value = '';
+          await loadLiveData();
+          renderAll();
+          toast('Imported ' + data.name + ' into library');
+        } catch (err) {
+          showResult('importResult', false, esc(err.message));
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = origText; }
         }
-        const title = slug.split('-').map((w) => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ');
-        const isMcp = slug.includes('mcp');
-        const isPy = slug.includes('py') || slug.includes('django') || slug.includes('fastapi');
-
-        state.skills.push({
-          id: slug,
-          name: title,
-          description: 'Imported from ' + rawUrl + ' into skills_library/ with validated manifest and prompt rules.',
-          files_to_copy: ['rules/' + slug + '.md', 'scripts/setup.mjs'],
-          dependencies: { npm: isPy ? [] : [slug], pip: isPy ? [slug] : [] },
-          mcp_servers: isMcp ? [slug + '-server'] : [],
-          settings_schema: {
-            presets: [{ name: 'Default Profile', description: 'Upstream manifest defaults', values: { mode: 'standard' } }],
-            fields: [{ key: 'mode', label: 'Execution Mode', type: 'choice', default: 'standard', choices: [{ value: 'standard', name: 'Standard' }, { value: 'strict', name: 'Strict' }] }]
-          }
-        });
-
-        inp.value = '';
-        showResult('importResult', true,
-          '<strong>Imported ' + esc(title) + '</strong> <span class="mono">(' + esc(slug) + ')</span><br>' +
-          'Manifest saved to <span class="mono">skills_library/' + esc(slug) + '.json</span> · 2 files downloaded.'
-        );
-
-        renderAll();
-        toast('Imported ' + title + ' into library');
       }
 
       /* =====================================================================
@@ -3332,7 +4041,8 @@
           row(orphans.length ? 'err' : 'ok', 'Skill reference integrity', orphans.length ? 'Unresolved skill IDs found' : 'All provisioned IDs resolve', orphans.length ? orphans.length + ' orphan' : 'clean', orphanExtra) +
           row(syncedCount === state.projects.length ? 'ok' : 'warn', 'Project sync coverage', latest ? 'Latest: ' + absTime(latest) : 'No sync recorded', syncedCount + '/' + state.projects.length + ' synced');
 
-        document.getElementById('syncMatrixBody').innerHTML = state.projects.map((p) => {
+        const pgSync = paginateItems(state.projects, 'syncPage', 10);
+        document.getElementById('syncMatrixBody').innerHTML = pgSync.slice.map((p) => {
           const synced = Boolean(p.lastSynced);
           const hasOrphan = p.skills.some((sid) => !skillById(sid));
           const cmd = 'rig sync "' + p.path + '" --yes';
@@ -3346,9 +4056,36 @@
               : !synced
                 ? '<span class="status-badge st-warn"><span class="dot dot-warn"></span>Pending</span>'
                 : '<span class="status-badge st-ok"><span class="dot dot-ok"></span>Synced</span>') + '</td>' +
-            '<td style="text-align:right"><button type="button" class="btn btn-sm" data-copy="' + esc(cmd) + '" data-stop="true">Copy</button></td>' +
+            '<td style="text-align:right;white-space:nowrap">' +
+              '<span style="display:inline-flex;gap:6px">' +
+                '<button type="button" class="btn btn-sm btn-primary" data-sync-project="' + esc(p.path) + '" data-stop="true">Sync Now</button>' +
+                '<button type="button" class="btn btn-sm" data-copy="' + esc(cmd) + '" data-stop="true" title="Copy CLI command">Copy</button>' +
+              '</span>' +
+            '</td>' +
           '</tr>';
         }).join('');
+        renderPager('syncPager', 'syncPage', pgSync);
+      }
+
+      async function runSyncNow(opts, btnEl) {
+        const origText = btnEl ? btnEl.textContent : '';
+        if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Syncing…'; }
+        try {
+          const res = await fetch('/api/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(opts)
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Sync failed');
+          await loadLiveData();
+          renderAll();
+          toast('Synced ' + data.syncedCount + ' project' + (data.syncedCount === 1 ? '' : 's'));
+        } catch (err) {
+          toast('Sync failed: ' + err.message);
+        } finally {
+          if (btnEl) { btnEl.disabled = false; btnEl.textContent = origText; }
+        }
       }
 
       /* =====================================================================
@@ -3371,6 +4108,187 @@
         return '';
       }
 
+      function isSafeImgSrc(src) {
+        if (typeof src !== 'string') return false;
+        const s = src.trim();
+        return /^https?:\/\//i.test(s) || /^data:image\/(png|jpe?g|webp|gif|svg\+xml);/i.test(s);
+      }
+
+      function getSkillImage(s) {
+        if (!s) return '';
+        if (isSafeImgSrc(state.skillImages[s.id])) return state.skillImages[s.id];
+        if (isSafeImgSrc(s.image)) return s.image;
+        if (isSafeImgSrc(s.icon)) return s.icon;
+        return '';
+      }
+
+      function saveSkillImagesMap() {
+        try { localStorage.setItem('contextrig-skill-images', JSON.stringify(state.skillImages)); } catch (e) {}
+      }
+
+      function defaultSkillIcon(s) {
+        const cat = skillCategory(s);
+        if (cat === 'node') return 'node';
+        if (cat === 'python') return 'python';
+        if (cat === 'mcp') return 'mcp';
+        return 'skills';
+      }
+
+      function renderSkillThumbHtml(s, size, interactive) {
+        const src = getSkillImage(s);
+        const ico = svg(defaultSkillIcon(s), Math.round((size || 40) * 0.45));
+        const inner = (src
+          ? '<img src="' + esc(src) + '" alt="' + esc(s.name) + ' icon" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-flex\'">' +
+            '<span class="skill-thumb-fallback" style="display:none">' + ico + '</span>'
+          : '<span class="skill-thumb-fallback">' + ico + '</span>') +
+          (interactive ? '<span class="skill-thumb-edit" aria-hidden="true">' + svg('edit', 13) + '</span>' : '');
+        if (interactive) {
+          return '<button type="button" class="skill-thumb" data-edit-skill-img="' + esc(s.id) + '" title="Change image for ' + esc(s.name) + '" aria-label="Change image for ' + esc(s.name) + '">' + inner + '</button>';
+        }
+        return '<span class="skill-thumb">' + inner + '</span>';
+      }
+
+      function resizeImageFile(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error('Unable to read file'));
+          reader.onload = () => {
+            const raw = String(reader.result || '');
+            if (file.type === 'image/svg+xml' && raw.length < 32768) {
+              resolve(raw);
+              return;
+            }
+            const img = new Image();
+            img.onerror = () => reject(new Error('Invalid image file'));
+            img.onload = () => {
+              const max = 128;
+              const scale = Math.min(1, max / Math.max(img.width || 1, img.height || 1));
+              const w = Math.max(1, Math.round(img.width * scale));
+              const h = Math.max(1, Math.round(img.height * scale));
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, w, h);
+              try {
+                resolve(canvas.toDataURL('image/webp', 0.86));
+              } catch (err) {
+                resolve(canvas.toDataURL('image/png'));
+              }
+            };
+            img.src = raw;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function openSkillImageModal(skillId) {
+        const s = skillById(skillId);
+        if (!s) return;
+        state.docsSkillId = skillId;
+        state.modalKind = 'image';
+
+        const currentSrc = getSkillImage(s);
+        const isCustomImg = Boolean(state.skillImages[s.id]);
+        const thumbSlot = document.getElementById('skillModalThumb');
+        if (thumbSlot) { thumbSlot.style.display = 'none'; thumbSlot.innerHTML = ''; }
+
+        document.getElementById('skillModalTitle').textContent = 'Skill image · ' + s.name;
+        document.getElementById('skillModalId').textContent = s.id;
+        document.getElementById('skillModalCat').textContent = skillCategory(s);
+
+        const ico = svg(defaultSkillIcon(s), 26);
+        const previewInner = currentSrc
+          ? '<img src="' + esc(currentSrc) + '" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-flex\'">' +
+            '<span class="skill-thumb-fallback" style="display:none">' + ico + '</span>'
+          : '<span class="skill-thumb-fallback">' + ico + '</span>';
+
+        document.getElementById('skillModalBody').innerHTML =
+          '<section>' +
+            '<div class="doc-sec-head">Preview</div>' +
+            '<div class="skill-img-row">' +
+              '<div id="imgModalPreview" class="skill-img-preview">' + previewInner + '</div>' +
+              '<div style="min-width:0;flex:1">' +
+                '<div style="font-size:13px;font-weight:600;color:var(--text-1)">' + (isCustomImg ? 'Custom image active' : 'Default category emblem') + '</div>' +
+                '<div style="font-size:11.5px;color:var(--text-3);margin-top:2px">When left empty, ContextRig renders a clean default emblem matching your active theme.</div>' +
+              '</div>' +
+            '</div>' +
+          '</section>' +
+          '<section>' +
+            '<div class="doc-sec-head">Upload image file</div>' +
+            '<input id="skillImgFile" type="file" accept="image/*" style="display:none" />' +
+            '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+              '<button id="skillImgPickBtn" type="button" class="btn btn-primary">' + svg('image', 14) + ' Choose image…</button>' +
+              (isCustomImg ? '<button id="skillImgResetBtn" type="button" class="btn btn-danger">Reset to default</button>' : '') +
+            '</div>' +
+            '<div class="field-hint" style="margin-top:6px">PNG, JPG, WebP, or SVG. Resized automatically to 128×128 in local browser storage.</div>' +
+          '</section>' +
+          '<section>' +
+            '<div class="doc-sec-head">Or paste image URL</div>' +
+            '<div style="display:flex;gap:8px">' +
+              '<input id="skillImgUrlInput" class="field-input mono" type="url" placeholder="https://example.com/logo.png" value="' + esc(/^https?:\/\//i.test(currentSrc) ? currentSrc : '') + '" />' +
+              '<button id="skillImgUrlApply" type="button" class="btn">Apply</button>' +
+            '</div>' +
+          '</section>';
+
+        document.getElementById('skillModalInject').hidden = true;
+        document.getElementById('skillModalConfigure').hidden = true;
+        document.getElementById('skillModalCopyCmd').hidden = true;
+        const foot = document.querySelector('.skill-modal-foot');
+        if (foot) foot.style.display = 'none';
+
+        document.getElementById('skillImgPickBtn').addEventListener('click', () => {
+          document.getElementById('skillImgFile').click();
+        });
+        document.getElementById('skillImgFile').addEventListener('change', async (ev) => {
+          const file = ev.target.files && ev.target.files[0];
+          if (!file) return;
+          try {
+            const dataUrl = await resizeImageFile(file);
+            state.skillImages[s.id] = dataUrl;
+            saveSkillImagesMap();
+            renderSkills();
+            openSkillImageModal(s.id);
+            toast('Updated image for ' + s.name);
+          } catch (err) {
+            toast('Could not load image file');
+          }
+        });
+        document.getElementById('skillImgUrlApply').addEventListener('click', () => {
+          const raw = (document.getElementById('skillImgUrlInput').value || '').trim();
+          if (!raw) {
+            delete state.skillImages[s.id];
+            saveSkillImagesMap();
+            renderSkills();
+            openSkillImageModal(s.id);
+            toast('Reset to default emblem');
+            return;
+          }
+          if (!/^https?:\/\//i.test(raw)) {
+            toast('URL must start with http:// or https://');
+            return;
+          }
+          state.skillImages[s.id] = raw;
+          saveSkillImagesMap();
+          renderSkills();
+          openSkillImageModal(s.id);
+          toast('Updated image URL for ' + s.name);
+        });
+        const rst = document.getElementById('skillImgResetBtn');
+        if (rst) {
+          rst.addEventListener('click', () => {
+            delete state.skillImages[s.id];
+            saveSkillImagesMap();
+            renderSkills();
+            openSkillImageModal(s.id);
+            toast('Restored default emblem for ' + s.name);
+          });
+        }
+
+        document.getElementById('skillModal').classList.add('open');
+        document.getElementById('skillModalBackdrop').classList.add('open');
+      }
+
       function openSkillDocs(skillId) {
         const s = skillById(skillId);
         if (!s) return;
@@ -3383,6 +4301,12 @@
         const mcp = (s.mcp_servers || []);
         const cmd = skillSlashCommand(s);
 
+        const thumbSlot = document.getElementById('skillModalThumb');
+        if (thumbSlot) {
+          thumbSlot.style.display = 'block';
+          thumbSlot.innerHTML = renderSkillThumbHtml(s, 40, true);
+        }
+
         document.getElementById('skillModalTitle').textContent = s.name;
         document.getElementById('skillModalId').textContent = s.id;
         document.getElementById('skillModalCat').textContent = cat;
@@ -3392,10 +4316,13 @@
         body += '<section><div class="doc-sec-head">Purpose</div>' +
           '<div class="doc-prose">' + esc(s.description || 'No description provided.') + '</div></section>';
 
+        const fileCnt = typeof s.files_count === 'number' ? s.files_count : s.files_to_copy.length;
         body += '<section><div class="doc-sec-head">How to use</div>' +
           (s.ai_instructions
             ? '<pre class="doc-code">' + esc(s.ai_instructions) + '</pre>'
-            : '<div class="doc-prose">This skill ships no AI instructions.</div>') +
+            : (s.on_device === false
+              ? '<div class="doc-prose">Not yet installed on this device. Click <strong>Install</strong> on the card (or inject directly) to download its manifest and ' + fileCnt + ' file(s).</div>'
+              : '<div class="doc-prose">This skill ships no AI instructions.</div>')) +
           '</section>';
 
         if (cmd) {
@@ -3404,7 +4331,7 @@
         }
 
         body += '<section><div class="doc-sec-head">What gets installed</div>' +
-          '<div class="doc-row"><span class="k">Files</span><span class="mono">' + s.files_to_copy.length + '</span></div>' +
+          '<div class="doc-row"><span class="k">Files</span><span class="mono">' + fileCnt + (s.on_device === false ? ' (on-demand)' : '') + '</span></div>' +
           (npm.length ? '<div class="doc-row"><span class="k">npm</span><span class="mono">' + esc(npm.join(', ')) + '</span></div>' : '') +
           (pip.length ? '<div class="doc-row"><span class="k">pip</span><span class="mono">' + esc(pip.join(', ')) + '</span></div>' : '') +
           (mcp.length ? '<div class="doc-row"><span class="k">MCP servers</span><span class="mono">' + esc(mcp.join(', ')) + '</span></div>' : '') +
@@ -3439,8 +4366,10 @@
         document.getElementById('skillModalBody').innerHTML = body;
 
         state.modalKind = 'skill';
+        const foot = document.querySelector('.skill-modal-foot');
+        if (foot) foot.style.display = '';
         const injectBtn = document.getElementById('skillModalInject');
-        injectBtn.hidden = false;
+        injectBtn.hidden = s.on_device === false;
         injectBtn.textContent = users.length ? 'Inject into another project…' : 'Inject into project…';
         document.getElementById('skillModalConfigure').hidden = false;
         const copyBtn = document.getElementById('skillModalCopyCmd');
@@ -3484,28 +4413,38 @@
         menu.className = 'skill-menu';
         menu.setAttribute('role', 'menu');
         menu.innerHTML = items.map((it, i) =>
-          '<button type="button" role="menuitem" class="skill-menu-item' + (it.danger ? ' danger' : '') + '" data-menu-idx="' + i + '">' +
-            esc(it.label) +
-          '</button>'
+          it.sep
+            ? '<div class="skill-menu-sep" role="separator"></div>'
+            : '<button type="button" role="menuitem" class="skill-menu-item' + (it.danger ? ' danger' : '') + '" data-menu-idx="' + i + '">' +
+                esc(it.label) +
+              '</button>'
         ).join('');
 
-        const width = 232;
+        const width = 216;
+        menu.style.width = width + 'px';
+        menu.style.visibility = 'hidden';
+        menu.style.left = '0px';
+        menu.style.top = '0px';
+        document.body.appendChild(menu);
+
+        const mh = menu.offsetHeight || 160;
         let left = Math.min(rect.right - width, window.innerWidth - width - 12);
         left = Math.max(12, left);
         let top = rect.bottom + 6;
-        if (top + 260 > window.innerHeight) top = Math.max(12, rect.top - 260);
+        if (top + mh > window.innerHeight - 12) {
+          top = Math.max(12, rect.top - mh - 6);
+        }
 
         menu.style.left = left + 'px';
         menu.style.top = top + 'px';
-        menu.style.width = width + 'px';
-        document.body.appendChild(menu);
+        menu.style.visibility = 'visible';
 
         menu.addEventListener('click', (ev) => {
           const btn = ev.target.closest('[data-menu-idx]');
           if (!btn) return;
           const it = items[Number(btn.getAttribute('data-menu-idx'))];
           closeSkillMenu();
-          if (it) it.run();
+          if (it && it.run) it.run();
         });
 
         setTimeout(() => {
@@ -3515,13 +4454,145 @@
         }, 0);
       }
 
+      function formatBytes(bytes) {
+        const b = Number(bytes) || 0;
+        if (b < 1024) return b + ' B';
+        if (b < 1024 * 1024) return (b / 1024).toFixed(1).replace(/\.0$/, '') + ' KB';
+        return (b / (1024 * 1024)).toFixed(2).replace(/\.00$/, '') + ' MB';
+      }
+
+      function openInstallConfirmModal(skillId) {
+        const s = skillById(skillId);
+        if (!s) return;
+        state.docsSkillId = skillId;
+        state.modalKind = 'install';
+
+        const thumbSlot = document.getElementById('skillModalThumb');
+        if (thumbSlot) {
+          thumbSlot.style.display = 'block';
+          thumbSlot.innerHTML = renderSkillThumbHtml(s, 40, false);
+        }
+
+        const cat = skillCategory(s);
+        const fileCnt = typeof s.files_count === 'number' ? s.files_count : (s.files_to_copy ? s.files_to_copy.length : 0);
+        const sizeLabel = formatBytes(s.size_bytes || 4096);
+        const npm = (s.dependencies && s.dependencies.npm) || [];
+        const pip = (s.dependencies && s.dependencies.pip) || [];
+        const mcp = s.mcp_servers || [];
+
+        document.getElementById('skillModalTitle').textContent = 'Install ' + s.name;
+        document.getElementById('skillModalId').textContent = s.id;
+        document.getElementById('skillModalCat').textContent = cat;
+
+        document.getElementById('skillModalBody').innerHTML =
+          '<section><div class="doc-sec-head">Confirm installation</div>' +
+            '<div class="doc-prose">' + esc(s.description || 'Download this skill onto your device so it can be injected into projects.') + '</div>' +
+          '</section>' +
+          '<section><div class="doc-sec-head">Download &amp; Storage Summary</div>' +
+            '<div class="doc-row"><span class="k">Files</span><span class="mono">' + (fileCnt + 1) + ' file(s) (manifest + ' + fileCnt + ' asset' + (fileCnt === 1 ? '' : 's') + ')</span></div>' +
+            '<div class="doc-row"><span class="k">Est. Storage</span><span class="mono" style="font-weight:600;color:var(--accent)">~' + esc(sizeLabel) + '</span></div>' +
+            '<div class="doc-row"><span class="k">Destination</span><span class="mono">~/.contextrig/skills_library/</span></div>' +
+            (npm.length ? '<div class="doc-row"><span class="k">npm deps</span><span class="mono">' + esc(npm.join(', ')) + '</span></div>' : '') +
+            (pip.length ? '<div class="doc-row"><span class="k">pip deps</span><span class="mono">' + esc(pip.join(', ')) + '</span></div>' : '') +
+            (mcp.length ? '<div class="doc-row"><span class="k">MCP servers</span><span class="mono">' + esc(mcp.join(', ')) + '</span></div>' : '') +
+          '</section>' +
+          '<section><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;padding-top:4px">' +
+            '<button id="installCancelBtn" type="button" class="btn">Cancel</button>' +
+            '<button id="installConfirmBtn" type="button" class="btn btn-primary">Confirm &amp; Install (~' + esc(sizeLabel) + ')</button>' +
+          '</div></section>';
+
+        document.getElementById('skillModalInject').hidden = true;
+        document.getElementById('skillModalConfigure').hidden = true;
+        document.getElementById('skillModalCopyCmd').hidden = true;
+        const foot = document.querySelector('.skill-modal-foot');
+        if (foot) foot.style.display = 'none';
+
+        document.getElementById('installCancelBtn').addEventListener('click', closeSkillDocs);
+        document.getElementById('installConfirmBtn').addEventListener('click', async function () {
+          const btn = this;
+          btn.disabled = true;
+          btn.textContent = 'Installing…';
+          const ok = await installSkillFromUi(s.id, btn);
+          if (ok) closeSkillDocs();
+        });
+
+        document.getElementById('skillModal').classList.add('open');
+        document.getElementById('skillModalBackdrop').classList.add('open');
+      }
+
+      async function installSkillFromUi(skillId, btnEl) {
+        const s = skillById(skillId);
+        if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Installing…'; }
+        try {
+          const res = await fetch('/api/skills/install', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skillId })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Install failed');
+          await loadLiveData();
+          renderAll();
+          toast('Installed ' + (s ? s.name : skillId) + ' (' + (data.downloadedCount || 0) + ' files)');
+          return true;
+        } catch (err) {
+          if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Confirm & Install'; }
+          toast('Install failed: ' + err.message);
+          return false;
+        }
+      }
+
+      async function updateSkillFromUi(skillId) {
+        const s = skillById(skillId);
+        toast('Checking updates for ' + (s ? s.name : skillId) + '…');
+        try {
+          const res = await fetch('/api/skills/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skillId })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Update check failed');
+          await loadLiveData();
+          renderAll();
+          toast(data.updated
+            ? ('Updated ' + (s ? s.name : skillId) + ' (' + (data.updatedCount || 0) + ' files)')
+            : ((s ? s.name : skillId) + ' is up to date'));
+        } catch (err) {
+          toast('Update failed: ' + err.message);
+        }
+      }
+
+      async function uninstallSkillFromUi(skillId) {
+        const s = skillById(skillId);
+        try {
+          const res = await fetch('/api/skills/uninstall', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skillId })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Remove failed');
+          await loadLiveData();
+          renderAll();
+          toast('Removed ' + (s ? s.name : skillId) + ' from this device');
+        } catch (err) {
+          toast('Could not remove: ' + err.message);
+        }
+      }
+
       function renderSkills() {
         const usage = getUsageCounts();
         const catCounts = { workflow: 0, node: 0, python: 0, mcp: 0 };
-        state.skills.forEach((s) => { catCounts[skillCategory(s)]++; });
+        let onDeviceCount = 0;
+        state.skills.forEach((s) => {
+          catCounts[skillCategory(s)]++;
+          if (s.on_device !== false) onDeviceCount++;
+        });
 
         const pills = [
           ['all', 'All', state.skills.length],
+          ['device', 'On device', onDeviceCount],
           ['workflow', 'Workflow', catCounts.workflow],
           ['node', 'Node', catCounts.node],
           ['python', 'Python', catCounts.python],
@@ -3536,8 +4607,9 @@
 
         const q = state.skillQuery.trim().toLowerCase();
         const list = state.skills.filter((s) => {
+          if (state.skillCat === 'device' && s.on_device === false) return false;
           if (state.skillCat === 'custom' && !isCustom(s.id)) return false;
-          if (state.skillCat !== 'all' && state.skillCat !== 'custom' && skillCategory(s) !== state.skillCat) return false;
+          if (state.skillCat !== 'all' && state.skillCat !== 'custom' && state.skillCat !== 'device' && skillCategory(s) !== state.skillCat) return false;
           if (!q) return true;
           return [s.id, s.name, s.description].join(' ').toLowerCase().includes(q);
         });
@@ -3555,32 +4627,54 @@
 
         if (!list.length) {
           grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><strong>No skills match</strong>Clear the search or pick another category.</div>';
+          renderPager('skillsPager', 'skillPage', { totalPages: 1, total: 0 });
           return;
         }
 
-        grid.innerHTML = list.map((s) => {
+        const pgSkills = paginateItems(list, 'skillPage', 9);
+        grid.innerHTML = pgSkills.slice.map((s) => {
           const cat = skillCategory(s);
           const count = usage.get(s.id) || 0;
           const npm = (s.dependencies.npm || []).length;
           const pip = (s.dependencies.pip || []).length;
           const mcp = (s.mcp_servers || []).length;
           const custom = isCustom(s.id);
-          const status = count === 0
-            ? '<span class="skill-status st-absent">Not installed</span>'
-            : custom
-              ? '<span class="skill-status st-custom">Installed · customized</span>'
-              : '<span class="skill-status st-live">Installed</span>';
+          const onDevice = s.on_device !== false;
+          const fileCnt = typeof s.files_count === 'number' ? s.files_count : (s.files_to_copy ? s.files_to_copy.length : 0);
+
+          const status = !onDevice
+            ? (count > 0
+              ? '<span class="skill-status st-custom" title="Already used in projects; click Install to cache locally for updates &amp; new injections">In projects · uncached</span>'
+              : '<span class="skill-status st-absent">Not on device</span>')
+            : count === 0
+              ? '<span class="skill-status st-absent">On device</span>'
+              : custom
+                ? '<span class="skill-status st-custom">Installed · customized</span>'
+                : '<span class="skill-status st-live">Installed</span>';
+
+          const primaryActions = !onDevice
+            ? '<button type="button" class="btn btn-sm btn-primary" data-install-skill="' + esc(s.id) + '">Install</button>' +
+              '<button type="button" class="btn btn-sm" data-docs-skill="' + esc(s.id) + '">Details</button>'
+            : count === 0
+              ? '<button type="button" class="btn btn-sm btn-primary" data-quick-inject="' + esc(s.id) + '">Inject</button>' +
+                '<button type="button" class="btn btn-sm" data-docs-skill="' + esc(s.id) + '">Details</button>'
+              : '<button type="button" class="btn btn-sm" data-docs-skill="' + esc(s.id) + '">Details</button>';
 
           return '<article class="skill-card">' +
-            status +
-            '<div>' +
-              '<div class="skill-card-name">' + esc(s.name) + '</div>' +
-              '<div class="skill-card-id">' + esc(s.id) + '</div>' +
+            '<div class="skill-card-head">' +
+              renderSkillThumbHtml(s, 40, true) +
+              '<div style="min-width:0;flex:1">' +
+                '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">' +
+                  '<div class="skill-card-name" style="min-width:0">' + esc(s.name) + '</div>' +
+                  status +
+                '</div>' +
+                '<div class="skill-card-id">' + esc(s.id) + '</div>' +
+              '</div>' +
             '</div>' +
             '<p class="skill-card-desc">' + esc(s.description) + '</p>' +
             '<div class="skill-card-tags">' +
               '<span class="tag mono">' + esc(cat) + '</span>' +
-              '<span class="tag mono">' + s.files_to_copy.length + ' files</span>' +
+              '<span class="tag mono">' + fileCnt + ' files</span>' +
               (npm ? '<span class="tag mono">npm ' + npm + '</span>' : '') +
               (pip ? '<span class="tag mono">pip ' + pip + '</span>' : '') +
               (mcp ? '<span class="tag mono">MCP ' + mcp + '</span>' : '') +
@@ -3588,14 +4682,13 @@
             '<div class="skill-card-foot">' +
               '<span class="tnum" style="color:var(--text-3)">' + count + (count === 1 ? ' project' : ' projects') + '</span>' +
               '<span class="skill-actions">' +
-                '<button type="button" class="btn btn-sm ' + (count === 0 ? 'btn-primary' : '') + '" data-docs-skill="' + esc(s.id) + '">' +
-                  (count === 0 ? 'Details &amp; docs' : 'Details') +
-                '</button>' +
+                primaryActions +
                 '<button type="button" class="btn btn-sm btn-ghost skill-more" data-more-skill="' + esc(s.id) + '" aria-label="More actions for ' + esc(s.name) + '">···</button>' +
               '</span>' +
             '</div>' +
           '</article>';
         }).join('');
+        renderPager('skillsPager', 'skillPage', pgSkills);
       }
 
       /* =====================================================================
@@ -3669,6 +4762,31 @@
           btn.classList.toggle('selected', match);
         });
 
+        const fields = (s.settings_schema && s.settings_schema.fields) || [];
+        let customFieldCount = 0;
+        fields.forEach((f) => {
+          const isCustomVal = String(state.draftValues[f.key]) !== String(f.default);
+          if (isCustomVal) customFieldCount++;
+          const stEl = document.getElementById('fstate-' + f.key);
+          if (stEl) {
+            stEl.innerHTML = isCustomVal
+              ? '<span class="fs-badge fs-custom">Custom</span><span class="fs-default">default <span class="mono">' + esc(f.default) + '</span></span>'
+              : '<span class="fs-badge fs-default-badge">Default</span>';
+          }
+        });
+
+        const coreBadge = document.getElementById('coreSecBadge');
+        if (coreBadge) {
+          coreBadge.className = 'status-badge ' + (customFieldCount ? 'st-warn' : 'st-ok');
+          coreBadge.textContent = customFieldCount ? (customFieldCount + ' custom override' + (customFieldCount > 1 ? 's' : '')) : 'All defaults';
+        }
+        const extraBadge = document.getElementById('extraSecBadge');
+        if (extraBadge) {
+          const hasExtra = Boolean(state.draftExtraRule.trim());
+          extraBadge.className = 'status-badge ' + (hasExtra ? 'st-warn' : '');
+          extraBadge.textContent = hasExtra ? 'Custom active' : 'None';
+        }
+
         const pre = document.getElementById('settingsPreviewPre');
         if (pre) {
           if (state.previewTab === 'json') {
@@ -3712,7 +4830,17 @@
             (custom ? '<span class="status-badge st-warn" style="padding:1px 7px;font-size:11px">Customized</span>' : '') +
           '</div>';
 
-        let html = '<p style="font-size:12.5px;color:var(--text-2);margin-bottom:16px">' + esc(s.description) + '</p>';
+        let html = '<p style="font-size:12.5px;color:var(--text-2);margin-bottom:14px">' + esc(s.description) + '</p>';
+
+        /* Section 1: Core Engine Parameters (Default / Presets) */
+        html += '<div class="settings-sec">' +
+          '<div class="settings-sec-head">' +
+            '<div>' +
+              '<div class="settings-sec-title">Core Engine Parameters</div>' +
+              '<div class="settings-sec-sub">Built-in presets and schema defaults vs active overrides</div>' +
+            '</div>' +
+            '<span id="coreSecBadge" class="status-badge st-ok" style="font-size:10.5px">All defaults</span>' +
+          '</div>';
 
         if (presets.length) {
           html += '<div class="form-row">' +
@@ -3732,12 +4860,10 @@
         }
 
         if (fields.length) {
-          html += '<div class="form-grid-2" style="margin-bottom:14px">';
+          html += '<div class="form-grid-2" style="margin-bottom:2px">';
           fields.forEach((f) => {
             const val = state.draftValues[f.key];
-            const savedVal = (state.settings[s.id] && state.settings[s.id].values) || {};
-            const isChanged = Object.prototype.hasOwnProperty.call(savedVal, f.key) &&
-              String(savedVal[f.key]) !== String(f.default);
+            const isChanged = String(val) !== String(f.default);
             html += '<div>' +
               '<label class="field-label" style="margin-bottom:5px" for="fld-' + esc(f.key) + '">' +
                 '<span>' + esc(f.label) + '</span>' +
@@ -3754,7 +4880,7 @@
               html += '<input id="fld-' + esc(f.key) + '" class="field-input mono" type="text" value="' + esc(val) + '" data-fkey="' + esc(f.key) + '" data-ftype="text" />';
             }
             html += '</div>' +
-              '<div class="field-state">' +
+              '<div id="fstate-' + esc(f.key) + '" class="field-state">' +
                 (isChanged
                   ? '<span class="fs-badge fs-custom">Custom</span><span class="fs-default">default <span class="mono">' + esc(f.default) + '</span></span>'
                   : '<span class="fs-badge fs-default-badge">Default</span>') +
@@ -3762,22 +4888,34 @@
             '</div>';
           });
           html += '</div>';
+        } else {
+          html += '<div style="font-size:12px;color:var(--text-3)">No configurable parameters defined in this skill schema.</div>';
         }
+        html += '</div>';
 
-        html += '<div class="form-row" style="margin-bottom:0">' +
-          '<label class="field-label" for="extraRuleInput"><span>Extra AI Instructions</span><span class="field-key">CLAUDE.md / .cursorrules</span></label>' +
-          '<textarea id="extraRuleInput" class="field-input" placeholder="Add workspace-wide instructions for this skill…">' + esc(state.draftExtraRule) + '</textarea>' +
-          '<div class="field-hint">Appended under this skill’s section on the next <span class="mono">rig sync</span>.</div>' +
-        '</div>';
-
-        html += '<div class="preview-box">' +
-          '<div class="preview-head">' +
-            '<span style="font-size:12px;font-weight:500;color:var(--text-1);margin-right:4px">Live Preview</span>' +
-            '<button type="button" class="preview-tab' + (state.previewTab === 'json' ? ' active' : '') + '" data-preview-tab="json">skill-settings.json</button>' +
-            '<button type="button" class="preview-tab' + (state.previewTab === 'md' ? ' active' : '') + '" data-preview-tab="md">Rule Markdown</button>' +
-            '<button id="togglePreviewBtn" type="button" class="card-link" style="margin-left:auto">' + (state.previewOpen ? 'Hide' : 'Show') + '</button>' +
+        /* Section 2: Workspace Enhancements (Custom Rules & Extra AI Instructions) */
+        html += '<div class="settings-sec">' +
+          '<div class="settings-sec-head">' +
+            '<div>' +
+              '<div class="settings-sec-title">Workspace Enhancements</div>' +
+              '<div class="settings-sec-sub">Custom rules &amp; extra AI instructions persisted to ~/.contextrig/skill-settings.json</div>' +
+            '</div>' +
+            '<span id="extraSecBadge" class="status-badge" style="font-size:10.5px">None</span>' +
           '</div>' +
-          '<pre id="settingsPreviewPre" class="preview-pre"' + (state.previewOpen ? '' : ' style="display:none"') + '></pre>' +
+          '<div class="form-row" style="margin-bottom:0">' +
+            '<label class="field-label" for="extraRuleInput"><span>Extra AI Instructions</span><span class="field-key">CLAUDE.md / .cursorrules</span></label>' +
+            '<textarea id="extraRuleInput" class="field-input" placeholder="Add workspace-wide instructions for this skill…">' + esc(state.draftExtraRule) + '</textarea>' +
+            '<div class="field-hint">Appended under this skill’s section on the next <span class="mono">rig sync</span>.</div>' +
+          '</div>' +
+          '<div class="preview-box">' +
+            '<div class="preview-head">' +
+              '<span style="font-size:12px;font-weight:500;color:var(--text-1);margin-right:4px">Live Preview</span>' +
+              '<button type="button" class="preview-tab' + (state.previewTab === 'json' ? ' active' : '') + '" data-preview-tab="json">skill-settings.json</button>' +
+              '<button type="button" class="preview-tab' + (state.previewTab === 'md' ? ' active' : '') + '" data-preview-tab="md">Rule Markdown</button>' +
+              '<button id="togglePreviewBtn" type="button" class="card-link" style="margin-left:auto">' + (state.previewOpen ? 'Hide' : 'Show') + '</button>' +
+            '</div>' +
+            '<pre id="settingsPreviewPre" class="preview-pre"' + (state.previewOpen ? '' : ' style="display:none"') + '></pre>' +
+          '</div>' +
         '</div>';
 
         document.getElementById('settingsFormBody').innerHTML = html;
@@ -3825,7 +4963,14 @@
         document.getElementById('saveSkillBtn').addEventListener('click', saveSkillSettings);
         const resetBtn = document.getElementById('resetSkillBtn');
         if (resetBtn) {
-          resetBtn.addEventListener('click', () => {
+          resetBtn.addEventListener('click', async () => {
+            try {
+              await fetch('/api/settings/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ skillId: s.id })
+              });
+            } catch (err) {}
             delete state.settings[s.id];
             loadDraft(s.id);
             renderAll();
@@ -3836,17 +4981,28 @@
         updateSettingsLive();
       }
 
-      function saveSkillSettings() {
+      async function saveSkillSettings() {
         const s = skillById(state.selectedSkillId);
         if (!s) return;
-        state.settings[s.id] = {
+        const payload = {
           values: JSON.parse(JSON.stringify(state.draftValues)),
-          extraRule: state.draftExtraRule.trim(),
-          updatedAt: new Date().toISOString()
+          extraRule: state.draftExtraRule.trim()
         };
+        let persisted = true;
+        try {
+          const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skillId: s.id, values: payload.values, extraRule: payload.extraRule })
+          });
+          if (!res.ok) throw new Error('Failed to save');
+        } catch (err) {
+          persisted = false;
+        }
+        state.settings[s.id] = Object.assign({}, payload, { updatedAt: new Date().toISOString() });
         state.formDirty = false;
         renderAll();
-        toast('Saved settings for ' + s.name);
+        toast(persisted ? ('Saved settings for ' + s.name) : 'Saved locally (engine unreachable)');
       }
 
       function openSkillInSettings(skillId) {
@@ -4116,6 +5272,7 @@
       function renderAll() {
         renderPageIcons();
         renderSidebar();
+        renderAccentPicker();
         renderOverview();
         renderProjects();
         renderProvisioningLists();
@@ -4140,8 +5297,28 @@
         const navBtn = e.target.closest('[data-nav]');
         if (navBtn) { switchTab(navBtn.getAttribute('data-nav')); return; }
 
+        const scrollMat = e.target.closest('[data-scroll-matrix]');
+        if (scrollMat) {
+          const mc = document.getElementById('matrixCard');
+          if (mc) mc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+
+        const syncProjBtn = e.target.closest('[data-sync-project]');
+        if (syncProjBtn) {
+          e.stopPropagation();
+          runSyncNow({ projectPath: syncProjBtn.getAttribute('data-sync-project') }, syncProjBtn);
+          return;
+        }
+
         const themeBtn = e.target.closest('[data-theme]');
         if (themeBtn) { setTheme(themeBtn.getAttribute('data-theme'), true); return; }
+
+        const accentBtn = e.target.closest('[data-accent-pick]');
+        if (accentBtn) { setAccent(accentBtn.getAttribute('data-accent-pick'), true); return; }
+
+        const palToggle = e.target.closest('[data-toggle-palettes]');
+        if (palToggle) { state.morePalettes = !state.morePalettes; renderAccentPicker(); return; }
 
         const resolveBtn = e.target.closest('[data-resolve-orphan]');
         if (resolveBtn) {
@@ -4167,16 +5344,30 @@
         if (clearAg) { state.projectAgent = 'all'; renderProjects(); return; }
 
         const matCat = e.target.closest('[data-matrix-cat]');
-        if (matCat) { state.matrixCat = matCat.getAttribute('data-matrix-cat'); renderMatrix(); return; }
+        if (matCat) { state.matrixCat = matCat.getAttribute('data-matrix-cat'); state.matrixPage = 1; renderMatrix(); return; }
 
         const projSt = e.target.closest('[data-proj-status]');
-        if (projSt) { state.projectStatus = projSt.getAttribute('data-proj-status'); renderProjects(); return; }
+        if (projSt) { state.projectStatus = projSt.getAttribute('data-proj-status'); state.projectPage = 1; renderProjects(); return; }
 
         const projVw = e.target.closest('[data-proj-view]');
-        if (projVw) { state.projectView = projVw.getAttribute('data-proj-view'); renderProjects(); return; }
+        if (projVw) { state.projectView = projVw.getAttribute('data-proj-view'); state.projectPage = 1; renderProjects(); return; }
 
         const skCat = e.target.closest('[data-skill-cat]');
-        if (skCat) { state.skillCat = skCat.getAttribute('data-skill-cat'); renderSkills(); return; }
+        if (skCat) { state.skillCat = skCat.getAttribute('data-skill-cat'); state.skillPage = 1; renderSkills(); return; }
+
+        const pagerBtn = e.target.closest('[data-page-key]');
+        if (pagerBtn && !pagerBtn.disabled) {
+          const key = pagerBtn.getAttribute('data-page-key');
+          const to = Number(pagerBtn.getAttribute('data-page-to'));
+          if (state[key] !== to) {
+            state[key] = to;
+            if (key === 'matrixPage') renderMatrix();
+            else if (key === 'projectPage') renderProjects();
+            else if (key === 'syncPage') renderSyncOps();
+            else if (key === 'skillPage') renderSkills();
+          }
+          return;
+        }
 
         const selSk = e.target.closest('[data-select-skill]');
         if (selSk) {
@@ -4210,24 +5401,53 @@
         const docsBtn = e.target.closest('[data-docs-skill]');
         if (docsBtn) { openSkillDocs(docsBtn.getAttribute('data-docs-skill')); return; }
 
+        const editImgBtn = e.target.closest('[data-edit-skill-img]');
+        if (editImgBtn) { openSkillImageModal(editImgBtn.getAttribute('data-edit-skill-img')); return; }
+
+        const installBtn = e.target.closest('[data-install-skill]');
+        if (installBtn) {
+          openInstallConfirmModal(installBtn.getAttribute('data-install-skill'));
+          return;
+        }
+
+        const quickInjBtn = e.target.closest('[data-quick-inject]');
+        if (quickInjBtn) {
+          const sid = quickInjBtn.getAttribute('data-quick-inject');
+          jumpToInject('');
+          const cb = document.querySelector('#injectSkillList input[type="checkbox"][value="' + sid + '"]');
+          if (cb) { cb.checked = true; updateInjectCounter(); }
+          return;
+        }
+
         const moreBtn = e.target.closest('[data-more-skill]');
         if (moreBtn) {
           e.preventDefault();
           const sid = moreBtn.getAttribute('data-more-skill');
           const s = skillById(sid);
           const count = s ? projectsUsingSkill(s.id).length : 0;
-          const items = [
-            { label: 'Details & documentation', run: () => openSkillDocs(sid) },
-            { label: 'Configure parameters', run: () => openSkillInSettings(sid) },
-            { label: 'Copy slash command', run: () => copyText(skillSlashCommand(s || {}) ? String(skillSlashCommand(s)).split('\n')[0] : '/' + sid, 'Copied slash command') },
-            { label: 'Inject into project…', run: () => { switchTab('projects'); const el = document.getElementById('injectPath'); if (el) { el.focus(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } }
-          ];
-          if (s && s.manifest_remote_url) {
-            items.push({ label: 'Open manifest on GitHub', run: () => window.open(s.manifest_remote_url, '_blank', 'noopener') });
-          }
-          if (count > 0) {
-            items.push({ label: 'Remove from a project…', danger: true, run: () => { switchTab('projects'); const el = document.getElementById('removeProject'); if (el) { el.value = projectsUsingSkill(sid)[0].path; renderRemoveSkills(); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } });
-          }
+          const onDevice = !s || s.on_device !== false;
+
+          const items = !onDevice
+            ? [
+                { label: 'Install to device…', run: () => openInstallConfirmModal(sid) },
+                { label: 'Set custom image…', run: () => openSkillImageModal(sid) }
+              ]
+            : [
+                {
+                  label: 'Inject into project…',
+                  run: () => {
+                    jumpToInject('');
+                    const cb = document.querySelector('#injectSkillList input[type="checkbox"][value="' + sid + '"]');
+                    if (cb) { cb.checked = true; updateInjectCounter(); }
+                  }
+                },
+                { label: 'Check for updates', run: () => updateSkillFromUi(sid) },
+                { label: 'Configure parameters', run: () => openSkillInSettings(sid) },
+                { label: 'Set custom image…', run: () => openSkillImageModal(sid) },
+                { sep: true },
+                ...(count > 0 ? [{ label: 'Remove from project…', danger: true, run: () => jumpToRemove(projectsUsingSkill(sid)[0].id, sid) }] : []),
+                { label: 'Remove from device', danger: true, run: () => uninstallSkillFromUi(sid) }
+              ];
           showSkillMenu(moreBtn, items);
           return;
         }
@@ -4252,6 +5472,10 @@
       document.getElementById('sidebarSearchBtn').addEventListener('click', openCmd);
       var topSearchEl = document.getElementById('topSearchBtn');
       if (topSearchEl) topSearchEl.addEventListener('click', openCmd);
+      var topSyncAllEl = document.getElementById('topSyncAllBtn');
+      if (topSyncAllEl) topSyncAllEl.addEventListener('click', () => runSyncNow({ all: true }, topSyncAllEl));
+      var opsSyncAllEl = document.getElementById('opsSyncAllBtn');
+      if (opsSyncAllEl) opsSyncAllEl.addEventListener('click', () => runSyncNow({ all: true }, opsSyncAllEl));
       document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
 
       /* Skill docs modal */
@@ -4323,9 +5547,9 @@
       document.getElementById('importBtn').addEventListener('click', runImport);
 
       // Search & Sort listeners
-      document.getElementById('projectSearch').addEventListener('input', (e) => { state.projectQuery = e.target.value; renderProjects(); });
-      document.getElementById('skillSearch').addEventListener('input', (e) => { state.skillQuery = e.target.value; renderSkills(); });
-      document.getElementById('skillSort').addEventListener('change', (e) => { state.skillSort = e.target.value; renderSkills(); });
+      document.getElementById('projectSearch').addEventListener('input', (e) => { state.projectQuery = e.target.value; state.projectPage = 1; renderProjects(); });
+      document.getElementById('skillSearch').addEventListener('input', (e) => { state.skillQuery = e.target.value; state.skillPage = 1; renderSkills(); });
+      document.getElementById('skillSort').addEventListener('change', (e) => { state.skillSort = e.target.value; state.skillPage = 1; renderSkills(); });
       document.getElementById('settingsSearch').addEventListener('input', (e) => { state.settingsQuery = e.target.value; renderSettingsList(); });
       document.getElementById('cmdInput').addEventListener('input', (e) => { state.cmdQuery = e.target.value; state.cmdIdx = 0; renderCmd(); });
 
@@ -4446,6 +5670,8 @@
 
       function openGuide() {
         state.modalKind = 'guide';
+        const thumbSlot = document.getElementById('skillModalThumb');
+        if (thumbSlot) { thumbSlot.style.display = 'none'; thumbSlot.innerHTML = ''; }
         document.getElementById('skillModalTitle').textContent = 'Usage guide';
         document.getElementById('skillModalId').textContent = 'how this console works';
         document.getElementById('skillModalCat').textContent = 'help';
@@ -4488,6 +5714,8 @@
 
       function openUpdateModal() {
         state.modalKind = 'update';
+        const thumbSlot = document.getElementById('skillModalThumb');
+        if (thumbSlot) { thumbSlot.style.display = 'none'; thumbSlot.innerHTML = ''; }
         const info = state.updateInfo || {};
         document.getElementById('skillModalTitle').textContent = 'Update available';
         document.getElementById('skillModalId').textContent = 'v' + (info.currentVersion || '?') + ' → v' + (info.latestVersion || '?');
@@ -4506,6 +5734,8 @@
             '</div>' +
           '</section>';
 
+        const foot = document.querySelector('.skill-modal-foot');
+        if (foot) foot.style.display = '';
         document.getElementById('skillModalInject').hidden = true;
         document.getElementById('skillModalConfigure').hidden = true;
         const copyBtn = document.getElementById('skillModalCopyCmd');
@@ -4532,9 +5762,17 @@
 
       /* Initial Boot */
       let savedTheme = 'light';
+      let savedAccent = 'cyan';
       try {
         const stored = localStorage.getItem('contextrig-preview-theme');
         if (stored === 'dark' || stored === 'light') savedTheme = stored;
+        const storedAccent = localStorage.getItem('contextrig-accent-theme');
+        if (storedAccent && ACCENT_THEMES.some((t) => t.id === storedAccent)) savedAccent = storedAccent;
+        const storedImgs = localStorage.getItem('contextrig-skill-images');
+        if (storedImgs) {
+          const parsedImgs = JSON.parse(storedImgs);
+          if (parsedImgs && typeof parsedImgs === 'object') state.skillImages = parsedImgs;
+        }
       } catch (e) {}
 
       (async function boot() {
@@ -4545,6 +5783,7 @@
         }
         loadDraft(state.selectedSkillId);
         setTheme(savedTheme, false);
+        setAccent(savedAccent, false);
         renderAll();
         checkUpdateNotice();
       })();

@@ -17,6 +17,8 @@ async function runTests() {
   const isolatedSettingsPath = path.join(os.tmpdir(), `contextrig-test-settings-${Date.now()}.json`);
   process.env.CONTEXTRIG_REGISTRY_PATH = isolatedRegistryPath;
   process.env.CONTEXTRIG_SETTINGS_PATH = isolatedSettingsPath;
+  // Treat the repo checkout as this test's device cache so the bundled skills_library/ is used
+  process.env.CONTEXTRIG_DEVICE_DIR = process.cwd();
   console.log('🧪 Starting ContextRig CLI automated integration tests...');
 
   try {
@@ -600,7 +602,8 @@ async function runTests() {
   assert.strictEqual(compareVersions('1.2.0', '1.1.9'), 1);
   assert.strictEqual(compareVersions('v1.0.0', '1.0.0'), 0);
   assert.strictEqual(compareVersions('nope', '1.0.0'), null);
-  assert.strictEqual(getCurrentVersionSync(), '0.3.0');
+  const pkgVersion = JSON.parse(await fs.readFile(path.resolve('package.json'), 'utf8')).version;
+  assert.strictEqual(getCurrentVersionSync(), pkgVersion, 'getCurrentVersionSync must match package.json');
 
   const updateCachePath = path.join(os.tmpdir(), `contextrig-update-cache-${Date.now()}.json`);
   process.env.CONTEXTRIG_UPDATE_CACHE_PATH = updateCachePath;
@@ -637,12 +640,81 @@ async function runTests() {
   testServer.stop();
   console.log('✔ Test 13: Web server native HTTP endpoints verified.');
 
+  // Test 14: On-demand device install, physical file removal & auto-reinstall
+  const isolatedDeviceDir = path.join(os.tmpdir(), `contextrig-test-device-${Date.now()}`);
+  process.env.CONTEXTRIG_DEVICE_DIR = isolatedDeviceDir;
+  const {
+    installSkillToDevice,
+    removeSkillFromDevice,
+    getCatalogAndDeviceSkills,
+    ensureSkillInstalled
+  } = await import('./src/core/skillCatalog.js');
+  const prevCatFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.endsWith('/web_scraper.json')) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({
+          id: 'web_scraper',
+          name: 'Web Scraper',
+          description: 'Fetches & extracts clean webpage text',
+          ai_instructions: 'Run python rigtools/scraper.py <URL>',
+          dependencies: { npm: ['axios'], pip: ['requests'] },
+          files_to_copy: [
+            {
+              source: 'scripts/scraper.py',
+              destination: 'rigtools/scraper.py',
+              remote_url: 'https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/scraper.py'
+            }
+          ]
+        })
+      };
+    }
+    if (u.endsWith('/scraper.py')) {
+      return { ok: true, status: 200, text: async () => 'print("scraper ok")\n' };
+    }
+    return { ok: false, status: 404, text: async () => '' };
+  };
+  try {
+    const instRes = await installSkillToDevice('web_scraper');
+    assert.strictEqual(instRes.ok, true);
+    assert.strictEqual(instRes.downloadedCount, 1);
+    const devManifest = path.join(isolatedDeviceDir, 'skills_library', 'web_scraper.json');
+    const devScript = path.join(isolatedDeviceDir, 'scripts', 'scraper.py');
+    assert(await fs.stat(devManifest).then(() => true).catch(() => false), 'Manifest must exist on device after install');
+    assert(await fs.stat(devScript).then(() => true).catch(() => false), 'Script asset must exist on device after install');
+
+    const remRes = await removeSkillFromDevice('web_scraper');
+    assert.strictEqual(remRes.ok, true);
+    assert(!(await fs.stat(devManifest).then(() => true).catch(() => false)), 'Manifest must be deleted after removeSkillFromDevice');
+    assert(!(await fs.stat(devScript).then(() => true).catch(() => false)), 'Script asset must be deleted after removeSkillFromDevice');
+
+    const catalogAfterRemove = await getCatalogAndDeviceSkills();
+    const wsAfterRemove = catalogAfterRemove.find((s) => s.id === 'web_scraper');
+    assert(wsAfterRemove && wsAfterRemove.on_device === false, 'web_scraper must report on_device=false after removal');
+
+    await ensureSkillInstalled('web_scraper');
+    assert(await fs.stat(devManifest).then(() => true).catch(() => false), 'ensureSkillInstalled must auto-install manifest back');
+    assert(await fs.stat(devScript).then(() => true).catch(() => false), 'ensureSkillInstalled must auto-install script back');
+    const catalogAfterReinstall = await getCatalogAndDeviceSkills();
+    const wsAfterReinstall = catalogAfterReinstall.find((s) => s.id === 'web_scraper');
+    assert(wsAfterReinstall && wsAfterReinstall.on_device === true, 'web_scraper must report on_device=true after reinstall');
+  } finally {
+    globalThis.fetch = prevCatFetch;
+    await fs.rm(isolatedDeviceDir, { recursive: true, force: true }).catch(() => {});
+    process.env.CONTEXTRIG_DEVICE_DIR = process.cwd();
+  }
+  console.log('✔ Test 14: On-demand device install, physical removal & auto-reinstall verified.');
+
   console.log('\n🎉 ALL INTEGRATION TESTS PASSED!');
   } finally {
     await fs.rm(isolatedRegistryPath, { force: true }).catch(() => {});
     await fs.rm(isolatedSettingsPath, { force: true }).catch(() => {});
     delete process.env.CONTEXTRIG_REGISTRY_PATH;
     delete process.env.CONTEXTRIG_SETTINGS_PATH;
+    delete process.env.CONTEXTRIG_DEVICE_DIR;
   }
 }
 

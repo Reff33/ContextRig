@@ -3,7 +3,13 @@ import path from 'node:path';
 import { exec } from 'node:child_process';
 import { SUPPORTED_AGENTS } from '../config.js';
 import { loadRegistry, registerProject, unregisterProject } from '../core/projectRegistry.js';
-import { loadAvailableSkills } from '../core/skillManager.js';
+import {
+  getCatalogAndDeviceSkills,
+  installSkillToDevice,
+  removeSkillFromDevice,
+  updateSkillOnDevice,
+  ensureSkillInstalled
+} from '../core/skillCatalog.js';
 import { getCurrentVersionSync, checkForUpdates } from '../core/updateChecker.js';
 import { setupTargetProject } from '../core/projectSetup.js';
 import { injectTemplate } from '../core/fileInjector.js';
@@ -75,11 +81,14 @@ async function injectToProject({ targetPath, agentValue = 'claude', skillIds = [
   const agent = SUPPORTED_AGENTS.find((a) => a.value === agentValue);
   if (!agent) throw new Error(`Unknown agent profile '${agentValue}'.`);
 
-  const library = await loadAvailableSkills();
-  const byId = new Map(library.map((s) => [s.id, s]));
+  const catalog = await getCatalogAndDeviceSkills();
+  const byId = new Map(catalog.map((s) => [s.id, s]));
   const unknown = skillIds.filter((id) => !byId.has(id));
   if (unknown.length) throw new Error(`Unknown skill id(s): ${unknown.join(', ')}`);
-  const selected = skillIds.map((id) => byId.get(id));
+  const selected = [];
+  for (const id of skillIds) {
+    selected.push(await ensureSkillInstalled(id));
+  }
 
   const { fullPath, projectName, created } = await setupTargetProject(targetPath);
 
@@ -116,6 +125,62 @@ async function injectToProject({ targetPath, agentValue = 'claude', skillIds = [
 }
 
 /**
+ * Syncs one or all registered projects right from the Web UI.
+ * Re-injects active agent templates & skills using Smart Merge, updates lastSynced.
+ * @param {{ projectPath?: string, all?: boolean }} input
+ */
+async function syncProjectsFromWeb({ projectPath, all = false } = {}) {
+  const registry = await loadRegistry();
+  const norm = (p) => path.resolve(p).toLowerCase();
+  const targets = all
+    ? registry.projects
+    : registry.projects.filter((p) => projectPath && norm(p.path) === norm(projectPath));
+
+  if (!targets.length) {
+    throw new Error(all ? 'No registered projects to sync.' : 'Project is not registered.');
+  }
+
+  const catalog = await getCatalogAndDeviceSkills();
+  const byId = new Map(catalog.map((s) => [s.id, s]));
+  const results = [];
+
+  for (const proj of targets) {
+    const skillIds = (proj.skills || []).filter((id) => byId.has(id));
+    const selected = [];
+    for (const id of skillIds) {
+      selected.push(await ensureSkillInstalled(id));
+    }
+
+    const agentValues = Array.isArray(proj.agents) && proj.agents.length ? proj.agents : ['claude'];
+    for (const av of agentValues) {
+      const agent = SUPPORTED_AGENTS.find((a) => a.value === av);
+      if (!agent) continue;
+      await injectTemplate({
+        targetDir: proj.path,
+        templateFileName: agent.templateFile,
+        outputFileName: agent.outputFile,
+        projectName: proj.name,
+        agentName: agent.name,
+        skillsInstructions: selected,
+        mergeMode: 'merge'
+      });
+    }
+
+    await handleGitIgnore(proj.path, selected);
+    await registerProject({
+      projectPath: proj.path,
+      name: proj.name,
+      agents: agentValues,
+      skills: skillIds
+    });
+
+    results.push({ path: proj.path, name: proj.name, syncedSkills: skillIds.length });
+  }
+
+  return { ok: true, syncedCount: results.length, results };
+}
+
+/**
  * Removes selected skills from a project — deletes copied files and re-renders
  * the agent files, then updates the registry. Mirrors the CLI remove flow.
  * @param {{ projectPath: string, skillIds: string[] }} input
@@ -135,7 +200,7 @@ async function removeFromProject({ projectPath, skillIds = [] }) {
     throw new Error('None of the selected skills are installed in this project.');
   }
 
-  const library = await loadAvailableSkills();
+  const library = await getCatalogAndDeviceSkills();
   const byId = new Map(library.map((s) => [s.id, s]));
   const skillsToRemove = validIds.map((id) => byId.get(id)).filter(Boolean);
   const remainingIds = installed.filter((id) => !validIds.includes(id));
@@ -222,13 +287,46 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost' } = {})
     }
 
     if (url.pathname === '/api/skills') {
-      const skills = await loadAvailableSkills();
+      const skills = await getCatalogAndDeviceSkills();
       // Enrich with schema definitions for web inspector
       const enriched = skills.map(s => ({
         ...s,
         settings_schema: getSkillSchema(s)
       }));
       sendJson(200, { skills: enriched });
+      return;
+    }
+
+    if (url.pathname === '/api/skills/install' && req.method === 'POST') {
+      try {
+        const { skillId } = await readBody();
+        if (!skillId) { sendJson(400, { ok: false, message: 'skillId is required' }); return; }
+        sendJson(200, await installSkillToDevice(skillId));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/skills/update' && req.method === 'POST') {
+      try {
+        const { skillId } = await readBody();
+        if (!skillId) { sendJson(400, { ok: false, message: 'skillId is required' }); return; }
+        sendJson(200, await updateSkillOnDevice(skillId));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/skills/uninstall' && req.method === 'POST') {
+      try {
+        const { skillId } = await readBody();
+        if (!skillId) { sendJson(400, { ok: false, message: 'skillId is required' }); return; }
+        sendJson(200, await removeSkillFromDevice(skillId));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
       return;
     }
 
@@ -292,6 +390,16 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost' } = {})
       try {
         const body = await readBody();
         sendJson(200, await importSkill(body));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/sync' && req.method === 'POST') {
+      try {
+        const body = await readBody();
+        sendJson(200, await syncProjectsFromWeb(body));
       } catch (err) {
         sendJson(400, { ok: false, message: err.message });
       }
