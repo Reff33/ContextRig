@@ -7,7 +7,7 @@
 **Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
 Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
 
-[![Version](https://img.shields.io/badge/version-0.4.2%20beta-f39c12?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.4.3%20beta-f39c12?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
 [![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
 [![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
@@ -96,14 +96,17 @@ flowchart LR
 
 ## Quick Start
 
-#> **Beta (v0.4.2)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
+#> **Beta (v0.4.3)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
 
 ## Installation
 
-The npm package ships **only the engine** (`src/`, `templates/`, `skills_catalog.json`) — roughly 130 kB. No skill assets are bundled; you install the skills you want on demand.
+ContextRig is distributed as a **git checkout** today (it is not on the npm registry yet). The checkout ships only the engine — `src/`, `templates/`, `skills_catalog.json`, roughly 130 kB unpacked — because skill assets are downloaded on demand.
 
 ```bash
-npm install -g contextrig
+git clone https://github.com/Reff33/ContextRig.git
+cd ContextRig
+npm install
+npm link          # exposes the `rig` / `contextrig` commands globally
 rig
 ```
 
@@ -115,13 +118,16 @@ First run flow:
 2. Installed skills land in `~/.contextrig/skills_library/` (manifests) and `~/.contextrig/scripts/` (tool files). Remove them with `···` → **Remove from device**; reinstall any time.
 3. Go to **Projects → Inject into project**, type a directory, pick the agent profile and skills, then Inject.
 
-### Install from source (development)
+### Updating
 
 ```bash
-git clone https://github.com/Reff33/ContextRig.git
-cd ContextRig
-npm install
-npm link
+rig --update          # git pull --ff-only on the checkout, or npm install -g contextrig@latest
+```
+
+If the install predates v0.4.2, its update checker has a 1.5 s timeout and a stale cache that can hide a new release. Update once by hand, then `rig --update` works normally:
+
+```bash
+git -C <path-to-contextrig> pull --ff-only
 ```
 
 ### Interactive & Direct CLI Commands
