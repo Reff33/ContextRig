@@ -7,7 +7,7 @@
 **Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
 Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
 
-[![Version](https://img.shields.io/badge/version-0.4.1%20beta-f39c12?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.4.2%20beta-f39c12?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
 [![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
 [![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
@@ -96,7 +96,7 @@ flowchart LR
 
 ## Quick Start
 
-#> **Beta (v0.4.1)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
+#> **Beta (v0.4.2)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
 
 ## Installation
 
@@ -148,7 +148,35 @@ rig sync --skill kinet_rig
 
 # Sync a specific folder directly
 rig sync ./my-project
+
+# Clean uninstall — strips managed rules from every project, deletes ~/.contextrig
+rig --uninstall
+rig --uninstall --yes
 ```
+
+---
+
+## Uninstall
+
+ContextRig can remove itself without leaving rules behind in your projects.
+
+```bash
+rig --uninstall          # preview what will be removed, then confirm
+rig --uninstall --yes    # non-interactive
+npm uninstall -g contextrig
+```
+
+What it removes, per registered project:
+
+| Removed | Kept |
+|---|---|
+| The managed `## Available AI Skills & Tools` block | Every hand-written rule you added |
+| Injected `rigtools/` / `tools/` files | Your code and git history |
+| Generated slash commands (`.claude/commands/*.md`) | Files you created yourself |
+| Skill artifact dirs (`graphify-out/`, `.archify/`, …) | — |
+| `.contextrig_cache.json` and orphaned `.mcp.json` entries | — |
+
+It then empties `~/.contextrig/projects.json` and deletes `~/.contextrig/` (installed manifests, scripts, `skill-settings.json`, update cache). The same flow is available in the Web Console under **Settings → Uninstall ContextRig**, which shows a review dialog before anything is deleted.
 
 ---
 
