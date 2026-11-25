@@ -172,14 +172,55 @@ export async function printUpdateBanner(options = {}) {
 }
 
 /**
- * Pulls the latest ContextRig source from GitHub into the install directory.
- * @returns {Promise<{ ok: boolean, message: string }>}
+ * Detects how this copy of ContextRig was installed.
+ * @returns {Promise<'git'|'npm'|'unknown'>}
+ */
+export async function detectInstallKind() {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const execFileAsync = promisify(execFile);
+  const repoRoot = path.resolve(path.dirname(PACKAGE_JSON_PATH));
+
+  if (!existsSync(path.join(repoRoot, '.git'))) return 'npm';
+  try {
+    const { stdout } = await execFileAsync('git', ['-C', repoRoot, 'rev-parse', '--is-inside-work-tree'], {
+      timeout: 10_000
+    });
+    return stdout.trim() === 'true' ? 'git' : 'npm';
+  } catch {
+    return 'npm';
+  }
+}
+
+/**
+ * Updates ContextRig using the method it was installed with:
+ * git checkout → `git pull --ff-only`, npm global → `npm install -g contextrig@latest`.
+ * @returns {Promise<{ ok: boolean, message: string, method: string }>}
  */
 export async function runSelfUpdate() {
   const { execFile } = await import('node:child_process');
   const { promisify } = await import('node:util');
   const execFileAsync = promisify(execFile);
   const repoRoot = path.resolve(path.dirname(PACKAGE_JSON_PATH));
+  const method = await detectInstallKind();
+
+  if (method === 'npm') {
+    try {
+      const { stdout } = await execFileAsync('npm', ['install', '-g', 'contextrig@latest'], {
+        timeout: 180_000,
+        shell: process.platform === 'win32'
+      });
+      await fs.rm(getUpdateCachePath(), { force: true }).catch(() => {});
+      return { ok: true, method, message: (stdout || '').trim() || 'Updated to the latest npm release.' };
+    } catch (err) {
+      const detail = (err.stderr || err.message || '').toString().trim();
+      return {
+        ok: false,
+        method,
+        message: `${detail}\nRetry manually: npm install -g contextrig@latest`
+      };
+    }
+  }
 
   try {
     await execFileAsync('git', ['-C', repoRoot, 'rev-parse', '--is-inside-work-tree'], {
@@ -188,6 +229,7 @@ export async function runSelfUpdate() {
   } catch {
     return {
       ok: false,
+      method,
       message: `Not a git checkout at ${repoRoot}. Reinstall instead: npm install -g contextrig`
     };
   }
@@ -197,16 +239,17 @@ export async function runSelfUpdate() {
       timeout: 120_000
     });
     await fs.rm(getUpdateCachePath(), { force: true }).catch(() => {});
-    return { ok: true, message: stdout.trim() || 'Already up to date.' };
+    return { ok: true, method, message: stdout.trim() || 'Already up to date.' };
   } catch (err) {
     const detail = (err.stderr || err.message || '').toString().trim();
     // A stale install still on the retired `testing` branch cannot fast-forward into main.
     if (/no tracking information|divergent|not possible to fast-forward/i.test(detail)) {
       return {
         ok: false,
+        method,
         message: `${detail}\nSwitch this install to the release branch: git -C "${repoRoot}" fetch origin main && git -C "${repoRoot}" checkout -B main origin/main`
       };
     }
-    return { ok: false, message: detail || 'git pull failed.' };
+    return { ok: false, method, message: detail || 'git pull failed.' };
   }
 }

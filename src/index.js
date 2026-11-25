@@ -1244,10 +1244,12 @@ async function runCli(argv) {
   }
 
   if (cmd === '--update' || cmd === 'update') {
-    logger.info('Pulling latest ContextRig source from GitHub...');
+    const before = getCurrentVersionSync();
+    logger.info('Checking for the latest ContextRig release...');
     const result = await runSelfUpdate();
     if (result.ok) {
       logger.success(result.message);
+      logger.info(`Update method: ${result.method === 'npm' ? 'npm global package' : 'git checkout'}. Restart ContextRig to use v${before ? 'the new build' : 'it'}.`);
     } else {
       logger.error(result.message);
       process.exitCode = 1;
