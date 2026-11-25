@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import chalk from 'chalk';
-import { ROOT_DIR, SUPPORTED_AGENTS } from '../config.js';
+import { SUPPORTED_AGENTS, resolveAssetSourcePath } from '../config.js';
 import { injectTemplate } from './fileInjector.js';
 import { handleDependencies } from './dependencyInstaller.js';
 import { handleGitIgnore } from './gitIgnoreManager.js';
@@ -71,7 +71,7 @@ export async function detectInstalledSkills(targetDir, availableSkills) {
           isPresent = true;
 
           // Compare content of source vs destination
-          const srcPath = path.resolve(ROOT_DIR, item.source);
+          const srcPath = resolveAssetSourcePath(item.source);
 
           try {
             const [srcContent, destContent] = await Promise.all([
@@ -147,7 +147,7 @@ export async function syncSkills(targetDir, projectName, skillsToSync, { promptD
   for (const skill of skillsToSync) {
     if (Array.isArray(skill.files_to_copy)) {
       for (const item of skill.files_to_copy) {
-        const srcFile = path.resolve(ROOT_DIR, item.source);
+        const srcFile = resolveAssetSourcePath(item.source);
         const destFile = path.resolve(targetDir, item.destination);
 
         try {

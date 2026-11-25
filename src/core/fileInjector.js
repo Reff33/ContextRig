@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import handlebars from 'handlebars';
-import { TEMPLATES_DIR, ROOT_DIR } from '../config.js';
+import { TEMPLATES_DIR, ROOT_DIR, resolveAssetSourcePath } from '../config.js';
 import { logger } from '../utils/logger.js';
 import { applySettingsToSkills, syncProjectSkillConfigs } from './skillSettings.js';
 import { getSkillCommands } from './slashCommands.js';
@@ -155,7 +155,7 @@ export async function injectTemplate({
       let copied = 0;
       await Promise.all(
         files.map(async (item) => {
-          const srcFile = path.resolve(ROOT_DIR, item.source);
+          const srcFile = resolveAssetSourcePath(item.source);
           const destFile = path.resolve(targetDir, item.destination);
           try {
             await fs.mkdir(path.dirname(destFile), { recursive: true });

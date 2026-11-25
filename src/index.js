@@ -12,6 +12,7 @@ import { setupTargetProject, sanitizePath } from './core/projectSetup.js';
 import { selectAgent } from './core/agentSelector.js';
 import { injectTemplate } from './core/fileInjector.js';
 import { loadAvailableSkills, saveSkill } from './core/skillManager.js';
+import { getCatalogAndDeviceSkills, ensureSkillInstalled } from './core/skillCatalog.js';
 import { inspectRemoteSkillRepo, commitImportedSkill } from './core/skillImporter.js';
 import { handleDependencies, resolvePythonCmd } from './core/dependencyInstaller.js';
 import { getSkillCommandsLabel } from './core/slashCommands.js';
@@ -155,11 +156,11 @@ async function handleInjectSkills() {
     }
   }
 
-  // 3. Load and present available skills with pre-checked detection of installed skills
-  const skills = await loadAvailableSkills();
+  // 3. Load catalog + device skills with pre-checked detection of installed skills
+  const skills = await getCatalogAndDeviceSkills();
   if (skills.length === 0) {
     console.log();
-    logger.warn('No valid skills found in skills_library/. Please add skills first.');
+    logger.warn('No valid skills found in catalog or skills_library/. Please add skills first.');
     return;
   }
 
@@ -175,8 +176,12 @@ async function handleInjectSkills() {
   const choices = [
     ...skills.map((skill) => {
       const shortName = skill.name.length > 34 ? `${skill.name.slice(0, 33)}…` : skill.name;
-      const badge = installedIds.has(skill.id) ? ` ${chalk.green('[Installed]')}` : '';
-      const shortDesc = skill.description.length > 52 ? `${skill.description.slice(0, 51)}…` : skill.description;
+      const badge = installedIds.has(skill.id)
+        ? ` ${chalk.green('[In Project]')}`
+        : skill.on_device
+          ? ` ${chalk.dim('[On Device]')}`
+          : ` ${chalk.cyan('[Auto-install]')}`;
+      const shortDesc = skill.description.length > 48 ? `${skill.description.slice(0, 47)}…` : skill.description;
       return {
         name: `${chalk.cyan(`[${skill.id}]`.padEnd(16))} ${shortName.padEnd(36)} ${chalk.dim(shortDesc)}${badge}`,
         value: skill,
@@ -207,11 +212,22 @@ async function handleInjectSkills() {
     return;
   }
 
-  const finalSelectedSkills = selectedSkills.filter((s) => s !== '__BACK__' && s?.id !== '__BACK__');
-  if (finalSelectedSkills.length === 0) {
+  const rawSelected = selectedSkills.filter((s) => s !== '__BACK__' && s?.id !== '__BACK__');
+  if (rawSelected.length === 0) {
     console.log();
     logger.info('No skills selected. Returning to Main Menu...');
     return;
+  }
+
+  // Auto-install any selected catalog skill that is not yet cached on this device
+  const finalSelectedSkills = [];
+  for (const s of rawSelected) {
+    if (!s.on_device) {
+      logger.step(`Installing ${s.name} (${s.id}) onto device...`);
+      finalSelectedSkills.push(await ensureSkillInstalled(s.id));
+    } else {
+      finalSelectedSkills.push(s);
+    }
   }
 
   // 4. Compile and inject template

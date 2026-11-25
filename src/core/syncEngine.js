@@ -5,7 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { ROOT_DIR, SKILLS_LIBRARY_DIR, SUPPORTED_AGENTS } from '../config.js';
+import { ROOT_DIR, SKILLS_LIBRARY_DIR, SUPPORTED_AGENTS, getDeviceDir, getDeviceSkillsDir, resolveAssetSourcePath } from '../config.js';
 import { loadAvailableSkills, saveSkill } from './skillManager.js';
 import { setupTargetProject, sanitizePath } from './projectSetup.js';
 import { injectTemplate } from './fileInjector.js';
@@ -230,9 +230,9 @@ export async function checkSingleSkillUpdate(targetDir, skill, cache, token) {
         }
       }
 
-      // Fallback: Compare with local ContextRig master files in scripts/
+      // Fallback: Compare with the installed master file (device cache, then bundled repo)
       if (item.source) {
-        const srcPath = path.resolve(ROOT_DIR, item.source);
+        const srcPath = resolveAssetSourcePath(item.source);
         try {
           const srcContent = await fs.readFile(srcPath, 'utf8');
           const expectedContent = isConfigTarget
@@ -485,7 +485,10 @@ export async function inspectMasterSkillLibrary(skill, { token = null } = {}) {
         try {
           const parsed = JSON.parse(manifestRes.content);
           if (parsed.id === skill.id && parsed.ai_instructions) {
-            const localManifestPath = path.join(SKILLS_LIBRARY_DIR, `${skill.id}.json`);
+            const deviceManifestPath = path.join(getDeviceSkillsDir(), `${skill.id}.json`);
+            const localManifestPath = existsSync(deviceManifestPath)
+              ? deviceManifestPath
+              : path.join(SKILLS_LIBRARY_DIR, `${skill.id}.json`);
             let currentRaw = '';
             try {
               currentRaw = await fs.readFile(localManifestPath, 'utf8');
@@ -511,7 +514,7 @@ export async function inspectMasterSkillLibrary(skill, { token = null } = {}) {
 
   if (items.length > 0) {
     const results = await mapWithConcurrency(items, FETCH_CONCURRENCY, async (item) => {
-      const masterPath = path.resolve(ROOT_DIR, item.source);
+      const masterPath = path.resolve(getDeviceDir(), item.source);
       let localContent = '';
       let localExists = false;
       try {

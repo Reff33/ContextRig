@@ -1,8 +1,7 @@
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { ROOT_DIR } from '../config.js';
-import { saveSkill } from './skillManager.js';
+import { ROOT_DIR, getDeviceDir } from '../config.js';
 import { formatSkillBlock } from './fileInjector.js';
 import { getGitHubToken } from './syncEngine.js';
 
@@ -449,7 +448,7 @@ export async function inspectRemoteSkillRepo(sourceUrl, { token = null, installM
  * @param {Object} preview
  * @param {{ token?: string|null }} [options]
  */
-export async function commitImportedSkill(preview, { token = null } = {}) {
+export async function commitImportedSkill(preview, { token = null, baseDir = getDeviceDir() } = {}) {
   const { skill } = preview;
   const validation = validateSkillCandidate(skill);
   if (!validation.valid) {
@@ -472,7 +471,7 @@ export async function commitImportedSkill(preview, { token = null } = {}) {
         failed.push(`${item.source} (download failed)`);
         return;
       }
-      const outPath = path.resolve(ROOT_DIR, item.source);
+      const outPath = path.resolve(baseDir, item.source);
       await fs.mkdir(path.dirname(outPath), { recursive: true });
       await fs.writeFile(outPath, content, 'utf8');
       downloaded.push(item.source);
@@ -483,12 +482,16 @@ export async function commitImportedSkill(preview, { token = null } = {}) {
     throw new Error(`All file downloads failed (${failed[0]})`);
   }
 
-  const manifestPath = await saveSkill(skill);
+  const targetSkillsDir = path.join(baseDir, 'skills_library');
+  await fs.mkdir(targetSkillsDir, { recursive: true });
+  const filename = `${skill.id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_')}.json`;
+  const manifestPath = path.join(targetSkillsDir, filename);
+  await fs.writeFile(manifestPath, `${JSON.stringify(skill, null, 2)}\n`, 'utf8');
 
   // Dry-run verification: confirm block renders cleanly & copied local sources exist
   const renderedBlock = formatSkillBlock(skill);
   const missingLocalSources = skill.files_to_copy
-    .filter((f) => !existsSync(path.resolve(ROOT_DIR, f.source)))
+    .filter((f) => !existsSync(path.resolve(baseDir, f.source)))
     .map((f) => f.source);
 
   return {

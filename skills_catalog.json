@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "id": "archify",
+      "name": "Archify (Interactive Diagrams & ERD)",
+      "description": "Interactive HTML diagrams & ERD",
+      "category": "workflow",
+      "files_count": 0,
+      "size_bytes": 3200,
+      "dependencies": { "npm": [], "pip": [] },
+      "mcp_servers": [],
+      "claude_command": "archify",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/archify.json"
+    },
+    {
+      "id": "artcraft",
+      "name": "ArtCraft Suite (19 Creative Apps)",
+      "description": "Evidence-verified agent skills for EffectCraft, FilmCraft, AniCraft, PhotoCraft, DesignCraft, and 14 more creative apps",
+      "category": "mcp",
+      "files_count": 91,
+      "size_bytes": 890000,
+      "dependencies": { "npm": [], "pip": [] },
+      "mcp_servers": ["effectcraft"],
+      "claude_command": "artcraft",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/artcraft.json"
+    },
+    {
+      "id": "cut_rig",
+      "name": "CutRig MCP (Video Editing & NLE Automation)",
+      "description": "Cross-platform MCP server & playbooks for automated video editing, AI captions, CapCut drafts, DaVinci Resolve, and Adobe Premiere/After Effects",
+      "category": "mcp",
+      "files_count": 6,
+      "size_bytes": 48000,
+      "dependencies": { "npm": [], "pip": [] },
+      "mcp_servers": ["cutrig"],
+      "claude_command": "cut",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/cut_rig.json"
+    },
+    {
+      "id": "db_inspector",
+      "name": "Database Schema Inspector",
+      "description": "Inspects local DB tables & schema",
+      "category": "workflow",
+      "files_count": 1,
+      "size_bytes": 4800,
+      "dependencies": { "npm": [], "pip": [] },
+      "mcp_servers": [],
+      "claude_command": null,
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/db_inspector.json"
+    },
+    {
+      "id": "git_workflow",
+      "name": "Git Workflow & Conventional Commits",
+      "description": "Smart Conventional Commits, diff metric analysis & commit approval",
+      "category": "workflow",
+      "files_count": 0,
+      "size_bytes": 5400,
+      "dependencies": { "npm": [], "pip": [] },
+      "mcp_servers": [],
+      "claude_command": "commit",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/git_workflow.json"
+    },
+    {
+      "id": "graphify",
+      "name": "Graphify (Code & Knowledge Graph)",
+      "description": "Code dependency graph & God Nodes",
+      "category": "python",
+      "files_count": 1,
+      "size_bytes": 14500,
+      "dependencies": { "npm": [], "pip": ["networkx"] },
+      "mcp_servers": [],
+      "claude_command": "graphify",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/graphify.json"
+    },
+    {
+      "id": "kinet_rig",
+      "name": "KinetRig (AI Remotion Video Production Engine)",
+      "description": "AI-powered motion graphics and cinematic video production engine using Remotion (React). Converts prompts into modular Remotion compositions, and automatically launches the interactive Remotion Studio in the browser for visual editing, component toggling, and rendering.",
+      "category": "node",
+      "files_count": 22,
+      "size_bytes": 185000,
+      "dependencies": {
+        "npm": ["remotion", "@remotion/cli", "react", "react-dom", "three", "@types/three"],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "kinet-rig",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/kinet_rig.json"
+    },
+    {
+      "id": "playwright",
+      "name": "Playwright (Browser & E2E Testing)",
+      "description": "Headless browser automation & UI testing",
+      "category": "node",
+      "files_count": 1,
+      "size_bytes": 6200,
+      "dependencies": { "npm": ["playwright"], "pip": [] },
+      "mcp_servers": [],
+      "claude_command": "playwright",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/playwright.json"
+    },
+    {
+      "id": "ui_ux_pro_max",
+      "name": "UI/UX Pro Max (Design System & UX Intelligence)",
+      "description": "Searchable UI/UX design system generator, color/font pairings, 22 tech stacks, and pre-delivery UX audit",
+      "category": "workflow",
+      "files_count": 42,
+      "size_bytes": 420000,
+      "dependencies": { "npm": [], "pip": [] },
+      "mcp_servers": [],
+      "claude_command": "ui-ux",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/ui_ux_pro_max.json"
+    },
+    {
+      "id": "web_scraper",
+      "name": "Web Scraper",
+      "description": "Fetches & extracts clean webpage text",
+      "category": "python",
+      "files_count": 1,
+      "size_bytes": 4900,
+      "dependencies": {
+        "npm": ["axios", "cheerio"],
+        "pip": ["requests", "beautifulsoup4"]
+      },
+      "mcp_servers": [],
+      "claude_command": "scrape",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/web_scraper.json"
+    }
+  ]
+}

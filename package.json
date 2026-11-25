@@ -1,9 +1,15 @@
 {
   "name": "contextrig",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Developer CLI tool to rig & provision AI coding environments with context rules, tool scripts, and dependencies",
   "type": "module",
   "main": "src/index.js",
+  "files": [
+    "src/",
+    "templates/",
+    "skills_catalog.json",
+    "README.md"
+  ],
   "bin": {
     "contextrig": "./src/index.js",
     "context-rig": "./src/index.js",
