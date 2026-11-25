@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const UPDATE_BRANCHES = ['main'];
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const REQUEST_TIMEOUT_MS = 1500;
+const REQUEST_TIMEOUT_MS = 4000;
 const PACKAGE_JSON_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
@@ -126,13 +126,17 @@ export async function checkForUpdates(options = {}) {
   if (!options.force) {
     const cached = await readCache();
     if (cached && Date.now() - cached.checkedAt < CACHE_TTL_MS) {
-      const cmp = compareVersions(cached.latestVersion, currentVersion);
-      return {
-        currentVersion,
-        latestVersion: cached.latestVersion,
-        updateAvailable: cmp === 1,
-        fromCache: true
-      };
+      // If the cache says we are already current, re-check once per launch instead of
+      // trusting it for a full day — a release published after the last check would
+      // otherwise stay invisible until the TTL expired.
+      if (compareVersions(cached.latestVersion, currentVersion) !== 0) {
+        return {
+          currentVersion,
+          latestVersion: cached.latestVersion,
+          updateAvailable: compareVersions(cached.latestVersion, currentVersion) === 1,
+          fromCache: true
+        };
+      }
     }
   }
 
