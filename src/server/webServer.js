@@ -886,6 +886,33 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
       return;
     }
 
+    if (url.pathname === '/api/capabilities') {
+      // Lets the page detect a process that was started before its own update:
+      // the HTML on disk can be newer than the routes loaded in memory.
+      sendJson(200, {
+        ok: true,
+        version,
+        routes: [
+          'projects',
+          'projects/remove',
+          'project-health',
+          'plan-inject',
+          'skills',
+          'skills/install',
+          'skills/update',
+          'skills/uninstall',
+          'sync',
+          'inject',
+          'remove',
+          'import',
+          'settings',
+          'purge',
+          'shutdown'
+        ]
+      });
+      return;
+    }
+
     if (url.pathname === '/api/agents') {
       sendJson(200, {
         agents: SUPPORTED_AGENTS.map((a) => ({ value: a.value, name: a.name, outputFile: a.outputFile }))

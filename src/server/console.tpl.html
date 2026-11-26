@@ -2860,7 +2860,6 @@
                     <select id="injectSkillCat" class="select-ctrl" aria-label="Filter skills by category">
                       <option value="all">All categories</option>
                     </select>
-                    <button id="injectSelectVisible" type="button" class="btn btn-sm" title="Tick every skill currently shown by the filter">Select shown</button>
                     <button id="injectSelectAllBtn" type="button" class="btn btn-sm" title="Tick every skill installed on this device">Select all</button>
                     <button id="injectFilterClear" type="button" class="btn btn-sm btn-ghost" hidden>Clear filter</button>
                   </div>
@@ -3475,6 +3474,46 @@
               '</div>' +
             '</div>';
         }
+      }
+
+      /**
+       * A console document can be newer than the routes in the running process, which
+       * is how a freshly pulled UI ends up calling endpoints the server never loaded.
+       * Checking /api/capabilities once at boot turns that into one clear banner
+       * instead of a scatter of 404s.
+       */
+      async function checkServerBuild() {
+        try {
+          const res = await fetch('/api/capabilities');
+          if (!res.ok) {
+            showOutdatedBanner('This server predates the console UI. Restart it: rig --web --restart');
+            return;
+          }
+          const data = await readJson(res);
+          const need = ['projects/remove', 'project-health', 'plan-inject'];
+          const missing = need.filter((r) => !(data.routes || []).includes(r));
+          if (missing.length) {
+            showOutdatedBanner('Server is missing ' + missing.join(', ') + '. Restart it: rig --web --restart');
+          }
+        } catch {
+          // Network hiccup — the normal request path already reports failures.
+        }
+      }
+
+      function showOutdatedBanner(message) {
+        const host = document.getElementById('attentionBar');
+        if (!host || host.dataset.buildWarned === '1') return;
+        host.dataset.buildWarned = '1';
+        host.innerHTML =
+          '<div class="alert-bar alert-warn">' +
+            '<div class="alert-left">' +
+              svg('alert', 14) +
+              '<span>' + esc(message) + '</span>' +
+            '</div>' +
+            '<div class="alert-actions">' +
+              '<button type="button" class="alert-link" data-reload-page="true">Reload page</button>' +
+            '</div>' +
+          '</div>';
       }
 
       /**
@@ -6230,6 +6269,9 @@
           return;
         }
 
+        const reloadPage = e.target.closest('[data-reload-page]');
+        if (reloadPage) { window.location.reload(); return; }
+
         const matCat = e.target.closest('[data-matrix-cat]');
         if (matCat) { state.matrixCat = matCat.getAttribute('data-matrix-cat'); state.matrixPage = 1; renderMatrix(); return; }
 
@@ -6505,22 +6547,15 @@
         if (inp) inp.value = '';
         renderInjectSkillList();
       });
-      document.getElementById('injectSelectVisible').addEventListener('click', () => {
-        const visible = injectVisibleSkills().map((s) => s.id);
-        if (!visible.length) { toast('Nothing visible to select', 'warn'); return; }
-        state.injectSelected = Array.from(new Set(state.injectSelected.concat(visible)));
-        renderInjectSkillList();
-        scheduleInjectDiff();
-        toast('Selected ' + visible.length + ' skill(s)' + (state.injectSearch.trim() || state.injectCat !== 'all' ? ' shown by the filter' : ''));
-      });
-
-      // Selecting everything is a distinct, explicit action from filtering.
-      document.getElementById('injectSelectAllBtn')?.addEventListener('click', () => {
+      // One select action: everything installed on this device.
+      document.getElementById('injectSelectAllBtn').addEventListener('click', () => {
         const all = state.skills.filter((s) => s.on_device !== false).map((s) => s.id);
-        state.injectSelected = all;
+        if (!all.length) { toast('No skills on this device yet', 'warn'); return; }
+        const allSelected = all.every((id) => state.injectSelected.includes(id));
+        state.injectSelected = allSelected ? [] : all;
         renderInjectSkillList();
         scheduleInjectDiff();
-        toast('Selected all ' + all.length + ' skill(s) on this device');
+        toast(allSelected ? 'Cleared all selections' : 'Selected all ' + all.length + ' skill(s) on this device');
       });
 
       // Live preview bindings
@@ -6918,6 +6953,7 @@
         setAccent(savedAccent, false);
         renderAll();
         checkUpdateNotice();
+        checkServerBuild();
       })();
     })();
   </script>
