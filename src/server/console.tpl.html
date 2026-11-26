@@ -5845,7 +5845,11 @@
           '<section><div class="doc-sec-head">What this does</div>' +
             '<div class="doc-prose">Fast-forwards this ContextRig installation to the latest release on the <span class="mono">main</span> branch and clears the update-check cache. Project files are not touched until you run <span class="mono">rig sync</span>.</div>' +
           '</section>' +
-          '<section><div class="doc-sec-head">Run it in your terminal</div>' +
+          '<section>' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">' +
+              '<span class="doc-sec-head" style="margin:0">Run it in your terminal</span>' +
+              '<button id="copyUpdateCmdBtn" type="button" class="btn btn-sm" style="margin-left:auto">' + svg('copy', 12) + ' Copy</button>' +
+            '</div>' +
             '<pre class="doc-code">' + esc(cmd) + '</pre>' +
             '<div class="doc-free">' +
               svg('alert', 13) +
@@ -5853,12 +5857,16 @@
             '</div>' +
           '</section>' +
           '<section><div class="doc-sec-head">Stop the local server</div>' +
-            '<div class="doc-prose">When you are done, shut the engine down instead of hunting for the terminal window. This stops the local server; the npm package stays installed.</div>' +
+            '<div class="doc-prose">When you are done, shut the engine down instead of hunting for the terminal window. This stops the local server and returns you to the terminal it was started from.</div>' +
             '<div style="display:flex;align-items:center;gap:8px;margin-top:10px">' +
               '<button id="shutdownBtn" type="button" class="btn btn-danger">Shut down ContextRig</button>' +
               '<span id="shutdownNote" class="field-hint" style="margin:0"></span>' +
             '</div>' +
           '</section>';
+
+        document.getElementById('copyUpdateCmdBtn').addEventListener('click', function () {
+          copyText(cmd, 'Copied: ' + cmd);
+        });
 
         document.getElementById('shutdownBtn').addEventListener('click', async function () {
           const btn = this;

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-import { exec, execSync } from 'node:child_process';
+import { exec, execSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
@@ -1027,6 +1028,69 @@ function clearTerminal() {
 /**
  * Terminal UI Interactive Menu
  */
+/**
+ * Runs `rig --update` in a child process so the parent keeps control: the update
+ * can report progress, then the menu restarts with the new version loaded.
+ * @returns {Promise<{ ok: boolean, output: string }>}
+ */
+async function selfUpdateInPlace() {
+  const scriptPath = fileURLToPath(import.meta.url);
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [scriptPath, '--update'], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env
+    });
+
+    let output = '';
+    child.stdout.on('data', (d) => {
+      output += d.toString();
+      process.stdout.write(d);
+    });
+    child.stderr.on('data', (d) => {
+      output += d.toString();
+      process.stderr.write(d);
+    });
+
+    child.on('error', (err) => resolve({ ok: false, output: err.message }));
+    child.on('close', (code) => resolve({ ok: code === 0, output }));
+  });
+}
+
+/**
+ * Handles the "Update available" menu entry: run the update, then either restart
+ * the menu with the new build or explain what failed.
+ * @param {{ currentVersion: string, latestVersion: string }} updateInfo
+ * @returns {Promise<{ updated: boolean }>}
+ */
+async function installUpdateFromMenu(updateInfo) {
+  clearTerminal();
+  logger.section('Updating ContextRig');
+  console.log(`  ${chalk.dim('From')} v${updateInfo?.currentVersion || '?'} ${chalk.dim('→')} v${updateInfo?.latestVersion || '?'}`);
+  console.log();
+
+  const result = await selfUpdateInPlace();
+  console.log();
+
+  if (!result.ok) {
+    logger.error('Update did not complete. Details above.');
+    logger.info('You can retry from a terminal with: rig --update');
+    return { updated: false };
+  }
+
+  logger.success('Update finished. Restarting with the new build...');
+  await new Promise((r) => setTimeout(r, 900));
+
+  // Replace this process so the menu, version banner and update check all come from
+  // the freshly pulled code instead of the copy already loaded into memory.
+  const scriptPath = fileURLToPath(import.meta.url);
+  const child = spawn(process.execPath, [scriptPath, ...process.argv.slice(2)], {
+    stdio: 'inherit',
+    env: process.env
+  });
+  child.on('close', (code) => process.exit(code ?? 0));
+  return { updated: true, restarting: true };
+}
+
 async function terminalMenu(serverUrl = null) {
   clearTerminal();
   logger.banner(getCurrentVersionSync(), serverUrl);
@@ -1067,6 +1131,8 @@ async function terminalMenu(serverUrl = null) {
 
       if (choice === 'update-notice') {
         updateDismissed = true;
+        const res = await installUpdateFromMenu(updateInfo);
+        if (res && res.restarting) return;
         clearTerminal();
         logger.banner(getCurrentVersionSync(), serverUrl);
         continue;
@@ -1123,7 +1189,6 @@ async function chooseInterfaceMenu() {
   } catch (err) {
     logger.warn(`Could not start Web server: ${err.message}`);
   }
-
   const cleanupAndExit = () => {
     if (serverInstance?.stop) {
       try { serverInstance.stop(); } catch {}
@@ -1171,6 +1236,8 @@ async function chooseInterfaceMenu() {
 
       if (iface === 'update-notice') {
         updateDismissed = true;
+        const res = await installUpdateFromMenu(updateInfo);
+        if (res && res.restarting) return;
         continue;
       }
 
@@ -1235,7 +1302,14 @@ async function runCli(argv) {
 
   const cmd = argv[0];
   if (cmd === '--web' || cmd === '-w') {
-    const s = await startWebServer({ onShutdown: () => process.exit(0) });
+    const s = await startWebServer({
+      onShutdown: () => {
+        console.log();
+        logger.success('Web console shut down from the browser.');
+        logger.info('This terminal is free again — run `rig --web` to restart, or `rig` for the interface menu.');
+        process.exit(0);
+      }
+    });
     openBrowser(s.url);
     logger.success(`ContextRig Web UI running at ${s.url}`);
     logger.info('Press Ctrl+C to stop, or use "Shut down" in the console.');
