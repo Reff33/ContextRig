@@ -620,10 +620,17 @@ async function runTests() {
   await fs.rm(updateCachePath, { force: true });
   delete process.env.CONTEXTRIG_UPDATE_CACHE_PATH;
 
-  // Test 12b: releases ship from main; the retired testing branch must not be consulted
+  // Test 12b: release notices ship from main only; the retired testing branch must not be
+  // consulted when deciding whether an update exists (channel switching is a separate feature).
   const checkerSrc = await fs.readFile(path.resolve(process.cwd(), 'src', 'core', 'updateChecker.js'), 'utf8');
   assert(/const UPDATE_BRANCHES = \['main'\];/.test(checkerSrc), 'update checker must only follow the main release branch');
-  assert(!checkerSrc.includes("'testing'"), 'update checker must not fetch from the retired testing branch');
+  const fetchBlock = checkerSrc.slice(
+    checkerSrc.indexOf('async function fetchLatestVersion'),
+    checkerSrc.indexOf('export async function checkForUpdates')
+  );
+  assert(fetchBlock.length > 0, 'fetchLatestVersion block must exist');
+  assert(!fetchBlock.includes('testing'), 'fetchLatestVersion must not consult the retired testing branch');
+  assert(checkerSrc.includes('UPDATE_BRANCHES'), 'fetchLatestVersion must iterate UPDATE_BRANCHES');
 
   console.log('✔ Test 12: CLI update checker version compare & cache banner verified.');
 

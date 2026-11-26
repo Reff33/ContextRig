@@ -29,7 +29,7 @@ import {
   resetSkillSettings
 } from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
-import { printUpdateBanner, runSelfUpdate, getCurrentVersionSync } from './core/updateChecker.js';
+import { printUpdateBanner, runSelfUpdate, getCurrentVersionSync, getGitState, switchReleaseChannel } from './core/updateChecker.js';
 import { startWebServer, openBrowser } from './server/webServer.js';
 
 const execAsync = promisify(exec);
@@ -1220,7 +1220,8 @@ Usage:
   rig sync --all [--yes]             Check & update all registered projects
   rig sync --skill <id> [--yes]      Update a specific skill across registered projects
   rig sync <path> [--yes]            Sync a specific project directory
-  rig --update                       Pull the latest ContextRig source from GitHub
+  rig --update                       Update using the install method (git pull or npm global)
+  rig --channel <main|testing>       Move a git checkout onto the release or dev branch
   rig --uninstall                    Strip ContextRig from every project & delete ~/.contextrig
   rig --help                         Show this help message
 `);
@@ -1243,6 +1244,56 @@ async function runCli(argv) {
 
   if (cmd === '--tui' || cmd === '-t') {
     await terminalMenu(null);
+    return;
+  }
+
+  if (cmd === '--channel' || cmd === 'channel') {
+    const target = argv[1];
+    const state = await getGitState();
+    if (!state) {
+      logger.error('This is not a git checkout — channel switching only applies to a cloned repository.');
+      process.exitCode = 1;
+      return;
+    }
+
+    if (!target) {
+      logger.section('Update channel');
+      console.log(`  Repository : ${state.root}`);
+      console.log(`  Branch     : ${chalk.white(state.branch)}${state.upstream ? chalk.dim(` → ${state.upstream}`) : chalk.dim(' (no upstream)')}`);
+      console.log(`  Sync       : ${state.behind} behind, ${state.ahead} ahead${state.dirty ? chalk.yellow(' · uncommitted changes') : ''}`);
+      console.log();
+      console.log('  ' + chalk.dim('rig --channel testing   ') + 'follow dev builds (no release notices)');
+      console.log('  ' + chalk.dim('rig --channel main      ') + 'follow tagged releases');
+      return;
+    }
+
+    if (target !== 'main' && target !== 'testing') {
+      logger.error(`Unknown channel '${target}'. Use 'main' or 'testing'.`);
+      process.exitCode = 1;
+      return;
+    }
+
+    if (state.branch === target) {
+      logger.info(`Already on ${target}. Run 'rig --update' to pull the latest commits.`);
+      return;
+    }
+
+    if (state.dirty && !argv.includes('--force')) {
+      logger.warn(`Uncommitted changes in ${state.root}. Commit or stash them, then rerun.`);
+      logger.info(`git -C "${state.root}" stash`);
+      process.exitCode = 1;
+      return;
+    }
+
+    logger.info(`Switching to ${target}...`);
+    const result = await switchReleaseChannel(target);
+    if (result.ok) {
+      logger.success(result.message);
+      logger.info("Restart 'rig' to use the new build.");
+    } else {
+      logger.error(result.message);
+      process.exitCode = 1;
+    }
     return;
   }
 

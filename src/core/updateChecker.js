@@ -159,6 +159,87 @@ export async function checkForUpdates(options = {}) {
 }
 
 /**
+ * Reports the git state of a checkout: branch, upstream, behind/ahead counts,
+ * and whether the working tree is clean.
+ * @returns {Promise<null | { branch: string, upstream: string|null, behind: number, ahead: number, dirty: boolean, root: string }>}
+ */
+export async function getGitState() {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const execFileAsync = promisify(execFile);
+  const root = path.resolve(path.dirname(PACKAGE_JSON_PATH));
+
+  if (!existsSync(path.join(root, '.git'))) return null;
+
+  const run = async (args) => {
+    try {
+      const { stdout } = await execFileAsync('git', ['-C', root, ...args], { timeout: 15_000 });
+      return stdout.trim();
+    } catch {
+      return '';
+    }
+  };
+
+  const branch = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+  if (!branch) return null;
+
+  const upstream = await run(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}']);
+  let behind = 0;
+  let ahead = 0;
+  if (upstream) {
+    const counts = await run(['rev-list', '--left-right', '--count', `@{upstream}...HEAD`]);
+    const [b, a] = counts.split(/\s+/).map(Number);
+    behind = Number.isFinite(b) ? b : 0;
+    ahead = Number.isFinite(a) ? a : 0;
+  }
+
+  const status = await run(['status', '--porcelain']);
+
+  return { branch, upstream: upstream || null, behind, ahead, dirty: status.length > 0, root };
+}
+
+/**
+ * Moves a git checkout onto a branch and fast-forwards it.
+ * @param {'main'|'testing'} branch
+ * @returns {Promise<{ ok: boolean, message: string, state?: Object }>}
+ */
+export async function switchReleaseChannel(branch) {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const execFileAsync = promisify(execFile);
+  const root = path.resolve(path.dirname(PACKAGE_JSON_PATH));
+
+  const run = async (args, timeout = 60_000) => {
+    const { stdout } = await execFileAsync('git', ['-C', root, ...args], { timeout });
+    return stdout.trim();
+  };
+
+  if (!existsSync(path.join(root, '.git'))) {
+    return { ok: false, message: 'This is not a git checkout. Reinstall from the repository to switch channels.' };
+  }
+
+  const clean = await run(['status', '--porcelain']);
+  if (clean.length > 0) {
+    return {
+      ok: false,
+      message: `Working tree has uncommitted changes in ${root}. Commit or stash them first:\n  git -C "${root}" stash`
+    };
+  }
+
+  try {
+    await run(['fetch', 'origin', branch]);
+    await run(['checkout', '-B', branch, `origin/${branch}`]);
+    await run(['branch', '--set-upstream-to', `origin/${branch}`, branch]);
+    await fs.rm(getUpdateCachePath(), { force: true }).catch(() => {});
+    const state = await getGitState();
+    return { ok: true, message: `Switched to ${branch} at ${await run(['rev-parse', '--short', 'HEAD'])}.`, state };
+  } catch (err) {
+    const detail = (err.stderr || err.message || '').toString().trim();
+    return { ok: false, message: detail || `Could not switch to ${branch}.` };
+  }
+}
+
+/**
  * Prints a bordered update notice (9router-style) when a newer release exists.
  * Silently does nothing otherwise — never blocks or throws.
  */
@@ -222,11 +303,8 @@ export async function runSelfUpdate() {
     }
   }
 
-  try {
-    await execFileAsync('git', ['-C', repoRoot, 'rev-parse', '--is-inside-work-tree'], {
-      timeout: 10_000
-    });
-  } catch {
+  const state = await getGitState();
+  if (!state) {
     return {
       ok: false,
       method,
@@ -234,20 +312,29 @@ export async function runSelfUpdate() {
     };
   }
 
+  // Follow whatever branch this checkout tracks instead of hard-coding `main`, so a
+  // dev machine parked on `testing` pulls dev builds and a release install pulls main.
   try {
-    const { stdout } = await execFileAsync('git', ['-C', repoRoot, 'pull', '--ff-only'], {
+    const args = ['pull', '--ff-only'];
+    const { stdout } = await execFileAsync('git', ['-C', repoRoot, ...args], {
       timeout: 120_000
     });
     await fs.rm(getUpdateCachePath(), { force: true }).catch(() => {});
-    return { ok: true, method, message: stdout.trim() || 'Already up to date.' };
+    const after = await getGitState();
+    const summary = stdout.trim() || 'Already up to date.';
+    return {
+      ok: true,
+      method,
+      branch: state.branch,
+      message: `${summary}\nOn ${state.branch}${after ? ` · ${after.behind} behind origin` : ''}.`
+    };
   } catch (err) {
     const detail = (err.stderr || err.message || '').toString().trim();
-    // A stale install still on the retired `testing` branch cannot fast-forward into main.
     if (/no tracking information|divergent|not possible to fast-forward/i.test(detail)) {
       return {
         ok: false,
         method,
-        message: `${detail}\nSwitch this install to the release branch: git -C "${repoRoot}" fetch origin main && git -C "${repoRoot}" checkout -B main origin/main`
+        message: `${detail}\nSet the release channel first: rig --channel main\nOr follow dev builds: rig --channel testing`
       };
     }
     return { ok: false, method, message: detail || 'git pull failed.' };
