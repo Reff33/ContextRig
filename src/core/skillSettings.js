@@ -300,10 +300,25 @@ const BUILTIN_SCHEMAS = {
         type: 'choice',
         default: 'effectcraft',
         choices: [
-          { name: 'EffectCraft (VFX & motion)', short: 'EffectCraft', value: 'effectcraft' },
-          { name: 'FilmCraft (NLE video)', short: 'FilmCraft', value: 'filmcraft' },
-          { name: 'AniCraft (2D animation)', short: 'AniCraft', value: 'anicraft' },
-          { name: 'DesignCraft / PhotoCraft / other', short: 'Other', value: 'designcraft' }
+          { name: 'EffectCraft — VFX, motion & kinetic titles', short: 'EffectCraft', value: 'effectcraft' },
+          { name: 'FilmCraft — NLE video editing', short: 'FilmCraft', value: 'filmcraft' },
+          { name: 'AniCraft — 2D animation', short: 'AniCraft', value: 'anicraft' },
+          { name: 'DesignCraft — UI & graphic design', short: 'DesignCraft', value: 'designcraft' },
+          { name: 'PhotoCraft — photo editing & retouch', short: 'PhotoCraft', value: 'photocraft' },
+          { name: 'VectorCraft — vector illustration', short: 'VectorCraft', value: 'vectorcraft' },
+          { name: 'SolidCraft — 3D modelling', short: 'SolidCraft', value: 'solidcraft' },
+          { name: 'MaterialCraft — materials & shaders', short: 'MaterialCraft', value: 'materialcraft' },
+          { name: 'LightCraft — lighting & look dev', short: 'LightCraft', value: 'lightcraft' },
+          { name: 'TextureCraft — texture painting', short: 'TextureCraft', value: 'texturecraft' },
+          { name: 'GridCraft — layout grids & systems', short: 'GridCraft', value: 'gridcraft' },
+          { name: 'CADCraft — CAD & technical drawing', short: 'CADCraft', value: 'cadcraft' },
+          { name: 'FigCraft — interface prototyping', short: 'FigCraft', value: 'figcraft' },
+          { name: 'DeckCraft — presentations', short: 'DeckCraft', value: 'deckcraft' },
+          { name: 'MailCraft — email design', short: 'MailCraft', value: 'mailcraft' },
+          { name: 'PDFCraft — PDF documents', short: 'PDFCraft', value: 'pdfcraft' },
+          { name: 'WordCraft — long-form documents', short: 'WordCraft', value: 'wordcraft' },
+          { name: 'SoundCraft — audio & SFX', short: 'SoundCraft', value: 'soundcraft' },
+          { name: 'Craft Anything — pick per task', short: 'Any', value: 'craft-anything' }
         ]
       },
       {
