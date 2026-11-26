@@ -1,0 +1,22 @@
+{
+  "id": "no_ai_slop",
+  "name": "No AI Slop",
+  "description": "Removes 20+ patterns of AI slop from writing while preserving the author's voice",
+  "category": "workflow",
+  "token_saver": true,
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/no_ai_slop.json",
+  "install_command": "npx -y skills@latest add petergyang/no-ai-slop --skill no-ai-slop --agent {{agent_flag}} --copy --yes",
+  "ai_instructions": "Use No AI Slop whenever the user asks you to improve, tighten, de-slop, or review a piece of writing. The skill removes 20+ mechanical patterns (binary contrasts like \"It's not X. It's Y.\", throat-clearing openers, faux-insight setups, colon reveals, dramatic fragments, importance puffery, weasel attribution, synonym cycling) WITHOUT flattening the author's vocabulary, cadence, or humour. Modes: edit the draft and list what changed; detect only, quoting each pattern without judging authorship; or deliberately generate slop as satire when asked. Never rewrite a voice you were not asked to change.",
+  "claude_command": {
+    "name": "no-ai-slop",
+    "content": "# /no-ai-slop [is this slop?] <writing>\n\nEdit or audit a piece of writing for AI-slop patterns.\n\n1. Read the supplied text.\n2. If the user asked \"is this slop?\", quote every pattern found — do not claim the text was AI-written.\n3. Otherwise rewrite it: remove the slop patterns, keep the author's vocabulary, cadence and humour intact, then list what you changed.\n4. Never flatten the voice you were asked to preserve."
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "gitignore": [
+    ".agents/"
+  ],
+  "files_to_copy": []
+}

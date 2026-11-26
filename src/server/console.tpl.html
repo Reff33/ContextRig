@@ -1219,6 +1219,12 @@
       line-height: 1.45;
     }
     .tag.mono { font-size: 10.5px; font-weight: 400; }
+    .tag-saver {
+      color: var(--ok-text);
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+      font-weight: 500;
+    }
 
     .status-badge {
       display: inline-flex;
@@ -1606,7 +1612,26 @@
       outline: none;
       transition: border-color 120ms, box-shadow 120ms;
     }
+    /* Native select arrow sits flush against the border; give it room and a flat chevron */
+    select.field-input,
+    select.select-ctrl {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 32px;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237D8799' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 14px 14px;
+      cursor: pointer;
+      text-overflow: ellipsis;
+    }
+    html.dark select.field-input,
+    html.dark select.select-ctrl {
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239AA5B8' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    }
     .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2.5px var(--accent-soft); }
+    select.field-input:focus,
+    select.select-ctrl:focus { border-color: var(--accent); box-shadow: 0 0 0 2.5px var(--accent-soft); }
     textarea.field-input {
       height: auto;
       min-height: 90px;
@@ -3110,12 +3135,28 @@
       function projectById(id) { return state.projects.find((p) => p.id === id) || null; }
       function isCustom(skillId) { return Boolean(state.settings[skillId]); }
 
+      const SKILL_CATEGORIES = [
+        { id: 'workflow', label: 'Workflow' },
+        { id: 'web',      label: 'Web & Search' },
+        { id: 'design',   label: 'UI/UX & Design' },
+        { id: 'mcp',      label: 'MCP & Automation' },
+        { id: 'node',     label: 'Node' },
+        { id: 'python',   label: 'Python' },
+        { id: 'security', label: 'Security' }
+      ];
+
       function skillCategory(s) {
+        if (s.category && SKILL_CATEGORIES.some((c) => c.id === s.category)) return s.category;
         if (Array.isArray(s.mcp_servers) && s.mcp_servers.length > 0) return 'mcp';
         const deps = s.dependencies || {};
         if ((deps.pip || []).length > 0) return 'python';
         if ((deps.npm || []).length > 0) return 'node';
         return 'workflow';
+      }
+
+      function categoryLabel(id) {
+        const found = SKILL_CATEGORIES.find((c) => c.id === id);
+        return found ? found.label : id;
       }
 
       function paginateItems(items, pageKey, pageSize) {
@@ -3651,10 +3692,9 @@
 
         const cats = [
           ['all', 'All'],
-          ['workflow', 'Workflow'],
-          ['node', 'Node'],
-          ['python', 'Python'],
-          ['mcp', 'MCP']
+          ...SKILL_CATEGORIES
+            .filter((c) => state.skills.some((s) => skillCategory(s) === c.id))
+            .map((c) => [c.id, c.label])
         ];
         filtersEl.innerHTML = cats.map(([id, label]) =>
           '<button type="button" class="pill-btn" data-matrix-cat="' + id + '" aria-pressed="' + (state.matrixCat === id) + '">' + label + '</button>'
@@ -4346,7 +4386,7 @@
 
         document.getElementById('skillModalTitle').textContent = s.name;
         document.getElementById('skillModalId').textContent = s.id;
-        document.getElementById('skillModalCat').textContent = cat;
+        document.getElementById('skillModalCat').textContent = categoryLabel(cat);
 
         let body = '';
 
@@ -4519,7 +4559,7 @@
 
         document.getElementById('skillModalTitle').textContent = 'Install ' + s.name;
         document.getElementById('skillModalId').textContent = s.id;
-        document.getElementById('skillModalCat').textContent = cat;
+        document.getElementById('skillModalCat').textContent = categoryLabel(cat);
 
         document.getElementById('skillModalBody').innerHTML =
           '<section><div class="doc-sec-head">Confirm installation</div>' +
@@ -4620,20 +4660,26 @@
 
       function renderSkills() {
         const usage = getUsageCounts();
-        const catCounts = { workflow: 0, node: 0, python: 0, mcp: 0 };
+        const catCounts = {};
+        SKILL_CATEGORIES.forEach((c) => { catCounts[c.id] = 0; });
         let onDeviceCount = 0;
+        let tokenSaverCount = 0;
         state.skills.forEach((s) => {
-          catCounts[skillCategory(s)]++;
+          const cat = skillCategory(s);
+          catCounts[cat] = (catCounts[cat] || 0) + 1;
           if (s.on_device !== false) onDeviceCount++;
+          if (s.token_saver) tokenSaverCount++;
         });
+
+        const saversLabel = 'Token Savers';
 
         const pills = [
           ['all', 'All', state.skills.length],
           ['device', 'On device', onDeviceCount],
-          ['workflow', 'Workflow', catCounts.workflow],
-          ['node', 'Node', catCounts.node],
-          ['python', 'Python', catCounts.python],
-          ['mcp', 'MCP', catCounts.mcp],
+          ...(tokenSaverCount > 0 ? [['token', saversLabel, tokenSaverCount]] : []),
+          ...SKILL_CATEGORIES
+            .filter((c) => catCounts[c.id] > 0)
+            .map((c) => [c.id, c.label, catCounts[c.id]]),
           ['custom', 'Customized', Object.keys(state.settings).length]
         ];
         document.getElementById('skillCategoryFilters').innerHTML = pills.map(([id, label, cnt]) =>
@@ -4644,9 +4690,10 @@
 
         const q = state.skillQuery.trim().toLowerCase();
         const list = state.skills.filter((s) => {
+          if (state.skillCat === 'token' && !s.token_saver) return false;
           if (state.skillCat === 'device' && s.on_device === false) return false;
           if (state.skillCat === 'custom' && !isCustom(s.id)) return false;
-          if (state.skillCat !== 'all' && state.skillCat !== 'custom' && state.skillCat !== 'device' && skillCategory(s) !== state.skillCat) return false;
+          if (state.skillCat !== 'all' && state.skillCat !== 'custom' && state.skillCat !== 'device' && state.skillCat !== 'token' && skillCategory(s) !== state.skillCat) return false;
           if (!q) return true;
           return [s.id, s.name, s.description].join(' ').toLowerCase().includes(q);
         });
@@ -4710,7 +4757,8 @@
             '</div>' +
             '<p class="skill-card-desc">' + esc(s.description) + '</p>' +
             '<div class="skill-card-tags">' +
-              '<span class="tag mono">' + esc(cat) + '</span>' +
+              '<span class="tag mono">' + esc(categoryLabel(cat)) + '</span>' +
+              (s.token_saver ? '<span class="tag mono tag-saver" title="Cuts token spend">Token saver</span>' : '') +
               '<span class="tag mono">' + fileCnt + ' files</span>' +
               (npm ? '<span class="tag mono">npm ' + npm + '</span>' : '') +
               (pip ? '<span class="tag mono">pip ' + pip + '</span>' : '') +

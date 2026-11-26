@@ -2,6 +2,8 @@
   "id": "web_fetch",
   "name": "Web Fetch (Zero-Dependency)",
   "description": "Fetches a URL and returns clean readable text using Node's built-in fetch",
+  "category": "web",
+  "token_saver": true,
   "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/web_fetch.json",
   "ai_instructions": "When the user provides an external URL or asks you to read a webpage, run `node rigtools/web_fetch.mjs <URL>` immediately without asking for redundant permission. The tool needs no npm or pip install — it uses Node 18+ built-in fetch. It prints the page title, HTTP status, and clean text (markup stripped). Use `--max <chars>` to cap output (default 8000) and `--json` when you need structured fields. Always summarise key findings concisely instead of repeating the raw text. If the host blocks automated clients (403/429), say so plainly rather than inventing content.",
   "claude_command": {

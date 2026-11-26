@@ -242,7 +242,7 @@ async function importSkill({ sourceUrl }) {
 
 export const DEFAULT_PORT = Number(process.env.CONTEXTRIG_PORT) || 7474;
 
-export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShutdown = null } = {}) {
+export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShutdown = null, allowRandomPort = false } = {}) {
   const version = getCurrentVersionSync();
 
   const server = http.createServer(async (req, res) => {
@@ -474,10 +474,18 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
   return new Promise((resolve, reject) => {
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
+        // Only tests and callers that explicitly opt in may take a random port.
+        if (!allowRandomPort) {
+          const hint = port === DEFAULT_PORT
+            ? `Port ${port} is already in use. Stop the other ContextRig instance, or start this one on another port:\n  rig --web --port <n>\n  CONTEXTRIG_PORT=<n> rig --web`
+            : `Port ${port} is already in use. Pick another with:\n  rig --web --port <n>`;
+          reject(new Error(hint));
+          return;
+        }
         server.listen(0, host, () => {
           const actualPort = server.address().port;
           const serverUrl = `http://${host}:${actualPort}`;
-          resolve({ server, port: actualPort, url: serverUrl, stop: () => server.close() });
+          resolve({ server, port: actualPort, url: serverUrl, requestedPort: port, stop: () => server.close() });
         });
       } else {
         reject(err);
@@ -487,7 +495,7 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
     server.listen(port, host, () => {
       const actualPort = server.address().port;
       const serverUrl = `http://${host}:${actualPort}`;
-      resolve({ server, port: actualPort, url: serverUrl, stop: () => server.close() });
+      resolve({ server, port: actualPort, url: serverUrl, requestedPort: port, stop: () => server.close() });
     });
   });
 }

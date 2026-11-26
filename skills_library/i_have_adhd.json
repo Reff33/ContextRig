@@ -1,0 +1,22 @@
+{
+  "id": "i_have_adhd",
+  "name": "I Have ADHD",
+  "description": "Stops the agent burying the answer — ADHD-friendly output with the next action first",
+  "category": "workflow",
+  "token_saver": true,
+  "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/i_have_adhd.json",
+  "install_command": "npx -y skills@latest add ayghri/i-have-adhd --skill i-have-adhd --agent {{agent_flag}} --copy --yes",
+  "ai_instructions": "Apply the I Have ADHD output rules to every response while this skill is installed:\n1. Lead with the next action — the exact command, file path, or edit — before any explanation.\n2. Number multi-step tasks (1, 2, 3) so they can be followed without re-reading.\n3. End with exactly one concrete next step.\n4. Suppress tangents and alternative approaches unless the user asks for them.\n5. Cap lists at five items unless the user asks for all of them.\n6. No preamble (\"Sure!\", \"Great question!\"), no recaps, no closing pleasantries (\"Hope this helps!\").",
+  "claude_command": {
+    "name": "i-have-adhd",
+    "content": "# /i-have-adhd\n\nApply ADHD-friendly output rules for this session.\n\n1. Lead with the next action (exact command, file path, or edit).\n2. Number multi-step tasks.\n3. End with exactly one concrete next step.\n4. Suppress tangents and alternatives unless asked.\n5. Cap lists at five items.\n6. No preamble, no recaps, no closing pleasantries."
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "gitignore": [
+    ".agents/"
+  ],
+  "files_to_copy": []
+}

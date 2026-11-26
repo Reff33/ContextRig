@@ -2,6 +2,7 @@
   "id": "cut_rig",
   "name": "CutRig MCP (Video Editing & NLE Automation)",
   "description": "Cross-platform MCP server & playbooks for automated video editing, AI captions, CapCut drafts, DaVinci Resolve, and Adobe Premiere/After Effects",
+  "category": "mcp",
   "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/cut_rig.json",
   "ai_instructions": "Follow the CutRig MCP workflow (full guide in rigtools/cut_rig/SKILL.md; editor playbooks in rigtools/cut_rig/references/). Always run `cutrig_doctor` first, probe media via `cutrig_probe_media` before editing, and never overwrite original source footage or project drafts. When KinetRig is active in the same project, import rendered KinetRig MP4 openers onto Track 1 via `cutrig_concat` or `cutrig_capcut_insert_clips`.",
   "claude_command": {
@@ -11,7 +12,10 @@
   "mcp_servers": {
     "cutrig": {
       "command": "npx",
-      "args": ["-y", "github:Reff33/CutRig-MCP#testing"]
+      "args": [
+        "-y",
+        "github:Reff33/CutRig-MCP#testing"
+      ]
     }
   },
   "dependencies": {

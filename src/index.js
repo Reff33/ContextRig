@@ -31,7 +31,7 @@ import {
 } from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
 import { printUpdateBanner, runSelfUpdate, getCurrentVersionSync, getGitState, switchReleaseChannel } from './core/updateChecker.js';
-import { startWebServer, openBrowser } from './server/webServer.js';
+import { startWebServer, openBrowser, DEFAULT_PORT } from './server/webServer.js';
 
 const execAsync = promisify(exec);
 
@@ -1181,13 +1181,15 @@ async function terminalMenu(serverUrl = null) {
  */
 async function chooseInterfaceMenu() {
   let serverInstance = null;
-  let serverUrl = 'http://localhost:7474';
+  let serverUrl = null;
 
   try {
-    serverInstance = await startWebServer({ port: 7474 });
+    serverInstance = await startWebServer({ port: DEFAULT_PORT });
     serverUrl = serverInstance.url;
   } catch (err) {
-    logger.warn(`Could not start Web server: ${err.message}`);
+    // A busy port is not fatal for the menu — the Terminal UI still works, so warn
+    // and let the user choose. The Web entry reports the same hint when clicked.
+    logger.warn(err.message);
   }
   const cleanupAndExit = () => {
     if (serverInstance?.stop) {
@@ -1248,6 +1250,11 @@ async function chooseInterfaceMenu() {
       }
 
       if (iface === 'web') {
+        if (!serverUrl) {
+          logger.error('The Web console is not running — its port is already in use.');
+          logger.info('Close the other instance, or start it on a custom port: CONTEXTRIG_PORT=8080 rig --web');
+          continue;
+        }
         openBrowser(serverUrl);
         console.log();
         logger.success(`Opened ContextRig Web UI in browser: ${serverUrl}`);
@@ -1282,6 +1289,7 @@ ContextRig CLI — AI Agent Context & Skill Provisioner
 Usage:
   rig                                Launch interface selector (Web / Terminal UI)
   rig --web                          Launch Web UI dashboard directly
+  rig --web --port <n>               Launch the dashboard on a custom port
   rig --tui                          Launch Terminal UI directly
   rig sync                           Open sync hub (Check & Update All / One Project / One Skill)
   rig sync --all [--yes]             Check & update all registered projects
@@ -1301,8 +1309,12 @@ async function runCli(argv) {
   }
 
   const cmd = argv[0];
+  const portFlagIdx = argv.findIndex((a) => a === '--port' || a === '-p');
+  const portFlag = portFlagIdx >= 0 ? Number(argv[portFlagIdx + 1]) : null;
+
   if (cmd === '--web' || cmd === '-w') {
     const s = await startWebServer({
+      ...(Number.isFinite(portFlag) && portFlag > 0 ? { port: portFlag } : {}),
       onShutdown: () => {
         console.log();
         logger.success('Web console shut down from the browser.');

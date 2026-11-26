@@ -640,7 +640,7 @@ async function runTests() {
 
   // Test 13: Web UI native server & endpoints
   const { startWebServer } = await import('./src/server/webServer.js');
-  const testServer = await startWebServer({ port: 0 });
+  const testServer = await startWebServer({ port: 0, allowRandomPort: true });
   assert(testServer.url.startsWith('http://localhost:'), 'Web server URL must start with http://localhost:');
   const resHtml = await fetch(testServer.url).then((r) => r.text());
   assert(/contextrig/i.test(resHtml), 'Dashboard HTML must render title');

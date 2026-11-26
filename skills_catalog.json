@@ -5,7 +5,7 @@
       "id": "archify",
       "name": "Archify (Interactive Diagrams & ERD)",
       "description": "Interactive HTML diagrams & ERD",
-      "category": "workflow",
+      "category": "design",
       "files_count": 0,
       "size_bytes": 3200,
       "dependencies": {
@@ -80,7 +80,24 @@
       },
       "mcp_servers": [],
       "claude_command": "graphify",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/graphify.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/graphify.json",
+      "token_saver": true
+    },
+    {
+      "id": "i_have_adhd",
+      "name": "I Have ADHD",
+      "description": "Stops the agent burying the answer - ADHD-friendly output with the next action first",
+      "category": "workflow",
+      "files_count": 0,
+      "size_bytes": 2400,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "i-have-adhd",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/i_have_adhd.json",
+      "token_saver": true
     },
     {
       "id": "kinet_rig",
@@ -105,6 +122,22 @@
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/kinet_rig.json"
     },
     {
+      "id": "no_ai_slop",
+      "name": "No AI Slop",
+      "description": "Removes 20+ patterns of AI slop from writing while preserving the author's voice",
+      "category": "workflow",
+      "files_count": 0,
+      "size_bytes": 2600,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "no-ai-slop",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/no_ai_slop.json",
+      "token_saver": true
+    },
+    {
       "id": "playwright",
       "name": "Playwright (Browser & E2E Testing)",
       "description": "Headless browser automation & UI testing",
@@ -125,7 +158,7 @@
       "id": "ui_ux_pro_max",
       "name": "UI/UX Pro Max (Design System & UX Intelligence)",
       "description": "Searchable UI/UX design system generator, color/font pairings, 22 tech stacks, and pre-delivery UX audit",
-      "category": "workflow",
+      "category": "design",
       "files_count": 42,
       "size_bytes": 420000,
       "dependencies": {
@@ -140,7 +173,7 @@
       "id": "web_fetch",
       "name": "Web Fetch (Zero-Dependency)",
       "description": "Fetches a URL and returns clean readable text using Node's built-in fetch",
-      "category": "workflow",
+      "category": "web",
       "files_count": 1,
       "size_bytes": 4200,
       "dependencies": {
@@ -149,7 +182,8 @@
       },
       "mcp_servers": [],
       "claude_command": "fetch",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/web_fetch.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/web_fetch.json",
+      "token_saver": true
     }
   ]
 }

@@ -115,6 +115,58 @@ const BUILTIN_SCHEMAS = {
       }
     ]
   },
+  no_ai_slop: {
+    fields: [
+      {
+        key: 'mode',
+        label: 'Default Mode',
+        type: 'choice',
+        default: 'edit',
+        choices: [
+          { name: 'Edit and list what changed', short: 'Edit', value: 'edit' },
+          { name: 'Detect only (quote patterns)', short: 'Detect', value: 'detect' },
+          { name: 'Generate slop as satire', short: 'Satire', value: 'satire' }
+        ]
+      },
+      {
+        key: 'preserve_voice',
+        label: 'Voice Preservation',
+        type: 'choice',
+        default: 'strict',
+        choices: [
+          { name: 'Strict — keep vocabulary and cadence', short: 'Strict', value: 'strict' },
+          { name: 'Light — allow minor tightening', short: 'Light', value: 'light' }
+        ]
+      }
+    ]
+  },
+  i_have_adhd: {
+    fields: [
+      {
+        key: 'list_cap',
+        label: 'Maximum List Items',
+        type: 'choice',
+        default: 5,
+        choices: [
+          { name: '3 items (ultra-short)', short: '3', value: 3 },
+          { name: '5 items (default)', short: '5', value: 5 },
+          { name: '7 items', short: '7', value: 7 },
+          { name: 'No cap', short: 'All', value: 0 }
+        ]
+      },
+      {
+        key: 'closing_step',
+        label: 'Ending Style',
+        type: 'choice',
+        default: 'next_step',
+        choices: [
+          { name: 'One concrete next step', short: 'Next step', value: 'next_step' },
+          { name: 'Short recap', short: 'Recap', value: 'recap' },
+          { name: 'Nothing extra', short: 'None', value: 'none' }
+        ]
+      }
+    ]
+  },
   playwright: {
     fields: [
       {

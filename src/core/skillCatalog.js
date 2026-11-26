@@ -131,6 +131,10 @@ export async function getCatalogAndDeviceSkills() {
       const sizeBytes = await measureSkillBytes(installed, deviceDir);
       merged.push({
         ...installed,
+        // Category and token_saver live in the shipped catalog; older device manifests
+        // predate them, so fall back to the catalog entry instead of showing nothing.
+        category: installed.category || cat.category,
+        token_saver: Boolean(installed.token_saver ?? cat.token_saver),
         on_device: true,
         files_count: Array.isArray(installed.files_to_copy) ? installed.files_to_copy.length : (cat.files_count || 0),
         size_bytes: sizeBytes || Number(cat.size_bytes) || 0,
@@ -141,6 +145,8 @@ export async function getCatalogAndDeviceSkills() {
         id: cat.id,
         name: cat.name,
         description: cat.description || '',
+        category: cat.category || '',
+        token_saver: Boolean(cat.token_saver),
         ai_instructions: '',
         dependencies: cat.dependencies || { npm: [], pip: [] },
         mcp_servers: cat.mcp_servers || [],
