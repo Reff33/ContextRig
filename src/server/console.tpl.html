@@ -937,11 +937,6 @@
       border-color: var(--warn-border);
       color: var(--text-1);
     }
-    .alert-bar.alert-ok {
-      background: var(--ok-bg);
-      border-color: var(--ok-border);
-      color: var(--ok-text);
-    }
     .alert-left {
       display: flex;
       align-items: center;
@@ -1145,25 +1140,6 @@
       margin-top: 8px;
     }
     .legend-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: -1px; }
-    /* Heartbeat for a fully healthy workspace */
-    .pulse-dot { position: relative; }
-    .pulse-dot::after {
-      content: "";
-      position: absolute;
-      inset: -3px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0;
-      animation: heartbeat 2.4s ease-in-out infinite;
-    }
-    html.dark .health-bar-top .pulse-dot { color: var(--ok-dot); }
-    @keyframes heartbeat {
-      0%, 100% { opacity: 0; transform: scale(0.7); }
-      45% { opacity: 0.34; transform: scale(1.5); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .pulse-dot::after { animation: none; }
-    }
     .skill-domain-track { position: relative; height: 8px; border-radius: 99px; background: var(--bg-subtle); overflow: hidden; }
     .skill-domain-fill { height: 100%; border-radius: 99px; transition: width 260ms ease, filter 120ms ease; }
     .adopted-row[data-hovering="true"] .skill-domain-fill { filter: brightness(1.18) saturate(1.1); }
@@ -3551,13 +3527,9 @@
               '</div>' +
             '</div>';
         } else {
-          alertHost.innerHTML =
-            '<div class="alert-bar alert-ok">' +
-              '<div class="alert-left">' +
-                '<span class="dot dot-ok"></span>' +
-                '<span>Workspace healthy &mdash; all ' + state.projects.length + ' projects synced and all skill references valid.</span>' +
-              '</div>' +
-            '</div>';
+          // Healthy state is already stated by the Sync Health panel below, so the
+          // green banner is only rendered when there is something to act on.
+          alertHost.innerHTML = '';
         }
 
         /* Row 1: 4 Interactive KPI Cards with Sparklines */
@@ -3680,11 +3652,7 @@
         document.getElementById('overviewIntegrity').innerHTML =
           '<div class="health-bar-box">' +
             '<div class="health-bar-top">' +
-              '<span style="color:var(--text-1);display:inline-flex;align-items:center;gap:7px">' +
-                (fullyHealthy
-                  ? '<span class="dot dot-ok pulse-dot"></span>Sync Health &amp; Coverage'
-                  : '<span class="dot ' + (orphans.length ? 'dot-err' : 'dot-warn') + '"></span>Sync Health &amp; Coverage') +
-              '</span>' +
+              '<span style="color:var(--text-1)">Sync Health &amp; Coverage</span>' +
               '<span class="mono ' + (fullyHealthy ? 'kpi-ok' : 'kpi-warn') + '">' + syncPct + '% ' + (fullyHealthy ? 'OK' : 'Active') + '</span>' +
             '</div>' +
             '<div class="stack-track" role="img" aria-label="' + pctSynced + '% synced, ' + pctPending + '% pending, ' + pctOrphan + '% missing">' +
