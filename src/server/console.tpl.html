@@ -1501,6 +1501,8 @@
     .search-box input::placeholder { color: var(--text-3); }
 
     .filter-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+    /* Keep the skills toolbar on one line by letting the category dropdown shrink */
+    .toolbar select.select-ctrl { flex: 0 1 auto; max-width: 190px; min-width: 120px; }
     .pill-btn {
       height: 28px;
       padding: 0 10px;
@@ -2865,6 +2867,10 @@
                 <input id="skillSearch" type="search" placeholder="Search skill name, id, or description…" aria-label="Search skills" />
               </div>
               <div id="skillCategoryFilters" class="filter-pills" role="group" aria-label="Filter skill categories"></div>
+
+              <select id="skillCatFilter" class="select-ctrl" aria-label="Filter by skill category">
+                <option value="all">All categories</option>
+              </select>
 
               <select id="skillSort" class="select-ctrl" aria-label="Sort skills">
                 <option value="name">Name A–Z</option>
@@ -4672,15 +4678,15 @@
         });
 
         const saversLabel = 'Token Savers';
+        const customCount = Object.keys(state.settings).length;
 
+        // Only the three high-signal filters stay as pills; categories move to a
+        // dropdown so the toolbar never wraps into two uneven rows.
         const pills = [
           ['all', 'All', state.skills.length],
           ['device', 'On device', onDeviceCount],
           ...(tokenSaverCount > 0 ? [['token', saversLabel, tokenSaverCount]] : []),
-          ...SKILL_CATEGORIES
-            .filter((c) => catCounts[c.id] > 0)
-            .map((c) => [c.id, c.label, catCounts[c.id]]),
-          ['custom', 'Customized', Object.keys(state.settings).length]
+          ...(customCount > 0 ? [['custom', 'Customized', customCount]] : [])
         ];
         document.getElementById('skillCategoryFilters').innerHTML = pills.map(([id, label, cnt]) =>
           '<button type="button" class="pill-btn" data-skill-cat="' + id + '" aria-pressed="' + (state.skillCat === id) + '">' +
@@ -4688,12 +4694,23 @@
           '</button>'
         ).join('');
 
+        const catSel = document.getElementById('skillCatFilter');
+        if (catSel) {
+          const activeCat = SKILL_CATEGORIES.some((c) => c.id === state.skillCat) ? state.skillCat : 'all';
+          catSel.innerHTML = '<option value="all">All categories</option>' +
+            SKILL_CATEGORIES
+              .filter((c) => catCounts[c.id] > 0)
+              .map((c) => '<option value="' + c.id + '">' + esc(c.label) + ' (' + catCounts[c.id] + ')</option>')
+              .join('');
+          catSel.value = activeCat;
+        }
+
         const q = state.skillQuery.trim().toLowerCase();
         const list = state.skills.filter((s) => {
           if (state.skillCat === 'token' && !s.token_saver) return false;
           if (state.skillCat === 'device' && s.on_device === false) return false;
           if (state.skillCat === 'custom' && !isCustom(s.id)) return false;
-          if (state.skillCat !== 'all' && state.skillCat !== 'custom' && state.skillCat !== 'device' && state.skillCat !== 'token' && skillCategory(s) !== state.skillCat) return false;
+          if (SKILL_CATEGORIES.some((c) => c.id === state.skillCat) && skillCategory(s) !== state.skillCat) return false;
           if (!q) return true;
           return [s.id, s.name, s.description].join(' ').toLowerCase().includes(q);
         });
@@ -5637,6 +5654,7 @@
       document.getElementById('projectSearch').addEventListener('input', (e) => { state.projectQuery = e.target.value; state.projectPage = 1; renderProjects(); });
       document.getElementById('skillSearch').addEventListener('input', (e) => { state.skillQuery = e.target.value; state.skillPage = 1; renderSkills(); });
       document.getElementById('skillSort').addEventListener('change', (e) => { state.skillSort = e.target.value; state.skillPage = 1; renderSkills(); });
+      document.getElementById('skillCatFilter').addEventListener('change', (e) => { state.skillCat = e.target.value; state.skillPage = 1; renderSkills(); });
       document.getElementById('settingsSearch').addEventListener('input', (e) => { state.settingsQuery = e.target.value; renderSettingsList(); });
       document.getElementById('cmdInput').addEventListener('input', (e) => { state.cmdQuery = e.target.value; state.cmdIdx = 0; renderCmd(); });
 
