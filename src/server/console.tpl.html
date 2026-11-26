@@ -3705,14 +3705,18 @@
         // dropdown, so the card header stays on one line no matter how many exist.
         filtersEl.innerHTML =
           '<button type="button" class="pill-btn" data-matrix-cat="all" aria-pressed="' + (state.matrixCat === 'all') + '">All</button>';
+        // Rebuild the option list only when its contents changed. Replacing the
+        // options on every render closes the native dropdown mid-interaction and can
+        // drop the user's choice before the selection is applied.
         if (catSel) {
           const activeCat = SKILL_CATEGORIES.some((c) => c.id === state.matrixCat) ? state.matrixCat : 'all';
-          catSel.innerHTML = '<option value="all">All categories</option>' +
+          const wanted = '<option value="all">All categories</option>' +
             SKILL_CATEGORIES
               .filter((c) => state.skills.some((s) => skillCategory(s) === c.id))
               .map((c) => '<option value="' + c.id + '">' + esc(c.label) + ' (' + state.skills.filter((s) => skillCategory(s) === c.id).length + ')</option>')
               .join('');
-          catSel.value = activeCat;
+          if (catSel.innerHTML !== wanted) catSel.innerHTML = wanted;
+          if (catSel.value !== activeCat) catSel.value = activeCat;
         }
 
         const visibleSkills = state.skills.filter((s) => state.matrixCat === 'all' || skillCategory(s) === state.matrixCat);
@@ -4706,12 +4710,13 @@
         const catSel = document.getElementById('skillCatFilter');
         if (catSel) {
           const activeCat = SKILL_CATEGORIES.some((c) => c.id === state.skillCat) ? state.skillCat : 'all';
-          catSel.innerHTML = '<option value="all">All categories</option>' +
+          const wanted = '<option value="all">All categories</option>' +
             SKILL_CATEGORIES
               .filter((c) => catCounts[c.id] > 0)
               .map((c) => '<option value="' + c.id + '">' + esc(c.label) + ' (' + catCounts[c.id] + ')</option>')
               .join('');
-          catSel.value = activeCat;
+          if (catSel.innerHTML !== wanted) catSel.innerHTML = wanted;
+          if (catSel.value !== activeCat) catSel.value = activeCat;
         }
 
         const q = state.skillQuery.trim().toLowerCase();
