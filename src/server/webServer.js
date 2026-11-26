@@ -1,7 +1,8 @@
 import http from 'node:http';
 import path from 'node:path';
 import { exec } from 'node:child_process';
-import { SUPPORTED_AGENTS } from '../config.js';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { getDeviceDir, SUPPORTED_AGENTS } from '../config.js';
 import { loadRegistry, registerProject, unregisterProject } from '../core/projectRegistry.js';
 import {
   getCatalogAndDeviceSkills,
@@ -25,15 +26,97 @@ import {
 } from '../core/skillSettings.js';
 import { previewPurge, purgeWorkspace } from '../core/purgeEngine.js';
 
+const PORT_PREF_PATH = () => path.join(getDeviceDir(), 'web-port.json');
+
+/** Remembers the last port that worked so the URL stays stable across launches. */
+function readSavedPort() {
+  try {
+    const parsed = JSON.parse(readFileSync(PORT_PREF_PATH(), 'utf8'));
+    const n = Number(parsed?.port);
+    return Number.isFinite(n) && n > 0 && n < 65536 ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePort(port) {
+  try {
+    mkdirSync(getDeviceDir(), { recursive: true });
+    writeFileSync(PORT_PREF_PATH(), `${JSON.stringify({ port }, null, 2)}\n`, 'utf8');
+  } catch {
+    // best effort — a missing preference only means we retry the default
+  }
+}
+
+/** Returns { url, version } when a ContextRig server answers on this URL. */
+async function probeHealth(candidateUrl) {
+  try {
+    const res = await fetch(`${candidateUrl}/api/health`, { signal: AbortSignal.timeout(1200) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.ok && data?.url) return { url: data.url, version: data.version };
+    }
+  } catch {
+    // fall through to the legacy probe below
+  }
+
+  // Older builds predate /api/health. Recognise them by the console document itself
+  // so a stale instance is reused instead of forcing a new port.
+  try {
+    const res = await fetch(candidateUrl, { signal: AbortSignal.timeout(1200) });
+    if (!res.ok) return null;
+    const body = await res.text();
+    if (/ContextRig Console/.test(body)) return { url: candidateUrl, version: 'unknown' };
+  } catch {
+    // not a ContextRig server
+  }
+  return null;
+}
+
+/**
+ * Starts the console on the saved port, reuses a ContextRig already running there,
+ * or steps forward a few ports when something unrelated holds the slot.
+ * The chosen port is persisted so the URL is stable on the next launch.
+ * @param {{ preferredPort?: number, host?: string, onShutdown?: Function }} [options]
+ * @returns {Promise<{ url: string, port: number, reused: boolean, server: Object|null, stop: Function }>}
+ */
+export async function ensureWebServer({ preferredPort = DEFAULT_PORT, host = 'localhost', onShutdown = null } = {}) {
+  const saved = readSavedPort();
+  const first = saved || preferredPort;
+  const candidates = [first, preferredPort, ...Array.from({ length: 9 }, (_, i) => first + i + 1)]
+    .filter((p, i, arr) => p > 0 && p < 65536 && arr.indexOf(p) === i);
+
+  let lastError = null;
+  for (const port of candidates) {
+    try {
+      const started = await startWebServer({ port, host, onShutdown });
+      if (port !== first || saved !== port) savePort(port);
+      return { url: started.url, port: started.port, reused: false, server: started.server, stop: started.stop };
+    } catch (err) {
+      lastError = err;
+      if (!/already in use/i.test(err.message)) throw err;
+      const existing = await probeHealth(`http://${host}:${port}`);
+      if (existing) {
+        return { url: existing.url, port, reused: true, server: null, stop: () => {} };
+      }
+      // Port belongs to something else — try the next candidate.
+    }
+  }
+  throw lastError || new Error('Could not find a free port for the Web console.');
+}
+
 export function openBrowser(url) {
   const startCmd = process.platform === 'win32'
     ? `start "" "${url}"`
     : process.platform === 'darwin'
       ? `open "${url}"`
       : `xdg-open "${url}"`;
-  exec(startCmd);
+  exec(startCmd, (err) => {
+    if (err) {
+      console.log(`Could not open a browser automatically. Open this URL manually: ${url}`);
+    }
+  });
 }
-import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const CONSOLE_HTML = fileURLToPath(new URL('./console.tpl.html', import.meta.url));
@@ -244,6 +327,7 @@ export const DEFAULT_PORT = Number(process.env.CONTEXTRIG_PORT) || 7474;
 
 export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShutdown = null, allowRandomPort = false } = {}) {
   const version = getCurrentVersionSync();
+  const startedAt = new Date().toISOString();
 
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${host}:${port}`);
@@ -457,6 +541,17 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
       } catch (err) {
         sendJson(200, { currentVersion: version, latestVersion: version, updateAvailable: false, error: err.message });
       }
+      return;
+    }
+
+    if (url.pathname === '/api/health') {
+      const livePort = server.address() ? server.address().port : port;
+      sendJson(200, {
+        ok: true,
+        version,
+        url: `http://${host}:${livePort}`,
+        startedAt
+      });
       return;
     }
 

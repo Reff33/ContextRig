@@ -31,7 +31,7 @@ import {
 } from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
 import { printUpdateBanner, runSelfUpdate, getCurrentVersionSync, getGitState, switchReleaseChannel } from './core/updateChecker.js';
-import { startWebServer, openBrowser, DEFAULT_PORT } from './server/webServer.js';
+import { ensureWebServer, openBrowser, DEFAULT_PORT } from './server/webServer.js';
 
 const execAsync = promisify(exec);
 
@@ -1183,13 +1183,19 @@ async function chooseInterfaceMenu() {
   let serverInstance = null;
   let serverUrl = null;
 
+  // Start on the saved port. If a ContextRig instance already owns it, reuse that
+  // instance instead of refusing; only an unrelated process pushes us to the next port.
   try {
-    serverInstance = await startWebServer({ port: DEFAULT_PORT });
-    serverUrl = serverInstance.url;
+    const result = await ensureWebServer({ preferredPort: DEFAULT_PORT });
+    serverUrl = result.url;
+    if (result.server) {
+      serverInstance = { stop: result.stop };
+    } else {
+      logger.info(`Reusing the ContextRig already running at ${result.url}`);
+    }
   } catch (err) {
-    // A busy port is not fatal for the menu — the Terminal UI still works, so warn
-    // and let the user choose. The Web entry reports the same hint when clicked.
-    logger.warn(err.message);
+    logger.warn(`Could not start the Web console: ${err.message}`);
+    logger.info('The Terminal UI still works. Retry later with: rig --web');
   }
   const cleanupAndExit = () => {
     if (serverInstance?.stop) {
@@ -1313,8 +1319,8 @@ async function runCli(argv) {
   const portFlag = portFlagIdx >= 0 ? Number(argv[portFlagIdx + 1]) : null;
 
   if (cmd === '--web' || cmd === '-w') {
-    const s = await startWebServer({
-      ...(Number.isFinite(portFlag) && portFlag > 0 ? { port: portFlag } : {}),
+    const result = await ensureWebServer({
+      ...(Number.isFinite(portFlag) && portFlag > 0 ? { preferredPort: portFlag } : {}),
       onShutdown: () => {
         console.log();
         logger.success('Web console shut down from the browser.');
@@ -1322,8 +1328,12 @@ async function runCli(argv) {
         process.exit(0);
       }
     });
-    openBrowser(s.url);
-    logger.success(`ContextRig Web UI running at ${s.url}`);
+    openBrowser(result.url);
+    if (result.reused) {
+      logger.info(`A ContextRig console was already running — opened ${result.url}`);
+      return;
+    }
+    logger.success(`ContextRig Web UI running at ${result.url}`);
     logger.info('Press Ctrl+C to stop, or use "Shut down" in the console.');
     return;
   }
