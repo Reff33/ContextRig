@@ -107,7 +107,8 @@ async function injectToProject({ targetPath, agentValue = 'claude', skillIds = [
     projectPath: fullPath,
     name: projectName,
     agents: [agent.value],
-    skills: selected.map((s) => s.id)
+    skills: selected.map((s) => s.id),
+    mergeSkills: mergeMode !== 'overwrite'
   });
 
   await handleGitIgnore(fullPath, selected);
@@ -213,7 +214,8 @@ async function removeFromProject({ projectPath, skillIds = [] }) {
     projectPath: entry.path,
     name: entry.name,
     agents: entry.agents || [],
-    skills: remainingIds
+    skills: remainingIds,
+    mergeSkills: false
   });
 
   return { ok: true, projectPath: entry.path, removed: validIds, remaining: remainingIds };
@@ -240,7 +242,7 @@ async function importSkill({ sourceUrl }) {
 
 export const DEFAULT_PORT = Number(process.env.CONTEXTRIG_PORT) || 7474;
 
-export function startWebServer({ port = DEFAULT_PORT, host = 'localhost' } = {}) {
+export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShutdown = null } = {}) {
   const version = getCurrentVersionSync();
 
   const server = http.createServer(async (req, res) => {
@@ -427,6 +429,18 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost' } = {})
       } catch (err) {
         sendJson(500, { ok: false, message: err.message });
       }
+      return;
+    }
+
+    if (url.pathname === '/api/shutdown' && req.method === 'POST') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, message: 'ContextRig is shutting down.' }));
+      setTimeout(() => {
+        server.close(() => {
+          if (typeof onShutdown === 'function') onShutdown();
+          else process.exit(0);
+        });
+      }, 120);
       return;
     }
 

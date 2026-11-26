@@ -257,7 +257,8 @@ async function handleInjectSkills() {
     projectPath: fullPath,
     name: projectName,
     agents: [agent.value],
-    skills: finalSelectedSkills.map((s) => s.id)
+    skills: finalSelectedSkills.map((s) => s.id),
+    mergeSkills: mergeMode !== 'overwrite'
   });
 
   // 5. Dependency Automation (only prompt for newly added skills if existing ones already present)
@@ -456,7 +457,8 @@ async function handleRemoveSkills() {
       projectPath: fullPath,
       name: projectName,
       agents: remainingAgents.map((a) => a.value),
-      skills: remainingSkills.map((s) => s.id)
+      skills: remainingSkills.map((s) => s.id),
+      mergeSkills: false
     });
   } else {
     await unregisterProject(fullPath);
@@ -1232,9 +1234,10 @@ async function runCli(argv) {
 
   const cmd = argv[0];
   if (cmd === '--web' || cmd === '-w') {
-    const s = await startWebServer();
+    const s = await startWebServer({ onShutdown: () => process.exit(0) });
     openBrowser(s.url);
     logger.success(`ContextRig Web UI running at ${s.url}`);
+    logger.info('Press Ctrl+C to stop, or use "Shut down" in the console.');
     return;
   }
 

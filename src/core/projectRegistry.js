@@ -60,7 +60,19 @@ export async function saveRegistry(registry) {
  * @param {string[]} [entry.skills]
  * @returns {Promise<{ projects: Array<Object> }>}
  */
-export async function registerProject({ projectPath, name, agents = [], skills = [] }) {
+/**
+ * Adds or updates a registered project.
+ * Skills are merged with the existing entry unless `mergeSkills: false` is passed,
+ * so injecting a new skill never silently drops the ones already recorded.
+ * @param {Object} entry
+ * @param {string} entry.projectPath
+ * @param {string} [entry.name]
+ * @param {string[]} [entry.agents]
+ * @param {string[]} [entry.skills]
+ * @param {boolean} [entry.mergeSkills]
+ * @returns {Promise<{ projects: Array<Object> }>}
+ */
+export async function registerProject({ projectPath, name, agents = [], skills = [], mergeSkills = true }) {
   const resolvedPath = path.resolve(projectPath);
   const key = normalizeProjectKey(resolvedPath);
   const registry = await loadRegistry();
@@ -76,11 +88,16 @@ export async function registerProject({ projectPath, name, agents = [], skills =
 
   if (existingIdx >= 0) {
     const prev = registry.projects[existingIdx];
+    const mergedSkills = mergeSkills
+      ? Array.from(new Set([...(prev.skills || []), ...nextEntry.skills])).filter(Boolean)
+      : nextEntry.skills;
     registry.projects[existingIdx] = {
       ...prev,
       ...nextEntry,
-      agents: nextEntry.agents.length > 0 ? nextEntry.agents : prev.agents || [],
-      skills: nextEntry.skills
+      agents: nextEntry.agents.length > 0
+        ? Array.from(new Set([...(prev.agents || []), ...nextEntry.agents]))
+        : prev.agents || [],
+      skills: mergedSkills
     };
   } else {
     registry.projects.push(nextEntry);

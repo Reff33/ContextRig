@@ -252,6 +252,8 @@ export async function injectTemplate({
   }
 
   // Generate Claude-specific slash commands (.claude/commands/*.md)
+  // Runs even when copyAssets is false so a project that already has its tool files
+  // still receives newly-injected slash commands.
   const isClaude = outputFileName === 'CLAUDE.md' || (agentName && agentName.toLowerCase().includes('claude'));
   if (isClaude) {
     const generatedCmds = [];
