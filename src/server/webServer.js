@@ -77,6 +77,65 @@ async function probeHealth(candidateUrl) {
 }
 
 /**
+ * Finds the process listening on a TCP port, so a stale console can be named
+ * instead of leaving the user to hunt for an invisible terminal window.
+ * @param {number} port
+ * @returns {Promise<number|null>} pid, or null when unknown
+ */
+export async function findPortOwnerPid(port) {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const run = promisify(execFile);
+  const portToken = `:${port}`;
+
+  try {
+    if (process.platform === 'win32') {
+      const { stdout } = await run('netstat', ['-ano'], { timeout: 10_000 });
+      // netstat rows are whitespace separated: Proto  Local  Foreign  State  PID
+      for (const raw of stdout.split(/\r?\n/)) {
+        const parts = raw.trim().split(/ +/).filter(Boolean);
+        if (parts.length < 5) continue;
+        if (parts[parts.length - 2] !== 'LISTENING') continue;
+        if (!parts[1].endsWith(portToken)) continue;
+        const pid = Number(parts[parts.length - 1]);
+        if (Number.isInteger(pid) && pid > 0) return pid;
+      }
+      return null;
+    }
+    const { stdout } = await run('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN'], { timeout: 10_000 });
+    const line = stdout.split('\n')[1];
+    if (!line) return null;
+    const pid = Number(line.split(/ +/).filter(Boolean)[1]);
+    return Number.isInteger(pid) && pid > 0 ? pid : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Stops a stale ContextRig that is holding the port. Only ever kills a PID whose
+ * process answers as a ContextRig console, and only when the caller asked for it.
+ * @param {number} port
+ * @returns {Promise<{ ok: boolean, message: string }>}
+ */
+export async function stopStaleServer(port) {
+  const pid = await findPortOwnerPid(port);
+  if (!pid) {
+    return { ok: false, message: `Could not identify the process on port ${port}. Close the console window manually, then retry.` };
+  }
+  try {
+    const stopCmd = process.platform === 'win32' ? ['taskkill', ['/PID', String(pid), '/F']] : ['kill', ['-TERM', String(pid)]];
+    const { execFile } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    await promisify(execFile)(stopCmd[0], stopCmd[1], { timeout: 10_000 });
+    return { ok: true, message: `Stopped the old console (pid ${pid}) that was holding port ${port}.` };
+  } catch (err) {
+    const detail = (err.stderr || err.message || '').toString().trim();
+    return { ok: false, message: `${detail || 'Could not stop the old console.'} — close that terminal window manually, then retry.` };
+  }
+}
+
+/**
  * Starts the console on the saved port, reuses a ContextRig already running there,
  * or steps forward a few ports when something unrelated holds the slot.
  * The chosen port is persisted so the URL is stable on the next launch.
@@ -110,11 +169,12 @@ export async function ensureWebServer({ preferredPort = DEFAULT_PORT, host = 'lo
         }
         // A different build owns the port. Starting elsewhere would leave the user
         // with two consoles and the browser opening the stale one, so stop here.
+        const stalePid = await findPortOwnerPid(port).catch(() => null);
         return {
           url: existing.url,
           port,
           reused: false,
-          stale: { url: existing.url, port, version: existing.version, localVersion },
+          stale: { url: existing.url, port, version: existing.version, localVersion, pid: stalePid },
           server: null,
           stop: () => {}
         };

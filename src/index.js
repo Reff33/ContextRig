@@ -31,7 +31,7 @@ import {
 } from './core/skillSettings.js';
 import { printSkillsTable } from './utils/table.js';
 import { printUpdateBanner, runSelfUpdate, getCurrentVersionSync, getGitState, switchReleaseChannel } from './core/updateChecker.js';
-import { ensureWebServer, openBrowser, DEFAULT_PORT } from './server/webServer.js';
+import { ensureWebServer, openBrowser, DEFAULT_PORT, stopStaleServer } from './server/webServer.js';
 
 const execAsync = promisify(exec);
 
@@ -1303,6 +1303,7 @@ Usage:
   rig                                Launch interface selector (Web / Terminal UI)
   rig --web                          Launch Web UI dashboard directly
   rig --web --port <n>               Launch the dashboard on a custom port
+  rig --web --restart                Replace an older console still holding the port
   rig --tui                          Launch Terminal UI directly
   rig sync                           Open sync hub (Check & Update All / One Project / One Skill)
   rig sync --all [--yes]             Check & update all registered projects
@@ -1326,7 +1327,8 @@ async function runCli(argv) {
   const portFlag = portFlagIdx >= 0 ? Number(argv[portFlagIdx + 1]) : null;
 
   if (cmd === '--web' || cmd === '-w') {
-    const result = await ensureWebServer({
+    const restartFlag = argv.includes('--restart');
+    let result = await ensureWebServer({
       ...(Number.isFinite(portFlag) && portFlag > 0 ? { preferredPort: portFlag } : {}),
       onShutdown: () => {
         console.log();
@@ -1335,14 +1337,30 @@ async function runCli(argv) {
         process.exit(0);
       }
     });
+
+    if (result.stale && restartFlag) {
+      logger.info(`Stopping the old console on port ${result.stale.port}...`);
+      const stopped = await stopStaleServer(result.stale.port);
+      logger[stopped.ok ? 'success' : 'error'](stopped.message);
+      if (!stopped.ok) { process.exitCode = 1; return; }
+      result = await ensureWebServer({
+        ...(Number.isFinite(portFlag) && portFlag > 0 ? { preferredPort: portFlag } : {}),
+        onShutdown: () => process.exit(0)
+      });
+    }
+
     if (result.stale) {
       console.log();
       logger.error(`An older ContextRig is already serving ${result.stale.url}`);
       logger.info(`That console runs v${result.stale.version}, this terminal runs v${result.stale.localVersion}.`);
-      logger.info('Close it first (Ctrl+C there, or "Shut down" in its Update dialog), then run: rig --web');
+      if (result.stale.pid) logger.info(`Process id: ${result.stale.pid}`);
+      console.log();
+      logger.info('Replace it automatically: rig --web --restart');
+      logger.info('Or close that console yourself (Ctrl+C there, or "Shut down" in its Update dialog), then rerun rig --web');
       process.exitCode = 1;
       return;
     }
+
     openBrowser(result.url);
     if (result.reused) {
       logger.info(`A ContextRig console was already running — opened ${result.url}`);
