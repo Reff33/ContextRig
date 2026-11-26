@@ -7,7 +7,7 @@
 **Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
 Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
 
-[![Version](https://img.shields.io/badge/version-0.4.4%20beta-f39c12?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.4.5%20beta-f39c12?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
 [![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
 [![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
@@ -96,7 +96,7 @@ flowchart LR
 
 ## Quick Start
 
-#> **Beta (v0.4.4)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
+#> **Beta (v0.4.5)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
 
 ## Installation
 
@@ -121,8 +121,20 @@ First run flow:
 ### Updating
 
 ```bash
-rig --update          # git pull --ff-only on the checkout, or npm install -g contextrig@latest
+rig --update          # git pull --ff-only on the tracked branch, or npm install -g contextrig@latest
 ```
+
+### Branch channels
+
+`main` carries tagged releases that trigger update notices; `testing` carries unreleased dev commits that do not. Pick whichever this machine should follow:
+
+```bash
+rig --channel            # show current branch and how far behind it is
+rig --channel testing    # follow dev builds — no release notices
+rig --channel main       # follow tagged releases
+```
+
+Switching refuses to run with uncommitted changes; commit or `git stash` first. Version bumps are not needed per commit — only when a release is cut on `main`.
 
 If the install predates v0.4.2, its update checker has a 1.5 s timeout and a stale cache that can hide a new release. Update once by hand, then `rig --update` works normally:
 
