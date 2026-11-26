@@ -2225,6 +2225,40 @@
       transition: opacity 120ms ease, transform 140ms ease;
     }
     .skill-modal.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
+    /* Themed confirm dialog — replaces native window.confirm */
+    .confirm-modal {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.97);
+      width: 440px; max-width: 92vw;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      box-shadow: var(--shadow-popover);
+      z-index: 95;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 130ms ease, transform 150ms ease;
+      overflow: hidden;
+    }
+    .confirm-modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+    .confirm-head { display: flex; align-items: flex-start; gap: 11px; padding: 16px; }
+    .confirm-ico {
+      width: 30px; height: 30px; flex: 0 0 30px;
+      border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--err-bg); border: 1px solid var(--err-border); color: var(--err-text);
+    }
+    .confirm-ico svg { width: 15px; height: 15px; }
+    .confirm-title { font-size: 14px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-1); }
+    .confirm-body { font-size: 12.5px; line-height: 1.55; color: var(--text-2); margin-top: 5px; }
+    .confirm-body .mono { color: var(--text-1); word-break: break-all; }
+    .confirm-foot {
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+    }
     .skill-modal-head {
       display: flex; align-items: flex-start; gap: 10px;
       padding: 14px 16px; border-bottom: 1px solid var(--border);
@@ -2322,6 +2356,24 @@
       gap: 8px;
       pointer-events: none;
     }
+    .toast-err {
+      border-color: var(--err-border);
+      background: var(--err-bg);
+      color: var(--err-text);
+    }
+    .toast-warn {
+      border-color: var(--warn-border);
+      background: var(--warn-bg);
+      color: var(--warn-text);
+    }
+    .toast-close {
+      width: 18px; height: 18px; flex: 0 0 18px;
+      border-radius: 4px;
+      color: inherit; opacity: 0.7;
+      font-size: 14px; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .toast-close:hover { opacity: 1; background: rgba(128, 128, 128, 0.16); }
     .toast {
       pointer-events: auto;
       padding: 9px 13px;
@@ -2808,7 +2860,8 @@
                     <select id="injectSkillCat" class="select-ctrl" aria-label="Filter skills by category">
                       <option value="all">All categories</option>
                     </select>
-                    <button id="injectSelectVisible" type="button" class="btn btn-sm" title="Tick every skill matching the current filter">Select visible</button>
+                    <button id="injectSelectVisible" type="button" class="btn btn-sm" title="Tick every skill currently shown by the filter">Select shown</button>
+                    <button id="injectSelectAllBtn" type="button" class="btn btn-sm" title="Tick every skill installed on this device">Select all</button>
                     <button id="injectFilterClear" type="button" class="btn btn-sm btn-ghost" hidden>Clear filter</button>
                   </div>
                   <div id="injectSkillList" class="check-list"></div>
@@ -3137,6 +3190,22 @@
     </div>
   </div>
 
+  <!-- ==================== CONFIRM DIALOG (themed replacement for window.confirm) ==================== -->
+  <div id="confirmBackdrop" class="backdrop" style="z-index:90"></div>
+  <div id="confirmModal" class="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmBody">
+    <div class="confirm-head">
+      <span id="confirmIcon" class="confirm-ico"></span>
+      <div style="min-width:0;flex:1">
+        <h2 id="confirmTitle" class="confirm-title">Confirm</h2>
+        <div id="confirmBody" class="confirm-body"></div>
+      </div>
+    </div>
+    <div class="confirm-foot">
+      <button id="confirmCancel" type="button" class="btn">Cancel</button>
+      <button id="confirmOk" type="button" class="btn btn-danger">Confirm</button>
+    </div>
+  </div>
+
   <!-- ==================== TOAST STACK ==================== -->
   <div id="toastStack" class="toast-stack" aria-live="polite"></div>
 
@@ -3408,17 +3477,31 @@
         }
       }
 
-      function toast(message) {
+      /**
+       * Transient status message. Errors get their own styling, a longer dwell time
+       * and a manual dismiss, so a failure never looks like a success tick.
+       * @param {string} message
+       * @param {'ok'|'err'|'warn'} [tone]
+       */
+      function toast(message, tone = 'ok') {
         const stack = document.getElementById('toastStack');
+        if (!stack) return;
         const el = document.createElement('div');
-        el.className = 'toast';
-        el.innerHTML = svg('check', 14) + '<span>' + esc(message) + '</span>';
+        el.className = 'toast' + (tone === 'err' ? ' toast-err' : tone === 'warn' ? ' toast-warn' : '');
+        el.innerHTML =
+          svg(tone === 'ok' ? 'check' : 'alert', 14) +
+          '<span style="flex:1">' + esc(message) + '</span>' +
+          '<button type="button" class="toast-close" aria-label="Dismiss">×</button>';
         stack.appendChild(el);
-        setTimeout(() => {
+
+        const remove = () => {
           el.style.transition = 'opacity 150ms ease';
           el.style.opacity = '0';
           setTimeout(() => el.remove(), 160);
-        }, 2200);
+        };
+        el.querySelector('.toast-close').addEventListener('click', remove);
+        // Errors stay until dismissed or 6 s pass; successes fade at 2.2 s.
+        setTimeout(remove, tone === 'ok' ? 2200 : 6000);
       }
 
       function flashCard(id) {
@@ -4203,7 +4286,7 @@
               mergeMode: 'merge'
             })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Copy failed');
           await loadLiveData();
           renderAll();
@@ -4211,7 +4294,7 @@
           const panel = document.getElementById('clonePanel');
           if (panel) panel.style.display = 'none';
         } catch (err) {
-          toast('Copy failed: ' + err.message);
+          toast('Copy failed: ' + err.message, 'err');
         } finally {
           if (btnEl) { btnEl.disabled = false; btnEl.textContent = orig; }
         }
@@ -4223,7 +4306,17 @@
         if (!host) return;
         try {
           const res = await fetch('/api/project-health');
-          const data = await res.json();
+          if (!res.ok) {
+            // An older server build lacks this route; say so once instead of retrying
+            // and spamming the console with 404s.
+            host.innerHTML = '<div class="health-sig warn">' +
+              (res.status === 404
+                ? 'Health check needs a restart: close and run <span class="mono">rig --web --restart</span>'
+                : 'Health check unavailable (HTTP ' + res.status + ')') +
+              '</div>';
+            return;
+          }
+          const data = await readJson(res);
           const rows = Array.isArray(data.projects) ? data.projects : [];
           const entry = rows.find((r) => r.path === projectPath);
           if (!entry) {
@@ -4335,7 +4428,21 @@
         const deleteFolder = Boolean(delBox && delBox.checked);
 
         if (deleteFolder) {
-          const ok = window.confirm('Delete ' + p.path + ' permanently? This cannot be undone.');
+          const ok = await confirmDialog({
+            title: 'Delete this folder permanently?',
+            body: '<span class="mono">' + esc(p.path) + '</span> will be erased from disk. This cannot be undone.' +
+              '<div style="margin-top:8px;color:var(--err-text)">ContextRig refuses protected roots and folders holding several sibling projects.</div>',
+            okLabel: 'Delete folder',
+            danger: true
+          });
+          if (!ok) return;
+        } else {
+          const ok = await confirmDialog({
+            title: 'Remove ' + p.name + ' from ContextRig?',
+            body: 'The project is unregistered from the console and registry. Its files stay on disk untouched.',
+            okLabel: 'Remove project',
+            danger: true
+          });
           if (!ok) return;
         }
 
@@ -4347,7 +4454,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ projectPath: p.path, deleteFolder, confirm: deleteFolder })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Remove failed');
 
           closeDrawer();
@@ -4357,7 +4464,7 @@
             ? 'Deleted ' + p.name + ' and its folder'
             : 'Unregistered ' + p.name + ' — files left on disk');
         } catch (err) {
-          toast('Remove failed: ' + err.message);
+          toast('Remove failed: ' + err.message, 'err');
         } finally {
           if (btnEl) { btnEl.disabled = false; btnEl.textContent = orig; }
         }
@@ -4366,6 +4473,79 @@
       /* ---------- Configuration diff preview ---------- */
       let injectPlanSeq = 0;
       let injectPlanTimer = null;
+
+      /**
+       * Parses a response defensively. An older server build answers unknown routes
+       * with plain-text 404, and res.json() then throws "Unexpected token 'N'",
+       * which hides the real cause. This turns that into a readable instruction.
+       * @param {Response} res
+       */
+      async function readJson(res) {
+        const text = await res.text();
+        try {
+          return JSON.parse(text);
+        } catch {
+          throw new Error(
+            res.status === 404
+              ? 'This console is running an older build without /' + (res.url || '').split('/api/')[1] + '. Restart it: rig --web --restart'
+              : 'Server returned ' + res.status + ' ' + (res.statusText || '') + ' instead of JSON'
+          );
+        }
+      }
+
+      /**
+       * Themed replacement for window.confirm. Returns a Promise<boolean>, so callers
+       * await it. Native dialogs broke the theme, ignored keyboard focus styles and
+       * could not carry structured detail.
+       * @param {{ title: string, body: string, okLabel?: string, cancelLabel?: string, danger?: boolean }} opts
+       * @returns {Promise<boolean>}
+       */
+      function confirmDialog(opts) {
+        const o = opts || {};
+        return new Promise((resolve) => {
+          const modal = document.getElementById('confirmModal');
+          const backdrop = document.getElementById('confirmBackdrop');
+          const okBtn = document.getElementById('confirmOk');
+          const cancelBtn = document.getElementById('confirmCancel');
+          const iconHost = document.getElementById('confirmIcon');
+          if (!modal || !backdrop || !okBtn || !cancelBtn) { resolve(window.confirm(o.title || 'Confirm?')); return; }
+
+          document.getElementById('confirmTitle').textContent = o.title || 'Confirm';
+          document.getElementById('confirmBody').innerHTML = o.body || '';
+          okBtn.textContent = o.okLabel || 'Confirm';
+          okBtn.className = 'btn ' + (o.danger === false ? 'btn-primary' : 'btn-danger');
+          cancelBtn.textContent = o.cancelLabel || 'Cancel';
+          if (iconHost) iconHost.innerHTML = svg('alert', 15);
+
+          const previousFocus = document.activeElement;
+          const close = (result) => {
+            modal.classList.remove('open');
+            backdrop.classList.remove('open');
+            document.removeEventListener('keydown', onKey, true);
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            backdrop.removeEventListener('click', onCancel);
+            if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+            resolve(result);
+          };
+          const onOk = () => close(true);
+          const onCancel = () => close(false);
+          const onKey = (ev) => {
+            if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); onCancel(); }
+            if (ev.key === 'Enter' && document.activeElement === okBtn) { ev.preventDefault(); onOk(); }
+          };
+
+          okBtn.addEventListener('click', onOk);
+          cancelBtn.addEventListener('click', onCancel);
+          backdrop.addEventListener('click', onCancel);
+          document.addEventListener('keydown', onKey, true);
+
+          modal.classList.add('open');
+          backdrop.classList.add('open');
+          // Focus Cancel for destructive actions so a stray Enter cannot confirm.
+          setTimeout(() => (o.danger === false ? okBtn : cancelBtn).focus(), 40);
+        });
+      }
 
       function renderInjectDiff(plan) {
         const body = document.getElementById('injectDiffBody');
@@ -4445,7 +4625,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ targetPath: rawPath, agentValue: agentVal, skillIds: state.injectSelected, mergeMode })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (seq !== injectPlanSeq) return; // a newer request superseded this one
           if (!res.ok || !data.ok) throw new Error(data.message || 'Preview failed');
           renderInjectDiff(data);
@@ -4536,7 +4716,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ targetPath: rawPath, agentValue: agentVal, mergeMode, skillIds })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Injection failed');
 
           const npm = (data.dependencies && data.dependencies.npm) || [];
@@ -4578,7 +4758,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ projectPath: p.path, skillIds })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Removal failed');
 
           showResult('removeResult', true,
@@ -4614,7 +4794,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sourceUrl: rawUrl })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Import failed');
 
           const warnNote = (data.warnings && data.warnings.length)
@@ -4710,13 +4890,13 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(opts)
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Sync failed');
           await loadLiveData();
           renderAll();
           toast('Synced ' + data.syncedCount + ' project' + (data.syncedCount === 1 ? '' : 's'));
         } catch (err) {
-          toast('Sync failed: ' + err.message);
+          toast('Sync failed: ' + err.message, 'err');
         } finally {
           if (btnEl) { btnEl.disabled = false; btnEl.textContent = origText; }
         }
@@ -4885,7 +5065,7 @@
             openSkillImageModal(s.id);
             toast('Updated image for ' + s.name);
           } catch (err) {
-            toast('Could not load image file');
+            toast('Could not load image file', 'err');
           }
         });
         document.getElementById('skillImgUrlApply').addEventListener('click', () => {
@@ -5164,7 +5344,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ skillId })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Install failed');
           await loadLiveData();
           renderAll();
@@ -5172,7 +5352,7 @@
           return true;
         } catch (err) {
           if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Confirm & Install'; }
-          toast('Install failed: ' + err.message);
+          toast('Install failed: ' + err.message, 'err');
           return false;
         }
       }
@@ -5186,7 +5366,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ skillId })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Update check failed');
           await loadLiveData();
           renderAll();
@@ -5194,7 +5374,7 @@
             ? ('Updated ' + (s ? s.name : skillId) + ' (' + (data.updatedCount || 0) + ' files)')
             : ((s ? s.name : skillId) + ' is up to date'));
         } catch (err) {
-          toast('Update failed: ' + err.message);
+          toast('Update failed: ' + err.message, 'err');
         }
       }
 
@@ -5206,13 +5386,13 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ skillId })
           });
-          const data = await res.json();
+          const data = await readJson(res);
           if (!res.ok || !data.ok) throw new Error(data.message || 'Remove failed');
           await loadLiveData();
           renderAll();
           toast('Removed ' + (s ? s.name : skillId) + ' from this device');
         } catch (err) {
-          toast('Could not remove: ' + err.message);
+          toast('Could not remove: ' + err.message, 'err');
         }
       }
 
@@ -5950,7 +6130,7 @@
         try {
           await loadLiveData();
         } catch (err) {
-          toast('Could not reach the local engine');
+          toast('Could not reach the local engine', 'err');
           return;
         }
         renderAll();
@@ -6327,11 +6507,20 @@
       });
       document.getElementById('injectSelectVisible').addEventListener('click', () => {
         const visible = injectVisibleSkills().map((s) => s.id);
-        if (!visible.length) { toast('Nothing visible to select'); return; }
+        if (!visible.length) { toast('Nothing visible to select', 'warn'); return; }
         state.injectSelected = Array.from(new Set(state.injectSelected.concat(visible)));
         renderInjectSkillList();
         scheduleInjectDiff();
-        toast('Selected ' + visible.length + ' visible skill(s)');
+        toast('Selected ' + visible.length + ' skill(s)' + (state.injectSearch.trim() || state.injectCat !== 'all' ? ' shown by the filter' : ''));
+      });
+
+      // Selecting everything is a distinct, explicit action from filtering.
+      document.getElementById('injectSelectAllBtn')?.addEventListener('click', () => {
+        const all = state.skills.filter((s) => s.on_device !== false).map((s) => s.id);
+        state.injectSelected = all;
+        renderInjectSkillList();
+        scheduleInjectDiff();
+        toast('Selected all ' + all.length + ' skill(s) on this device');
       });
 
       // Live preview bindings
@@ -6473,7 +6662,7 @@
         if (!btn) return;
         try {
           const res = await fetch('/api/update-check');
-          const info = await res.json();
+          const info = await readJson(res);
           state.updateInfo = info;
           if (!info.updateAvailable) { btn.hidden = true; return; }
           const ver = document.getElementById('updateNoticeVer');
@@ -6544,7 +6733,7 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ confirm: true, deleteDevice: true })
             });
-            const data = await res.json();
+            const data = await readJson(res);
             if (!res.ok || !data.ok) throw new Error(data.message || 'Uninstall failed');
             const r = data.report;
             document.getElementById('skillModalBody').innerHTML =
@@ -6561,7 +6750,7 @@
           } catch (err) {
             btn.disabled = false;
             btn.textContent = 'Uninstall from this device';
-            toast('Uninstall failed: ' + err.message);
+            toast('Uninstall failed: ' + err.message, 'err');
           }
         });
       }
@@ -6721,7 +6910,7 @@
         try {
           await loadLiveData();
         } catch (err) {
-          toast('Could not load workspace data');
+          toast('Could not load workspace data', 'err');
         }
         loadDraft(state.selectedSkillId);
         loadBundles();
