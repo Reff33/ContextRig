@@ -61,12 +61,15 @@ async function probeHealth(candidateUrl) {
   }
 
   // Older builds predate /api/health. Recognise them by the console document itself
-  // so a stale instance is reused instead of forcing a new port.
+  // and read the version from the rendered title so a stale build is never mistaken
+  // for this one.
   try {
     const res = await fetch(candidateUrl, { signal: AbortSignal.timeout(1200) });
     if (!res.ok) return null;
     const body = await res.text();
-    if (/ContextRig Console/.test(body)) return { url: candidateUrl, version: 'unknown' };
+    if (!/ContextRig Console/.test(body)) return null;
+    const match = body.match(/ContextRig Console\s*·\s*v([0-9][0-9.]*[0-9])/);
+    return { url: candidateUrl, version: match ? match[1] : 'unknown' };
   } catch {
     // not a ContextRig server
   }
@@ -77,12 +80,17 @@ async function probeHealth(candidateUrl) {
  * Starts the console on the saved port, reuses a ContextRig already running there,
  * or steps forward a few ports when something unrelated holds the slot.
  * The chosen port is persisted so the URL is stable on the next launch.
+ *
+ * A running instance is only reused when it reports the same version as this
+ * process. An older build would otherwise keep serving its own stale catalogue,
+ * which is exactly how a console ends up missing features added since.
  * @param {{ preferredPort?: number, host?: string, onShutdown?: Function }} [options]
- * @returns {Promise<{ url: string, port: number, reused: boolean, server: Object|null, stop: Function }>}
+ * @returns {Promise<{ url: string, port: number, reused: boolean, stale?: Object, server: Object|null, stop: Function }>}
  */
 export async function ensureWebServer({ preferredPort = DEFAULT_PORT, host = 'localhost', onShutdown = null } = {}) {
   const saved = readSavedPort();
   const first = saved || preferredPort;
+  const localVersion = getCurrentVersionSync();
   const candidates = [first, preferredPort, ...Array.from({ length: 9 }, (_, i) => first + i + 1)]
     .filter((p, i, arr) => p > 0 && p < 65536 && arr.indexOf(p) === i);
 
@@ -91,13 +99,25 @@ export async function ensureWebServer({ preferredPort = DEFAULT_PORT, host = 'lo
     try {
       const started = await startWebServer({ port, host, onShutdown });
       if (port !== first || saved !== port) savePort(port);
-      return { url: started.url, port: started.port, reused: false, server: started.server, stop: started.stop };
+      return { url: started.url, port, reused: false, server: started.server, stop: started.stop };
     } catch (err) {
       lastError = err;
       if (!/already in use/i.test(err.message)) throw err;
       const existing = await probeHealth(`http://${host}:${port}`);
       if (existing) {
-        return { url: existing.url, port, reused: true, server: null, stop: () => {} };
+        if (existing.version === localVersion) {
+          return { url: existing.url, port, reused: true, server: null, stop: () => {} };
+        }
+        // A different build owns the port. Starting elsewhere would leave the user
+        // with two consoles and the browser opening the stale one, so stop here.
+        return {
+          url: existing.url,
+          port,
+          reused: false,
+          stale: { url: existing.url, port, version: existing.version, localVersion },
+          server: null,
+          stop: () => {}
+        };
       }
       // Port belongs to something else — try the next candidate.
     }

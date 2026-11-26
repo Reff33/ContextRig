@@ -1187,11 +1187,18 @@ async function chooseInterfaceMenu() {
   // instance instead of refusing; only an unrelated process pushes us to the next port.
   try {
     const result = await ensureWebServer({ preferredPort: DEFAULT_PORT });
-    serverUrl = result.url;
-    if (result.server) {
-      serverInstance = { stop: result.stop };
+    if (result.stale) {
+      // Opening a browser at a stale console would show a build without the newer
+      // features, so keep the URL out of the menu and explain what to do instead.
+      logger.warn(`Port ${result.stale.port} is held by ContextRig v${result.stale.version}, but this terminal runs v${result.stale.localVersion}.`);
+      logger.info('Close that console first (Ctrl+C there, or "Shut down" in its Update dialog), then start again.');
     } else {
-      logger.info(`Reusing the ContextRig already running at ${result.url}`);
+      serverUrl = result.url;
+      if (result.server) {
+        serverInstance = { stop: result.stop };
+      } else {
+        logger.info(`Reusing the ContextRig already running at ${result.url}`);
+      }
     }
   } catch (err) {
     logger.warn(`Could not start the Web console: ${err.message}`);
@@ -1328,6 +1335,14 @@ async function runCli(argv) {
         process.exit(0);
       }
     });
+    if (result.stale) {
+      console.log();
+      logger.error(`An older ContextRig is already serving ${result.stale.url}`);
+      logger.info(`That console runs v${result.stale.version}, this terminal runs v${result.stale.localVersion}.`);
+      logger.info('Close it first (Ctrl+C there, or "Shut down" in its Update dialog), then run: rig --web');
+      process.exitCode = 1;
+      return;
+    }
     openBrowser(result.url);
     if (result.reused) {
       logger.info(`A ContextRig console was already running — opened ${result.url}`);
