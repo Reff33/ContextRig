@@ -88,6 +88,184 @@ const BUILTIN_SCHEMAS = {
         ]
       }
     ]
+  },
+  web_fetch: {
+    fields: [
+      {
+        key: 'max_chars',
+        label: 'Output Character Cap',
+        type: 'choice',
+        default: 8000,
+        choices: [
+          { name: '4,000 (short pages, lowest token spend)', short: '4000', value: 4000 },
+          { name: '8,000 (recommended balance)', short: '8000', value: 8000 },
+          { name: '16,000 (long-form docs)', short: '16000', value: 16000 },
+          { name: '32,000 (full article dumps)', short: '32000', value: 32000 }
+        ]
+      },
+      {
+        key: 'include_json',
+        label: 'Default Output Format',
+        type: 'choice',
+        default: 'text',
+        choices: [
+          { name: 'Human-readable text block', short: 'Text', value: 'text' },
+          { name: 'Structured JSON (--json)', short: 'JSON', value: 'json' }
+        ]
+      }
+    ]
+  },
+  playwright: {
+    fields: [
+      {
+        key: 'viewport',
+        label: 'Browser Viewport',
+        type: 'choice',
+        default: '1280x720',
+        choices: [
+          { name: '1280×720 (default laptop)', short: '720p', value: '1280x720' },
+          { name: '1440×900 (desktop inspection)', short: '900p', value: '1440x900' },
+          { name: '375×812 (mobile breakpoint)', short: 'Mobile', value: '375x812' }
+        ]
+      },
+      {
+        key: 'wait_until',
+        label: 'Page Load Strategy',
+        type: 'choice',
+        default: 'networkidle',
+        choices: [
+          { name: 'networkidle (wait for quiet network)', short: 'networkidle', value: 'networkidle' },
+          { name: 'load (faster, may miss late errors)', short: 'load', value: 'load' },
+          { name: 'domcontentloaded (fastest, DOM only)', short: 'DOM', value: 'domcontentloaded' }
+        ]
+      }
+    ]
+  },
+  graphify: {
+    fields: [
+      {
+        key: 'report_first',
+        label: 'Read Report Before Searching',
+        type: 'choice',
+        default: 'always',
+        choices: [
+          { name: 'Always inspect GRAPH_REPORT.md first', short: 'Always', value: 'always' },
+          { name: 'Only when tracing architecture', short: 'Architecture', value: 'architecture' },
+          { name: 'Never — always read source', short: 'Never', value: 'never' }
+        ]
+      },
+      {
+        key: 'exclude_patterns',
+        label: 'Excluded Paths',
+        type: 'string',
+        default: 'node_modules,dist,build,.git'
+      }
+    ]
+  },
+  ui_ux_pro_max: {
+    fields: [
+      {
+        key: 'default_stack',
+        label: 'Default Tech Stack',
+        type: 'choice',
+        default: 'html-tailwind',
+        choices: [
+          { name: 'HTML + Tailwind (framework-free)', short: 'HTML', value: 'html-tailwind' },
+          { name: 'React / Next.js', short: 'React', value: 'nextjs' },
+          { name: 'Vue / Svelte', short: 'Vue', value: 'vue' },
+          { name: 'Laravel / Flutter / React Native', short: 'Other', value: 'laravel' }
+        ]
+      },
+      {
+        key: 'contrast_floor',
+        label: 'Minimum Text Contrast',
+        type: 'choice',
+        default: '4.5',
+        choices: [
+          { name: '4.5:1 (WCAG AA body text)', short: 'AA', value: '4.5' },
+          { name: '7:1 (WCAG AAA)', short: 'AAA', value: '7' },
+          { name: '3:1 (large text only)', short: 'Large', value: '3' }
+        ]
+      }
+    ]
+  },
+  git_workflow: {
+    fields: [
+      {
+        key: 'auto_commit',
+        label: 'Commit Execution',
+        type: 'choice',
+        default: 'confirm',
+        choices: [
+          { name: 'Ask before running git commit', short: 'Ask', value: 'confirm' },
+          { name: 'Commit immediately after drafting', short: 'Auto', value: 'auto' },
+          { name: 'Draft only, never commit', short: 'Draft', value: 'draft' }
+        ]
+      },
+      {
+        key: 'attribution',
+        label: 'AI Attribution Trailer',
+        type: 'choice',
+        default: 'never',
+        choices: [
+          { name: 'Never add AI attribution', short: 'Never', value: 'never' },
+          { name: 'Add Co-Authored-By trailer', short: 'Trailer', value: 'trailer' }
+        ]
+      }
+    ]
+  },
+  cut_rig: {
+    fields: [
+      {
+        key: 'default_editor',
+        label: 'Target NLE Editor',
+        type: 'choice',
+        default: 'davinci',
+        choices: [
+          { name: 'DaVinci Resolve', short: 'DaVinci', value: 'davinci' },
+          { name: 'Adobe Premiere Pro', short: 'Premiere', value: 'adobe' },
+          { name: 'CapCut drafts', short: 'CapCut', value: 'capcut' },
+          { name: 'FFmpeg only (no NLE)', short: 'FFmpeg', value: 'ffmpeg' }
+        ]
+      },
+      {
+        key: 'probe_first',
+        label: 'Probe Media Before Editing',
+        type: 'choice',
+        default: 'always',
+        choices: [
+          { name: 'Always probe source clips first', short: 'Always', value: 'always' },
+          { name: 'Skip probe for known-good assets', short: 'Skip', value: 'skip' }
+        ]
+      }
+    ]
+  },
+  artcraft: {
+    fields: [
+      {
+        key: 'default_app',
+        label: 'Primary ArtCraft App',
+        type: 'choice',
+        default: 'effectcraft',
+        choices: [
+          { name: 'EffectCraft (VFX & motion)', short: 'EffectCraft', value: 'effectcraft' },
+          { name: 'FilmCraft (NLE video)', short: 'FilmCraft', value: 'filmcraft' },
+          { name: 'AniCraft (2D animation)', short: 'AniCraft', value: 'anicraft' },
+          { name: 'DesignCraft / PhotoCraft / other', short: 'Other', value: 'designcraft' }
+        ]
+      },
+      {
+        key: 'missing_cli_mood',
+        label: 'When Native CLI Is Missing',
+        type: 'choice',
+        default: 'ask',
+        choices: [
+          { name: 'Stop and ask before scaffolding', short: 'Ask', value: 'ask' },
+          { name: 'Scaffold native project file only', short: 'Scaffold', value: 'scaffold' },
+          { name: 'Fall back to kinet_rig / cut_rig', short: 'Fallback', value: 'fallback' }
+        ]
+      }
+    ]
   }
 };
 

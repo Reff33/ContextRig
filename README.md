@@ -55,7 +55,7 @@ Global AI skill folders dump every tool into every repository, bloating context 
 ## Curated Skills Library
 
 <details open>
-<summary><b>10 catalog skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
+<summary><b>9 catalog skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
 
 | Skill ID | Name | Slash Command | Injected Assets | Purpose |
 |---|---|---|---|---|
@@ -65,9 +65,8 @@ Global AI skill folders dump every tool into every repository, bloating context 
 | `ui_ux_pro_max` | **UI/UX Pro Max** | `/ui-ux` | `rigtools/ui_ux_pro_max/` | UI/UX design intelligence, 141 guidelines, 194 palettes, token export & preview generation |
 | `archify` | **Archify** | `/archify` | *(Agent skill & rules)* | Interactive HTML architecture diagrams, ERD, sequence, and workflow visualizers |
 | `graphify` | **Graphify** | `/graphify` | `rigtools/graphify.py` | Codebase dependency graph (`graphify-out/graph.html`), God Nodes & architectural report |
-| `web_scraper` | **Web Scraper** | `/scrape` | `rigtools/scraper.py` | Clean webpage text extraction from URLs or docs straight in terminal |
-| `playwright` | **Playwright** | `/playwright` | `rigtools/playwright_runner.js` | Headless Chromium runner for E2E checks, screenshots, and console error inspection |
-| `db_inspector` | **DB Schema Inspector** | — | `rigtools/db_inspector.js` | Inspects SQLite databases & `.env` profiles into `docs/db_schema.md` |
+| `web_fetch` | **Web Fetch** | `/fetch` | `rigtools/web_fetch.mjs` | Zero-dependency URL reader built on Node's own fetch — no npm or pip install, works for every agent profile |
+| `playwright` | **Playwright** | `/playwright` | `rigtools/playwright_runner.js` | Headless browser runner for E2E checks, screenshots, and console error inspection |
 | `git_workflow` | **Git Workflow** | `/commit`, `/commit-v` | *(System rules & command)* | Enforces Conventional Commits, diff metrics, secret guards, and version contract detection |
 
 </details>

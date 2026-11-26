@@ -8,7 +8,10 @@
       "category": "workflow",
       "files_count": 0,
       "size_bytes": 3200,
-      "dependencies": { "npm": [], "pip": [] },
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
       "mcp_servers": [],
       "claude_command": "archify",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/archify.json"
@@ -20,8 +23,13 @@
       "category": "mcp",
       "files_count": 91,
       "size_bytes": 890000,
-      "dependencies": { "npm": [], "pip": [] },
-      "mcp_servers": ["effectcraft"],
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [
+        "effectcraft"
+      ],
       "claude_command": "artcraft",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/artcraft.json"
     },
@@ -32,22 +40,15 @@
       "category": "mcp",
       "files_count": 6,
       "size_bytes": 48000,
-      "dependencies": { "npm": [], "pip": [] },
-      "mcp_servers": ["cutrig"],
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [
+        "cutrig"
+      ],
       "claude_command": "cut",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/cut_rig.json"
-    },
-    {
-      "id": "db_inspector",
-      "name": "Database Schema Inspector",
-      "description": "Inspects local DB tables & schema",
-      "category": "workflow",
-      "files_count": 1,
-      "size_bytes": 4800,
-      "dependencies": { "npm": [], "pip": [] },
-      "mcp_servers": [],
-      "claude_command": null,
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/db_inspector.json"
     },
     {
       "id": "git_workflow",
@@ -56,7 +57,10 @@
       "category": "workflow",
       "files_count": 0,
       "size_bytes": 5400,
-      "dependencies": { "npm": [], "pip": [] },
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
       "mcp_servers": [],
       "claude_command": "commit",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/git_workflow.json"
@@ -68,7 +72,12 @@
       "category": "python",
       "files_count": 1,
       "size_bytes": 14500,
-      "dependencies": { "npm": [], "pip": ["networkx"] },
+      "dependencies": {
+        "npm": [],
+        "pip": [
+          "networkx"
+        ]
+      },
       "mcp_servers": [],
       "claude_command": "graphify",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/graphify.json"
@@ -81,7 +90,14 @@
       "files_count": 22,
       "size_bytes": 185000,
       "dependencies": {
-        "npm": ["remotion", "@remotion/cli", "react", "react-dom", "three", "@types/three"],
+        "npm": [
+          "remotion",
+          "@remotion/cli",
+          "react",
+          "react-dom",
+          "three",
+          "@types/three"
+        ],
         "pip": []
       },
       "mcp_servers": [],
@@ -95,7 +111,12 @@
       "category": "node",
       "files_count": 1,
       "size_bytes": 6200,
-      "dependencies": { "npm": ["playwright"], "pip": [] },
+      "dependencies": {
+        "npm": [
+          "playwright"
+        ],
+        "pip": []
+      },
       "mcp_servers": [],
       "claude_command": "playwright",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/playwright.json"
@@ -107,25 +128,28 @@
       "category": "workflow",
       "files_count": 42,
       "size_bytes": 420000,
-      "dependencies": { "npm": [], "pip": [] },
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
       "mcp_servers": [],
       "claude_command": "ui-ux",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/ui_ux_pro_max.json"
     },
     {
-      "id": "web_scraper",
-      "name": "Web Scraper",
-      "description": "Fetches & extracts clean webpage text",
-      "category": "python",
+      "id": "web_fetch",
+      "name": "Web Fetch (Zero-Dependency)",
+      "description": "Fetches a URL and returns clean readable text using Node's built-in fetch",
+      "category": "workflow",
       "files_count": 1,
-      "size_bytes": 4900,
+      "size_bytes": 4200,
       "dependencies": {
-        "npm": ["axios", "cheerio"],
-        "pip": ["requests", "beautifulsoup4"]
+        "npm": [],
+        "pip": []
       },
       "mcp_servers": [],
-      "claude_command": "scrape",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/web_scraper.json"
+      "claude_command": "fetch",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/web_fetch.json"
     }
   ]
 }

@@ -26,15 +26,19 @@ async function runTests() {
   // Test 1: Load available skills
   const skills = await loadAvailableSkills();
   assert(skills.length >= 1, 'Should find at least 1 skill');
-  const webScraper = skills.find((s) => s.id === 'web_scraper');
-  assert(webScraper, 'web_scraper skill should exist');
-  assert.strictEqual(webScraper.name, 'Web Scraper');
+  const webFetcher = skills.find((s) => s.id === 'web_fetch');
+  assert(webFetcher, 'web_fetch skill should exist');
+  assert.strictEqual(webFetcher.name, 'Web Fetch (Zero-Dependency)');
+  assert.strictEqual(webFetcher.dependencies.npm.length, 0, 'web_fetch must not need npm packages');
+  assert.strictEqual(webFetcher.dependencies.pip.length, 0, 'web_fetch must not need pip packages');
   console.log('✔ Test 1: Skills loaded successfully.');
 
-  // Test 2: Dependency aggregation
-  const deps = aggregateDependencies([webScraper]);
-  assert(deps.npm.includes('axios') && deps.npm.includes('cheerio'), 'Should include npm dependencies');
-  assert(deps.pip.includes('requests') && deps.pip.includes('beautifulsoup4'), 'Should include pip dependencies');
+  // Test 2: Dependency aggregation (playwright npm, graphify pip)
+  const playwrightForDeps = skills.find((s) => s.id === 'playwright');
+  const graphifyForDeps = skills.find((s) => s.id === 'graphify');
+  const deps = aggregateDependencies([playwrightForDeps, graphifyForDeps]);
+  assert(deps.npm.includes('playwright'), 'Should include npm dependencies');
+  assert(deps.pip.includes('networkx'), 'Should include pip dependencies');
   console.log('✔ Test 2: Dependency aggregation validated.');
 
   // Test 2b: Dynamic AI Agent CLI flag resolution
@@ -60,19 +64,19 @@ async function runTests() {
     outputFileName: 'CLAUDE.md',
     projectName,
     agentName: 'Claude (CLAUDE.md)',
-    skillsInstructions: [webScraper]
+    skillsInstructions: [webFetcher]
   });
   const claudeContent = await fs.readFile(claudeOut, 'utf8');
-  assert(claudeContent.includes('Web Scraper'), 'CLAUDE.md should contain skill name');
+  assert(claudeContent.includes('Web Fetch (Zero-Dependency)'), 'CLAUDE.md should contain skill name');
   assert(claudeContent.includes('temp_test_project'), 'CLAUDE.md should contain project name');
-  assert(claudeContent.toLowerCase().includes('python rigtools/scraper.py'), 'CLAUDE.md should contain skill instructions');
+  assert(claudeContent.toLowerCase().includes('node rigtools/web_fetch.mjs'), 'CLAUDE.md should contain skill instructions');
 
-  // Verify Claude slash command generation (.claude/commands/scrape.md)
-  const scrapeCmdPath = path.join(fullPath, '.claude', 'commands', 'scrape.md');
-  const scrapeCmdStat = await fs.stat(scrapeCmdPath);
-  assert(scrapeCmdStat.isFile(), '.claude/commands/scrape.md should be generated for Claude profile');
-  const scrapeCmdContent = await fs.readFile(scrapeCmdPath, 'utf8');
-  assert(scrapeCmdContent.includes('# /scrape <url>'), 'Command file must define # /scrape <url>');
+  // Verify Claude slash command generation (.claude/commands/fetch.md)
+  const fetchCmdPath = path.join(fullPath, '.claude', 'commands', 'fetch.md');
+  const fetchCmdStat = await fs.stat(fetchCmdPath);
+  assert(fetchCmdStat.isFile(), '.claude/commands/fetch.md should be generated for Claude profile');
+  const fetchCmdContent = await fs.readFile(fetchCmdPath, 'utf8');
+  assert(fetchCmdContent.includes('# /fetch <url>'), 'Command file must define # /fetch <url>');
   console.log('✔ Test 4: Claude template and slash command injection verified.');
 
   // Test 4b: Smart Merge preserves custom rules and prevents duplicate skills
@@ -84,13 +88,13 @@ async function runTests() {
     outputFileName: 'CUSTOM_RULES.md',
     projectName,
     agentName: 'Claude (CUSTOM_RULES.md)',
-    skillsInstructions: [webScraper],
+    skillsInstructions: [webFetcher],
     mergeMode: 'merge'
   });
   let mergedContent = await fs.readFile(customRulesFile, 'utf8');
   assert(mergedContent.includes('My Custom App Rules'), 'Custom rules header must be preserved');
   assert(mergedContent.includes('Custom security rule'), 'User custom security rule must be preserved');
-  assert(mergedContent.includes('Web Scraper'), 'Web Scraper must be injected');
+  assert(mergedContent.includes('Web Fetch (Zero-Dependency)'), 'Web Fetch must be injected');
 
   // Second merge with same skill: verify NO DUPLICATION
   await injectTemplate({
@@ -99,12 +103,12 @@ async function runTests() {
     outputFileName: 'CUSTOM_RULES.md',
     projectName,
     agentName: 'Claude (CUSTOM_RULES.md)',
-    skillsInstructions: [webScraper],
+    skillsInstructions: [webFetcher],
     mergeMode: 'merge'
   });
   mergedContent = await fs.readFile(customRulesFile, 'utf8');
-  const scraperMatches = (mergedContent.match(/### Web Scraper/g) || []).length;
-  assert.strictEqual(scraperMatches, 1, 'Web Scraper should not be duplicated in smart merge');
+  const fetcherMatches = (mergedContent.match(/### Web Fetch \(Zero-Dependency\)/g) || []).length;
+  assert.strictEqual(fetcherMatches, 1, 'Web Fetch should not be duplicated in smart merge');
   console.log('✔ Test 4b: Smart Merge preserves custom rules and prevents duplicate skills verified.');
 
   // Test 5: Inject Cursor template
@@ -114,11 +118,11 @@ async function runTests() {
     outputFileName: '.cursorrules',
     projectName,
     agentName: 'Cursor (.cursorrules)',
-    skillsInstructions: [webScraper]
+    skillsInstructions: [webFetcher]
   });
   const cursorContent = await fs.readFile(cursorOut, 'utf8');
   assert(cursorContent.includes('Cursor Rules - temp_test_project'), 'Cursor rules should contain project name');
-  assert(cursorContent.includes('Web Scraper'), 'Cursor rules should contain skill name');
+  assert(cursorContent.includes('Web Fetch (Zero-Dependency)'), 'Cursor rules should contain skill name');
   console.log('✔ Test 5: Cursor template injection verified.');
 
   // Test 5b: Inject Copilot nested template (.github/copilot-instructions.md)
@@ -128,7 +132,7 @@ async function runTests() {
     outputFileName: '.github/copilot-instructions.md',
     projectName,
     agentName: 'GitHub Copilot (.github/copilot-instructions.md)',
-    skillsInstructions: [webScraper]
+    skillsInstructions: [webFetcher]
   });
   const copilotContent = await fs.readFile(copilotOut, 'utf8');
   assert(copilotContent.includes('GitHub Copilot Instructions - temp_test_project'), 'Copilot file should contain project name');
@@ -141,7 +145,7 @@ async function runTests() {
     outputFileName: 'AGENTS.md',
     projectName,
     agentName: 'OpenCode (AGENTS.md)',
-    skillsInstructions: [webScraper]
+    skillsInstructions: [webFetcher]
   });
   const opencodeContent = await fs.readFile(opencodeOut, 'utf8');
   assert(opencodeContent.includes('OpenCode Agents & Instructions - temp_test_project'), 'AGENTS.md should contain project name');
@@ -154,16 +158,16 @@ async function runTests() {
     outputFileName: 'CHATGPT.md',
     projectName,
     agentName: 'ChatGPT (CHATGPT.md)',
-    skillsInstructions: [webScraper]
+    skillsInstructions: [webFetcher]
   });
   const chatgptContent = await fs.readFile(chatgptOut, 'utf8');
   assert(chatgptContent.includes('ChatGPT Instructions - temp_test_project'), 'CHATGPT.md should contain project name');
   console.log('✔ Test 5d: ChatGPT (CHATGPT.md) template injection verified.');
 
   // Test 6: Verify copied asset
-  const copiedToolPath = path.join(fullPath, 'rigtools', 'scraper.py');
+  const copiedToolPath = path.join(fullPath, 'rigtools', 'web_fetch.mjs');
   const toolStats = await fs.stat(copiedToolPath);
-  assert(toolStats.isFile(), 'rigtools/scraper.py should have been copied into target project');
+  assert(toolStats.isFile(), 'rigtools/web_fetch.mjs should have been copied into target project');
   console.log('✔ Test 6: Skill asset copy verified.');
 
   // Test 7: Gitignore pattern aggregation (Graphify & rigtools/)
@@ -267,19 +271,19 @@ async function runTests() {
   console.log('✔ Test 7i: ArtCraft 19 creative apps bundle & MCP definition verified.');
 
   // Test 8: Skill update detection & sync
-  // Simulate an outdated version of scraper.py in the target project
+  // Simulate an outdated version of web_fetch.mjs in the target project
   await fs.writeFile(copiedToolPath, '# outdated version\nprint("old")', 'utf8');
   let detected = await detectInstalledSkills(fullPath, skills);
-  let scraperCheck = detected.find((s) => s.id === 'web_scraper');
-  assert(scraperCheck && scraperCheck.hasUpdate === true, 'Outdated scraper.py should be flagged with hasUpdate=true');
-  assert(scraperCheck.outdatedFiles.includes('scraper.py'), 'outdatedFiles should include scraper.py');
+  let fetcherCheck = detected.find((s) => s.id === 'web_fetch');
+  assert(fetcherCheck && fetcherCheck.hasUpdate === true, 'Outdated web_fetch.mjs should be flagged with hasUpdate=true');
+  assert(fetcherCheck.outdatedFiles.includes('web_fetch.mjs'), 'outdatedFiles should include web_fetch.mjs');
   console.log('✔ Test 8: Outdated skill version correctly detected [UPDATE AVAILABLE].');
 
   // Test 9: Re-sync outdated skills to latest version
-  await syncSkills(fullPath, projectName, [scraperCheck], { promptDeps: false });
+  await syncSkills(fullPath, projectName, [fetcherCheck], { promptDeps: false });
   detected = await detectInstalledSkills(fullPath, skills);
-  scraperCheck = detected.find((s) => s.id === 'web_scraper');
-  assert(scraperCheck && scraperCheck.hasUpdate === false, 'After syncSkills, scraper.py should be up-to-date (hasUpdate=false)');
+  fetcherCheck = detected.find((s) => s.id === 'web_fetch');
+  assert(fetcherCheck && fetcherCheck.hasUpdate === false, 'After syncSkills, web_fetch.mjs should be up-to-date (hasUpdate=false)');
   console.log('✔ Test 9: Skill re-synchronization verified [UP TO DATE].');
 
   // Test 10: Path sanitization (Explorer "Copy as path" quotes, ~, env vars)
@@ -300,10 +304,10 @@ async function runTests() {
   );
   await saveCache(fullPath, {
     last_checked: Date.now(),
-    etags: { 'web_scraper:tools/scraper.py': '"test-etag-123"' }
+    etags: { 'web_fetch:rigtools/web_fetch.mjs': '"test-etag-123"' }
   });
   const loadedCache = await loadCache(fullPath);
-  assert(loadedCache.etags['web_scraper:tools/scraper.py'] === '"test-etag-123"', 'Cache ETag must persist');
+  assert(loadedCache.etags['web_fetch:rigtools/web_fetch.mjs'] === '"test-etag-123"', 'Cache ETag must persist');
 
   const { checkSingleSkillUpdate, applyProjectUpdates } = await import('./src/core/syncEngine.js');
   const checkedGit = await checkSingleSkillUpdate(fullPath, gitWorkflowSkill, loadedCache, null);
@@ -326,10 +330,10 @@ async function runTests() {
     await fs.rm(copiedToolPath, { force: true });
     const cacheWithEtag = {
       last_checked: Date.now(),
-      etags: { 'web_scraper:rigtools/scraper.py': '"stale-etag"' },
-      hashes: { 'web_scraper:rigtools/scraper.py': calculateHash('anything') }
+      etags: { 'web_fetch:rigtools/web_fetch.mjs': '"stale-etag"' },
+      hashes: { 'web_fetch:rigtools/web_fetch.mjs': calculateHash('anything') }
     };
-    const remoteCheck = await checkSingleSkillUpdate(fullPath, webScraper, cacheWithEtag, null);
+    const remoteCheck = await checkSingleSkillUpdate(fullPath, webFetcher, cacheWithEtag, null);
     assert.strictEqual(seenIfNoneMatch, null, 'Missing file must bypass If-None-Match ETag');
     assert.strictEqual(remoteCheck.hasUpdate, true, 'Missing file should trigger update');
 
@@ -341,7 +345,7 @@ async function runTests() {
         fullPath,
         projectName,
         configuredAgents: [{ name: 'Claude (CLAUDE.md)', value: 'claude', templateFile: 'claude.md.hbs', outputFile: 'CLAUDE.md' }],
-        installedSkills: [webScraper],
+        installedSkills: [webFetcher],
         outdatedSkills: [remoteCheck],
         cache: cacheWithEtag
       },
@@ -359,7 +363,7 @@ async function runTests() {
   // Test 10d: Project Registry lifecycle (using isolated CONTEXTRIG_REGISTRY_PATH)
   const { registerProject, loadRegistry, unregisterProject, pruneMissingProjects } = await import('./src/core/projectRegistry.js');
   await fs.rm(isolatedRegistryPath, { force: true });
-  await registerProject({ projectPath: fullPath, name: projectName, agents: ['claude'], skills: ['web_scraper'] });
+  await registerProject({ projectPath: fullPath, name: projectName, agents: ['claude'], skills: ['web_fetch'] });
   let reg = await loadRegistry();
   assert.strictEqual(reg.projects.length, 1, 'Project should be saved in registry');
   await registerProject({ projectPath: fullPath + path.sep, name: projectName, agents: ['claude'], skills: ['kinet_rig'] });
@@ -554,14 +558,14 @@ async function runTests() {
   await fs.mkdir(fakeRigMotionDir, { recursive: true });
   await fs.writeFile(path.join(fakeRigMotionDir, 'index.html'), '<html></html>', 'utf8');
 
-  await removeSkillsFromProject(fullPath, projectName, [scraperCheck, kinetRigSkill], [], { deleteArtifacts: true });
-  let scraperFileExists = true;
+  await removeSkillsFromProject(fullPath, projectName, [fetcherCheck, kinetRigSkill], [], { deleteArtifacts: true });
+  let fetcherFileExists = true;
   try {
     await fs.access(copiedToolPath);
   } catch {
-    scraperFileExists = false;
+    fetcherFileExists = false;
   }
-  assert(!scraperFileExists, 'rigtools/scraper.py should be deleted after removal');
+  assert(!fetcherFileExists, 'rigtools/web_fetch.mjs should be deleted after removal');
 
   let promoDirExists = true;
   try {
@@ -579,16 +583,16 @@ async function runTests() {
   }
   assert(!rigMotionDirExists, '.remotion/ artifact should be deleted when deleteArtifacts=true');
 
-  let scrapeCmdExists = true;
+  let fetchCmdExists = true;
   try {
-    await fs.access(scrapeCmdPath);
+    await fs.access(fetchCmdPath);
   } catch {
-    scrapeCmdExists = false;
+    fetchCmdExists = false;
   }
-  assert(!scrapeCmdExists, '.claude/commands/scrape.md should be deleted after removal');
+  assert(!fetchCmdExists, '.claude/commands/fetch.md should be deleted after removal');
 
   const updatedClaudeContent = await fs.readFile(claudeOut, 'utf8');
-  assert(!updatedClaudeContent.includes('Web Scraper'), 'CLAUDE.md should no longer contain removed skill');
+  assert(!updatedClaudeContent.includes('Web Fetch (Zero-Dependency)'), 'CLAUDE.md should no longer contain removed skill');
   const siblingStillExists = await fs.stat(siblingFile).then(() => true).catch(() => false);
   assert(siblingStillExists, 'Non-empty sibling subfolder inside rigtools/ must not be deleted on skill removal');
   console.log('✔ Test 10c: Skill removal and safe directory cleanup verified.');
@@ -659,55 +663,55 @@ async function runTests() {
   const prevCatFetch = globalThis.fetch;
   globalThis.fetch = async (url) => {
     const u = String(url);
-    if (u.endsWith('/web_scraper.json')) {
+    if (u.endsWith('/web_fetch.json')) {
       return {
         ok: true,
         status: 200,
         text: async () => JSON.stringify({
-          id: 'web_scraper',
-          name: 'Web Scraper',
+          id: 'web_fetch',
+          name: 'Web Fetch (Zero-Dependency)',
           description: 'Fetches & extracts clean webpage text',
-          ai_instructions: 'Run python rigtools/scraper.py <URL>',
+          ai_instructions: 'Run node rigtools/web_fetch.mjs <URL>',
           dependencies: { npm: ['axios'], pip: ['requests'] },
           files_to_copy: [
             {
-              source: 'scripts/scraper.py',
-              destination: 'rigtools/scraper.py',
-              remote_url: 'https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/scraper.py'
+              source: 'scripts/web_fetch.mjs',
+              destination: 'rigtools/web_fetch.mjs',
+              remote_url: 'https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/web_fetch.mjs'
             }
           ]
         })
       };
     }
-    if (u.endsWith('/scraper.py')) {
+    if (u.endsWith('/web_fetch.mjs')) {
       return { ok: true, status: 200, text: async () => 'print("scraper ok")\n' };
     }
     return { ok: false, status: 404, text: async () => '' };
   };
   try {
-    const instRes = await installSkillToDevice('web_scraper');
+    const instRes = await installSkillToDevice('web_fetch');
     assert.strictEqual(instRes.ok, true);
     assert.strictEqual(instRes.downloadedCount, 1);
-    const devManifest = path.join(isolatedDeviceDir, 'skills_library', 'web_scraper.json');
-    const devScript = path.join(isolatedDeviceDir, 'scripts', 'scraper.py');
+    const devManifest = path.join(isolatedDeviceDir, 'skills_library', 'web_fetch.json');
+    const devScript = path.join(isolatedDeviceDir, 'scripts', 'web_fetch.mjs');
     assert(await fs.stat(devManifest).then(() => true).catch(() => false), 'Manifest must exist on device after install');
     assert(await fs.stat(devScript).then(() => true).catch(() => false), 'Script asset must exist on device after install');
 
-    const remRes = await removeSkillFromDevice('web_scraper');
+    const remRes = await removeSkillFromDevice('web_fetch');
     assert.strictEqual(remRes.ok, true);
     assert(!(await fs.stat(devManifest).then(() => true).catch(() => false)), 'Manifest must be deleted after removeSkillFromDevice');
     assert(!(await fs.stat(devScript).then(() => true).catch(() => false)), 'Script asset must be deleted after removeSkillFromDevice');
 
     const catalogAfterRemove = await getCatalogAndDeviceSkills();
-    const wsAfterRemove = catalogAfterRemove.find((s) => s.id === 'web_scraper');
-    assert(wsAfterRemove && wsAfterRemove.on_device === false, 'web_scraper must report on_device=false after removal');
+    const wsAfterRemove = catalogAfterRemove.find((s) => s.id === 'web_fetch');
+    assert(wsAfterRemove && wsAfterRemove.on_device === false, 'web_fetch must report on_device=false after removal');
 
-    await ensureSkillInstalled('web_scraper');
+    await ensureSkillInstalled('web_fetch');
     assert(await fs.stat(devManifest).then(() => true).catch(() => false), 'ensureSkillInstalled must auto-install manifest back');
     assert(await fs.stat(devScript).then(() => true).catch(() => false), 'ensureSkillInstalled must auto-install script back');
     const catalogAfterReinstall = await getCatalogAndDeviceSkills();
-    const wsAfterReinstall = catalogAfterReinstall.find((s) => s.id === 'web_scraper');
-    assert(wsAfterReinstall && wsAfterReinstall.on_device === true, 'web_scraper must report on_device=true after reinstall');
+    const wsAfterReinstall = catalogAfterReinstall.find((s) => s.id === 'web_fetch');
+    assert(wsAfterReinstall && wsAfterReinstall.on_device === true, 'web_fetch must report on_device=true after reinstall');
   } finally {
     globalThis.fetch = prevCatFetch;
     await fs.rm(isolatedDeviceDir, { recursive: true, force: true }).catch(() => {});

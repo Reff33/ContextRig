@@ -4336,6 +4336,7 @@
         const pip = (s.dependencies.pip || []);
         const mcp = (s.mcp_servers || []);
         const cmd = skillSlashCommand(s);
+        const hasSettings = Boolean(s.settings_schema && s.settings_schema.fields && s.settings_schema.fields.length);
 
         const thumbSlot = document.getElementById('skillModalThumb');
         if (thumbSlot) {
@@ -4407,7 +4408,7 @@
         const injectBtn = document.getElementById('skillModalInject');
         injectBtn.hidden = s.on_device === false;
         injectBtn.textContent = users.length ? 'Inject into another project…' : 'Inject into project…';
-        document.getElementById('skillModalConfigure').hidden = false;
+        document.getElementById('skillModalConfigure').hidden = !hasSettings;
         const copyBtn = document.getElementById('skillModalCopyCmd');
         copyBtn.hidden = false;
         copyBtn.textContent = 'Copy slash command';
