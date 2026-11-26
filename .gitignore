@@ -33,3 +33,6 @@ scripts/kinet_rig/sfx/
 __pycache__/
 *.pyc
 
+
+# Added by ContextRig
+.agents/

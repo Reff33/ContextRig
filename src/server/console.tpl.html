@@ -961,29 +961,66 @@
     /* =========================================================================
        Row 1: 4 Interactive KPI Cards with Sparklines
        ========================================================================= */
+    :root {
+      --kpi-projects: #0E7490;
+      --kpi-skills:   #047857;
+      --kpi-installs: #6D28D9;
+      --kpi-override: #B45309;
+      --kpi-projects-soft: rgba(14, 116, 144, 0.10);
+      --kpi-skills-soft:   rgba(4, 120, 87, 0.10);
+      --kpi-installs-soft: rgba(109, 40, 217, 0.10);
+      --kpi-override-soft: rgba(180, 83, 9, 0.10);
+    }
+    html.dark {
+      --kpi-projects: #22D3EE;
+      --kpi-skills:   #34D399;
+      --kpi-installs: #A78BFA;
+      --kpi-override: #F59E0B;
+      --kpi-projects-soft: rgba(34, 211, 238, 0.13);
+      --kpi-skills-soft:   rgba(52, 211, 153, 0.13);
+      --kpi-installs-soft: rgba(167, 139, 250, 0.13);
+      --kpi-override-soft: rgba(245, 158, 11, 0.13);
+    }
+
     .kpi-strip {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
+      gap: 16px;
       margin-bottom: 16px;
     }
     .kpi-cell {
-      padding: 15px 17px;
+      padding: 16px;
       border: 1px solid var(--border);
       border-radius: var(--r-card);
-      background: var(--bg-card);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 46%),
+        var(--bg-card);
       box-shadow: var(--shadow-card);
       text-align: left;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      transition: border-color 140ms, transform 140ms, background 140ms;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+    }
+    html:not(.dark) .kpi-cell { background: var(--bg-card); }
+    .kpi-cell::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 2px;
+      background: var(--kpi-accent, var(--accent));
+      opacity: 0;
+      transition: opacity 120ms ease;
     }
     .kpi-cell:hover {
-      border-color: var(--accent-border);
-      background: var(--bg-card);
-      transform: translateY(-1.5px);
+      border-color: var(--border-strong);
+      box-shadow: 0 2px 10px -4px rgba(16, 24, 40, 0.22);
+      transform: translateY(-1px);
     }
+    .kpi-cell:hover::after { opacity: 1; }
+    .kpi-cell:active { transform: translateY(0); }
     .kpi-top {
       display: flex;
       align-items: center;
@@ -994,10 +1031,10 @@
     .kpi-ico {
       width: 28px;
       height: 28px;
-      border-radius: 7px;
-      background: var(--accent-soft);
-      border: 1px solid var(--accent-border);
-      color: var(--accent);
+      border-radius: 8px;
+      background: var(--kpi-soft, var(--accent-soft));
+      border: 1px solid transparent;
+      color: var(--kpi-accent, var(--accent));
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1007,7 +1044,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
     .kpi-val {
       font-size: 26px;
@@ -1015,9 +1052,11 @@
       letter-spacing: -0.03em;
       line-height: 1.1;
       color: var(--text-1);
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
     }
-    .kpi-spark { width: 72px; height: 24px; flex: 0 0 72px; color: var(--accent); opacity: 0.9; }
+    .kpi-spark { width: 84px; height: 26px; flex: 0 0 84px; color: var(--kpi-accent, var(--accent)); opacity: 0.95; }
+    .kpi-spark .spark-area { fill: currentColor; opacity: 0.14; }
     .kpi-meta {
       padding-top: 8px;
       border-top: 1px solid var(--border-subtle);
@@ -1037,16 +1076,18 @@
       width: 28px;
       height: 28px;
       border-radius: 7px;
-      background: var(--accent-soft);
-      border: 1px solid var(--accent-border);
-      color: var(--accent);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-2);
       font-size: 11.5px;
       font-weight: 700;
+      letter-spacing: -0.01em;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex: 0 0 28px;
       text-transform: uppercase;
+      font-family: var(--font-mono);
     }
     .agent-ico {
       width: 22px;
@@ -1070,7 +1111,7 @@
       justify-content: space-between;
       font-size: 12px;
       font-weight: 600;
-      margin-bottom: 7px;
+      margin-bottom: 8px;
     }
     .health-bar-sub {
       display: flex;
@@ -1078,13 +1119,58 @@
       justify-content: space-between;
       font-size: 11px;
       color: var(--text-3);
-      margin-top: 6px;
+      margin-top: 7px;
       font-family: var(--font-mono);
     }
+    /* Stacked readiness track: synced vs pending vs orphan in one rail */
+    .stack-track {
+      display: flex;
+      height: 8px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+    }
+    .stack-seg { height: 100%; transition: width 260ms ease; }
+    .stack-seg.ok   { background: var(--ok-dot); }
+    .stack-seg.warn { background: var(--warn-dot); }
+    .stack-seg.err  { background: var(--err-dot); }
+    .health-legend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 8px;
+    }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+    /* Heartbeat for a fully healthy workspace */
+    .pulse-dot { position: relative; }
+    .pulse-dot::after {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0;
+      animation: heartbeat 2.4s ease-in-out infinite;
+    }
+    html.dark .health-bar-top .pulse-dot { color: var(--ok-dot); }
+    @keyframes heartbeat {
+      0%, 100% { opacity: 0; transform: scale(0.7); }
+      45% { opacity: 0.34; transform: scale(1.5); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-dot::after { animation: none; }
+    }
+    .skill-domain-track { position: relative; height: 8px; border-radius: 99px; background: var(--bg-subtle); overflow: hidden; }
+    .skill-domain-fill { height: 100%; border-radius: 99px; transition: width 260ms ease, filter 120ms ease; }
+    .adopted-row[data-hovering="true"] .skill-domain-fill { filter: brightness(1.18) saturate(1.1); }
     .adopted-row {
       width: 100%;
       text-align: left;
-      padding: 11px 16px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
@@ -3480,6 +3566,7 @@
             label: 'Registered Projects',
             value: state.projects.length,
             icon: 'projects',
+            accent: 'projects',
             spark: 'M2 20 L16 17 L30 18 L44 11 L58 12 L70 5',
             src: 'projects.json',
             note: syncedCount + '/' + state.projects.length + ' synced',
@@ -3490,6 +3577,7 @@
             label: 'Master Skills',
             value: state.skills.length,
             icon: 'skills',
+            accent: 'skills',
             spark: 'M2 19 L18 16 L34 15 L50 10 L70 6',
             src: '~/.contextrig/',
             note: orphans.length ? orphans.length + ' orphan ref' : 'All refs valid',
@@ -3500,6 +3588,7 @@
             label: 'Active Installs',
             value: totalInstalls,
             icon: 'activity',
+            accent: 'installs',
             spark: 'M2 20 L15 14 L28 16 L42 9 L56 11 L70 4',
             src: 'skill × project',
             note: (totalInstalls / Math.max(state.projects.length, 1)).toFixed(1) + ' avg / project',
@@ -3510,6 +3599,7 @@
             label: 'Custom Overrides',
             value: customCount,
             icon: 'settings',
+            accent: 'override',
             spark: customCount > 0 ? 'M2 20 L18 18 L36 13 L52 14 L70 7' : 'M2 20 L70 20',
             src: 'skill-settings.json',
             note: customCount + ' of ' + state.skills.length + ' tuned',
@@ -3519,7 +3609,7 @@
         ];
 
         document.getElementById('kpiStrip').innerHTML = kpis.map((k) =>
-          '<button type="button" class="kpi-cell" ' + k.attr + '>' +
+          '<button type="button" class="kpi-cell" style="--kpi-accent:var(--kpi-' + k.accent + ');--kpi-soft:var(--kpi-' + k.accent + '-soft)" ' + k.attr + '>' +
             '<div class="kpi-top">' +
               '<span class="kpi-label">' + esc(k.label) + '</span>' +
               '<span class="kpi-ico">' + svg(k.icon, 14) + '</span>' +
@@ -3527,8 +3617,9 @@
             '<div class="kpi-mid">' +
               '<span class="kpi-val">' + k.value + '</span>' +
               '<svg class="kpi-spark" viewBox="0 0 72 24" fill="none" aria-hidden="true">' +
-                '<path d="' + k.spark + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"' + (k.value === 0 ? ' stroke-dasharray="3 3" opacity="0.45"' : '') + '/>' +
-                '<circle cx="70" cy="' + (k.value === 0 ? '20' : k.spark.split(' ').pop()) + '" r="2.6" fill="currentColor"/>' +
+                '<path class="spark-area" d="' + k.spark + ' L70 24 L2 24 Z" stroke="none"/>' +
+                '<path d="' + k.spark + '" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"' + (k.value === 0 ? ' stroke-dasharray="3 3" opacity="0.45"' : '') + '/>' +
+                '<circle cx="70" cy="' + (k.value === 0 ? '20' : k.spark.split(' ').pop()) + '" r="2.2" fill="currentColor"/>' +
               '</svg>' +
             '</div>' +
             '<div class="kpi-meta">' +
@@ -3580,14 +3671,32 @@
         const mcpCount = state.skills.reduce((n, s) => n + (s.mcp_servers || []).length, 0);
         const latestSync = state.projects.map((p) => p.lastSynced).filter(Boolean).sort().pop();
         const syncPct = Math.round((syncedCount / Math.max(state.projects.length, 1)) * 100);
+        const totalTargets = Math.max(state.projects.length, 1);
+        const pctSynced = Math.round((syncedCount / totalTargets) * 100);
+        const pctPending = Math.round((pendingProjects.length / totalTargets) * 100);
+        const pctOrphan = Math.max(0, 100 - pctSynced - pctPending);
+        const fullyHealthy = pendingProjects.length === 0 && orphans.length === 0;
 
         document.getElementById('overviewIntegrity').innerHTML =
           '<div class="health-bar-box">' +
             '<div class="health-bar-top">' +
-              '<span style="color:var(--text-1)">Sync Health &amp; Coverage</span>' +
-              '<span class="mono ' + (pendingProjects.length === 0 ? 'kpi-ok' : 'kpi-warn') + '">' + syncPct + '% ' + (pendingProjects.length === 0 && orphans.length === 0 ? 'OK' : 'Active') + '</span>' +
+              '<span style="color:var(--text-1);display:inline-flex;align-items:center;gap:7px">' +
+                (fullyHealthy
+                  ? '<span class="dot dot-ok pulse-dot"></span>Sync Health &amp; Coverage'
+                  : '<span class="dot ' + (orphans.length ? 'dot-err' : 'dot-warn') + '"></span>Sync Health &amp; Coverage') +
+              '</span>' +
+              '<span class="mono ' + (fullyHealthy ? 'kpi-ok' : 'kpi-warn') + '">' + syncPct + '% ' + (fullyHealthy ? 'OK' : 'Active') + '</span>' +
             '</div>' +
-            '<div class="mini-rail" style="height:7px"><div class="mini-fill" style="width:' + syncPct + '%;background:' + (pendingProjects.length === 0 ? 'var(--ok-dot)' : 'var(--accent)') + '"></div></div>' +
+            '<div class="stack-track" role="img" aria-label="' + pctSynced + '% synced, ' + pctPending + '% pending, ' + pctOrphan + '% missing">' +
+              '<div class="stack-seg ok" style="width:' + pctSynced + '%"></div>' +
+              '<div class="stack-seg warn" style="width:' + pctPending + '%"></div>' +
+              '<div class="stack-seg err" style="width:' + pctOrphan + '%"></div>' +
+            '</div>' +
+            '<div class="health-legend">' +
+              '<span><span class="legend-dot" style="background:var(--ok-dot)"></span>' + pctSynced + '% Synced</span>' +
+              '<span><span class="legend-dot" style="background:var(--warn-dot)"></span>' + pctPending + '% Pending</span>' +
+              '<span><span class="legend-dot" style="background:var(--err-dot)"></span>' + pctOrphan + '% Missing</span>' +
+            '</div>' +
             '<div class="health-bar-sub">' +
               '<span>' + syncedCount + ' Synced</span>' +
               '<span>' + pendingProjects.length + ' Pending</span>' +
@@ -3630,26 +3739,39 @@
           '</button>';
         }).join('');
 
-        /* Row 3 Left: Top Adopted Skills (#1..#5 in theme --accent) */
+        /* Row 3 Left: Top Adopted Skills — rank pills + domain-coded tracks */
         const topSkills = state.skills.slice()
           .sort((a, b) => (usage.get(b.id) || 0) - (usage.get(a.id) || 0) || a.name.localeCompare(b.name))
           .slice(0, 5);
-        const opacities = [1, 0.84, 0.70, 0.58, 0.46];
+
+        // Semantic domain colours per skill category (not a per-row rainbow).
+        const DOMAIN_COLOR = {
+          workflow: 'var(--kpi-skills)',   // emerald — process rules
+          web:      'var(--kpi-projects)', // cyan — web & search
+          design:   'var(--kpi-installs)', // violet — design
+          mcp:      'var(--kpi-override)', // amber — automation/MCP
+          node:     'var(--kpi-override)',
+          python:   'var(--kpi-skills)',
+          security: 'var(--err-dot)'
+        };
 
         document.getElementById('overviewCoverage').innerHTML = topSkills.map((s, idx) => {
           const count = usage.get(s.id) || 0;
           const pct = Math.round((count / Math.max(state.projects.length, 1)) * 100);
           const usingProjects = state.projects.filter((p) => p.skills.indexOf(s.id) >= 0).map((p) => p.name);
-          const targetsText = usingProjects.length ? usingProjects.join(', ') : 'Not yet assigned to a project';
-          return '<button type="button" class="adopted-row" data-open-skill="' + esc(s.id) + '">' +
+          const targetsText = usingProjects.length ? usingProjects.join(' · ') : 'Not yet assigned to a project';
+          const domain = skillCategory(s);
+          const colour = DOMAIN_COLOR[domain] || 'var(--accent)';
+          return '<button type="button" class="adopted-row" data-open-skill="' + esc(s.id) + '" data-hover-skill="' + esc(s.id) + '">' +
             '<div class="adopted-top">' +
               '<span style="display:flex;align-items:center;gap:8px;min-width:0">' +
                 '<span class="rank-pill' + (idx === 0 ? ' top1' : '') + '">#' + (idx + 1) + '</span>' +
                 '<span style="font-weight:600;color:var(--text-1)" class="truncate">' + esc(s.name) + '</span>' +
+                '<span class="tag mono">' + esc(categoryLabel(domain)) + '</span>' +
               '</span>' +
-              '<span class="mono tnum" style="font-size:11.5px;color:var(--accent);white-space:nowrap">' + count + '/' + state.projects.length + ' (' + pct + '%)</span>' +
+              '<span class="mono tnum" style="font-size:11.5px;color:' + colour + ';white-space:nowrap">' + count + '/' + state.projects.length + ' (' + pct + '%)</span>' +
             '</div>' +
-            '<div class="mini-rail" style="height:6px"><div class="mini-fill" style="width:' + pct + '%;opacity:' + opacities[idx] + '"></div></div>' +
+            '<div class="skill-domain-track"><div class="skill-domain-fill" style="width:' + pct + '%;background:' + colour + '"></div></div>' +
             '<div class="adopted-targets">' + esc(targetsText) + '</div>' +
           '</button>';
         }).join('');
@@ -3745,7 +3867,7 @@
 
           visibleSkills.forEach((s, ci) => {
             const on = owned.has(s.id);
-            row += '<td data-col="' + ci + '" data-row="' + ri + '">' +
+            row += '<td data-col="' + ci + '" data-row="' + ri + '" data-skill="' + esc(s.id) + '">' +
               '<div class="m-cell ' + (on ? 'on' : 'off') + '" data-inspect-project="' + esc(p.id) + '" title="' + esc(p.name) + ' · ' + esc(s.name) + ': ' + (on ? 'Installed' : 'Absent') + '">' +
                 (on ? svg('check', 13) : '') +
               '</div>' +
@@ -3785,6 +3907,24 @@
           tbl.querySelectorAll('[data-col="' + c + '"]').forEach((el) => el.classList.add('col-hover'));
         });
         tbl.addEventListener('mouseleave', clearHover);
+
+        // Hovering an adoption row highlights that skill's column in the matrix, so
+        // "which projects have this" is readable without opening the drawer.
+        const covHost = document.getElementById('overviewCoverage');
+        if (covHost) {
+          covHost.querySelectorAll('.adopted-row').forEach((row) => {
+            const skillId = row.getAttribute('data-hover-skill');
+            const cells = tbl.querySelectorAll('td[data-skill="' + skillId + '"]');
+            row.addEventListener('mouseenter', () => {
+              row.setAttribute('data-hovering', 'true');
+              cells.forEach((c) => c.classList.add('col-hover'));
+            });
+            row.addEventListener('mouseleave', () => {
+              row.removeAttribute('data-hovering');
+              cells.forEach((c) => c.classList.remove('col-hover'));
+            });
+          });
+        }
       }
 
       /* =====================================================================
