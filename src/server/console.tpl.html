@@ -2635,6 +2635,9 @@
               <span class="card-subtitle">Project × skill presence</span>
               <span class="spacer"></span>
               <div id="matrixFilters" class="filter-pills" role="group" aria-label="Filter matrix category"></div>
+              <select id="matrixCatFilter" class="select-ctrl" aria-label="Filter matrix by category">
+                <option value="all">All categories</option>
+              </select>
               <button id="toggleMatrixBtn" type="button" class="btn btn-sm btn-ghost"></button>
             </div>
             <div id="matrixScroll" class="matrix-scroll"></div>
@@ -3689,22 +3692,28 @@
         toggleBtn.textContent = state.matrixExpanded ? 'Collapse' : 'Expand';
 
         const filtersEl = document.getElementById('matrixFilters');
+        const catSel = document.getElementById('matrixCatFilter');
         const container = document.getElementById('matrixScroll');
         const pagerEl = document.getElementById('matrixPager');
         filtersEl.style.display = state.matrixExpanded ? 'flex' : 'none';
+        if (catSel) catSel.style.display = state.matrixExpanded ? 'inline-block' : 'none';
         container.style.display = state.matrixExpanded ? 'block' : 'none';
         if (pagerEl) pagerEl.style.display = state.matrixExpanded ? 'block' : 'none';
         if (!state.matrixExpanded) return;
 
-        const cats = [
-          ['all', 'All'],
-          ...SKILL_CATEGORIES
-            .filter((c) => state.skills.some((s) => skillCategory(s) === c.id))
-            .map((c) => [c.id, c.label])
-        ];
-        filtersEl.innerHTML = cats.map(([id, label]) =>
-          '<button type="button" class="pill-btn" data-matrix-cat="' + id + '" aria-pressed="' + (state.matrixCat === id) + '">' + label + '</button>'
-        ).join('');
+        // Same split as the Skills tab: a single All pill up front, categories in a
+        // dropdown, so the card header stays on one line no matter how many exist.
+        filtersEl.innerHTML =
+          '<button type="button" class="pill-btn" data-matrix-cat="all" aria-pressed="' + (state.matrixCat === 'all') + '">All</button>';
+        if (catSel) {
+          const activeCat = SKILL_CATEGORIES.some((c) => c.id === state.matrixCat) ? state.matrixCat : 'all';
+          catSel.innerHTML = '<option value="all">All categories</option>' +
+            SKILL_CATEGORIES
+              .filter((c) => state.skills.some((s) => skillCategory(s) === c.id))
+              .map((c) => '<option value="' + c.id + '">' + esc(c.label) + ' (' + state.skills.filter((s) => skillCategory(s) === c.id).length + ')</option>')
+              .join('');
+          catSel.value = activeCat;
+        }
 
         const visibleSkills = state.skills.filter((s) => state.matrixCat === 'all' || skillCategory(s) === state.matrixCat);
         const orphanIds = state.matrixCat === 'all' ? Array.from(new Set(getOrphans().map((o) => o.skillId))) : [];
@@ -5655,6 +5664,7 @@
       document.getElementById('skillSearch').addEventListener('input', (e) => { state.skillQuery = e.target.value; state.skillPage = 1; renderSkills(); });
       document.getElementById('skillSort').addEventListener('change', (e) => { state.skillSort = e.target.value; state.skillPage = 1; renderSkills(); });
       document.getElementById('skillCatFilter').addEventListener('change', (e) => { state.skillCat = e.target.value; state.skillPage = 1; renderSkills(); });
+      document.getElementById('matrixCatFilter').addEventListener('change', (e) => { state.matrixCat = e.target.value; state.matrixPage = 1; renderMatrix(); });
       document.getElementById('settingsSearch').addEventListener('input', (e) => { state.settingsQuery = e.target.value; renderSettingsList(); });
       document.getElementById('cmdInput').addEventListener('input', (e) => { state.cmdQuery = e.target.value; state.cmdIdx = 0; renderCmd(); });
 
