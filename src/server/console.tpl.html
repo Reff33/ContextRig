@@ -1140,6 +1140,27 @@
       margin-top: 8px;
     }
     .legend-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+    /* Per-project health signals in the inspector drawer */
+    .health-signals { display: flex; flex-direction: column; gap: 6px; }
+    .health-sig {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 7px;
+      border: 1px solid var(--border); background: var(--bg-subtle);
+      font-size: 11.5px;
+    }
+    .health-sig.ok   { border-color: var(--ok-border);   background: var(--ok-bg);   color: var(--ok-text); }
+    .health-sig.warn { border-color: var(--warn-border); background: var(--warn-bg); color: var(--warn-text); }
+    .health-sig.err  { border-color: var(--err-border);  background: var(--err-bg);  color: var(--err-text); }
+    .health-sig .mono { font-size: 10.5px; opacity: 0.85; }
+    .remove-panel {
+      margin-top: 10px; padding: 10px 12px;
+      border: 1px solid var(--err-border); border-radius: 8px;
+      background: var(--err-bg);
+    }
+    /* Compact filter bar above the inject checklist */
+    .inject-filter-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .inject-filter-bar select.select-ctrl { max-width: 160px; min-width: 108px; height: 28px; flex: 0 1 auto; }
+    .inject-filter-bar .btn-sm { height: 28px; }
     .skill-domain-track { position: relative; height: 8px; border-radius: 99px; background: var(--bg-subtle); overflow: hidden; }
     .skill-domain-fill { height: 100%; border-radius: 99px; transition: width 260ms ease, filter 120ms ease; }
     .adopted-row[data-hovering="true"] .skill-domain-fill { filter: brightness(1.18) saturate(1.1); }
@@ -2779,7 +2800,40 @@
                     <span>Skills to inject</span>
                     <span id="injectCount" class="mono" style="font-size:11px;color:var(--text-3)"></span>
                   </span>
+                  <div id="injectFilterBar" class="inject-filter-bar">
+                    <div class="search-box" style="height:28px;flex:1 1 130px;min-width:110px">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                      <input id="injectSkillSearch" type="search" placeholder="Filter skills…" aria-label="Filter skills to inject" />
+                    </div>
+                    <select id="injectSkillCat" class="select-ctrl" aria-label="Filter skills by category">
+                      <option value="all">All categories</option>
+                    </select>
+                    <button id="injectSelectVisible" type="button" class="btn btn-sm" title="Tick every skill matching the current filter">Select visible</button>
+                    <button id="injectFilterClear" type="button" class="btn btn-sm btn-ghost" hidden>Clear filter</button>
+                  </div>
                   <div id="injectSkillList" class="check-list"></div>
+                </div>
+
+                <!-- Skill bundles: apply or save the current selection as a preset -->
+                <div class="form-row">
+                  <div class="field-label">
+                    <span>Skill bundles</span>
+                    <span class="field-key">Quick presets</span>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <select id="bundleSelect" class="field-input" style="flex:1 1 150px;min-width:130px" aria-label="Saved skill bundles"></select>
+                    <button id="bundleApplyBtn" type="button" class="btn btn-sm">Apply</button>
+                    <button id="bundleSaveBtn" type="button" class="btn btn-sm">Save current…</button>
+                    <button id="bundleDeleteBtn" type="button" class="btn btn-sm btn-ghost" title="Delete the selected bundle">Delete</button>
+                  </div>
+                  <div id="bundleSaveRow" style="display:none;gap:6px;margin-top:6px">
+                    <input id="bundleNameInput" class="field-input" type="text" placeholder="Bundle name, e.g. Frontend starter" maxlength="40" />
+                    <div style="display:flex;gap:6px;margin-top:6px">
+                      <button id="bundleNameOk" type="button" class="btn btn-sm btn-primary">Save</button>
+                      <button id="bundleNameCancel" type="button" class="btn btn-sm btn-ghost">Cancel</button>
+                    </div>
+                  </div>
+                  <p class="field-hint">Bundles store skill IDs only — saved in this browser, applied to any project.</p>
                 </div>
 
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -2787,6 +2841,19 @@
                   <button id="injectClearBtn" type="button" class="btn btn-ghost">Clear</button>
                 </div>
                 <div id="injectResult" class="result-banner" hidden></div>
+
+                <!-- Configuration diff viewer: what this injection will change -->
+                <div class="preview-box" id="injectDiffBox">
+                  <div class="preview-head">
+                    <span style="font-size:12px;font-weight:500;color:var(--text-1);margin-right:4px">Configuration preview</span>
+                    <span class="card-subtitle" id="injectDiffState">Waiting for a target path and skills</span>
+                    <span class="spacer"></span>
+                    <button id="injectDiffToggle" type="button" class="card-link">Hide</button>
+                  </div>
+                  <div id="injectDiffBody" class="preview-pre" style="white-space:normal;padding:10px 12px">
+                    <div class="field-hint" style="margin:0">Enter a target directory and tick at least one skill to preview the changes.</div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -3188,6 +3255,15 @@
         previewOpen: true,
         previewTab: 'json',
 
+        // Skill bundles (presets) — persisted per browser
+        bundles: [],
+        bundleSelected: '',
+
+        // Inject checklist filter state (selection lives in injectSelected)
+        injectSelected: [],
+        injectSearch: '',
+        injectCat: 'all',
+
         // Drawer & Command Palette
         drawerProjectId: null,
         docsSkillId: null,
@@ -3523,7 +3599,8 @@
                 '<span>' + parts.join(' &middot; ') + '</span>' +
               '</div>' +
               '<div class="alert-actions">' +
-                '<button type="button" class="alert-link" ' + resolveAttr + '>Resolve in Projects →</button>' +
+                '<button type="button" class="alert-link" data-filter-attention="true">Show all projects needing attention →</button>' +
+                '<button type="button" class="alert-link" ' + resolveAttr + '>Resolve →</button>' +
               '</div>' +
             '</div>';
         } else {
@@ -3901,11 +3978,14 @@
       function renderProjects() {
         const syncedCnt = state.projects.filter((p) => Boolean(p.lastSynced)).length;
         const pendingCnt = state.projects.length - syncedCnt;
+        const needsAttention = (p) => !p.lastSynced || p.skills.some((sid) => !skillById(sid));
+        const attentionCnt = state.projects.filter(needsAttention).length;
 
         const pills = [
           ['all', 'All', state.projects.length],
           ['synced', 'Synced', syncedCnt],
-          ['pending', 'Pending', pendingCnt]
+          ['pending', 'Pending', pendingCnt],
+          ['attention', 'Needs attention', attentionCnt]
         ];
         document.getElementById('projectStatusFilters').innerHTML = pills.map(([id, label, cnt]) =>
           '<button type="button" class="pill-btn" data-proj-status="' + id + '" aria-pressed="' + (state.projectStatus === id) + '">' +
@@ -3932,6 +4012,7 @@
         const rows = state.projects.filter((p) => {
           if (state.projectStatus === 'synced' && !p.lastSynced) return false;
           if (state.projectStatus === 'pending' && p.lastSynced) return false;
+          if (state.projectStatus === 'attention' && !needsAttention(p)) return false;
           if (state.projectAgent !== 'all' && !p.agents.includes(state.projectAgent)) return false;
           if (!q) return true;
           return [p.name, p.path, p.stack, ...p.agents, ...p.skills].join(' ').toLowerCase().includes(q);
@@ -4023,22 +4104,364 @@
         return Array.from(box.querySelectorAll('input[type="checkbox"]:checked')).map((el) => el.value);
       }
 
-      function renderProvisioningLists() {
-        const injectBox = document.getElementById('injectSkillList');
-        if (injectBox) {
-          const prev = new Set(selectedCheckboxes('injectSkillList'));
-          const available = state.skills.filter((s) => s.on_device !== false);
-          injectBox.innerHTML = available.length
-            ? available.map((s) =>
-                '<label class="check-row">' +
-                  '<input type="checkbox" value="' + esc(s.id) + '"' + (prev.has(s.id) ? ' checked' : '') + ' />' +
-                  '<span class="cr-name">' + esc(s.name) + '</span>' +
-                  '<span class="cr-id">' + esc(s.id) + '</span>' +
-                '</label>'
-              ).join('')
-            : '<div class="empty-state" style="padding:14px">No skills on this device yet. Install skills in the Skills tab first.</div>';
-          updateInjectCounter();
+      /* =====================================================================
+         Skill bundles — named sets of skill IDs, kept in localStorage
+         ===================================================================== */
+      function loadBundles() {
+        try {
+          const raw = JSON.parse(localStorage.getItem('contextrig-skill-bundles') || '[]');
+          state.bundles = Array.isArray(raw)
+            ? raw.filter((b) => b && b.name && Array.isArray(b.skills)).map((b) => ({ name: String(b.name), skills: b.skills.map(String) }))
+            : [];
+        } catch {
+          state.bundles = [];
         }
+      }
+
+      function saveBundles() {
+        try { localStorage.setItem('contextrig-skill-bundles', JSON.stringify(state.bundles)); } catch (e) {}
+      }
+
+      function renderBundles() {
+        const sel = document.getElementById('bundleSelect');
+        if (!sel) return;
+        const keep = state.bundleSelected;
+        sel.innerHTML = state.bundles.length
+          ? '<option value="">Select a bundle…</option>' +
+            state.bundles.map((b) => '<option value="' + esc(b.name) + '">' + esc(b.name) + ' (' + b.skills.length + ')</option>').join('')
+          : '<option value="">No bundles saved</option>';
+        if (keep && state.bundles.some((b) => b.name === keep)) sel.value = keep;
+        else if (!state.bundles.some((b) => b.name === keep)) state.bundleSelected = '';
+        const applyBtn = document.getElementById('bundleApplyBtn');
+        const delBtn = document.getElementById('bundleDeleteBtn');
+        const hasBundles = state.bundles.length > 0;
+        if (applyBtn) applyBtn.disabled = !hasBundles;
+        if (delBtn) delBtn.disabled = !hasBundles || !state.bundleSelected;
+      }
+
+      function applyBundle(name) {
+        const bundle = state.bundles.find((b) => b.name === name);
+        if (!bundle) { toast('Select a bundle first'); return; }
+        const available = new Set(state.skills.filter((s) => s.on_device !== false).map((s) => s.id));
+        const usable = bundle.skills.filter((id) => available.has(id));
+        const missing = bundle.skills.filter((id) => !available.has(id));
+        state.injectSelected = usable;
+        renderInjectSkillList();
+        scheduleInjectDiff();
+        toast('Applied bundle “' + name + '”' + (missing.length ? ' — ' + missing.length + ' skill(s) not on device' : ''));
+      }
+
+      function saveBundleFromSelection(name) {
+        const skills = state.injectSelected.slice();
+        if (!skills.length) { toast('Select at least one skill before saving a bundle'); return; }
+        const clean = name.trim();
+        if (!clean) { toast('Enter a bundle name'); return; }
+        const existing = state.bundles.findIndex((b) => b.name.toLowerCase() === clean.toLowerCase());
+        if (existing >= 0) state.bundles[existing] = { name: clean, skills };
+        else state.bundles.push({ name: clean, skills });
+        state.bundleSelected = clean;
+        saveBundles();
+        renderBundles();
+        toast('Saved bundle “' + clean + '” with ' + skills.length + ' skill(s)');
+      }
+
+      function deleteBundle(name) {
+        if (!name) { toast('Select a bundle first'); return; }
+        state.bundles = state.bundles.filter((b) => b.name !== name);
+        if (state.bundleSelected === name) state.bundleSelected = '';
+        saveBundles();
+        renderBundles();
+        toast('Deleted bundle “' + name + '”');
+      }
+
+      /**
+       * Copies every skill from one registered project to another using the real
+       * inject endpoint, so files and rules are actually written, not just checked in the UI.
+       */
+      async function copySkillsBetweenProjects(src, dst, btnEl) {
+        const portable = src.skills.filter((sid) => skillById(sid));
+        if (!portable.length) { toast(src.name + ' has no resolvable skills to copy'); return; }
+        const missing = portable.filter((sid) => {
+          const s = skillById(sid);
+          return s && s.on_device === false;
+        });
+        if (missing.length) {
+          toast(missing.length + ' skill(s) are not on this device — install them first');
+          return;
+        }
+
+        const orig = btnEl ? btnEl.textContent : '';
+        if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Copying…'; }
+        try {
+          const res = await fetch('/api/inject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              targetPath: dst.path,
+              agentValue: (dst.agents && dst.agents[0]) || 'claude',
+              skillIds: portable,
+              mergeMode: 'merge'
+            })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Copy failed');
+          await loadLiveData();
+          renderAll();
+          toast('Copied ' + portable.length + ' skill(s) from ' + src.name + ' to ' + dst.name);
+          const panel = document.getElementById('clonePanel');
+          if (panel) panel.style.display = 'none';
+        } catch (err) {
+          toast('Copy failed: ' + err.message);
+        } finally {
+          if (btnEl) { btnEl.disabled = false; btnEl.textContent = orig; }
+        }
+      }
+
+      /* ---------- Project health signals (drawer) ---------- */
+      async function loadProjectHealth(projectPath) {
+        const host = document.getElementById('drawerHealth');
+        if (!host) return;
+        try {
+          const res = await fetch('/api/project-health');
+          const data = await res.json();
+          const rows = Array.isArray(data.projects) ? data.projects : [];
+          const entry = rows.find((r) => r.path === projectPath);
+          if (!entry) {
+            host.innerHTML = '<div class="health-sig warn">No health record for this path yet</div>';
+            return;
+          }
+
+          const sig = [];
+          sig.push(entry.onDisk
+            ? '<div class="health-sig ok">Directory present</div>'
+            : '<div class="health-sig err">Directory missing on disk</div>');
+          sig.push(entry.synced
+            ? '<div class="health-sig ok">Synced ' + esc(relTime(entry.lastSynced)) + '</div>'
+            : '<div class="health-sig warn">Never synced — run Sync Now</div>');
+          sig.push(entry.orphans.length
+            ? '<div class="health-sig err">' + entry.orphans.length + ' orphan skill(s): <span class="mono">' + esc(entry.orphans.join(', ')) + '</span></div>'
+            : '<div class="health-sig ok">All skill references resolve</div>');
+          sig.push(entry.uncached.length
+            ? '<div class="health-sig warn">' + entry.uncached.length + ' skill(s) not on device: <span class="mono">' + esc(entry.uncached.join(', ')) + '</span></div>'
+            : '<div class="health-sig ok">All skills cached on this device</div>');
+          for (const a of entry.agents) {
+            if (!a.file) continue;
+            sig.push(a.present
+              ? '<div class="health-sig ok"><span class="mono">' + esc(a.file) + '</span> present</div>'
+              : '<div class="health-sig warn"><span class="mono">' + esc(a.file) + '</span> missing — inject or sync</div>');
+          }
+          host.innerHTML = sig.join('');
+        } catch (err) {
+          host.innerHTML = '<div class="health-sig err">Could not load health: ' + esc(err.message) + '</div>';
+        }
+      }
+
+      /** Adds a skill to the inject selection regardless of which filter is active. */
+      function selectInjectSkill(skillId) {
+        if (!skillId) return;
+        const s = skillById(skillId);
+        if (!s) return;
+        if (s.on_device === false) { toast(s.name + ' is not installed on this device yet'); return; }
+        if (!state.injectSelected.includes(skillId)) {
+          state.injectSelected = state.injectSelected.concat([skillId]);
+        }
+        renderInjectSkillList();
+        scheduleInjectDiff();
+      }
+
+      /**
+       * Keeps the inject checklist selection outside the DOM, so a search or category
+       * change can re-render the list without ever unchecking something picked under
+       * a different filter.
+       */
+      function injectVisibleSkills() {
+        const q = state.injectSearch.trim().toLowerCase();
+        return state.skills
+          .filter((s) => s.on_device !== false)
+          .filter((s) => state.injectCat === 'all' || skillCategory(s) === state.injectCat)
+          .filter((s) => !q || [s.id, s.name, s.description].join(' ').toLowerCase().includes(q));
+      }
+
+      function renderInjectSkillList() {
+        const injectBox = document.getElementById('injectSkillList');
+        if (!injectBox) return;
+
+        const onDevice = state.skills.filter((s) => s.on_device !== false);
+        // Drop selections for skills that are no longer available on this device.
+        state.injectSelected = state.injectSelected.filter((id) => onDevice.some((s) => s.id === id));
+
+        const catSel = document.getElementById('injectSkillCat');
+        if (catSel) {
+          const catsPresent = SKILL_CATEGORIES.filter((c) => onDevice.some((s) => skillCategory(s) === c.id));
+          const wanted = '<option value="all">All categories</option>' +
+            catsPresent.map((c) => '<option value="' + c.id + '">' + esc(c.label) + '</option>').join('');
+          if (catSel.innerHTML !== wanted) catSel.innerHTML = wanted;
+          if (state.injectCat !== 'all' && !catsPresent.some((c) => c.id === state.injectCat)) state.injectCat = 'all';
+          if (catSel.value !== state.injectCat) catSel.value = state.injectCat;
+        }
+
+        const clearBtn = document.getElementById('injectFilterClear');
+        const filtering = Boolean(state.injectSearch.trim()) || state.injectCat !== 'all';
+        if (clearBtn) clearBtn.hidden = !filtering;
+
+        const visible = injectVisibleSkills();
+
+        if (!onDevice.length) {
+          injectBox.innerHTML = '<div class="empty-state" style="padding:14px">No skills on this device yet. Install skills in the Skills tab first.</div>';
+        } else if (!visible.length) {
+          injectBox.innerHTML = '<div class="empty-state" style="padding:14px"><strong>No skills match</strong>Clear the search or pick another category.</div>';
+        } else {
+          const selected = new Set(state.injectSelected);
+          injectBox.innerHTML = visible.map((s) =>
+            '<label class="check-row">' +
+              '<input type="checkbox" value="' + esc(s.id) + '"' + (selected.has(s.id) ? ' checked' : '') + ' />' +
+              '<span class="cr-name">' + esc(s.name) + '</span>' +
+              '<span class="cr-id">' + esc(s.id) + '</span>' +
+            '</label>'
+          ).join('');
+        }
+
+        updateInjectCounter();
+      }
+
+      /**
+       * Unregisters the open project, or deletes its folder when explicitly ticked.
+       * Folder deletion requires a second confirm and the server applies safety guards.
+       */
+      async function removeProjectFromDrawer(projectId, btnEl) {
+        const p = projectById(projectId);
+        if (!p) return;
+        const delBox = document.getElementById('projectDeleteFolder');
+        const deleteFolder = Boolean(delBox && delBox.checked);
+
+        if (deleteFolder) {
+          const ok = window.confirm('Delete ' + p.path + ' permanently? This cannot be undone.');
+          if (!ok) return;
+        }
+
+        const orig = btnEl ? btnEl.textContent : '';
+        if (btnEl) { btnEl.disabled = true; btnEl.textContent = deleteFolder ? 'Deleting…' : 'Removing…'; }
+        try {
+          const res = await fetch('/api/projects/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectPath: p.path, deleteFolder, confirm: deleteFolder })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Remove failed');
+
+          closeDrawer();
+          await loadLiveData();
+          renderAll();
+          toast(deleteFolder
+            ? 'Deleted ' + p.name + ' and its folder'
+            : 'Unregistered ' + p.name + ' — files left on disk');
+        } catch (err) {
+          toast('Remove failed: ' + err.message);
+        } finally {
+          if (btnEl) { btnEl.disabled = false; btnEl.textContent = orig; }
+        }
+      }
+
+      /* ---------- Configuration diff preview ---------- */
+      let injectPlanSeq = 0;
+      let injectPlanTimer = null;
+
+      function renderInjectDiff(plan) {
+        const body = document.getElementById('injectDiffBody');
+        const stateEl = document.getElementById('injectDiffState');
+        if (!body) return;
+        if (stateEl) stateEl.textContent = plan.mergeMode === 'overwrite' ? 'Overwrite mode' : 'Smart merge mode';
+
+        const sev = (tone, text) => '<div class="health-sig ' + tone + '" style="padding:5px 8px">' + text + '</div>';
+        const parts = [];
+
+        parts.push(sev(plan.rulesFile.exists ? 'warn' : 'ok',
+          (plan.rulesFile.exists
+            ? '<span class="mono">' + esc(plan.rulesFile.name) + '</span> exists — ' + (plan.mergeMode === 'overwrite' ? 'entire managed file will be replaced' : 'managed skill block updated, your custom rules kept')
+            : '<span class="mono">' + esc(plan.rulesFile.name) + '</span> will be created')));
+        if (plan.created) parts.push(sev('warn', 'Folder does not exist yet and will be created'));
+
+        const newFiles = plan.files.filter((f) => !f.exists);
+        const overFiles = plan.files.filter((f) => f.exists);
+        parts.push(sev(overFiles.length ? 'warn' : 'ok',
+          plan.files.length
+            ? plan.files.length + ' tool file(s): ' + overFiles.length + ' overwritten, ' + newFiles.length + ' new'
+            : 'No tool files copied by these skills'));
+        if (plan.files.length) {
+          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">Files</span><span class="mono">' +
+            esc(plan.files.slice(0, 5).map((f) => f.destination + (f.exists ? ' (overwrite)' : '')).join(', ')) +
+            (plan.files.length > 5 ? ' +' + (plan.files.length - 5) + ' more' : '') + '</span></div>');
+        }
+
+        if (plan.commands.length) {
+          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">Slash commands</span><span class="mono">' +
+            esc(plan.commands.map((c) => '/' + c.name).join(', ')) + '</span></div>');
+        }
+        if (plan.gitignore.length) {
+          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">gitignore</span><span class="mono">' +
+            esc(plan.gitignore.join(', ')) + '</span></div>');
+        }
+        const npm = plan.dependencies.npm || [];
+        const pip = plan.dependencies.pip || [];
+        const mcp = plan.mcpServers || [];
+        if (npm.length || pip.length || mcp.length) {
+          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">Dependencies</span><span class="mono">' +
+            esc([
+              npm.length ? 'npm: ' + npm.join(', ') : '',
+              pip.length ? 'pip: ' + pip.join(', ') : '',
+              mcp.length ? 'MCP: ' + mcp.map((m) => m.name).join(', ') : ''
+            ].filter(Boolean).join(' · ')) + ' (listed, not installed)</span></div>');
+        }
+        if (plan.notOnDevice.length) {
+          parts.push(sev('err', 'Skipped — not on this device: <span class="mono">' + esc(plan.notOnDevice.join(', ')) + '</span>'));
+        }
+        for (const c of plan.conflicts || []) {
+          parts.push(sev('warn', esc(c.message)));
+        }
+
+        body.innerHTML = parts.join('');
+      }
+
+      function renderInjectDiffHint(message) {
+        const body = document.getElementById('injectDiffBody');
+        const stateEl = document.getElementById('injectDiffState');
+        if (stateEl) stateEl.textContent = 'Waiting for input';
+        if (body) body.innerHTML = '<div class="field-hint" style="margin:0">' + esc(message) + '</div>';
+      }
+
+      async function refreshInjectDiff() {
+        const pathEl = document.getElementById('injectPath');
+        const rawPath = pathEl ? pathEl.value.trim() : '';
+        if (!rawPath) { renderInjectDiffHint('Enter a target directory to preview the changes.'); return; }
+        if (!state.injectSelected.length) { renderInjectDiffHint('Tick at least one skill to preview the changes.'); return; }
+
+        const seq = ++injectPlanSeq;
+        const agentVal = document.getElementById('injectAgent')?.value || 'claude';
+        const mergeMode = document.getElementById('injectMerge')?.value || 'merge';
+        try {
+          const res = await fetch('/api/plan-inject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetPath: rawPath, agentValue: agentVal, skillIds: state.injectSelected, mergeMode })
+          });
+          const data = await res.json();
+          if (seq !== injectPlanSeq) return; // a newer request superseded this one
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Preview failed');
+          renderInjectDiff(data);
+        } catch (err) {
+          if (seq !== injectPlanSeq) return;
+          renderInjectDiffHint('Preview unavailable: ' + err.message);
+        }
+      }
+
+      function scheduleInjectDiff() {
+        if (injectPlanTimer) clearTimeout(injectPlanTimer);
+        injectPlanTimer = setTimeout(refreshInjectDiff, 350);
+      }
+
+      function renderProvisioningLists() {
+        renderInjectSkillList();
 
         const sel = document.getElementById('removeProject');
         if (sel) {
@@ -4052,10 +4475,18 @@
       }
 
       function updateInjectCounter() {
-        const n = selectedCheckboxes('injectSkillList').length;
+        // Total selection is authoritative from state, so it stays correct even when
+        // the list is filtered and some chosen skills are not currently rendered.
+        const n = state.injectSelected.length;
         const total = state.skills.filter((s) => s.on_device !== false).length;
+        const visible = injectVisibleSkills().length;
+        const filtering = Boolean(state.injectSearch.trim()) || state.injectCat !== 'all';
         const el = document.getElementById('injectCount');
-        if (el) el.textContent = n + ' of ' + total + ' selected';
+        if (el) {
+          el.textContent = filtering
+            ? n + ' selected · ' + visible + ' shown'
+            : n + ' of ' + total + ' selected';
+        }
       }
 
       function renderRemoveSkillList(precheckSkillId) {
@@ -4091,7 +4522,7 @@
         const rawPath = (document.getElementById('injectPath').value || '').trim();
         const agentVal = document.getElementById('injectAgent').value;
         const mergeMode = document.getElementById('injectMerge').value;
-        const skillIds = selectedCheckboxes('injectSkillList');
+        const skillIds = state.injectSelected.slice();
         const btn = document.getElementById('injectBtn');
 
         if (!rawPath) { showResult('injectResult', false, 'Enter a target directory path first.'); return; }
@@ -5274,6 +5705,13 @@
           '</div>' +
 
           '<div>' +
+            '<div class="drawer-sec-title">Project health</div>' +
+            '<div id="drawerHealth" class="health-signals">' +
+              '<div class="health-sk">Checking…</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div>' +
             '<div class="drawer-sec-title">Active Agents</div>' +
             '<div style="display:flex;flex-wrap:wrap;gap:6px">' + p.agents.map((a) => '<span class="tag" style="padding:2.5px 9px;font-size:12px">' + esc(agentLabel(a)) + '</span>').join('') + '</div>' +
           '</div>' +
@@ -5316,7 +5754,31 @@
             '<div class="drawer-sec-title">Manage This Project</div>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
               '<button type="button" class="btn btn-primary" data-inject-for="' + esc(p.path) + '">Inject skills here</button>' +
+              '<button type="button" class="btn" data-clone-skills="' + esc(p.id) + '">Copy skill set…</button>' +
               '<button type="button" class="btn btn-danger" data-remove-for="' + esc(p.id) + '">Remove a skill here</button>' +
+              '<button type="button" class="btn btn-ghost" data-project-remove="' + esc(p.id) + '">Remove project…</button>' +
+            '</div>' +
+            '<div id="projectRemovePanel" class="remove-panel" style="display:none">' +
+              '<div class="field-label" style="margin-bottom:6px"><span>Remove <span class="mono">' + esc(p.name) + '</span> from ContextRig</span></div>' +
+              '<label class="check-row" style="border:none;padding-left:0">' +
+                '<input type="checkbox" id="projectDeleteFolder" value="1" />' +
+                '<span class="cr-name">Also delete the folder on disk</span>' +
+              '</label>' +
+              '<div id="projectDeleteWarn" class="health-sig err" style="display:none;margin-top:6px">' +
+                'This permanently deletes <span class="mono">' + esc(p.path) + '</span>. Protected roots, missing folders and folders holding several sibling projects are refused.' +
+              '</div>' +
+              '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
+                '<button type="button" class="btn btn-sm btn-danger" data-project-remove-run="' + esc(p.id) + '">Remove ' + (p.lastSynced ? 'registration' : 'project') + '</button>' +
+                '<button type="button" class="btn btn-sm btn-ghost" data-project-remove-cancel="true">Cancel</button>' +
+              '</div>' +
+            '</div>' +
+            '<div id="clonePanel" style="display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-subtle)">' +
+              '<div class="field-label" style="margin-bottom:6px"><span>Copy these skills to another project</span></div>' +
+              '<select id="cloneTargetProject" class="field-input" style="margin-bottom:8px"></select>' +
+              '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+                '<button type="button" class="btn btn-sm btn-primary" data-clone-run="' + esc(p.id) + '">Copy ' + p.skills.length + ' skill(s)</button>' +
+                '<button type="button" class="btn btn-sm btn-ghost" data-clone-cancel="true">Cancel</button>' +
+              '</div>' +
             '</div>' +
           '</div>';
       }
@@ -5327,6 +5789,16 @@
         setMobileSidebar(false);
         state.drawerProjectId = projectId;
         renderDrawer();
+        const p = projectById(projectId);
+        if (p) loadProjectHealth(p.path);
+        const sel = document.getElementById('cloneTargetProject');
+        if (sel) {
+          // Offer only other registered projects; copying onto itself is pointless.
+          sel.innerHTML = state.projects
+            .filter((x) => x.id !== projectId)
+            .map((x) => '<option value="' + esc(x.id) + '">' + esc(x.name) + ' — ' + esc(x.path) + '</option>')
+            .join('') || '<option value="">No other projects registered</option>';
+        }
         document.getElementById('drawerBackdrop').classList.add('open');
         const dr = document.getElementById('projectDrawer');
         dr.classList.add('open');
@@ -5500,6 +5972,7 @@
         renderOverview();
         renderProjects();
         renderProvisioningLists();
+        renderBundles();
         renderSyncOps();
         renderSkills();
         renderSettingsList();
@@ -5567,6 +6040,16 @@
         const clearAg = e.target.closest('[data-clear-agent]');
         if (clearAg) { state.projectAgent = 'all'; renderProjects(); return; }
 
+        const filterAttention = e.target.closest('[data-filter-attention]');
+        if (filterAttention) {
+          state.projectStatus = 'attention';
+          state.projectPage = 1;
+          switchTab('projects');
+          renderProjects();
+          toast('Showing projects that need attention');
+          return;
+        }
+
         const matCat = e.target.closest('[data-matrix-cat]');
         if (matCat) { state.matrixCat = matCat.getAttribute('data-matrix-cat'); state.matrixPage = 1; renderMatrix(); return; }
 
@@ -5619,6 +6102,54 @@
         const injectFor = e.target.closest('[data-inject-for]');
         if (injectFor) { jumpToInject(injectFor.getAttribute('data-inject-for')); return; }
 
+        const cloneToggle = e.target.closest('[data-clone-skills]');
+        if (cloneToggle) {
+          const panel = document.getElementById('clonePanel');
+          if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+          return;
+        }
+
+        const cloneCancel = e.target.closest('[data-clone-cancel]');
+        if (cloneCancel) {
+          const panel = document.getElementById('clonePanel');
+          if (panel) panel.style.display = 'none';
+          return;
+        }
+
+        const cloneRun = e.target.closest('[data-clone-run]');
+        if (cloneRun) {
+          const src = projectById(cloneRun.getAttribute('data-clone-run'));
+          const targetSel = document.getElementById('cloneTargetProject');
+          const dst = projectById(targetSel ? targetSel.value : '');
+          if (!src || !dst) { toast('Pick a target project first'); return; }
+          copySkillsBetweenProjects(src, dst, cloneRun);
+          return;
+        }
+
+        const projRemoveToggle = e.target.closest('[data-project-remove]');
+        if (projRemoveToggle) {
+          const panel = document.getElementById('projectRemovePanel');
+          if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+          return;
+        }
+
+        const projRemoveCancel = e.target.closest('[data-project-remove-cancel]');
+        if (projRemoveCancel) {
+          const panel = document.getElementById('projectRemovePanel');
+          if (panel) panel.style.display = 'none';
+          const box = document.getElementById('projectDeleteFolder');
+          if (box) box.checked = false;
+          const warn = document.getElementById('projectDeleteWarn');
+          if (warn) warn.style.display = 'none';
+          return;
+        }
+
+        const projRemoveRun = e.target.closest('[data-project-remove-run]');
+        if (projRemoveRun) {
+          removeProjectFromDrawer(projRemoveRun.getAttribute('data-project-remove-run'), projRemoveRun);
+          return;
+        }
+
         const removeFor = e.target.closest('[data-remove-for]');
         if (removeFor) { jumpToRemove(removeFor.getAttribute('data-remove-for')); return; }
 
@@ -5637,9 +6168,8 @@
         const quickInjBtn = e.target.closest('[data-quick-inject]');
         if (quickInjBtn) {
           const sid = quickInjBtn.getAttribute('data-quick-inject');
+          selectInjectSkill(sid);
           jumpToInject('');
-          const cb = document.querySelector('#injectSkillList input[type="checkbox"][value="' + sid + '"]');
-          if (cb) { cb.checked = true; updateInjectCounter(); }
           return;
         }
 
@@ -5660,9 +6190,8 @@
                 {
                   label: 'Inject into project…',
                   run: () => {
+                    selectInjectSkill(sid);
                     jumpToInject('');
-                    const cb = document.querySelector('#injectSkillList input[type="checkbox"][value="' + sid + '"]');
-                    if (cb) { cb.checked = true; updateInjectCounter(); }
                   }
                 },
                 { label: 'Check for updates', run: () => updateSkillFromUi(sid) },
@@ -5714,12 +6243,8 @@
       });
       document.getElementById('skillModalInject').addEventListener('click', () => {
         closeSkillDocs();
+        if (state.lastDocsSkillId) selectInjectSkill(state.lastDocsSkillId);
         switchTab('projects');
-        const box = document.getElementById('injectSkillList');
-        if (box) {
-          const cb = box.querySelector('input[type=checkbox][value="' + state.lastDocsSkillId + '"]');
-          if (cb) cb.checked = true;
-        }
         const pathEl = document.getElementById('injectPath');
         if (pathEl) { pathEl.focus(); pathEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
       });
@@ -5749,6 +6274,14 @@
         switchTab('overview');
       });
       document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+
+      // Warn inline as soon as the delete-folder box is ticked
+      document.getElementById('drawerBody').addEventListener('change', (e) => {
+        if (e.target && e.target.id === 'projectDeleteFolder') {
+          const warn = document.getElementById('projectDeleteWarn');
+          if (warn) warn.style.display = e.target.checked ? 'block' : 'none';
+        }
+      });
       document.getElementById('cmdBackdrop').addEventListener('click', closeCmd);
       document.getElementById('toggleMatrixBtn').addEventListener('click', () => {
         state.matrixExpanded = !state.matrixExpanded;
@@ -5763,11 +6296,79 @@
       // Provisioning Studio bindings
       document.getElementById('injectBtn').addEventListener('click', runInject);
       document.getElementById('injectClearBtn').addEventListener('click', () => {
-        document.getElementById('injectSkillList').querySelectorAll('input[type="checkbox"]').forEach((el) => { el.checked = false; });
+        state.injectSelected = [];
+        renderInjectSkillList();
         document.getElementById('injectResult').hidden = true;
-        updateInjectCounter();
       });
-      document.getElementById('injectSkillList').addEventListener('change', updateInjectCounter);
+      document.getElementById('injectSkillList').addEventListener('change', (e) => {
+        const box = e.target.closest('input[type="checkbox"]');
+        if (!box) return;
+        const id = box.value;
+        const set = new Set(state.injectSelected);
+        if (box.checked) set.add(id); else set.delete(id);
+        state.injectSelected = Array.from(set);
+        updateInjectCounter();
+        scheduleInjectDiff();
+      });
+      document.getElementById('injectSkillSearch').addEventListener('input', (e) => {
+        state.injectSearch = e.target.value;
+        renderInjectSkillList();
+      });
+      document.getElementById('injectSkillCat').addEventListener('change', (e) => {
+        state.injectCat = e.target.value;
+        renderInjectSkillList();
+      });
+      document.getElementById('injectFilterClear').addEventListener('click', () => {
+        state.injectSearch = '';
+        state.injectCat = 'all';
+        const inp = document.getElementById('injectSkillSearch');
+        if (inp) inp.value = '';
+        renderInjectSkillList();
+      });
+      document.getElementById('injectSelectVisible').addEventListener('click', () => {
+        const visible = injectVisibleSkills().map((s) => s.id);
+        if (!visible.length) { toast('Nothing visible to select'); return; }
+        state.injectSelected = Array.from(new Set(state.injectSelected.concat(visible)));
+        renderInjectSkillList();
+        scheduleInjectDiff();
+        toast('Selected ' + visible.length + ' visible skill(s)');
+      });
+
+      // Live preview bindings
+      document.getElementById('injectPath').addEventListener('input', scheduleInjectDiff);
+      document.getElementById('injectAgent').addEventListener('change', scheduleInjectDiff);
+      document.getElementById('injectMerge').addEventListener('change', scheduleInjectDiff);
+      document.getElementById('injectDiffToggle').addEventListener('click', () => {
+        const body = document.getElementById('injectDiffBody');
+        const btn = document.getElementById('injectDiffToggle');
+        if (!body) return;
+        const hidden = body.style.display === 'none';
+        body.style.display = hidden ? 'block' : 'none';
+        if (btn) btn.textContent = hidden ? 'Hide' : 'Show';
+      });
+
+      // Bundle controls
+      document.getElementById('bundleSelect').addEventListener('change', (e) => { state.bundleSelected = e.target.value; renderBundles(); });
+      document.getElementById('bundleApplyBtn').addEventListener('click', () => applyBundle(state.bundleSelected));
+      document.getElementById('bundleDeleteBtn').addEventListener('click', () => deleteBundle(state.bundleSelected));
+      document.getElementById('bundleSaveBtn').addEventListener('click', () => {
+        const row = document.getElementById('bundleSaveRow');
+        row.style.display = 'block';
+        const input = document.getElementById('bundleNameInput');
+        input.value = '';
+        input.focus();
+      });
+      document.getElementById('bundleNameCancel').addEventListener('click', () => {
+        document.getElementById('bundleSaveRow').style.display = 'none';
+      });
+      document.getElementById('bundleNameOk').addEventListener('click', () => {
+        saveBundleFromSelection(document.getElementById('bundleNameInput').value);
+        document.getElementById('bundleSaveRow').style.display = 'none';
+      });
+      document.getElementById('bundleNameInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('bundleNameOk').click(); }
+        if (e.key === 'Escape') { document.getElementById('bundleSaveRow').style.display = 'none'; }
+      });
       document.getElementById('removeProject').addEventListener('change', () => renderRemoveSkillList());
       document.getElementById('removeBtn').addEventListener('click', runRemove);
       document.getElementById('importBtn').addEventListener('click', runImport);
@@ -6123,6 +6724,7 @@
           toast('Could not load workspace data');
         }
         loadDraft(state.selectedSkillId);
+        loadBundles();
         setTheme(savedTheme, false);
         setAccent(savedAccent, false);
         renderAll();

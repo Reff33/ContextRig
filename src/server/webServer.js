@@ -1,7 +1,9 @@
 import http from 'node:http';
 import path from 'node:path';
 import { exec } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync, readdirSync } from 'node:fs';
+import os from 'node:os';
+import fs from 'node:fs/promises';
 import { getDeviceDir, SUPPORTED_AGENTS } from '../config.js';
 import { loadRegistry, registerProject, unregisterProject } from '../core/projectRegistry.js';
 import {
@@ -14,8 +16,9 @@ import {
 import { getCurrentVersionSync, checkForUpdates } from '../core/updateChecker.js';
 import { setupTargetProject } from '../core/projectSetup.js';
 import { injectTemplate } from '../core/fileInjector.js';
-import { handleGitIgnore } from '../core/gitIgnoreManager.js';
+import { handleGitIgnore, aggregateGitIgnorePatterns } from '../core/gitIgnoreManager.js';
 import { aggregateDependencies } from '../core/dependencyInstaller.js';
+import { getSkillCommands } from '../core/slashCommands.js';
 import { removeSkillsFromProject } from '../core/skillUpdater.js';
 import { inspectRemoteSkillRepo, commitImportedSkill } from '../core/skillImporter.js';
 import {
@@ -346,6 +349,225 @@ async function syncProjectsFromWeb({ projectPath, all = false } = {}) {
 }
 
 /**
+ * Dry-run of an injection: reports the target files, resolved skills, gitignore
+ * patterns and conflicts without writing anything to disk.
+ * @param {{ targetPath: string, agentValue?: string, skillIds?: string[], mergeMode?: string }} input
+ */
+async function planInjection({ targetPath, agentValue = 'claude', skillIds = [], mergeMode = 'merge' }) {
+  if (!targetPath || !String(targetPath).trim()) throw new Error('targetPath is required.');
+  if (!Array.isArray(skillIds) || skillIds.length === 0) throw new Error('Select at least one skill.');
+
+  const agent = SUPPORTED_AGENTS.find((a) => a.value === agentValue);
+  if (!agent) throw new Error(`Unknown agent profile '${agentValue}'.`);
+
+  const catalog = await getCatalogAndDeviceSkills();
+  const byId = new Map(catalog.map((s) => [s.id, s]));
+
+  const { fullPath, projectName, created } = await setupTargetProject(targetPath);
+  const rulesPath = path.join(fullPath, agent.outputFile);
+  const rulesExists = existsSync(rulesPath);
+
+  const selected = [];
+  const notOnDevice = [];
+  for (const id of skillIds) {
+    const entry = byId.get(id);
+    if (!entry) continue;
+    if (entry.on_device === false) { notOnDevice.push(id); continue; }
+    selected.push(entry);
+  }
+
+  const files = [];
+  const commands = [];
+  const mcpServers = [];
+  for (const s of selected) {
+    for (const f of s.files_to_copy || []) {
+      files.push({ skill: s.id, destination: f.destination, exists: existsSync(path.join(fullPath, f.destination)) });
+    }
+    for (const c of getSkillCommands(s)) {
+      commands.push({ skill: s.id, name: c.name, exists: existsSync(path.join(fullPath, '.claude', 'commands', `${c.name}.md`)) });
+    }
+    if (s.mcp_servers && typeof s.mcp_servers === 'object') {
+      for (const key of Object.keys(s.mcp_servers)) mcpServers.push({ skill: s.id, name: key });
+    }
+  }
+
+  return {
+    ok: true,
+    path: fullPath,
+    projectName,
+    created,
+    agent: { value: agent.value, name: agent.name, outputFile: agent.outputFile },
+    mergeMode: mergeMode === 'overwrite' ? 'overwrite' : 'merge',
+    rulesFile: { name: agent.outputFile, exists: rulesExists },
+    skills: selected.map((s) => ({ id: s.id, name: s.name })),
+    notOnDevice,
+    files,
+    commands,
+    mcpServers,
+    gitignore: aggregateGitIgnorePatterns(selected),
+    dependencies: aggregateDependencies(selected),
+    conflicts: detectSkillConflicts(selected)
+  };
+}
+
+/**
+ * Flags duplicate slash command names, duplicate MCP server keys and skills that
+ * manage the same artifact directory — the three ways two skills collide today.
+ * @param {Array<Object>} skills
+ */
+function detectSkillConflicts(skills) {
+  const conflicts = [];
+  const cmdOwners = new Map();
+  const mcpOwners = new Map();
+  const artifactOwners = new Map();
+
+  for (const s of skills) {
+    for (const c of getSkillCommands(s)) {
+      const key = c.name.toLowerCase();
+      if (!cmdOwners.has(key)) cmdOwners.set(key, []);
+      cmdOwners.get(key).push(s.id);
+    }
+    if (s.mcp_servers && typeof s.mcp_servers === 'object') {
+      for (const key of Object.keys(s.mcp_servers)) {
+        if (!mcpOwners.has(key)) mcpOwners.set(key, []);
+        mcpOwners.get(key).push(s.id);
+      }
+    }
+    const artifacts = Array.isArray(s.artifacts) ? s.artifacts : [];
+    for (const a of artifacts) {
+      const clean = String(a).replace(/\/+$/, '');
+      if (!clean) continue;
+      if (!artifactOwners.has(clean)) artifactOwners.set(clean, []);
+      artifactOwners.get(clean).push(s.id);
+    }
+  }
+
+  for (const [name, owners] of cmdOwners) {
+    if (owners.length > 1) conflicts.push({ kind: 'command', key: '/' + name, skills: owners, message: `Slash command /${name} is declared by ${owners.length} skills; the last write wins.` });
+  }
+  for (const [name, owners] of mcpOwners) {
+    if (owners.length > 1) conflicts.push({ kind: 'mcp', key: name, skills: owners, message: `MCP server '${name}' is declared by ${owners.length} skills; only one entry can exist in .mcp.json.` });
+  }
+  for (const [dir, owners] of artifactOwners) {
+    if (owners.length > 1) conflicts.push({ kind: 'artifact', key: dir, skills: owners, message: `Artifact directory ${dir} is shared by ${owners.length} skills.` });
+  }
+
+  return conflicts;
+}
+
+/**
+ * Per-project health signals for the console: sync state, orphan refs, skills
+ * that are not cached on this device, and which agent rule files exist on disk.
+ * @returns {Promise<Array<Object>>}
+ */
+async function collectProjectHealth() {
+  const registry = await loadRegistry();
+  const catalog = await getCatalogAndDeviceSkills();
+  const byId = new Map(catalog.map((s) => [s.id, s]));
+  const agentFileFor = (a) => SUPPORTED_AGENTS.find((x) => x.value === a)?.outputFile || null;
+
+  return registry.projects.map((p) => {
+    const onDisk = existsSync(p.path);
+    const orphans = (p.skills || []).filter((id) => !byId.has(id));
+    const uncached = (p.skills || []).filter((id) => byId.has(id) && byId.get(id).on_device === false);
+    const agents = (p.agents || []).map((a) => {
+      const file = agentFileFor(a);
+      return { agent: a, file, present: Boolean(file) && onDisk && existsSync(path.join(p.path, file)) };
+    });
+    const missingAgentFiles = agents.filter((a) => a.file && !a.present).map((a) => a.file);
+
+    return {
+      id: p.name,
+      name: p.name,
+      path: p.path,
+      onDisk,
+      synced: Boolean(p.lastSynced),
+      lastSynced: p.lastSynced || null,
+      skillCount: (p.skills || []).length,
+      orphans,
+      uncached,
+      agents,
+      missingAgentFiles,
+      healthy: onDisk && Boolean(p.lastSynced) && orphans.length === 0 && uncached.length === 0 && missingAgentFiles.length === 0
+    };
+  });
+}
+
+/**
+ * Removes a project registration, optionally deleting its folder from disk.
+ * Only registered projects qualify, and folder deletion is restricted to paths
+ * that look like a project directory and are not a context file's parent root.
+ * @param {{ projectPath: string, deleteFolder?: boolean, confirm?: boolean }} input
+ */
+async function removeProject({ projectPath, deleteFolder = false, confirm = false }) {
+  if (!projectPath || typeof projectPath !== 'string') throw new Error('projectPath is required.');
+
+  const registry = await loadRegistry();
+  const norm = (p) => path.resolve(p).toLowerCase();
+  const entry = registry.projects.find((p) => norm(p.path) === norm(projectPath));
+  if (!entry) throw new Error('Project is not registered.');
+
+  const onDisk = existsSync(entry.path);
+
+  if (!deleteFolder) {
+    await unregisterProject(entry.path);
+    return { ok: true, action: 'unregistered', path: entry.path, folderDeleted: false, folderMissing: !onDisk };
+  }
+
+  if (!onDisk) {
+    // Folder already gone — drop the stale registry entry and say so plainly.
+    await unregisterProject(entry.path);
+    return { ok: true, action: 'unregistered', path: entry.path, folderDeleted: false, folderMissing: true };
+  }
+
+  if (!confirm) throw new Error('Folder deletion requires confirm: true.');
+
+  const resolved = path.resolve(entry.path);
+  const protectedPaths = [path.parse(resolved).root, os.homedir()];
+  if (protectedPaths.some((p) => norm(p) === norm(resolved))) {
+    throw new Error(`Refusing to delete ${resolved}: it is a protected root path.`);
+  }
+  if (!existsSync(resolved) || !statSync(resolved).isDirectory()) {
+    throw new Error(`Refusing to delete ${resolved}: not a directory.`);
+  }
+
+  // Guard against wiping something that is clearly not a project folder: a directory
+  // holding a repository root marker is allowed, but a folder containing several
+  // unrelated sibling projects is not.
+  const entries = readdirSync(resolved, { withFileTypes: true });
+  const looksLikeProject = entries.some((e) =>
+    ['.git', 'package.json', 'CLAUDE.md', 'AGENTS.md', '.cursorrules'].includes(e.name)
+  );
+  const siblingProjects = entries.filter((e) => {
+    if (!e.isDirectory()) return false;
+    if (['node_modules', '.git', 'dist', 'build'].includes(e.name)) return false;
+    return existsSync(path.join(resolved, e.name, 'package.json'));
+  });
+  if (!looksLikeProject && siblingProjects.length >= 2) {
+    throw new Error(
+      `Refusing to delete ${resolved}: it contains ${siblingProjects.length} project folders (${siblingProjects
+        .map((e) => e.name)
+        .join(', ')}). Unregister it instead, or delete the folder yourself.`
+    );
+  }
+
+  try {
+    await fs.rm(resolved, { recursive: true, force: true, maxRetries: 3 });
+  } catch (err) {
+    const map = {
+      EBUSY: 'the folder is in use by another program',
+      EPERM: 'permission denied',
+      ENOTEMPTY: 'the folder still contains files after deletion',
+      EACCES: 'permission denied'
+    };
+    throw new Error(`Could not delete ${resolved}: ${map[err.code] || err.message}`);
+  }
+
+  await unregisterProject(resolved);
+  return { ok: true, action: 'deleted', path: resolved, folderDeleted: true, folderMissing: false };
+}
+
+/**
  * Removes selected skills from a project — deletes copied files and re-renders
  * the agent files, then updates the registry. Mirrors the CLI remove flow.
  * @param {{ projectPath: string, skillIds: string[] }} input
@@ -543,6 +765,16 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
       return;
     }
 
+    if (url.pathname === '/api/projects/remove' && req.method === 'POST') {
+      try {
+        const body = await readBody();
+        sendJson(200, await removeProject(body));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
     if (url.pathname === '/api/remove' && req.method === 'POST') {
       try {
         const body = await readBody();
@@ -557,6 +789,25 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
       try {
         const body = await readBody();
         sendJson(200, await importSkill(body));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/project-health') {
+      try {
+        sendJson(200, { projects: await collectProjectHealth() });
+      } catch (err) {
+        sendJson(500, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/plan-inject' && req.method === 'POST') {
+      try {
+        const body = await readBody();
+        sendJson(200, await planInjection(body));
       } catch (err) {
         sendJson(400, { ok: false, message: err.message });
       }
