@@ -1312,6 +1312,7 @@ Usage:
   rig --update                       Update using the install method (git pull or npm global)
   rig --channel <main|testing>       Move a git checkout onto the release or dev branch
   rig --uninstall                    Strip ContextRig from every project & delete ~/.contextrig
+  rig --skills                       List, install, update and remove device skills
   rig --help                         Show this help message
 `);
 }
@@ -1373,6 +1374,69 @@ async function runCli(argv) {
 
   if (cmd === '--tui' || cmd === '-t') {
     await terminalMenu(null);
+    return;
+  }
+
+  if (cmd === '--skills' || cmd === 'skills') {
+    const action = argv[1];
+    const targetId = argv[2];
+    const catalog = await getCatalogAndDeviceSkills();
+
+    if (!action) {
+      logger.section('Device skills');
+      for (const s of catalog) {
+        const marker = s.on_device ? chalk.green('✔') : chalk.dim('·');
+        const extra = s.token_saver ? chalk.cyan(' [token saver]') : '';
+        console.log(`  ${marker} ${s.id.padEnd(16)} ${chalk.white(s.name)}${extra} ${s.on_device ? '' : chalk.dim('(not installed)')}`);
+      }
+      console.log();
+      console.log('  ' + chalk.dim('rig --skills install <id>') + '   download a skill to this device');
+      console.log('  ' + chalk.dim('rig --skills update <id>') + '    refresh its manifest and files');
+      console.log('  ' + chalk.dim('rig --skills remove <id>') + '    delete it from this device');
+      return;
+    }
+
+    if (!targetId) {
+      logger.error(`Specify a skill id, for example: rig --skills ${action} i_have_adhd`);
+      process.exitCode = 1;
+      return;
+    }
+
+    const listed = catalog.find((s) => s.id === targetId);
+    if (!listed) {
+      logger.error(`Unknown skill '${targetId}'. Run 'rig --skills' to see the catalogue.`);
+      process.exitCode = 1;
+      return;
+    }
+
+    if (action === 'install') {
+      logger.step(`Installing ${listed.name} onto this device...`);
+      const result = await ensureSkillInstalled(targetId);
+      const files = Array.isArray(result.files_to_copy) ? result.files_to_copy.length : 0;
+      logger.success(`Installed ${result.name} (${files} file${files === 1 ? '' : 's'}).`);
+      return;
+    }
+
+    if (action === 'update') {
+      logger.step(`Updating ${listed.name}...`);
+      const { updateSkillOnDevice } = await import('./core/skillCatalog.js');
+      const result = await updateSkillOnDevice(targetId);
+      logger.success(result.updated
+        ? `Updated (${result.updatedCount} file${result.updatedCount === 1 ? '' : 's'} refreshed).`
+        : 'Already up to date.');
+      return;
+    }
+
+    if (action === 'remove') {
+      logger.step(`Removing ${listed.name} from this device...`);
+      const { removeSkillFromDevice } = await import('./core/skillCatalog.js');
+      const result = await removeSkillFromDevice(targetId);
+      logger.success(`Removed (${result.removedFiles} file${result.removedFiles === 1 ? '' : 's'} deleted).`);
+      return;
+    }
+
+    logger.error(`Unknown action '${action}'. Use install, update or remove.`);
+    process.exitCode = 1;
     return;
   }
 
