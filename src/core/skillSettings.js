@@ -333,6 +333,62 @@ const BUILTIN_SCHEMAS = {
         ]
       }
     ]
+  },
+  figcraft_script: {
+    fields: [
+      {
+        key: 'execution_mode',
+        label: 'Execution Mode',
+        type: 'choice',
+        default: 'headless',
+        choices: [
+          { name: 'Headless — write the .figcraft file, no window', short: 'Headless', value: 'headless' },
+          { name: 'Attached — drive the running app so the user watches', short: 'Attached', value: 'attached' }
+        ]
+      },
+      {
+        key: 'verify',
+        label: 'Verification Depth',
+        type: 'choice',
+        default: 'png',
+        choices: [
+          { name: 'info + PNG export, then look at it', short: 'PNG', value: 'png' },
+          { name: 'info only (faster, skips the visual check)', short: 'Info', value: 'info' },
+          { name: 'info + PNG + re-open the export to prove it decodes', short: 'Round trip', value: 'roundtrip' }
+        ]
+      },
+      {
+        key: 'batch_on_error',
+        label: 'On a Failing Step',
+        type: 'choice',
+        default: 'abort',
+        choices: [
+          { name: 'Abort — roll everything back, write nothing', short: 'Abort', value: 'abort' },
+          { name: 'Continue — keep the steps that worked', short: 'Continue', value: 'continue' }
+        ]
+      },
+      {
+        key: 'start_from_template',
+        label: 'Start From Starter Template',
+        type: 'choice',
+        default: 'ask',
+        choices: [
+          { name: 'Ask which template fits the job', short: 'Ask', value: 'ask' },
+          { name: 'Always use a template when one matches', short: 'Always', value: 'always' },
+          { name: 'Never — build frames from scratch', short: 'Never', value: 'never' }
+        ]
+      },
+      {
+        key: 'missing_cli_mood',
+        label: 'When figcraft-cli Is Missing',
+        type: 'choice',
+        default: 'ask',
+        choices: [
+          { name: 'Stop and tell the user', short: 'Stop', value: 'ask' },
+          { name: 'Scaffold the .figcraft file only (no run)', short: 'Scaffold', value: 'scaffold' }
+        ]
+      }
+    ]
   }
 };
 

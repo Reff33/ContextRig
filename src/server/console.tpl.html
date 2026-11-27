@@ -835,6 +835,14 @@
       border-color: var(--accent-hover);
     }
 
+    .btn-warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: var(--warn-text);
+      font-weight: 600;
+    }
+    .btn-warn:hover:not(:disabled) { background: var(--bg-hover); }
+
     .btn-ghost {
       background: transparent;
       border-color: transparent;
@@ -950,6 +958,10 @@
       font-weight: 600;
       color: var(--accent);
       white-space: nowrap;
+      min-height: 24px;
+      padding: 2px 4px;
+      align-items: center;
+      display: inline-flex;
     }
     .alert-link:hover { text-decoration: underline; }
 
@@ -1161,6 +1173,31 @@
     .inject-filter-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
     .inject-filter-bar select.select-ctrl { max-width: 160px; min-width: 108px; height: 28px; flex: 0 1 auto; }
     .inject-filter-bar .btn-sm { height: 28px; }
+
+    /* Configuration preview: chips for summary, one row per file */
+    .pv-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 9px; }
+    .pv-chip {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 99px;
+      font-size: 11px; line-height: 1.6;
+      border: 1px solid var(--border); background: var(--bg-card); color: var(--text-2);
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .pv-chip.ok   { border-color: var(--ok-border);   background: var(--ok-bg);   color: var(--ok-text); }
+    .pv-chip.warn { border-color: var(--warn-border); background: var(--warn-bg); color: var(--warn-text); }
+    .pv-chip.err  { border-color: var(--err-border);  background: var(--err-bg);  color: var(--err-text); }
+    .pv-chip.mono { font-family: var(--font-mono); font-size: 10.5px; }
+    .pv-sec { display: grid; grid-template-columns: 84px 1fr; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border-subtle); }
+    .pv-sec:first-of-type { border-top: none; }
+    .pv-k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); padding-top: 2px; }
+    .pv-list { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .pv-list.pv-inline { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .pv-item { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+    .pv-item.pv-warn { color: var(--warn-text); font-size: 11.5px; }
+    .pv-path { font-family: var(--font-mono); font-size: 11px; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pv-tag { flex: 0 0 auto; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-3); }
+    .pv-tag.new { color: var(--ok-text); }
+    .pv-note { font-size: 10.5px; color: var(--text-3); }
     .skill-domain-track { position: relative; height: 8px; border-radius: 99px; background: var(--bg-subtle); overflow: hidden; }
     .skill-domain-fill { height: 100%; border-radius: 99px; transition: width 260ms ease, filter 120ms ease; }
     .adopted-row[data-hovering="true"] .skill-domain-fill { filter: brightness(1.18) saturate(1.1); }
@@ -1254,6 +1291,10 @@
       font-weight: 500;
       color: var(--accent);
       transition: opacity 120ms;
+      min-height: 24px;
+      padding: 3px 4px;
+      display: inline-flex;
+      align-items: center;
     }
     .card-link:hover { text-decoration: underline; }
 
@@ -1466,6 +1507,17 @@
        Row 4: Provisioning Matrix (Spreadsheet Table)
        ========================================================================= */
     .matrix-scroll { overflow-x: auto; }
+    .matrix-summary {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 10px 14px 12px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .matrix-summary .card-link { margin-left: auto; }
+    .matrix-table th .th-conflict { color: var(--err-text); }
     .matrix-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .matrix-table th {
       padding: 9px 10px;
@@ -1754,6 +1806,14 @@
     }
     .check-row .cr-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
     .check-row .cr-id { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3); }
+    .check-row-remote { cursor: default; background: var(--bg-subtle); }
+    .check-row-remote:hover { background: var(--bg-subtle); }
+    .check-row-remote .cr-id { flex: 0 0 auto; }
+    /* Install appears only on the hovered row: 15 remote rows must not read as 15 buttons. */
+    .check-row-remote .cr-install { opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+    .check-row-remote:hover .cr-install,
+    .check-row-remote:focus-within .cr-install { opacity: 1; pointer-events: auto; }
+    @media (hover: none) { .check-row-remote .cr-install { opacity: 1; pointer-events: auto; } }
 
     .result-banner {
       margin-top: 12px;
@@ -2190,6 +2250,18 @@
       transition: border-color 120ms, background 120ms;
     }
     .drawer-skill-row:hover { border-color: var(--accent-border); background: var(--bg-hover); }
+    .rollback-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .rollback-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--bg-card);
+    }
+    .rollback-row .rb-meta { font-size: 11.5px; color: var(--text-3); }
 
     .cmd-modal {
       position: fixed;
@@ -2367,7 +2439,7 @@
       color: var(--warn-text);
     }
     .toast-close {
-      width: 18px; height: 18px; flex: 0 0 18px;
+      width: 24px; height: 24px; flex: 0 0 24px;
       border-radius: 4px;
       color: inherit; opacity: 0.7;
       font-size: 14px; line-height: 1;
@@ -2524,7 +2596,7 @@
     .pager-controls { display: inline-flex; align-items: center; gap: 4px; }
     .pager-btn {
       min-width: 28px;
-      height: 27px;
+      height: 28px;
       padding: 0 8px;
       border-radius: var(--r-sm);
       border: 1px solid var(--border);
@@ -2717,6 +2789,7 @@
               <div class="card-head">
                 <h2 class="card-title">Workspace Health &amp; Agents</h2>
                 <span class="spacer"></span>
+                <button id="fixAllBtn" type="button" class="btn btn-sm btn-primary" title="Sync every registered project and drop skill refs that no longer resolve">Fix all</button>
                 <button type="button" class="card-link" data-nav="sync">Sync &amp; Ops →</button>
               </div>
               <div id="overviewIntegrity"></div>
@@ -2775,6 +2848,7 @@
               </select>
               <button id="toggleMatrixBtn" type="button" class="btn btn-sm btn-ghost"></button>
             </div>
+            <div id="matrixSummary" class="matrix-summary"></div>
             <div id="matrixScroll" class="matrix-scroll"></div>
             <div id="matrixPager"></div>
           </div>
@@ -2860,8 +2934,7 @@
                     <select id="injectSkillCat" class="select-ctrl" aria-label="Filter skills by category">
                       <option value="all">All categories</option>
                     </select>
-                    <button id="injectSelectAllBtn" type="button" class="btn btn-sm" title="Tick every skill installed on this device">Select all</button>
-                    <button id="injectFilterClear" type="button" class="btn btn-sm btn-ghost" hidden>Clear filter</button>
+                    <button id="injectSelectAllBtn" type="button" class="btn btn-sm" title="Tick every skill installed on this device">Select all</button>                    <button id="injectFilterClear" type="button" class="btn btn-sm btn-ghost" hidden>Clear filter</button>
                   </div>
                   <div id="injectSkillList" class="check-list"></div>
                 </div>
@@ -2879,13 +2952,13 @@
                     <button id="bundleDeleteBtn" type="button" class="btn btn-sm btn-ghost" title="Delete the selected bundle">Delete</button>
                   </div>
                   <div id="bundleSaveRow" style="display:none;gap:6px;margin-top:6px">
-                    <input id="bundleNameInput" class="field-input" type="text" placeholder="Bundle name, e.g. Frontend starter" maxlength="40" />
+                    <input id="bundleNameInput" class="field-input" type="text" placeholder="Bundle name, e.g. Frontend starter" maxlength="40" aria-label="Bundle name" />
                     <div style="display:flex;gap:6px;margin-top:6px">
                       <button id="bundleNameOk" type="button" class="btn btn-sm btn-primary">Save</button>
                       <button id="bundleNameCancel" type="button" class="btn btn-sm btn-ghost">Cancel</button>
                     </div>
                   </div>
-                  <p class="field-hint">Bundles store skill IDs only — saved in this browser, applied to any project.</p>
+                  <p class="field-hint">Bundles store skill IDs only — saved on this device in <span class="mono">~/.contextrig/bundles.json</span>, applied to any project.</p>
                 </div>
 
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -3057,6 +3130,7 @@
               </select>
 
               <select id="skillSort" class="select-ctrl" aria-label="Sort skills">
+                <option value="installed">Installed First</option>
                 <option value="name">Name A–Z</option>
                 <option value="deployed">Most Deployed</option>
                 <option value="custom">Customized First</option>
@@ -3137,7 +3211,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
           <span id="drawerPath" class="mono truncate" style="font-size:11.5px;color:var(--text-3)"></span>
-          <button id="drawerCopyPathBtn" type="button" class="btn btn-sm btn-ghost" style="height:22px;padding:0 6px">Copy</button>
+          <button id="drawerCopyPathBtn" type="button" class="btn btn-sm btn-ghost" style="height:24px;padding:0 8px">Copy</button>
         </div>
       </div>
       <button id="drawerCloseBtn" type="button" class="icon-btn" aria-label="Close drawer">
@@ -3152,7 +3226,7 @@
   <div id="cmdModal" class="cmd-modal" role="dialog" aria-modal="true" aria-label="Command palette">
     <div class="cmd-input-row">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input id="cmdInput" type="text" autocomplete="off" placeholder="Jump to tab, project, skill, or command…" />
+      <input id="cmdInput" type="text" autocomplete="off" aria-label="Search commands, projects and skills" placeholder="Jump to tab, project, skill, or command…" />
       <span class="kbd">ESC</span>
     </div>
     <div id="cmdList" class="cmd-list"></div>
@@ -3301,7 +3375,9 @@
 
         // Filters & Layouts
         matrixCat: 'all',
-        matrixExpanded: true,
+        matrixScope: 'used',
+        matrixExpanded: false,
+        skillUpdates: {},
         projectQuery: '',
         projectStatus: 'all',
         projectAgent: 'all',
@@ -3311,7 +3387,7 @@
         syncPage: 1,
         skillQuery: '',
         skillCat: 'all',
-        skillSort: 'name',
+        skillSort: 'installed',
         skillPage: 1,
 
         // Settings Studio
@@ -3326,6 +3402,7 @@
         // Skill bundles (presets) — persisted per browser
         bundles: [],
         bundleSelected: '',
+        conflicts: [],
 
         // Inject checklist filter state (selection lives in injectSelected)
         injectSelected: [],
@@ -3410,6 +3487,19 @@
         state.projects.forEach((p) => {
           p.skills.forEach((sid) => map.set(sid, (map.get(sid) || 0) + 1));
         });
+        return map;
+      }
+
+      /**
+       * Skills involved in a global conflict: duplicate slash command names,
+       * duplicate MCP keys, or a shared artifact directory.
+       * @returns {Map<string, string>} skillId → conflict key
+       */
+      function conflictIndex() {
+        const map = new Map();
+        for (const c of state.conflicts) {
+          for (const id of c.skills || []) map.set(id, c.key);
+        }
         return map;
       }
 
@@ -3984,16 +4074,43 @@
         const catSel = document.getElementById('matrixCatFilter');
         const container = document.getElementById('matrixScroll');
         const pagerEl = document.getElementById('matrixPager');
+        const summaryEl = document.getElementById('matrixSummary');
         filtersEl.style.display = state.matrixExpanded ? 'flex' : 'none';
         if (catSel) catSel.style.display = state.matrixExpanded ? 'inline-block' : 'none';
         container.style.display = state.matrixExpanded ? 'block' : 'none';
         if (pagerEl) pagerEl.style.display = state.matrixExpanded ? 'block' : 'none';
-        if (!state.matrixExpanded) return;
+        if (summaryEl) summaryEl.style.display = state.matrixExpanded ? 'none' : 'block';
+        if (!state.matrixExpanded) {
+          // Collapsed default keeps Overview short: one line of the numbers the
+          // matrix is for, without the 19-column table taking a full screen.
+          if (summaryEl) {
+            const usage = getUsageCounts().size;
+            const orphans = getOrphans().length;
+            const overlaps = state.conflicts.length;
+            summaryEl.innerHTML =
+              '<span class="mono">' + state.projects.length + ' projects · ' + state.skills.length + ' skills · ' + usage + ' in use</span>' +
+              '<span class="mono ' + (orphans ? 'kpi-err' : 'kpi-ok') + '">' + (orphans ? orphans + ' orphan ref(s)' : 'No orphan refs') + '</span>' +
+              (overlaps
+                ? '<span class="mono kpi-warn">' + overlaps + ' skill overlap(s)</span>'
+                : '') +
+              '<button type="button" class="card-link" data-expand-matrix="true">Open matrix →</button>';
+          }
+          return;
+        }
+        if (summaryEl) summaryEl.innerHTML = '';
 
-        // Same split as the Skills tab: a single All pill up front, categories in a
-        // dropdown, so the card header stays on one line no matter how many exist.
+        // Default to the skills actually deployed somewhere. With hundreds of
+        // catalog entries, showing every column makes the matrix unusable — the
+        // useful view is "what is in use", with an opt-in to see everything.
+        const inUse = new Set();
+        state.projects.forEach((p) => p.skills.forEach((sid) => inUse.add(sid)));
+        const showAll = state.matrixScope === 'all';
+
+        // Scope first: the category itself lives in the dropdown beside it, so an
+        // "All" pill here would just duplicate that control.
         filtersEl.innerHTML =
-          '<button type="button" class="pill-btn" data-matrix-cat="all" aria-pressed="' + (state.matrixCat === 'all') + '">All</button>';
+          '<button type="button" class="pill-btn" data-matrix-scope="used" aria-pressed="' + !showAll + '">In use</button>' +
+          '<button type="button" class="pill-btn" data-matrix-scope="all" aria-pressed="' + showAll + '">Every skill</button>';
         // Rebuild the option list only when its contents changed. Replacing the
         // options on every render closes the native dropdown mid-interaction and can
         // drop the user's choice before the selection is applied.
@@ -4008,12 +4125,25 @@
           if (catSel.value !== activeCat) catSel.value = activeCat;
         }
 
-        const visibleSkills = state.skills.filter((s) => state.matrixCat === 'all' || skillCategory(s) === state.matrixCat);
+        // Default to the skills actually deployed somewhere. With hundreds of
+        // catalog entries, showing every column makes the matrix unusable — the
+        // useful view is "what is in use", with an opt-in to see everything.
+        const visibleSkills = state.skills.filter((s) => {
+          if (state.matrixCat !== 'all' && skillCategory(s) !== state.matrixCat) return false;
+          if (state.matrixScope !== 'all' && !inUse.has(s.id)) return false;
+          return true;
+        });
         const orphanIds = state.matrixCat === 'all' ? Array.from(new Set(getOrphans().map((o) => o.skillId))) : [];
 
         let thead = '<tr><th class="col-sticky">Project</th>';
+        const conflictsFor = conflictIndex();
         visibleSkills.forEach((s, ci) => {
-          thead += '<th data-col="' + ci + '"><button type="button" data-open-skill="' + esc(s.id) + '" title="Configure ' + esc(s.name) + '">' + esc(s.id) + '</button></th>';
+          const cKey = conflictsFor.get(s.id);
+          thead += '<th data-col="' + ci + '">' +
+            '<button type="button" data-open-skill="' + esc(s.id) + '"' +
+              (cKey ? ' class="th-conflict" title="Conflicts on ' + esc(cKey) + '"' : ' title="Configure ' + esc(s.name) + '"') + '>' +
+              esc(s.id) + (cKey ? ' !' : '') +
+            '</button></th>';
         });
         orphanIds.forEach((oid, idx) => {
           const ci = visibleSkills.length + idx;
@@ -4227,21 +4357,34 @@
       }
 
       /* =====================================================================
-         Skill bundles — named sets of skill IDs, kept in localStorage
+         Skill bundles — named sets of skill IDs, kept on the device
+         (~/.contextrig/bundles.json) so they survive a browser or machine change.
          ===================================================================== */
-      function loadBundles() {
+      async function loadBundles() {
         try {
-          const raw = JSON.parse(localStorage.getItem('contextrig-skill-bundles') || '[]');
-          state.bundles = Array.isArray(raw)
-            ? raw.filter((b) => b && b.name && Array.isArray(b.skills)).map((b) => ({ name: String(b.name), skills: b.skills.map(String) }))
-            : [];
+          const res = await fetch('/api/bundles');
+          const data = await readJson(res);
+          state.bundles = Array.isArray(data.bundles) ? data.bundles : [];
         } catch {
-          state.bundles = [];
+          // Keep whatever the server last returned; bundles are not critical.
+          state.bundles = state.bundles || [];
         }
       }
 
-      function saveBundles() {
-        try { localStorage.setItem('contextrig-skill-bundles', JSON.stringify(state.bundles)); } catch (e) {}
+      async function saveBundles() {
+        try {
+          const res = await fetch('/api/bundles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bundles: state.bundles })
+          });
+          const data = await readJson(res);
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Could not save bundles');
+          state.bundles = data.bundles;
+        } catch (err) {
+          toast('Bundle save failed: ' + err.message + ' — kept in this tab only', 'err');
+          try { localStorage.setItem('contextrig-skill-bundles', JSON.stringify(state.bundles)); } catch (e) {}
+        }
       }
 
       function renderBundles() {
@@ -4273,7 +4416,7 @@
         toast('Applied bundle “' + name + '”' + (missing.length ? ' — ' + missing.length + ' skill(s) not on device' : ''));
       }
 
-      function saveBundleFromSelection(name) {
+      async function saveBundleFromSelection(name) {
         const skills = state.injectSelected.slice();
         if (!skills.length) { toast('Select at least one skill before saving a bundle'); return; }
         const clean = name.trim();
@@ -4282,16 +4425,16 @@
         if (existing >= 0) state.bundles[existing] = { name: clean, skills };
         else state.bundles.push({ name: clean, skills });
         state.bundleSelected = clean;
-        saveBundles();
+        await saveBundles();
         renderBundles();
         toast('Saved bundle “' + clean + '” with ' + skills.length + ' skill(s)');
       }
 
-      function deleteBundle(name) {
+      async function deleteBundle(name) {
         if (!name) { toast('Select a bundle first'); return; }
         state.bundles = state.bundles.filter((b) => b.name !== name);
         if (state.bundleSelected === name) state.bundleSelected = '';
-        saveBundles();
+        await saveBundles();
         renderBundles();
         toast('Deleted bundle “' + name + '”');
       }
@@ -4334,6 +4477,64 @@
           if (panel) panel.style.display = 'none';
         } catch (err) {
           toast('Copy failed: ' + err.message, 'err');
+        } finally {
+          if (btnEl) { btnEl.disabled = false; btnEl.textContent = orig; }
+        }
+      }
+
+      /* ---------- Rollback: restore an earlier rules file ---------- */
+      async function openRollbackPanel(projectId) {
+        const p = projectById(projectId);
+        const panel = document.getElementById('rollbackPanel');
+        const list = document.getElementById('rollbackList');
+        if (!p || !panel || !list) return;
+        if (panel.style.display === 'block') { panel.style.display = 'none'; return; }
+        panel.style.display = 'block';
+        list.innerHTML = '<div class="field-hint" style="margin:0">Loading snapshots…</div>';
+        try {
+          const res = await fetch('/api/snapshots?projectPath=' + encodeURIComponent(p.path));
+          const data = await readJson(res);
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Could not list snapshots');
+          const snaps = data.snapshots || [];
+          list.innerHTML = snaps.length
+            ? snaps.map((s) =>
+                '<div class="rollback-row">' +
+                  '<div><div style="font-size:12px;color:var(--text-1)">' + esc(absTime(s.at)) + '</div>' +
+                    '<div class="rb-meta">' + esc(s.reason) + ' · ' + esc(s.files.join(', ')) + '</div></div>' +
+                  '<button type="button" class="btn btn-sm" data-rollback-run="' + esc(s.id) + '">Restore</button>' +
+                '</div>'
+              ).join('')
+            : '<div class="field-hint" style="margin:0">No snapshots yet. One is taken automatically before every inject or removal.</div>';
+        } catch (err) {
+          list.innerHTML = '<div class="field-hint" style="margin:0">Could not load snapshots: ' + esc(err.message) + '</div>';
+        }
+      }
+
+      async function runRollback(snapshotId, btnEl) {
+        const p = projectById(state.drawerProjectId);
+        if (!p) return;
+        const ok = await confirmDialog({
+          title: 'Restore this snapshot?',
+          body: 'The rules files listed in the snapshot overwrite this project\'s current ones. The current state is snapshotted first, so this can be undone.',
+          okLabel: 'Restore',
+          danger: true
+        });
+        if (!ok) return;
+        const orig = btnEl ? btnEl.textContent : '';
+        if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Restoring…'; }
+        try {
+          const res = await fetch('/api/snapshots/restore', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectPath: p.path, snapshotId })
+          });
+          const data = await readJson(res);
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Restore failed');
+          toast('Restored ' + data.restored + ' file(s) in ' + p.name);
+          await loadLiveData();
+          renderAll();
+        } catch (err) {
+          toast('Restore failed: ' + err.message, 'err');
         } finally {
           if (btnEl) { btnEl.disabled = false; btnEl.textContent = orig; }
         }
@@ -4408,10 +4609,12 @@
        */
       function injectVisibleSkills() {
         const q = state.injectSearch.trim().toLowerCase();
+        // Every catalog skill is listed, installed or not: the user picks what they
+        // want, and installing happens on demand from here.
         return state.skills
-          .filter((s) => s.on_device !== false)
           .filter((s) => state.injectCat === 'all' || skillCategory(s) === state.injectCat)
-          .filter((s) => !q || [s.id, s.name, s.description].join(' ').toLowerCase().includes(q));
+          .filter((s) => !q || [s.id, s.name, s.description, s.author || '', s.repo || ''].join(' ').toLowerCase().includes(q))
+          .sort((a, b) => Number(b.on_device !== false) - Number(a.on_device !== false) || a.name.localeCompare(b.name));
       }
 
       function renderInjectSkillList() {
@@ -4424,7 +4627,9 @@
 
         const catSel = document.getElementById('injectSkillCat');
         if (catSel) {
-          const catsPresent = SKILL_CATEGORIES.filter((c) => onDevice.some((s) => skillCategory(s) === c.id));
+          // Categories come from the whole catalog now, not just installed skills —
+          // the list shows everything the user could pick.
+          const catsPresent = SKILL_CATEGORIES.filter((c) => state.skills.some((s) => skillCategory(s) === c.id));
           const wanted = '<option value="all">All categories</option>' +
             catsPresent.map((c) => '<option value="' + c.id + '">' + esc(c.label) + '</option>').join('');
           if (catSel.innerHTML !== wanted) catSel.innerHTML = wanted;
@@ -4438,22 +4643,56 @@
 
         const visible = injectVisibleSkills();
 
-        if (!onDevice.length) {
-          injectBox.innerHTML = '<div class="empty-state" style="padding:14px">No skills on this device yet. Install skills in the Skills tab first.</div>';
+        if (!state.skills.length) {
+          injectBox.innerHTML = '<div class="empty-state" style="padding:14px">No skills available. Install skills in the Skills tab first.</div>';
         } else if (!visible.length) {
           injectBox.innerHTML = '<div class="empty-state" style="padding:14px"><strong>No skills match</strong>Clear the search or pick another category.</div>';
         } else {
           const selected = new Set(state.injectSelected);
-          injectBox.innerHTML = visible.map((s) =>
-            '<label class="check-row">' +
+          injectBox.innerHTML = visible.map((s) => {
+            const onDevice = s.on_device !== false;
+            const fileCnt = typeof s.files_count === 'number' ? s.files_count : ((s.files_to_copy || []).length);
+            if (!onDevice) {
+              // Not installed: one click installs it, then it ticks itself.
+              // Only show the Install button on the hovered row so 15 remote rows
+              // do not read as 15 buttons.
+              return '<div class="check-row check-row-remote" data-remote-skill="' + esc(s.id) + '">' +
+                '<input type="checkbox" value="' + esc(s.id) + '" disabled aria-label="' + esc(s.name) + ' — install first" />' +
+                '<span class="cr-name">' + esc(s.name) + '</span>' +
+                '<span class="cr-id">not installed</span>' +
+                '<button type="button" class="card-link cr-install" data-install-and-select="' + esc(s.id) + '">Install →</button>' +
+              '</div>';
+            }
+            return '<label class="check-row">' +
               '<input type="checkbox" value="' + esc(s.id) + '"' + (selected.has(s.id) ? ' checked' : '') + ' />' +
               '<span class="cr-name">' + esc(s.name) + '</span>' +
+              (fileCnt ? '<span class="cr-id">' + fileCnt + ' files</span>' : '') +
               '<span class="cr-id">' + esc(s.id) + '</span>' +
-            '</label>'
-          ).join('');
+            '</label>';
+          }).join('');
         }
 
         updateInjectCounter();
+        syncInjectButton();
+      }
+
+      /**
+       * Keeps the inject button honest: it stays disabled until a target path and
+       * at least one skill exist, with the reason spelled out in the tooltip.
+       */
+      function syncInjectButton() {
+        const btn = document.getElementById('injectBtn');
+        const pathEl = document.getElementById('injectPath');
+        if (!btn) return;
+        const hasPath = Boolean(pathEl && pathEl.value.trim());
+        const hasSkills = state.injectSelected.length > 0;
+        const busy = btn.dataset.busy === '1';
+        btn.disabled = busy || !hasPath || !hasSkills;
+        btn.title = !hasPath
+          ? 'Enter a target directory first'
+          : !hasSkills
+            ? 'Tick at least one skill to inject'
+            : 'Inject the selected skills into the target directory';
       }
 
       /**
@@ -4592,56 +4831,78 @@
         if (!body) return;
         if (stateEl) stateEl.textContent = plan.mergeMode === 'overwrite' ? 'Overwrite mode' : 'Smart merge mode';
 
-        const sev = (tone, text) => '<div class="health-sig ' + tone + '" style="padding:5px 8px">' + text + '</div>';
-        const parts = [];
-
-        parts.push(sev(plan.rulesFile.exists ? 'warn' : 'ok',
-          (plan.rulesFile.exists
-            ? '<span class="mono">' + esc(plan.rulesFile.name) + '</span> exists — ' + (plan.mergeMode === 'overwrite' ? 'entire managed file will be replaced' : 'managed skill block updated, your custom rules kept')
-            : '<span class="mono">' + esc(plan.rulesFile.name) + '</span> will be created')));
-        if (plan.created) parts.push(sev('warn', 'Folder does not exist yet and will be created'));
-
         const newFiles = plan.files.filter((f) => !f.exists);
         const overFiles = plan.files.filter((f) => f.exists);
-        parts.push(sev(overFiles.length ? 'warn' : 'ok',
-          plan.files.length
-            ? plan.files.length + ' tool file(s): ' + overFiles.length + ' overwritten, ' + newFiles.length + ' new'
-            : 'No tool files copied by these skills'));
+        const chip = (tone, label) => '<span class="pv-chip ' + tone + '">' + label + '</span>';
+
+        // Summary chips: the whole change in one line.
+        let html = '<div class="pv-chips">' +
+          chip(plan.rulesFile.exists ? 'warn' : 'ok', esc(plan.rulesFile.name) + (plan.rulesFile.exists ? ' updated' : ' created')) +
+          chip(overFiles.length ? 'warn' : 'ok', overFiles.length + ' overwritten · ' + newFiles.length + ' new') +
+          (plan.created ? chip('warn', 'folder created') : '') +
+          (plan.notOnDevice.length ? chip('err', plan.notOnDevice.length + ' skipped') : '') +
+          ((plan.conflicts || []).length ? chip('warn', plan.conflicts.length + ' conflict(s)') : '') +
+        '</div>';
+
         if (plan.files.length) {
-          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">Files</span><span class="mono">' +
-            esc(plan.files.slice(0, 5).map((f) => f.destination + (f.exists ? ' (overwrite)' : '')).join(', ')) +
-            (plan.files.length > 5 ? ' +' + (plan.files.length - 5) + ' more' : '') + '</span></div>');
+          const PREVIEW = 5;
+          const fileRow = (f) => '<div class="pv-item"><span class="pv-path">' + esc(f.destination) + '</span>' +
+            (f.exists ? '<span class="pv-tag">overwrite</span>' : '<span class="pv-tag new">new</span>') + '</div>';
+          const rest = plan.files.slice(PREVIEW);
+          html += '<div class="pv-sec"><span class="pv-k">Tool files</span><div class="pv-list">' +
+            plan.files.slice(0, PREVIEW).map(fileRow).join('') +
+            (rest.length
+              ? '<div id="pvMore" hidden>' + rest.map(fileRow).join('') + '</div>' +
+                '<button type="button" class="card-link" data-pv-more="true" style="justify-self:start">Show ' + rest.length + ' more file(s)…</button>'
+              : '') +
+            '</div></div>';
         }
 
         if (plan.commands.length) {
-          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">Slash commands</span><span class="mono">' +
-            esc(plan.commands.map((c) => '/' + c.name).join(', ')) + '</span></div>');
+          html += '<div class="pv-sec"><span class="pv-k">Slash commands</span><div class="pv-list pv-inline">' +
+            plan.commands.map((c) => '<span class="pv-chip mono">/' + esc(c.name) + '</span>').join('') +
+            '</div></div>';
         }
+
         if (plan.gitignore.length) {
-          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">gitignore</span><span class="mono">' +
-            esc(plan.gitignore.join(', ')) + '</span></div>');
+          html += '<div class="pv-sec"><span class="pv-k">gitignore</span><div class="pv-list pv-inline">' +
+            plan.gitignore.map((g) => '<span class="pv-chip mono">' + esc(g) + '</span>').join('') +
+            '</div></div>';
         }
+
         const npm = plan.dependencies.npm || [];
         const pip = plan.dependencies.pip || [];
         const mcp = plan.mcpServers || [];
         if (npm.length || pip.length || mcp.length) {
-          parts.push('<div class="doc-row" style="margin:0 0 6px"><span class="k">Dependencies</span><span class="mono">' +
-            esc([
-              npm.length ? 'npm: ' + npm.join(', ') : '',
-              pip.length ? 'pip: ' + pip.join(', ') : '',
-              mcp.length ? 'MCP: ' + mcp.map((m) => m.name).join(', ') : ''
-            ].filter(Boolean).join(' · ')) + ' (listed, not installed)</span></div>');
-        }
-        if (plan.notOnDevice.length) {
-          parts.push(sev('err', 'Skipped — not on this device: <span class="mono">' + esc(plan.notOnDevice.join(', ')) + '</span>'));
-        }
-        for (const c of plan.conflicts || []) {
-          parts.push(sev('warn', esc(c.message)));
+          html += '<div class="pv-sec"><span class="pv-k">Dependencies</span><div class="pv-list pv-inline">' +
+            npm.map((d) => '<span class="pv-chip mono">npm ' + esc(d) + '</span>').join('') +
+            pip.map((d) => '<span class="pv-chip mono">pip ' + esc(d) + '</span>').join('') +
+            mcp.map((m) => '<span class="pv-chip mono">mcp ' + esc(m.name) + '</span>').join('') +
+            '</div><div class="pv-note">Listed only — install them in the target project.</div></div>';
         }
 
-        body.innerHTML = parts.join('');
+        if (plan.notOnDevice.length) {
+          html += '<div class="pv-sec"><span class="pv-k">Skipped</span><div class="pv-list pv-inline">' +
+            plan.notOnDevice.map((id) => '<span class="pv-chip err mono">' + esc(id) + '</span>').join('') +
+            '</div><div class="pv-note">Not installed on this device yet.</div></div>';
+        }
+
+        for (const c of plan.conflicts || []) {
+          html += '<div class="pv-sec"><span class="pv-k">Conflict</span>' +
+            '<div class="pv-list"><div class="pv-item pv-warn">' + esc(c.message) + '</div></div></div>';
+        }
+
+        body.innerHTML = html;
       }
 
+      function togglePreviewMore(btnEl) {
+        const more = document.getElementById('pvMore');
+        if (!more) return;
+        more.hidden = !more.hidden;
+        btnEl.textContent = more.hidden
+          ? 'Show ' + more.querySelectorAll('.pv-item').length + ' more file(s)…'
+          : 'Show fewer';
+      }
       function renderInjectDiffHint(message) {
         const body = document.getElementById('injectDiffBody');
         const stateEl = document.getElementById('injectDiffState');
@@ -4699,12 +4960,14 @@
         const n = state.injectSelected.length;
         const total = state.skills.filter((s) => s.on_device !== false).length;
         const visible = injectVisibleSkills().length;
+        const remote = injectVisibleSkills().filter((s) => s.on_device === false).length;
         const filtering = Boolean(state.injectSearch.trim()) || state.injectCat !== 'all';
         const el = document.getElementById('injectCount');
         if (el) {
+          const remoteNote = remote ? ' · ' + remote + ' not installed' : '';
           el.textContent = filtering
-            ? n + ' selected · ' + visible + ' shown'
-            : n + ' of ' + total + ' selected';
+            ? n + ' selected · ' + visible + ' shown' + remoteNote
+            : n + ' of ' + total + ' installed selected' + remoteNote;
         }
       }
 
@@ -4748,7 +5011,7 @@
         if (!skillIds.length) { showResult('injectResult', false, 'Select at least one skill to inject.'); return; }
 
         const origText = btn ? btn.textContent : '';
-        if (btn) { btn.disabled = true; btn.textContent = 'Injecting…'; }
+        if (btn) { btn.dataset.busy = '1'; btn.disabled = true; btn.textContent = 'Injecting…'; }
         try {
           const res = await fetch('/api/inject', {
             method: 'POST',
@@ -4777,7 +5040,11 @@
         } catch (err) {
           showResult('injectResult', false, esc(err.message));
         } finally {
-          if (btn) { btn.disabled = false; btn.textContent = origText; }
+          if (btn) {
+            delete btn.dataset.busy;
+            btn.textContent = origText;
+            syncInjectButton();
+          }
         }
       }
 
@@ -4941,10 +5208,40 @@
         }
       }
 
+      /**
+       * One click repair for the Overview health card: syncs every project, then
+       * drops skill references that no longer resolve to a catalog entry.
+       */
+      async function runFixAll(btnEl) {
+        const info = await confirmDialog({
+          title: 'Repair the whole workspace?',
+          body: 'Re-syncs every registered project with Smart Merge, then removes skill references that no longer exist in the library.' +
+            '<div style="margin-top:8px;color:var(--text-3)">Your hand-written rules are preserved. A snapshot is taken before each change.</div>',
+          okLabel: 'Fix all',
+          danger: false
+        });
+        if (!info) return;
+
+        const origText = btnEl ? btnEl.textContent : '';
+        if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Fixing…'; }
+        try {
+          const res = await fetch('/api/fix-all', { method: 'POST' });
+          const data = await readJson(res);
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Repair failed');
+          await loadLiveData();
+          renderAll();
+          toast('Synced ' + data.syncedCount + ' project(s)' +
+            (data.orphanCount ? ', dropped ' + data.orphanCount + ' orphan ref(s)' : ' — no orphans found'));
+        } catch (err) {
+          toast('Repair failed: ' + err.message, 'err');
+        } finally {
+          if (btnEl) { btnEl.disabled = false; btnEl.textContent = origText; }
+        }
+      }
+
       /* =====================================================================
          TAB 4: SKILLS
-         ===================================================================== */
-      /* =====================================================================
+         ===================================================================== */      /* =====================================================================
          SKILL DOCUMENTATION MODAL
          ===================================================================== */
       function projectsUsingSkill(skillId) {
@@ -5184,8 +5481,30 @@
             '<pre class="doc-code">' + esc(cmd) + '</pre></section>';
         }
 
+        // File list: show the first five, fold the rest behind a toggle so the
+        // modal stays readable when a skill ships 40+ files.
+        const fileRows = Array.isArray(s.files_to_copy)
+          ? s.files_to_copy.map((f) => (typeof f === 'string' ? f : f.destination)).filter(Boolean)
+          : [];
+        const FILE_PREVIEW = 5;
+        const fileListHtml = fileRows.length
+          ? '<div class="doc-row" style="padding-left:10px"><span class="k mono" style="word-break:break-all">' + esc(fileRows[0]) + '</span></div>' +
+            fileRows.slice(1, FILE_PREVIEW).map((d) =>
+              '<div class="doc-row" style="padding-left:10px"><span class="k mono" style="word-break:break-all">' + esc(d) + '</span></div>'
+            ).join('') +
+            (fileRows.length > FILE_PREVIEW
+              ? '<div id="fileListMore_' + esc(s.id) + '" hidden>' +
+                  fileRows.slice(FILE_PREVIEW).map((d) =>
+                    '<div class="doc-row" style="padding-left:10px"><span class="k mono" style="word-break:break-all">' + esc(d) + '</span></div>'
+                  ).join('') +
+                '</div>' +
+                '<button type="button" class="card-link" data-file-more="' + esc(s.id) + '" style="margin:4px 0 2px 10px">Show ' + (fileRows.length - FILE_PREVIEW) + ' more…</button>'
+              : '')
+          : '';
+
         body += '<section><div class="doc-sec-head">What gets installed</div>' +
           '<div class="doc-row"><span class="k">Files</span><span class="mono">' + fileCnt + (s.on_device === false ? ' (on-demand)' : '') + '</span></div>' +
+          fileListHtml +
           (npm.length ? '<div class="doc-row"><span class="k">npm</span><span class="mono">' + esc(npm.join(', ')) + '</span></div>' : '') +
           (pip.length ? '<div class="doc-row"><span class="k">pip</span><span class="mono">' + esc(pip.join(', ')) + '</span></div>' : '') +
           (mcp.length ? '<div class="doc-row"><span class="k">MCP servers</span><span class="mono">' + esc(mcp.join(', ')) + '</span></div>' : '') +
@@ -5200,8 +5519,50 @@
             : '') +
           '</section>';
 
-        body += '<section><div class="doc-sec-head">Installed in (' + users.length + ')</div>' +
-          (users.length
+        // Attribution: every skill names its source, so a packaged third-party
+        // skill never reads like this project's own work.
+        if (s.origin === 'upstream' && s.url) {
+          body += '<section><div class="doc-sec-head">Source &amp; credit</div>' +
+            '<div class="doc-row"><span class="k">Author</span><span class="mono">' + esc(s.author || 'upstream') + '</span></div>' +
+            '<div class="doc-row"><span class="k">Repository</span>' +
+              '<a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer" class="mono" style="color:var(--accent)">' + esc(s.repo || s.url) + '</a>' +
+            '</div>' +
+            (s.upstream_skill ? '<div class="doc-row"><span class="k">Upstream skill</span><span class="mono">' + esc(s.upstream_skill) + '</span></div>' : '') +
+            (s.license ? '<div class="doc-row"><span class="k">License</span><span class="mono">' + esc(s.license) + '</span></div>' : '') +
+            '<div class="doc-prose" style="font-size:11.5px;color:var(--text-3)">Third-party skill, packaged by ContextRig for one-command install. All content belongs to the author above — updates come from their repository, not from here.</div>' +
+            '</section>';
+        } else if (s.origin === 'wrapper') {
+          // Wrapper: our script, someone else's engine. Say both, plainly.
+          body += '<section><div class="doc-sec-head">Source &amp; credit</div>' +
+            '<div class="doc-row"><span class="k">Wrapper by</span><span class="mono">' + esc(s.author || 'ContextRig') + '</span></div>' +
+            '<div class="doc-row"><span class="k">Built on</span>' +
+              '<a href="' + esc(s.upstream_project_url || s.url) + '" target="_blank" rel="noopener noreferrer" class="mono" style="color:var(--accent)">' + esc(s.upstream_project || s.url) + '</a>' +
+            '</div>' +
+            (s.upstream_license ? '<div class="doc-row"><span class="k">Engine license</span><span class="mono">' + esc(s.upstream_license) + '</span></div>' : '') +
+            (s.license ? '<div class="doc-row"><span class="k">Wrapper license</span><span class="mono">' + esc(s.license) + '</span></div>' : '') +
+            (s.wrapper_note ? '<div class="doc-prose" style="font-size:11.5px;color:var(--text-3)">' + esc(s.wrapper_note) + '</div>' : '') +
+            '</section>';
+        } else {
+          body += '<section><div class="doc-sec-head">Source &amp; credit</div>' +
+            '<div class="doc-row"><span class="k">Author</span><span class="mono">' + esc(s.author || 'ContextRig') + '</span></div>' +
+            '<div class="doc-row"><span class="k">Repository</span>' +
+              (s.url
+                ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer" class="mono" style="color:var(--accent)">' + esc(s.repo || s.url) + '</a>'
+                : '<span class="mono">' + esc(s.repo || 'built into ContextRig') + '</span>') +
+            '</div>' +
+            (s.license ? '<div class="doc-row"><span class="k">License</span><span class="mono">' + esc(s.license) + '</span></div>' : '') +
+            '<div class="doc-prose" style="font-size:11.5px;color:var(--text-3)">First-party skill — ships and updates with ContextRig itself.</div>' +
+            (s.related_project
+              ? '<div class="doc-prose" style="font-size:11.5px;color:var(--text-3);margin-top:6px">Related work: ' +
+                  '<a href="' + esc(s.related_project_url) + '" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">' + esc(s.related_project) + '</a>' +
+                  (s.related_license ? ' (' + esc(s.related_license) + ')' : '') +
+                  '. ' + esc(s.related_note || '') +
+                '</div>'
+              : '') +
+            '</section>';
+        }
+
+        body += '<section><div class="doc-sec-head">Installed in (' + users.length + ')</div>' +          (users.length
             ? users.map((p) =>
                 '<button type="button" class="doc-row" style="width:100%;text-align:left;background:none;border:none;padding:3px 0;cursor:pointer" data-inspect-project="' + esc(p.id) + '">' +
                   svg('chevRight', 12) + '<span style="font-weight:500;color:var(--text-1)">' + esc(p.name) + '</span>' +
@@ -5211,8 +5572,22 @@
             : '<div class="doc-prose">Not provisioned in any project yet.</div>') +
           '</section>';
 
-        if (s.manifest_remote_url) {
-          body += '<section><div class="doc-sec-head">Manifest source</div>' +
+        // Dependency graph, cheap version: every skill this one would collide with,
+        // derived from the shared command / MCP / artifact-dir scan.
+        const overlaps = state.conflicts.filter((c) => (c.skills || []).includes(s.id));
+        if (overlaps.length) {
+          body += '<section><div class="doc-sec-head">Shares resources with</div>' +
+            overlaps.map((c) =>
+              '<div class="doc-row"><span class="k mono">' + esc(c.key) + '</span>' +
+                '<span class="mono" style="color:var(--warn-text)">' +
+                  esc((c.skills || []).filter((id) => id !== s.id).join(', ') || 'itself') +
+                '</span></div>'
+            ).join('') +
+            '<div class="doc-prose" style="font-size:11.5px;color:var(--text-3)">Injecting both into one project lets the last write win. Check before combining.</div>' +
+            '</section>';
+        }
+
+        if (s.manifest_remote_url) {body += '<section><div class="doc-sec-head">Manifest source</div>' +
             '<div class="doc-prose mono" style="font-size:11px;word-break:break-all">' + esc(s.manifest_remote_url) + '</div>' +
             '</section>';
         }
@@ -5398,7 +5773,7 @@
 
       async function updateSkillFromUi(skillId) {
         const s = skillById(skillId);
-        toast('Checking updates for ' + (s ? s.name : skillId) + '…');
+        toast('Updating ' + (s ? s.name : skillId) + '…');
         try {
           const res = await fetch('/api/skills/update', {
             method: 'POST',
@@ -5406,14 +5781,28 @@
             body: JSON.stringify({ skillId })
           });
           const data = await readJson(res);
-          if (!res.ok || !data.ok) throw new Error(data.message || 'Update check failed');
+          if (!res.ok || !data.ok) throw new Error(data.message || 'Update failed');
+          // Re-check right away so the Update button disappears once the skill
+          // matches its source again.
+          await refreshSkillUpdateStates(true);
           await loadLiveData();
           renderAll();
           toast(data.updated
             ? ('Updated ' + (s ? s.name : skillId) + ' (' + (data.updatedCount || 0) + ' files)')
-            : ((s ? s.name : skillId) + ' is up to date'));
+            : ((s ? s.name : skillId) + ' is already up to date'));
         } catch (err) {
           toast('Update failed: ' + err.message, 'err');
+        }
+      }
+
+      /** Which installed skills are behind their own source. */
+      async function refreshSkillUpdateStates(force = false) {
+        try {
+          const res = await fetch('/api/skills/updates' + (force ? '?force=1' : ''));
+          const data = await readJson(res);
+          state.skillUpdates = (data && data.states) || {};
+        } catch {
+          state.skillUpdates = state.skillUpdates || {};
         }
       }
 
@@ -5484,13 +5873,23 @@
           if (state.skillCat === 'custom' && !isCustom(s.id)) return false;
           if (SKILL_CATEGORIES.some((c) => c.id === state.skillCat) && skillCategory(s) !== state.skillCat) return false;
           if (!q) return true;
-          return [s.id, s.name, s.description].join(' ').toLowerCase().includes(q);
+          // Searchable by author and repo too, so "mattpocock" surfaces every skill
+          // packaged from that repository.
+          return [s.id, s.name, s.description, s.author || '', s.repo || '', s.upstream_skill || ''].join(' ').toLowerCase().includes(q);
         });
 
         if (state.skillSort === 'deployed') {
           list.sort((a, b) => (usage.get(b.id) || 0) - (usage.get(a.id) || 0) || a.name.localeCompare(b.name));
         } else if (state.skillSort === 'custom') {
           list.sort((a, b) => Number(isCustom(b.id)) - Number(isCustom(a.id)) || a.name.localeCompare(b.name));
+        } else if (state.skillSort === 'installed') {
+          // Default: everything actually usable first, remote catalog entries after.
+          // With hundreds of entries this is what stops a long scroll past skills
+          // the user never installed.
+          list.sort((a, b) =>
+            Number(b.on_device !== false) - Number(a.on_device !== false) ||
+            (usage.get(b.id) || 0) - (usage.get(a.id) || 0) ||
+            a.name.localeCompare(b.name));
         } else {
           list.sort((a, b) => a.name.localeCompare(b.name));
         }
@@ -5525,13 +5924,25 @@
                 ? '<span class="skill-status st-custom">Installed · customized</span>'
                 : '<span class="skill-status st-live">Installed</span>';
 
+          const upstreamBadge = s.origin === 'upstream' && s.author
+            ? '<span class="tag mono" title="Third-party skill by ' + esc(s.author) + ' from ' + esc(s.repo || s.url) + ' — updates come from their repo">by ' + esc(s.author) + '</span>'
+            : '';
+
+          // Update is shown only when the auto-check found the skill behind its
+          // own source, so a current skill never offers a pointless button.
+          const behind = state.skillUpdates[s.id] === 'outdated';
+          const updateBtn = behind
+            ? '<button type="button" class="btn btn-sm btn-warn" data-update-skill="' + esc(s.id) + '" title="A newer version exists in the author’s repo">Update</button>'
+            : '';
+
           const primaryActions = !onDevice
             ? '<button type="button" class="btn btn-sm btn-primary" data-install-skill="' + esc(s.id) + '">Install</button>' +
               '<button type="button" class="btn btn-sm" data-docs-skill="' + esc(s.id) + '">Details</button>'
             : count === 0
               ? '<button type="button" class="btn btn-sm btn-primary" data-quick-inject="' + esc(s.id) + '">Inject</button>' +
+                updateBtn +
                 '<button type="button" class="btn btn-sm" data-docs-skill="' + esc(s.id) + '">Details</button>'
-              : '<button type="button" class="btn btn-sm" data-docs-skill="' + esc(s.id) + '">Details</button>';
+              : '<button type="button" class="btn btn-sm" data-docs-skill="' + esc(s.id) + '">Details</button>' + updateBtn;
 
           return '<article class="skill-card">' +
             '<div class="skill-card-head">' +
@@ -5547,6 +5958,7 @@
             '<p class="skill-card-desc">' + esc(s.description) + '</p>' +
             '<div class="skill-card-tags">' +
               '<span class="tag mono">' + esc(categoryLabel(cat)) + '</span>' +
+              upstreamBadge +
               (s.token_saver ? '<span class="tag mono tag-saver" title="Cuts token spend">Token saver</span>' : '') +
               '<span class="tag mono">' + fileCnt + ' files</span>' +
               (npm ? '<span class="tag mono">npm ' + npm + '</span>' : '') +
@@ -5974,6 +6386,7 @@
             '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
               '<button type="button" class="btn btn-primary" data-inject-for="' + esc(p.path) + '">Inject skills here</button>' +
               '<button type="button" class="btn" data-clone-skills="' + esc(p.id) + '">Copy skill set…</button>' +
+              '<button type="button" class="btn" data-project-rollback="' + esc(p.id) + '">Roll back…</button>' +
               '<button type="button" class="btn btn-danger" data-remove-for="' + esc(p.id) + '">Remove a skill here</button>' +
               '<button type="button" class="btn btn-ghost" data-project-remove="' + esc(p.id) + '">Remove project…</button>' +
             '</div>' +
@@ -5997,6 +6410,13 @@
               '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
                 '<button type="button" class="btn btn-sm btn-primary" data-clone-run="' + esc(p.id) + '">Copy ' + p.skills.length + ' skill(s)</button>' +
                 '<button type="button" class="btn btn-sm btn-ghost" data-clone-cancel="true">Cancel</button>' +
+              '</div>' +
+            '</div>' +
+            '<div id="rollbackPanel" style="display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-subtle)">' +
+              '<div class="field-label" style="margin-bottom:6px"><span>Restore an earlier rules file</span></div>' +
+              '<div id="rollbackList" class="rollback-list"><div class="field-hint" style="margin:0">Loading snapshots…</div></div>' +
+              '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
+                '<button type="button" class="btn btn-sm btn-ghost" data-rollback-cancel="true">Close</button>' +
               '</div>' +
             '</div>' +
           '</div>';
@@ -6213,8 +6633,10 @@
         const navBtn = e.target.closest('[data-nav]');
         if (navBtn) { switchTab(navBtn.getAttribute('data-nav')); return; }
 
-        const scrollMat = e.target.closest('[data-scroll-matrix]');
+        const scrollMat = e.target.closest('[data-scroll-matrix], [data-expand-matrix]');
         if (scrollMat) {
+          state.matrixExpanded = true;
+          renderMatrix();
           const mc = document.getElementById('matrixCard');
           if (mc) mc.scrollIntoView({ behavior: 'smooth', block: 'start' });
           return;
@@ -6274,6 +6696,9 @@
 
         const matCat = e.target.closest('[data-matrix-cat]');
         if (matCat) { state.matrixCat = matCat.getAttribute('data-matrix-cat'); state.matrixPage = 1; renderMatrix(); return; }
+
+        const matScope = e.target.closest('[data-matrix-scope]');
+        if (matScope) { state.matrixScope = matScope.getAttribute('data-matrix-scope'); state.matrixPage = 1; renderMatrix(); return; }
 
         const projSt = e.target.closest('[data-proj-status]');
         if (projSt) { state.projectStatus = projSt.getAttribute('data-proj-status'); state.projectPage = 1; renderProjects(); return; }
@@ -6375,6 +6800,19 @@
         const removeFor = e.target.closest('[data-remove-for]');
         if (removeFor) { jumpToRemove(removeFor.getAttribute('data-remove-for')); return; }
 
+        const rollbackToggle = e.target.closest('[data-project-rollback]');
+        if (rollbackToggle) { openRollbackPanel(rollbackToggle.getAttribute('data-project-rollback')); return; }
+
+        const rollbackCancel = e.target.closest('[data-rollback-cancel]');
+        if (rollbackCancel) {
+          const panel = document.getElementById('rollbackPanel');
+          if (panel) panel.style.display = 'none';
+          return;
+        }
+
+        const rollbackRun = e.target.closest('[data-rollback-run]');
+        if (rollbackRun) { runRollback(rollbackRun.getAttribute('data-rollback-run'), rollbackRun); return; }
+
         const docsBtn = e.target.closest('[data-docs-skill]');
         if (docsBtn) { openSkillDocs(docsBtn.getAttribute('data-docs-skill')); return; }
 
@@ -6387,6 +6825,9 @@
           return;
         }
 
+        const updateBtn = e.target.closest('[data-update-skill]');
+        if (updateBtn) { updateSkillFromUi(updateBtn.getAttribute('data-update-skill')); return; }
+
         const quickInjBtn = e.target.closest('[data-quick-inject]');
         if (quickInjBtn) {
           const sid = quickInjBtn.getAttribute('data-quick-inject');
@@ -6394,6 +6835,21 @@
           jumpToInject('');
           return;
         }
+
+
+        const fileMoreBtn = e.target.closest('[data-file-more]');
+        if (fileMoreBtn) {
+          const sid = fileMoreBtn.getAttribute('data-file-more');
+          const hidden = document.getElementById('fileListMore_' + sid);
+          if (hidden) {
+            hidden.hidden = !hidden.hidden;
+            fileMoreBtn.textContent = hidden.hidden ? 'Show ' + hidden.children.length + ' more…' : 'Show fewer';
+          }
+          return;
+        }
+
+        const pvMoreBtn = e.target.closest('[data-pv-more]');
+        if (pvMoreBtn) { togglePreviewMore(pvMoreBtn); return; }
 
         const moreBtn = e.target.closest('[data-more-skill]');
         if (moreBtn) {
@@ -6416,7 +6872,9 @@
                     jumpToInject('');
                   }
                 },
-                { label: 'Check for updates', run: () => updateSkillFromUi(sid) },
+                ...(state.skillUpdates[sid] === 'outdated'
+                  ? [{ label: 'Update to latest…', run: () => updateSkillFromUi(sid) }]
+                  : []),
                 { label: 'Configure parameters', run: () => openSkillInSettings(sid) },
                 { label: 'Set custom image…', run: () => openSkillImageModal(sid) },
                 { sep: true },
@@ -6453,6 +6911,8 @@
       if (purgeBtnEl) purgeBtnEl.addEventListener('click', openPurgePreview);
       var opsSyncAllEl = document.getElementById('opsSyncAllBtn');
       if (opsSyncAllEl) opsSyncAllEl.addEventListener('click', () => runSyncNow({ all: true }, opsSyncAllEl));
+      var fixAllEl = document.getElementById('fixAllBtn');
+      if (fixAllEl) fixAllEl.addEventListener('click', () => runFixAll(fixAllEl));
       document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
 
       /* Skill docs modal */
@@ -6530,7 +6990,31 @@
         if (box.checked) set.add(id); else set.delete(id);
         state.injectSelected = Array.from(set);
         updateInjectCounter();
+        // Ticking a skill must enable the button; syncInjectButton used to run only
+        // on a full list re-render, so the button stayed disabled after a click.
+        syncInjectButton();
         scheduleInjectDiff();
+      });
+
+      /**
+       * Install-on-pick: the inject list shows every catalog skill, so a skill that
+       * is not on this device installs first and then ticks itself.
+       */
+      document.getElementById('injectSkillList').addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-install-and-select]');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.getAttribute('data-install-and-select');
+        const orig = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Installing…';
+        const ok = await installSkillFromUi(id, btn);
+        if (!ok) { btn.disabled = false; btn.textContent = orig; return; }
+        state.injectSelected = Array.from(new Set([...state.injectSelected, id]));
+        renderInjectSkillList();
+        scheduleInjectDiff();
+        toast('Installed and selected: ' + (skillById(id) ? skillById(id).name : id));
       });
       document.getElementById('injectSkillSearch').addEventListener('input', (e) => {
         state.injectSearch = e.target.value;
@@ -6559,7 +7043,10 @@
       });
 
       // Live preview bindings
-      document.getElementById('injectPath').addEventListener('input', scheduleInjectDiff);
+      document.getElementById('injectPath').addEventListener('input', () => {
+        syncInjectButton();
+        scheduleInjectDiff();
+      });
       document.getElementById('injectAgent').addEventListener('change', scheduleInjectDiff);
       document.getElementById('injectMerge').addEventListener('change', scheduleInjectDiff);
       document.getElementById('injectDiffToggle').addEventListener('click', () => {
@@ -6686,9 +7173,11 @@
         ]);
         state.projects = (Array.isArray(res[0].projects) ? res[0].projects : []).map(normaliseProject);
         state.skills = (Array.isArray(res[1].skills) ? res[1].skills : []).map(normaliseSkill);
+        state.conflicts = Array.isArray(res[1].conflicts) ? res[1].conflicts : [];
         state.settings = (res[2].settings && typeof res[2].settings === 'object') ? res[2].settings : {};
         state.snapshotAt = new Date().toISOString();
         if (!state.selectedSkillId && state.skills.length) state.selectedSkillId = state.skills[0].id;
+        await refreshSkillUpdateStates();
       }
 
       /* ---------- Update notice (sidebar) ---------- */
