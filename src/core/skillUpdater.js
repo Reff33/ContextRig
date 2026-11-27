@@ -297,6 +297,16 @@ export async function removeSkillsFromProject(
     }
 
     logger.step(`Re-syncing AI rules in ${agent.outputFile}...`);
+    // Strip the old managed block before re-rendering, then merge: a full
+    // overwrite here would delete rules the user wrote outside the block.
+    if (rewriteRules) {
+      try {
+        const existing = await fs.readFile(outputPath, 'utf8');
+        await fs.writeFile(outputPath, stripManagedSection(existing), 'utf8');
+      } catch {
+        // file missing — injectTemplate creates it
+      }
+    }
     await injectTemplate({
       targetDir,
       templateFileName: agent.templateFile,
@@ -304,6 +314,7 @@ export async function removeSkillsFromProject(
       projectName,
       agentName: agent.name,
       skillsInstructions: remainingSkills,
+      mergeMode: 'merge',
       copyAssets: false
     });
     logger.success(`Updated ${agent.outputFile} (removed ${skillsToRemove.map((s) => s.name).join(', ')})`);

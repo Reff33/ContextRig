@@ -23,6 +23,18 @@ function getCommonDestFolder(items) {
 }
 
 /**
+ * Skill bodies are Markdown and often carry their own `##`/`###` sections. Those
+ * collide with the managed block: stripManagedSection() ends at the next `##`
+ * heading, and mergeSkillsIntoContent() ends a skill at the next `###`. Flattening
+ * headings to bold labels keeps the block boundaries unambiguous.
+ * @param {string} text
+ * @returns {string}
+ */
+function flattenHeadings(text) {
+  return String(text || '').replace(/^(#{2,6})\s+(.+)$/gm, (m, hashes, label) => `**${label.trim()}**`);
+}
+
+/**
  * Formats a skill object into markdown for injection into AI rule files.
  * @param {Object} skill
  * @returns {string}
@@ -31,7 +43,7 @@ export function formatSkillBlock(skill) {
   const lines = [
     `### ${skill.name}`,
     `- **Description:** ${skill.description}`,
-    `- **Usage Instructions:**\n  ${skill.ai_instructions}`
+    `- **Usage Instructions:**\n  ${flattenHeadings(skill.ai_instructions)}`
   ];
   if (skill.dependencies?.npm?.length) {
     lines.push(`- **NPM Dependencies:** \`${skill.dependencies.npm.join(', ')}\``);
@@ -135,7 +147,12 @@ export async function injectTemplate({
   mergeMode = 'overwrite',
   copyAssets = true
 }) {
-  const resolvedSkills = await applySettingsToSkills(skillsInstructions);
+  const resolvedSkills = (await applySettingsToSkills(skillsInstructions)).map((s) => ({
+    ...s,
+    // The template renders instructions verbatim, so headings inside them must be
+    // flattened here too — otherwise stripManagedSection() ends the block early.
+    ai_instructions: flattenHeadings(s.ai_instructions)
+  }));
   const templatePath = path.join(TEMPLATES_DIR, templateFileName);
   const rawTemplate = await fs.readFile(templatePath, 'utf8');
 

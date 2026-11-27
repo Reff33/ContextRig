@@ -1,0 +1,41 @@
+{
+  "id": "figcraft_script",
+  "name": "FigCraft Script-First",
+  "description": "Plan a FigCraft screen as a JSON command script, run it headlessly in one undoable batch, then verify",
+  "category": "design",
+  "token_saver": true,
+  "origin": "own",
+  "author": "Reff33",
+  "repo": "Reff33/ContextRig",
+  "url": "https://github.com/Reff33/ContextRig",
+  "license": "MIT",
+  "related_project": "midasmatterhorn/artcraft-skills",
+  "related_project_url": "https://github.com/midasmatterhorn/artcraft-skills",
+  "related_license": "MIT",
+  "related_note": "Complements the bundled FigCraft app skill. That one documents what FigCraft can do; this one is the execution loop.",
+  "ai_instructions": "Drive FigCraft by writing one JSON command script and running it in a single batch — never by clicking through the GUI.\n\n1. Plan in text first: list frames, then each child layer with type and coordinates.\n2. Write a spec (not commands) and expand it:\n   node rigtools/figcraft_script/build.mjs spec.json --out figcraft-script.json\n3. Confirm the CLI exists: figcraft-cli --version (or figcraft-cli.exe on Windows).\n4. Run: figcraft-cli run figcraft-script.json --out screen.figcraft\n5. Verify: figcraft-cli info screen.figcraft --json, then export a PNG at --scale 2 and look at it.\n\nIf figcraft-cli is missing, INSTALL IT — do not stop and ask. On Windows the CLI is inside the portable zip next to figcraft.exe (figcraft-cli.exe, verified in release v0.18.1):\n  download https://github.com/storytold/figcraft/releases/download/v<ver>/figcraft-<ver>-windows-x64-portable.zip\n  verify SHA256SUMS.txt from the same release, Expand-Archive into %LOCALAPPDATA%FigCraft, then run the figcraft-cli.exe found inside the unpacked folder.\nmacOS: figcraft-cli-<ver>-macos-universal.zip from the release. Linux: FigCraft.AppImage cli <args>.\nOnly if the user declines the install: emit the .figcraft scaffold and say plainly it was not run. Never claim a screen works without info + PNG verification.\nFull guide: rigtools/figcraft_script/SKILL.md. App capabilities: rigtools/artcraft/figcraft/SKILL.md.",
+  "claude_command": {
+    "name": "figcraft-script",
+    "content": "# /figcraft-script\n\nBuild a FigCraft screen fast: spec -> command script -> headless run -> verify (info + PNG). If figcraft-cli is missing, install it from the release portable zip. Full guide at rigtools/figcraft_script/SKILL.md."
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "mcp_servers": [],
+  "gitignore": [
+    "rigtools/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/figcraft_script/build.mjs",
+      "destination": "rigtools/figcraft_script/build.mjs",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/figcraft_script/build.mjs"
+    },
+    {
+      "source": "scripts/figcraft_script/SKILL.md",
+      "destination": "rigtools/figcraft_script/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/figcraft_script/SKILL.md"
+    }
+  ]
+}

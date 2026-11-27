@@ -1,0 +1,70 @@
+{
+  "id": "grill_me",
+  "name": "Grill Me (Interview Pack)",
+  "description": "Relentless interview that sharpens a plan and writes the project glossary + ADRs as it goes",
+  "category": "workflow",
+  "token_saver": true,
+  "source_repo": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grill-me",
+  "ai_instructions": "Interview the user relentlessly until you reach a shared understanding, and write the project vocabulary down as you go.\n\n## Phase 1 — Grilling\nFull procedure in `rigtools/grill_me/grilling.md`. Read it before the first question. In short:\n1. Map the work as a **design tree** — every decision branches into the decisions that hang off it.\n2. Work it in **rounds**. The **frontier** is every decision whose prerequisites are already settled. Ask the whole frontier at once, numbered, each with your recommended answer.\n3. Word each question so \"yes\" accepts your recommendation.\n4. Look facts up yourself (dispatch a sub-agent with a fresh context window); only the _decisions_ go to the user.\n5. The session is done when the frontier is empty — every branch visited, nothing silently assumed. Do not act until the user confirms shared understanding.\n\n## Phase 2 — Sharpen the domain model\nFull procedure in `rigtools/grill_me/domain-modeling.md`. In short, alongside the interview:\n- Challenge fuzzy terms and push for the sharpest word that survives a concrete scenario.\n- Cross-reference every term against the code; a term the code does not use is a bug in either the term or the code.\n- Update `GLOSSARY.md` inline using the format in `rigtools/grill_me/GLOSSARY-FORMAT.md`.\n- Record hard-to-reverse decisions as ADRs using `rigtools/grill_me/ADR-FORMAT.md`. Offer them sparingly.\n\n## Rules\n- Never write code during this skill. Grilling ends with an agreed plan, not an implementation.\n- Redact secrets, keys and personal data from anything you write down.\n- Finish with one line: the agreed plan, and what remains open.",
+  "claude_command": {
+    "name": "grill-me",
+    "content": "# /grill-me\n\nInterview the user relentlessly until you reach a shared understanding, and write the project vocabulary down as you go.\n\n## Phase 1 — Grilling\nFull procedure in `rigtools/grill_me/grilling.md`. Read it before the first question. In short:\n1. Map the work as a **design tree** — every decision branches into the decisions that hang off it.\n2. Work it in **rounds**. The **frontier** is every decision whose prerequisites are already settled. Ask the whole frontier at once, numbered, each with your recommended answer.\n3. Word each question so \"yes\" accepts your recommendation.\n4. Look facts up yourself (dispatch a sub-agent with a fresh context window); only the _decisions_ go to the user.\n5. The session is done when the frontier is empty — every branch visited, nothing silently assumed. Do not act until the user confirms shared understanding.\n\n## Phase 2 — Sharpen the domain model\nFull procedure in `rigtools/grill_me/domain-modeling.md`. In short, alongside the interview:\n- Challenge fuzzy terms and push for the sharpest word that survives a concrete scenario.\n- Cross-reference every term against the code; a term the code does not use is a bug in either the term or the code.\n- Update `GLOSSARY.md` inline using the format in `rigtools/grill_me/GLOSSARY-FORMAT.md`.\n- Record hard-to-reverse decisions as ADRs using `rigtools/grill_me/ADR-FORMAT.md`. Offer them sparingly.\n\n## Rules\n- Never write code during this skill. Grilling ends with an agreed plan, not an implementation.\n- Redact secrets, keys and personal data from anything you write down.\n- Finish with one line: the agreed plan, and what remains open."
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "gitignore": [
+    "rigtools/"
+  ],
+  "files_to_copy": [
+    {
+      "source": "scripts/grill_me/grilling.md",
+      "destination": "rigtools/grill_me/grilling.md",
+      "remote_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md"
+    },
+    {
+      "source": "scripts/grill_me/domain-modeling.md",
+      "destination": "rigtools/grill_me/domain-modeling.md",
+      "remote_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/SKILL.md"
+    },
+    {
+      "source": "scripts/grill_me/ADR-FORMAT.md",
+      "destination": "rigtools/grill_me/ADR-FORMAT.md",
+      "remote_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/ADR-FORMAT.md"
+    },
+    {
+      "source": "scripts/grill_me/GLOSSARY-FORMAT.md",
+      "destination": "rigtools/grill_me/GLOSSARY-FORMAT.md",
+      "remote_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/GLOSSARY-FORMAT.md"
+    }
+  ],
+  "origin": "upstream",
+  "author": "mattpocock",
+  "repo": "mattpocock/skills",
+  "url": "https://github.com/mattpocock/skills",
+  "license": "MIT",
+  "upstream_skill": "skills/productivity/grill-me + grilling + domain-modeling",
+  "upstream_skill_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md",
+  "upstream_sha": "5b5973f630e1cea19f647e0956b0a65fcfc083fa0b128c87e566c80386c22f16",
+  "upstream_base": "",
+  "upstream_files": [
+    {
+      "source": "scripts/grill_me/grilling.md",
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md"
+    },
+    {
+      "source": "scripts/grill_me/domain-modeling.md",
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/SKILL.md"
+    },
+    {
+      "source": "scripts/grill_me/ADR-FORMAT.md",
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/ADR-FORMAT.md"
+    },
+    {
+      "source": "scripts/grill_me/GLOSSARY-FORMAT.md",
+      "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/GLOSSARY-FORMAT.md"
+    }
+  ],
+  "refresh_instructions": false
+}

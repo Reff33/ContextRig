@@ -1,0 +1,54 @@
+{
+  "id": "diagnosing_bugs",
+  "name": "Diagnosing Bugs",
+  "description": "Diagnosis loop for hard bugs and performance regressions. Use when the user says \"diagnose\"/\"debug this\", or reports something broken/throwing/failing/slow.",
+  "category": "workflow",
+  "token_saver": true,
+  "source_repo": "https://github.com/mattpocock/skills/tree/main/skills/engineering/diagnosing-bugs",
+  "ai_instructions": "# Diagnosing Bugs\n\nA discipline for hard bugs. Skip phases only when explicitly justified.\n\nWhen exploring the codebase, read `GLOSSARY.md` (if it exists) to get a clear mental model of the relevant modules, and check ADRs in the area you're touching.\n\n## Redact\n\nThis skill has you show commands, outputs and captured artifacts. **Redact every secret first**: write `<REDACTED>` in its place. Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.\n\nIf the redacted output is not enough to diagnose the bug, say so and ask the user.\n\n## Phase 1: Build a feedback loop\n\n**This is the skill.** Everything else is mechanical. If you have a **tight** pass/fail signal for the bug (one that goes red on _this_ bug), you will find the cause; bisection, hypothesis-testing, and instrumentation all just consume it. If you don't have one, no amount of staring at code will save you.\n\nSpend disproportionate effort here. **Be aggressive. Be creative. Refuse to give up.**\n\n### Ways to construct one, in roughly this order\n\n1. **Failing test** at whatever seam reaches the bug: unit, integration, e2e.\n2. **Curl / HTTP script** against a running dev server.\n3. **CLI invocation** with a fixture input, diffing stdout against a known-good snapshot.\n4. **Headless browser script** (Playwright / Puppeteer) that drives the UI and asserts on DOM/console/network.\n5. **Replay a captured trace.** Save a real network request / payload / event log to disk; replay it through the code path in isolation.\n6. **Throwaway harness.** Spin up a minimal subset of the system (one service, mocked deps) that exercises the bug code path with a single function call.\n7. **Property / fuzz loop.** If the bug is \"sometimes wrong output\", run 1000 random inputs and look for the failure mode.\n8. **Bisection harness.** If the bug appeared between two known states (commit, dataset, version), automate \"boot at state X, check, repeat\" so you can `git bisect run` it.\n9. **Differential loop.** Run the same input through old-version vs new-version (or two configs) and diff outputs.\n10. **HITL bash script.** Last resort. If a human must click, drive _them_ with `scripts/hitl-loop.template.sh` so the loop is still structured. Captured output feeds back to you.\n\nBuild the right feedback loop, and the bug is 90% fixed.\n\n### Tighten the loop\n\nTreat the loop as a product. Once you have _a_ loop, **tighten** it:\n\n- Can I make it faster? (Cache setup, skip unrelated init, narrow the test scope.)\n- Can I make the signal sharper? (Assert on the specific symptom, not \"didn't crash\".)\n- Can I make it more deterministic? (Pin time, seed RNG, isolate filesystem, freeze network.)\n\nA 30-second flaky loop is barely better than no loop; a 2-second deterministic one is tight, a debugging superpower.\n\n### Non-deterministic bugs\n\nThe goal is not a clean repro but a **higher reproduction rate**. Loop the trigger 100×, parallelise, add stress, narrow timing windows, inject sleeps. A 50%-flake bug is debuggable; 1% is not, so keep raising the rate until it's debuggable.\n\n### When you genuinely cannot bui\n\n(Full guide: rigtools/diagnosing_bugs/SKILL.md)",
+  "claude_command": {
+    "name": "diagnosing-bugs",
+    "content": "# /diagnosing-bugs\n\n# Diagnosing Bugs\n\nA discipline for hard bugs. Skip phases only when explicitly justified.\n\nWhen exploring the codebase, read `GLOSSARY.md` (if it exists) to get a clear mental model of the relevant modules, and check ADRs in the area you're touching.\n\n## Redact\n\nThis skill has you show commands, outputs and captured artifacts. **Redact every secret first**: write `<REDACTED>` in its place. Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.\n\nIf the redacted output is not enough to diagnose the bug, say so and ask the user.\n\n## Phase 1: Build a feedback loop\n\n**This is the skill.** Everything else is mechanical. If you have a **tight** pass/fail signal for the bug (one that goes red on _this_ bug), you will find the cause; bisection, hypothesis-testing, and instrumentation all just consume it. If you don't have one, no amount of staring at code will save you.\n\nSpend disproportionate effort here. **Be aggressive. Be creative. Refuse to give up.**\n\n### Ways to construct one, in roughly this order\n\n1. **Failing test** at whatever seam reaches the bug: unit, integration, e2e.\n2. **Curl / HTTP script** against a running dev server.\n3. **CLI invocation** with a fixture input, diffing stdout against a known-good snapshot.\n4. **Headless browser script** (Playwright / Puppeteer) that drives the UI and asserts on DOM/console/network.\n5. **Replay a captured trace.** Save a real network request / payload / event log to disk; replay it through the code path in isolation.\n6. **Throwaway harness.** Spin up a minimal subset of the system (one service, mocked deps) that exercises the bug code path with a single function call.\n7. **Property / fuzz loop.** If the bug is \"sometimes wrong output\", run 1000 random inputs and look for the failure mode.\n8. **Bisection harness.** If the bug appeared between two known states (commit, dataset, version), automate \"boot at state X, check, repeat\" so you can `git bisect run` it.\n9. **Differential loop.** Run the same input through old-version vs new-version (or two configs) and diff outputs.\n10. **HITL bash script.** Last resort. If a human must click, drive _them_ with `scripts/hitl-loop.template.sh` so the loop is still structured. Captured output feeds back to you.\n\nBuild the right feedback loop, and the bug is 90% fixed.\n\n### Tighten the loop\n\nTreat the loop as a product. Once you have _a_ loop, **tighten** it:\n\n- Can I make it faster? (Cache setup, skip unrelated init, narrow the test scope.)\n- Can I make the signal sharper? (Assert on the specific symptom, not \"didn't crash\".)\n- Can I make it more deterministic? (Pin time, seed RNG, isolate filesystem, freeze network.)\n\nA 30-second flaky loop is barely better than no loop; a 2-second deterministic one is tight, a debugging superpower.\n\n### Non-deterministic bugs\n\nThe goal is not a clean repro but a **higher reproduction rate**. Loop the trigger 100×, parallelise, add stress, narrow timing windows, inject sleeps. A 50%-flake bug is debuggable; 1% is not, so keep raising the rate until it's debuggable.\n\n### When you genuinely cannot bui\n\n(Full guide: rigtools/diagnosing_bugs/SKILL.md)"
+  },
+  "dependencies": {
+    "npm": [],
+    "pip": []
+  },
+  "gitignore": [
+    "rigtools/"
+  ],
+  "files_to_copy": [
+    {
+      "rel": "SKILL.md",
+      "source": "scripts/diagnosing_bugs/SKILL.md",
+      "destination": "rigtools/diagnosing_bugs/SKILL.md",
+      "remote_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/diagnosing-bugs/SKILL.md"
+    },
+    {
+      "rel": "scripts/hitl-loop.template.sh",
+      "source": "scripts/diagnosing_bugs/scripts/hitl-loop.template.sh",
+      "destination": "rigtools/diagnosing_bugs/scripts/hitl-loop.template.sh",
+      "remote_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh"
+    }
+  ],
+  "origin": "upstream",
+  "author": "mattpocock",
+  "repo": "mattpocock/skills",
+  "url": "https://github.com/mattpocock/skills",
+  "license": "MIT",
+  "upstream_skill": "skills/engineering/diagnosing-bugs",
+  "upstream_skill_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/diagnosing-bugs/SKILL.md",
+  "upstream_sha": "bf0ebac57760473577c0cf9211478eea8880559275e11ab9d2a37b2c5a02cdce",
+  "upstream_base": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/diagnosing-bugs/",
+  "upstream_files": [
+    {
+      "source": "scripts/diagnosing_bugs/SKILL.md",
+      "rel": "SKILL.md"
+    },
+    {
+      "source": "scripts/diagnosing_bugs/scripts/hitl-loop.template.sh",
+      "rel": "scripts/hitl-loop.template.sh"
+    }
+  ],
+  "refresh_instructions": true
+}
