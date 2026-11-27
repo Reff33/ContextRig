@@ -1313,6 +1313,7 @@ Usage:
   rig --channel <main|testing>       Move a git checkout onto the release or dev branch
   rig --uninstall                    Strip ContextRig from every project & delete ~/.contextrig
   rig --skills                       List, install, update and remove device skills
+  rig --version, -v                  Print the installed version
   rig --help                         Show this help message
 `);
 }
@@ -1320,6 +1321,13 @@ Usage:
 async function runCli(argv) {
   if (argv.includes('--help') || argv.includes('-h')) {
     printCliHelp();
+    return;
+  }
+
+  // A published package needs to answer "which version is this?" without a
+  // git checkout behind it.
+  if (argv.includes('--version') || argv.includes('-v')) {
+    console.log(getCurrentVersionSync());
     return;
   }
 
