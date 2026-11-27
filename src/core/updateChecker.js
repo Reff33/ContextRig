@@ -1,4 +1,3 @@
-import axios from 'axios';
 import fs from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import os from 'node:os';
@@ -97,15 +96,16 @@ async function writeCache(latestVersion) {
 async function fetchLatestVersion() {
   for (const branch of UPDATE_BRANCHES) {
     try {
-      const res = await axios.get(
+      const res = await fetch(
         `https://raw.githubusercontent.com/Reff33/ContextRig/${branch}/package.json`,
         {
-          timeout: REQUEST_TIMEOUT_MS,
           headers: { 'Cache-Control': 'no-cache' },
-          validateStatus: (s) => s === 200
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
         }
       );
-      const version = res.data?.version;
+      if (!res.ok) continue;
+      const data = await res.json();
+      const version = data?.version;
       if (typeof version === 'string' && parseVersion(version)) return version;
     } catch {
       // Branch offline / 404 — try the next one, then skip silently.

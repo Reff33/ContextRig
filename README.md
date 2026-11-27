@@ -105,7 +105,14 @@ flowchart LR
 
 ## Installation
 
-ContextRig is distributed as a **git checkout** today (it is not on the npm registry yet). The checkout ships only the engine — `src/`, `templates/`, `skills_catalog.json`, roughly 130 kB unpacked — because skill assets are downloaded on demand.
+```bash
+npm install -g contextrig
+rig
+```
+
+The package is the engine only — `src/`, `templates/`, `skills_catalog.json`, roughly 130 kB unpacked — because skill assets are downloaded on demand. Nothing is written into a project until you install a skill and inject it.
+
+**From source** (if you want the dev branch or to hack on it):
 
 ```bash
 git clone https://github.com/Reff33/ContextRig.git
