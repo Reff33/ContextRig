@@ -7,7 +7,7 @@
 **Project-scoped context, tool & skill provisioner for AI coding agents.**<br>
 Rig any repository with tailored AI rules, executable scripts, dependencies, `.gitignore` rules, and cloud-synced updates across Claude Code, Cursor, OpenCode, GitHub Copilot, and ChatGPT — without context bloat or overwriting your custom rules.
 
-[![Version](https://img.shields.io/badge/version-0.4.5%20beta-f39c12?style=flat-square)](package.json)
+[![Version](https://img.shields.io/badge/version-0.4.6%20beta-f39c12?style=flat-square)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3fa34d?style=flat-square)](README.md)
 [![Agents](https://img.shields.io/badge/agents-5%20AI%20Profiles-8a2be2?style=flat-square)](#supported-ai-agent-profiles)
 [![Cloud Sync](https://img.shields.io/badge/sync-ETag%20304%20%2B%20SHA--256-00c853?style=flat-square)](#cloud-sync--project-registry)
@@ -55,7 +55,7 @@ Global AI skill folders dump every tool into every repository, bloating context 
 ## Curated Skills Library
 
 <details open>
-<summary><b>16 catalog skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
+<summary><b>17 catalog skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
 
 | Skill ID | Name | Slash Command | Injected Assets | Purpose |
 |---|---|---|---|---|
@@ -73,6 +73,7 @@ Global AI skill folders dump every tool into every repository, bloating context 
 | `tdd` | **TDD** | `/tdd` | `rigtools/tdd/` | Red-green-refactor, one vertical slice at a time, with mocking and test guidance |
 | `mp_code_review` | **Two-Axis Code Review** | `/mp-code-review` | `rigtools/mp_code_review/` | Reviews the diff since a fixed point on two axes — repo standards (+ Fowler smell baseline) and spec fidelity |
 | `retro` | **Session Retro** | `/retro` | `rigtools/retro/` | Suggests environment improvements after a session — navigation, checks, standards, steering files — most severe first |
+| `figcraft_script` | **FigCraft Script-First** | `/figcraft-script` | `rigtools/figcraft_script/` | Plan a FigCraft screen as a JSON command script, run it headless in one undoable batch, then verify with info + PNG |
 
 </details>
 
@@ -100,7 +101,7 @@ flowchart LR
 
 ## Quick Start
 
-#> **Beta (v0.4.5)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
+#> **Beta (v0.4.6)** — ContextRig is pre-1.0. Expect breaking changes between minor versions while the skill manifest and CLI surface stabilise.
 
 ## Installation
 
