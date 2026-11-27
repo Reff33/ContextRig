@@ -14,7 +14,18 @@
       },
       "mcp_servers": [],
       "claude_command": "archify",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/archify.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/archify.json",
+      "origin": "upstream",
+      "author": "tt-a1i",
+      "repo": "tt-a1i/archify",
+      "url": "https://github.com/tt-a1i/archify",
+      "license": "Apache-2.0",
+      "upstream_skill": "archify",
+      "upstream_skill_url": "https://raw.githubusercontent.com/tt-a1i/archify/main/archify/SKILL.md",
+      "refresh_instructions": true,
+      "upstream_base": "",
+      "upstream_sha": "3290b55b2d60f35b7ea3926652fdbec68acd3818a35b26671ff2303eaedc4161",
+      "upstream_checked_at": "2026-11-27"
     },
     {
       "id": "artcraft",
@@ -31,7 +42,16 @@
         "effectcraft"
       ],
       "claude_command": "artcraft",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/artcraft.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/artcraft.json",
+      "origin": "upstream",
+      "author": "midasmatterhorn",
+      "repo": "midasmatterhorn/artcraft-skills",
+      "url": "https://github.com/midasmatterhorn/artcraft-skills",
+      "license": "MIT",
+      "upstream_skill": "19 per-app skills",
+      "upstream_skill_url": "",
+      "refresh_instructions": false,
+      "upstream_base": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/"
     },
     {
       "id": "cut_rig",
@@ -48,7 +68,13 @@
         "cutrig"
       ],
       "claude_command": "cut",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/cut_rig.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/cut_rig.json",
+      "origin": "own",
+      "author": "Reff33",
+      "repo": "Reff33/ContextRig",
+      "url": "https://github.com/Reff33/ContextRig",
+      "license": "MIT",
+      "upstream_skill": ""
     },
     {
       "id": "git_workflow",
@@ -63,7 +89,13 @@
       },
       "mcp_servers": [],
       "claude_command": "commit",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/git_workflow.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/git_workflow.json",
+      "origin": "own",
+      "author": "Reff33",
+      "repo": "Reff33/ContextRig",
+      "url": "https://github.com/Reff33/ContextRig",
+      "license": "MIT",
+      "upstream_skill": ""
     },
     {
       "id": "graphify",
@@ -81,7 +113,21 @@
       "mcp_servers": [],
       "claude_command": "graphify",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/graphify.json",
-      "token_saver": true
+      "token_saver": true,
+      "origin": "own",
+      "author": "Reff33",
+      "repo": "Reff33/ContextRig",
+      "url": "https://github.com/Reff33/ContextRig",
+      "license": "MIT",
+      "upstream_skill": "",
+      "upstream_project": "",
+      "upstream_project_url": "",
+      "upstream_license": "",
+      "wrapper_note": "",
+      "related_project": "Graphify-Labs/graphify",
+      "related_project_url": "https://github.com/Graphify-Labs/graphify",
+      "related_license": "Apache-2.0",
+      "related_note": "ContextRig ships its own compact script (`rigtools/graphify.py`, regex import scan). For the full tree-sitter knowledge graph — every edge tagged, PDFs and docs included — install the upstream Graphify instead."
     },
     {
       "id": "i_have_adhd",
@@ -97,7 +143,19 @@
       "mcp_servers": [],
       "claude_command": "i-have-adhd",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/i_have_adhd.json",
-      "token_saver": true
+      "token_saver": true,
+      "origin": "upstream",
+      "author": "ayghri",
+      "repo": "ayghri/i-have-adhd",
+      "url": "https://github.com/ayghri/i-have-adhd",
+      "license": "see upstream",
+      "upstream_skill_url": "https://raw.githubusercontent.com/ayghri/i-have-adhd/main/skills/i-have-adhd/SKILL.md",
+      "upstream_repo_sha_url": "https://api.github.com/repos/ayghri/i-have-adhd/commits/main",
+      "upstream_sha": "4a3e5f5fd8f671dcf9d920c376c2e14b8da4d3c48ff1a3128edc78cdfc6874fa",
+      "upstream_checked_at": "2026-11-27",
+      "upstream_base": "https://raw.githubusercontent.com/ayghri/i-have-adhd/main/skills/i-have-adhd/",
+      "upstream_files": [],
+      "refresh_instructions": false
     },
     {
       "id": "kinet_rig",
@@ -119,7 +177,13 @@
       },
       "mcp_servers": [],
       "claude_command": "kinet-rig",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/kinet_rig.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/kinet_rig.json",
+      "origin": "own",
+      "author": "Reff33",
+      "repo": "Reff33/ContextRig",
+      "url": "https://github.com/Reff33/ContextRig",
+      "license": "MIT",
+      "upstream_skill": ""
     },
     {
       "id": "no_ai_slop",
@@ -135,7 +199,19 @@
       "mcp_servers": [],
       "claude_command": "no-ai-slop",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/no_ai_slop.json",
-      "token_saver": true
+      "token_saver": true,
+      "origin": "upstream",
+      "author": "petergyang",
+      "repo": "petergyang/no-ai-slop",
+      "url": "https://github.com/petergyang/no-ai-slop",
+      "license": "see upstream",
+      "upstream_skill_url": "https://raw.githubusercontent.com/petergyang/no-ai-slop/main/skills/no-ai-slop/SKILL.md",
+      "upstream_repo_sha_url": "https://api.github.com/repos/petergyang/no-ai-slop/commits/main",
+      "upstream_sha": "d6fe77f0e8d639abf09596398d796c8d852b71b8374540561ec0a798128bbf21",
+      "upstream_checked_at": "2026-11-27",
+      "upstream_base": "https://raw.githubusercontent.com/petergyang/no-ai-slop/main/skills/no-ai-slop/",
+      "upstream_files": [],
+      "refresh_instructions": false
     },
     {
       "id": "playwright",
@@ -152,7 +228,17 @@
       },
       "mcp_servers": [],
       "claude_command": "playwright",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/playwright.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/playwright.json",
+      "origin": "wrapper",
+      "author": "Reff33",
+      "repo": "Reff33/ContextRig",
+      "url": "https://github.com/Reff33/ContextRig",
+      "license": "MIT",
+      "upstream_skill": "",
+      "upstream_project": "microsoft/playwright",
+      "upstream_project_url": "https://github.com/microsoft/playwright",
+      "upstream_license": "Apache-2.0",
+      "wrapper_note": "ContextRig ships its own runner (`rigtools/playwright_runner.js`) that imports the Playwright library. The library itself is a dependency you install — it is not bundled or re-licenced here."
     },
     {
       "id": "ui_ux_pro_max",
@@ -167,7 +253,18 @@
       },
       "mcp_servers": [],
       "claude_command": "ui-ux",
-      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/ui_ux_pro_max.json"
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/ui_ux_pro_max.json",
+      "origin": "upstream",
+      "author": "nextlevelbuilder",
+      "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "license": "MIT",
+      "upstream_skill": ".claude/skills/ui-ux-pro-max",
+      "upstream_skill_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/SKILL.md",
+      "refresh_instructions": true,
+      "upstream_base": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/",
+      "upstream_sha": "2580c09dcb55fc8ad1322c841213004bd672b6e829e0abe4ade133dd51e70f71",
+      "upstream_checked_at": "2026-11-27"
     },
     {
       "id": "web_fetch",
@@ -183,7 +280,262 @@
       "mcp_servers": [],
       "claude_command": "fetch",
       "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/web_fetch.json",
-      "token_saver": true
+      "token_saver": true,
+      "origin": "own",
+      "author": "Reff33",
+      "repo": "Reff33/ContextRig",
+      "url": "https://github.com/Reff33/ContextRig",
+      "license": "MIT",
+      "upstream_skill": "",
+      "upstream_project_url": "",
+      "upstream_project": "",
+      "upstream_license": "",
+      "related_project": "",
+      "related_note": ""
+    },
+    {
+      "id": "grill_me",
+      "name": "Grill Me (Interview Pack)",
+      "description": "Relentless interview that sharpens a plan and writes the project glossary + ADRs as it goes",
+      "category": "workflow",
+      "token_saver": true,
+      "files_count": 4,
+      "size_bytes": 1786,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "grill-me",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/grill_me.json",
+      "pack_files": [
+        "rigtools/grill_me/grilling.md",
+        "rigtools/grill_me/domain-modeling.md",
+        "rigtools/grill_me/ADR-FORMAT.md",
+        "rigtools/grill_me/GLOSSARY-FORMAT.md"
+      ],
+      "origin": "upstream",
+      "author": "mattpocock",
+      "repo": "mattpocock/skills",
+      "url": "https://github.com/mattpocock/skills",
+      "license": "MIT",
+      "upstream_skill": "skills/productivity/grill-me + grilling + domain-modeling",
+      "upstream_skill_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md",
+      "upstream_repo_sha_url": "https://api.github.com/repos/mattpocock/skills/commits/main",
+      "upstream_sha": "5b5973f630e1cea19f647e0956b0a65fcfc083fa0b128c87e566c80386c22f16",
+      "upstream_checked_at": "2026-11-27",
+      "upstream_base": "",
+      "upstream_files": [
+        {
+          "source": "scripts/grill_me/grilling.md",
+          "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md"
+        },
+        {
+          "source": "scripts/grill_me/domain-modeling.md",
+          "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/SKILL.md"
+        },
+        {
+          "source": "scripts/grill_me/ADR-FORMAT.md",
+          "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/ADR-FORMAT.md"
+        },
+        {
+          "source": "scripts/grill_me/GLOSSARY-FORMAT.md",
+          "url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/domain-modeling/GLOSSARY-FORMAT.md"
+        }
+      ],
+      "refresh_instructions": false
+    },
+    {
+      "id": "diagnosing_bugs",
+      "name": "Diagnosing Bugs",
+      "description": "Diagnosis loop for hard bugs and performance regressions. Use when the user says \"diagnose\"/\"debug this\", or reports something broken/throwing/failing/slow.",
+      "category": "workflow",
+      "token_saver": true,
+      "files_count": 2,
+      "size_bytes": 3329,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "diagnosing-bugs",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/diagnosing_bugs.json",
+      "pack_files": [
+        "rigtools/diagnosing_bugs/SKILL.md",
+        "rigtools/diagnosing_bugs/scripts/hitl-loop.template.sh"
+      ],
+      "origin": "upstream",
+      "author": "mattpocock",
+      "repo": "mattpocock/skills",
+      "url": "https://github.com/mattpocock/skills",
+      "license": "MIT",
+      "upstream_skill": "skills/engineering/diagnosing-bugs",
+      "upstream_skill_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/diagnosing-bugs/SKILL.md",
+      "upstream_repo_sha_url": "https://api.github.com/repos/mattpocock/skills/commits/main",
+      "upstream_sha": "bf0ebac57760473577c0cf9211478eea8880559275e11ab9d2a37b2c5a02cdce",
+      "upstream_checked_at": "2026-11-27",
+      "upstream_base": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/diagnosing-bugs/",
+      "upstream_files": [
+        {
+          "source": "scripts/diagnosing_bugs/SKILL.md",
+          "rel": "SKILL.md"
+        },
+        {
+          "source": "scripts/diagnosing_bugs/scripts/hitl-loop.template.sh",
+          "rel": "scripts/hitl-loop.template.sh"
+        }
+      ],
+      "refresh_instructions": true
+    },
+    {
+      "id": "tdd",
+      "name": "TDD",
+      "description": "Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions \"red-green-refactor\", or wants integration tests.",
+      "category": "workflow",
+      "token_saver": true,
+      "files_count": 3,
+      "size_bytes": 3357,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "tdd",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/tdd.json",
+      "pack_files": [
+        "rigtools/tdd/SKILL.md",
+        "rigtools/tdd/tests.md",
+        "rigtools/tdd/mocking.md"
+      ],
+      "origin": "upstream",
+      "author": "mattpocock",
+      "repo": "mattpocock/skills",
+      "url": "https://github.com/mattpocock/skills",
+      "license": "MIT",
+      "upstream_skill": "skills/engineering/tdd",
+      "upstream_skill_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/SKILL.md",
+      "upstream_repo_sha_url": "https://api.github.com/repos/mattpocock/skills/commits/main",
+      "upstream_sha": "7e9335aad6aaf5b006ad995e6158fbe9b7d7d2dcf2540c2211ef44f8609da2ca",
+      "upstream_checked_at": "2026-11-27",
+      "upstream_base": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/tdd/",
+      "upstream_files": [
+        {
+          "source": "scripts/tdd/SKILL.md",
+          "rel": "SKILL.md"
+        },
+        {
+          "source": "scripts/tdd/tests.md",
+          "rel": "tests.md"
+        },
+        {
+          "source": "scripts/tdd/mocking.md",
+          "rel": "mocking.md"
+        }
+      ],
+      "refresh_instructions": true
+    },
+    {
+      "id": "mp_code_review",
+      "name": "Two-Axis Code Review",
+      "description": "Reviews the diff since a fixed point on two axes — repo coding standards (plus a Fowler smell baseline) and faithfulness to the originating spec",
+      "category": "workflow",
+      "token_saver": true,
+      "files_count": 1,
+      "size_bytes": 3288,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "mp-code-review",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/mp_code_review.json",
+      "pack_files": [
+        "rigtools/mp_code_review/SKILL.md"
+      ],
+      "origin": "upstream",
+      "author": "mattpocock",
+      "repo": "mattpocock/skills",
+      "url": "https://github.com/mattpocock/skills",
+      "license": "MIT",
+      "upstream_skill": "skills/engineering/code-review",
+      "upstream_skill_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/code-review/SKILL.md",
+      "upstream_repo_sha_url": "https://api.github.com/repos/mattpocock/skills/commits/main",
+      "upstream_sha": "e10adec59ea43f9ef9151ffefdf823f00ce23a0e019a802c108c1c4ecb09e17a",
+      "upstream_checked_at": "2026-11-27",
+      "upstream_base": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/code-review/",
+      "upstream_files": [
+        {
+          "source": "scripts/mp_code_review/SKILL.md",
+          "rel": "SKILL.md"
+        }
+      ],
+      "refresh_instructions": true
+    },
+    {
+      "id": "retro",
+      "name": "Session Retro",
+      "description": "Retro on a coding session: suggests fixes to the agent environment (navigation, automated checks, standards, steering files, tooling), most severe first",
+      "category": "workflow",
+      "token_saver": true,
+      "files_count": 1,
+      "size_bytes": 3279,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "retro",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/retro.json",
+      "pack_files": [
+        "rigtools/retro/SKILL.md"
+      ],
+      "origin": "upstream",
+      "author": "mattpocock",
+      "repo": "mattpocock/skills",
+      "url": "https://github.com/mattpocock/skills",
+      "license": "MIT",
+      "upstream_skill": "skills/engineering/retro",
+      "upstream_skill_url": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/retro/SKILL.md",
+      "upstream_repo_sha_url": "https://api.github.com/repos/mattpocock/skills/commits/main",
+      "upstream_sha": "20ee0cbd89c8f6406e3c23fa693dc62b3f8d846ec7371bcadba79fa4098d5b36",
+      "upstream_checked_at": "2026-11-27",
+      "upstream_base": "https://raw.githubusercontent.com/mattpocock/skills/main/skills/engineering/retro/",
+      "upstream_files": [
+        {
+          "source": "scripts/retro/SKILL.md",
+          "rel": "SKILL.md"
+        }
+      ],
+      "refresh_instructions": true
+    },
+    {
+      "id": "figcraft_script",
+      "name": "FigCraft Script-First",
+      "description": "Plan a FigCraft screen as a JSON command script, run it headlessly in one undoable batch, then verify",
+      "category": "design",
+      "token_saver": true,
+      "files_count": 2,
+      "size_bytes": 11200,
+      "dependencies": {
+        "npm": [],
+        "pip": []
+      },
+      "mcp_servers": [],
+      "claude_command": "figcraft-script",
+      "manifest_remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/figcraft_script.json",
+      "pack_files": [
+        "rigtools/figcraft_script/build.mjs",
+        "rigtools/figcraft_script/SKILL.md"
+      ],
+      "origin": "own",
+      "author": "Reff33",
+      "repo": "Reff33/ContextRig",
+      "url": "https://github.com/Reff33/ContextRig",
+      "license": "MIT",
+      "related_project": "midasmatterhorn/artcraft-skills",
+      "related_project_url": "https://github.com/midasmatterhorn/artcraft-skills",
+      "related_license": "MIT",
+      "related_note": "Complements the bundled FigCraft app skill. That one documents what FigCraft can do; this one is the execution loop."
     }
   ]
 }

@@ -18,5 +18,17 @@
     "name": "archify",
     "content": "# /archify [type] <description>\n\nGenerate an interactive HTML diagram.\n\n1. If [type] is omitted by the user, briefly list the main choices (architecture, erd, sequence, workflow) and recommend the best one before generating.\n2. For `architecture`, always enable `'quality_profile': 'showcase'` to render the complete UI with right sidebar, main path, node index, and lens tracing.\n3. Save generated diagram to `.archify/` directory.\n4. Output a clickable link to the HTML diagram with a concise architectural summary."
   },
-  "files_to_copy": []
+  "files_to_copy": [],
+  "origin": "upstream",
+  "author": "tt-a1i",
+  "repo": "tt-a1i/archify",
+  "url": "https://github.com/tt-a1i/archify",
+  "license": "Apache-2.0",
+  "upstream_skill": "archify",
+  "upstream_skill_url": "https://raw.githubusercontent.com/tt-a1i/archify/main/archify/SKILL.md",
+  "refresh_instructions": true,
+  "upstream_base": "",
+  "upstream_files": [],
+  "upstream_sha": "3290b55b2d60f35b7ea3926652fdbec68acd3818a35b26671ff2303eaedc4161",
+  "upstream_checked_at": "2026-11-27"
 }

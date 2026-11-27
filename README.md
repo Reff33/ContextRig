@@ -55,7 +55,7 @@ Global AI skill folders dump every tool into every repository, bloating context 
 ## Curated Skills Library
 
 <details open>
-<summary><b>9 catalog skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
+<summary><b>16 catalog skills</b> — scripts, instructions, dependencies & auto-gitignore</summary>
 
 | Skill ID | Name | Slash Command | Injected Assets | Purpose |
 |---|---|---|---|---|
@@ -68,6 +68,11 @@ Global AI skill folders dump every tool into every repository, bloating context 
 | `web_fetch` | **Web Fetch** | `/fetch` | `rigtools/web_fetch.mjs` | Zero-dependency URL reader built on Node's own fetch — no npm or pip install, works for every agent profile |
 | `playwright` | **Playwright** | `/playwright` | `rigtools/playwright_runner.js` | Headless browser runner for E2E checks, screenshots, and console error inspection |
 | `git_workflow` | **Git Workflow** | `/commit`, `/commit-v` | *(System rules & command)* | Enforces Conventional Commits, diff metrics, secret guards, and version contract detection |
+| `grill_me` | **Grill Me (Interview Pack)** | `/grill-me` | `rigtools/grill_me/` | Relentless design-tree interview that also builds the glossary and ADRs — packs [mattpocock/skills](https://github.com/mattpocock/skills) `grilling` + `domain-modeling` |
+| `diagnosing_bugs` | **Diagnosing Bugs** | `/diagnosing-bugs` | `rigtools/diagnosing_bugs/` | Disciplined bug loop: build a failing feedback loop → minimise → hypothesise → instrument → fix → regression test |
+| `tdd` | **TDD** | `/tdd` | `rigtools/tdd/` | Red-green-refactor, one vertical slice at a time, with mocking and test guidance |
+| `mp_code_review` | **Two-Axis Code Review** | `/mp-code-review` | `rigtools/mp_code_review/` | Reviews the diff since a fixed point on two axes — repo standards (+ Fowler smell baseline) and spec fidelity |
+| `retro` | **Session Retro** | `/retro` | `rigtools/retro/` | Suggests environment improvements after a session — navigation, checks, standards, steering files — most severe first |
 
 </details>
 

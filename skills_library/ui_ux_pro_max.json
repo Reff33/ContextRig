@@ -230,5 +230,228 @@
       "destination": "rigtools/ui_ux_pro_max/scripts/search.py",
       "remote_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/search.py"
     }
-  ]
+  ],
+  "origin": "upstream",
+  "author": "nextlevelbuilder",
+  "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+  "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+  "license": "MIT",
+  "upstream_skill": ".claude/skills/ui-ux-pro-max",
+  "upstream_skill_url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/SKILL.md",
+  "refresh_instructions": true,
+  "upstream_base": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/",
+  "upstream_files": [
+    {
+      "source": "scripts/ui_ux_pro_max/SKILL.md",
+      "rel": "SKILL.md",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/SKILL.md"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/app-interface.csv",
+      "rel": "data/app-interface.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/app-interface.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/charts.csv",
+      "rel": "data/charts.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/charts.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/colors.csv",
+      "rel": "data/colors.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/colors.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/google-fonts.csv",
+      "rel": "data/google-fonts.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/google-fonts.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/icons.csv",
+      "rel": "data/icons.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/icons.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/landing.csv",
+      "rel": "data/landing.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/landing.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/motion.csv",
+      "rel": "data/motion.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/motion.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/products.csv",
+      "rel": "data/products.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/products.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/react-performance.csv",
+      "rel": "data/react-performance.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/react-performance.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/angular.csv",
+      "rel": "data/stacks/angular.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/angular.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/astro.csv",
+      "rel": "data/stacks/astro.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/astro.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/avalonia.csv",
+      "rel": "data/stacks/avalonia.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/avalonia.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/flutter.csv",
+      "rel": "data/stacks/flutter.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/flutter.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/html-tailwind.csv",
+      "rel": "data/stacks/html-tailwind.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/html-tailwind.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/javafx.csv",
+      "rel": "data/stacks/javafx.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/javafx.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/jetpack-compose.csv",
+      "rel": "data/stacks/jetpack-compose.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/jetpack-compose.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/laravel.csv",
+      "rel": "data/stacks/laravel.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/laravel.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/nextjs.csv",
+      "rel": "data/stacks/nextjs.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/nextjs.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/nuxt-ui.csv",
+      "rel": "data/stacks/nuxt-ui.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/nuxt-ui.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/nuxtjs.csv",
+      "rel": "data/stacks/nuxtjs.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/nuxtjs.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/react-native.csv",
+      "rel": "data/stacks/react-native.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/react-native.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/react.csv",
+      "rel": "data/stacks/react.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/react.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/shadcn.csv",
+      "rel": "data/stacks/shadcn.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/shadcn.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/svelte.csv",
+      "rel": "data/stacks/svelte.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/svelte.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/swiftui.csv",
+      "rel": "data/stacks/swiftui.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/swiftui.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/threejs.csv",
+      "rel": "data/stacks/threejs.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/threejs.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/uno.csv",
+      "rel": "data/stacks/uno.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/uno.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/uwp.csv",
+      "rel": "data/stacks/uwp.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/uwp.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/vue.csv",
+      "rel": "data/stacks/vue.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/vue.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/winui.csv",
+      "rel": "data/stacks/winui.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/winui.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/stacks/wpf.csv",
+      "rel": "data/stacks/wpf.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/stacks/wpf.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/styles.csv",
+      "rel": "data/styles.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/styles.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/typography.csv",
+      "rel": "data/typography.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/typography.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/ui-reasoning.csv",
+      "rel": "data/ui-reasoning.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/ui-reasoning.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/data/ux-guidelines.csv",
+      "rel": "data/ux-guidelines.csv",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/data/ux-guidelines.csv"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/references/pro-rules.md",
+      "rel": "references/pro-rules.md",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/references/pro-rules.md"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/references/quick-reference.md",
+      "rel": "references/quick-reference.md",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/references/quick-reference.md"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/core.py",
+      "rel": "scripts/core.py",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/core.py"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/design_system.py",
+      "rel": "scripts/design_system.py",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/design_system.py"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/reasoning_contract.py",
+      "rel": "scripts/reasoning_contract.py",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/reasoning_contract.py"
+    },
+    {
+      "source": "scripts/ui_ux_pro_max/scripts/search.py",
+      "rel": "scripts/search.py",
+      "url": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/scripts/search.py"
+    }
+  ],
+  "upstream_sha": "2580c09dcb55fc8ad1322c841213004bd672b6e829e0abe4ade133dd51e70f71",
+  "upstream_checked_at": "2026-11-27"
 }

@@ -18,5 +18,15 @@
   "gitignore": [
     ".agents/"
   ],
-  "files_to_copy": []
+  "files_to_copy": [],
+  "origin": "upstream",
+  "author": "petergyang",
+  "repo": "petergyang/no-ai-slop",
+  "url": "https://github.com/petergyang/no-ai-slop",
+  "license": "see upstream",
+  "upstream_skill_url": "https://raw.githubusercontent.com/petergyang/no-ai-slop/main/skills/no-ai-slop/SKILL.md",
+  "upstream_sha": "d6fe77f0e8d639abf09596398d796c8d852b71b8374540561ec0a798128bbf21",
+  "upstream_base": "https://raw.githubusercontent.com/petergyang/no-ai-slop/main/skills/no-ai-slop/",
+  "upstream_files": [],
+  "refresh_instructions": false
 }

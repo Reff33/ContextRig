@@ -23,5 +23,16 @@
       "destination": "rigtools/web_fetch.mjs",
       "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/web_fetch.mjs"
     }
-  ]
+  ],
+  "origin": "own",
+  "author": "Reff33",
+  "repo": "Reff33/ContextRig",
+  "url": "https://github.com/Reff33/ContextRig",
+  "license": "MIT",
+  "upstream_skill": "",
+  "upstream_project_url": "",
+  "upstream_project": "",
+  "upstream_license": "",
+  "related_project": "",
+  "related_note": ""
 }

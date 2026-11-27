@@ -26,5 +26,19 @@
       "destination": "rigtools/graphify.py",
       "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/graphify.py"
     }
-  ]
+  ],
+  "origin": "own",
+  "author": "Reff33",
+  "repo": "Reff33/ContextRig",
+  "url": "https://github.com/Reff33/ContextRig",
+  "license": "MIT",
+  "upstream_skill": "",
+  "upstream_project": "",
+  "upstream_project_url": "",
+  "upstream_license": "",
+  "wrapper_note": "",
+  "related_project": "Graphify-Labs/graphify",
+  "related_project_url": "https://github.com/Graphify-Labs/graphify",
+  "related_license": "Apache-2.0",
+  "related_note": "ContextRig ships its own compact script (`rigtools/graphify.py`, regex import scan). For the full tree-sitter knowledge graph — every edge tagged, PDFs and docs included — install the upstream Graphify instead."
 }

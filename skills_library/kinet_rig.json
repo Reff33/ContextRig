@@ -139,5 +139,11 @@
       "destination": "rigtools/kinet_rig/scripts/render-remotion.mjs",
       "remote_url": "https://raw.githubusercontent.com/Reff33/KinetRig/testing/scripts/render-remotion.mjs"
     }
-  ]
+  ],
+  "origin": "own",
+  "author": "Reff33",
+  "repo": "Reff33/ContextRig",
+  "url": "https://github.com/Reff33/ContextRig",
+  "license": "MIT",
+  "upstream_skill": ""
 }

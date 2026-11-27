@@ -27,5 +27,15 @@
       "destination": "rigtools/playwright_runner.js",
       "remote_url": "https://raw.githubusercontent.com/Reff33/ContextRig/main/scripts/playwright_runner.js"
     }
-  ]
+  ],
+  "origin": "wrapper",
+  "author": "Reff33",
+  "repo": "Reff33/ContextRig",
+  "url": "https://github.com/Reff33/ContextRig",
+  "license": "MIT",
+  "upstream_skill": "",
+  "upstream_project": "microsoft/playwright",
+  "upstream_project_url": "https://github.com/microsoft/playwright",
+  "upstream_license": "Apache-2.0",
+  "wrapper_note": "ContextRig ships its own runner (`rigtools/playwright_runner.js`) that imports the Playwright library. The library itself is a dependency you install — it is not bundled or re-licenced here."
 }

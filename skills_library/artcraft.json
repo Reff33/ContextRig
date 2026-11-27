@@ -483,5 +483,471 @@
       "destination": "rigtools/artcraft/wordcraft/evidence.md",
       "remote_url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/evidence.md"
     }
+  ],
+  "origin": "upstream",
+  "author": "midasmatterhorn",
+  "repo": "midasmatterhorn/artcraft-skills",
+  "url": "https://github.com/midasmatterhorn/artcraft-skills",
+  "license": "MIT",
+  "upstream_skill": "19 per-app skills",
+  "upstream_skill_url": "",
+  "refresh_instructions": false,
+  "upstream_base": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/",
+  "upstream_files": [
+    {
+      "source": "scripts/artcraft/anicraft/CHANGES.md",
+      "rel": "anicraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/SKILL.md",
+      "rel": "anicraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/agents/openai.yaml",
+      "rel": "anicraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/evidence.md",
+      "rel": "anicraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/references/cli.md",
+      "rel": "anicraft/references/cli.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/references/cli.md"
+    },
+    {
+      "source": "scripts/artcraft/anicraft/references/commands.md",
+      "rel": "anicraft/references/commands.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/anicraft/references/commands.md"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/CHANGES.md",
+      "rel": "cadcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/SKILL.md",
+      "rel": "cadcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/agents/openai.yaml",
+      "rel": "cadcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/cadcraft/evidence.md",
+      "rel": "cadcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/cadcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/CHANGES.md",
+      "rel": "craft-anything/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/SKILL.md",
+      "rel": "craft-anything/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/agents/openai.yaml",
+      "rel": "craft-anything/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/craft-anything/evidence.md",
+      "rel": "craft-anything/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/craft-anything/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/CHANGES.md",
+      "rel": "deckcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/SKILL.md",
+      "rel": "deckcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/agents/openai.yaml",
+      "rel": "deckcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/evidence.md",
+      "rel": "deckcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/deckcraft/references/commands-and-formats.md",
+      "rel": "deckcraft/references/commands-and-formats.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/deckcraft/references/commands-and-formats.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/CHANGES.md",
+      "rel": "designcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/SKILL.md",
+      "rel": "designcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/agents/openai.yaml",
+      "rel": "designcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/evidence.md",
+      "rel": "designcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/designcraft/references/agent-surfaces.md",
+      "rel": "designcraft/references/agent-surfaces.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/designcraft/references/agent-surfaces.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/CHANGES.md",
+      "rel": "effectcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/SKILL.md",
+      "rel": "effectcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/agents/openai.yaml",
+      "rel": "effectcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/evidence.md",
+      "rel": "effectcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/references/after-effects-projects.md",
+      "rel": "effectcraft/references/after-effects-projects.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/references/after-effects-projects.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/references/extensions.md",
+      "rel": "effectcraft/references/extensions.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/references/extensions.md"
+    },
+    {
+      "source": "scripts/artcraft/effectcraft/references/kinetic-typography.md",
+      "rel": "effectcraft/references/kinetic-typography.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/effectcraft/references/kinetic-typography.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/CHANGES.md",
+      "rel": "figcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/SKILL.md",
+      "rel": "figcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/agents/openai.yaml",
+      "rel": "figcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/evidence.md",
+      "rel": "figcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/figcraft/references/automation-surfaces.md",
+      "rel": "figcraft/references/automation-surfaces.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/figcraft/references/automation-surfaces.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/CHANGES.md",
+      "rel": "filmcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/SKILL.md",
+      "rel": "filmcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/agents/openai.yaml",
+      "rel": "filmcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/evidence.md",
+      "rel": "filmcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/references/cli-and-protocol.md",
+      "rel": "filmcraft/references/cli-and-protocol.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/references/cli-and-protocol.md"
+    },
+    {
+      "source": "scripts/artcraft/filmcraft/references/formats.md",
+      "rel": "filmcraft/references/formats.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/filmcraft/references/formats.md"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/CHANGES.md",
+      "rel": "gridcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/SKILL.md",
+      "rel": "gridcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/agents/openai.yaml",
+      "rel": "gridcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/gridcraft/evidence.md",
+      "rel": "gridcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/gridcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/CHANGES.md",
+      "rel": "lightcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/SKILL.md",
+      "rel": "lightcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/agents/openai.yaml",
+      "rel": "lightcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/lightcraft/evidence.md",
+      "rel": "lightcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/lightcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/CHANGES.md",
+      "rel": "mailcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/SKILL.md",
+      "rel": "mailcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/agents/openai.yaml",
+      "rel": "mailcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/evidence.md",
+      "rel": "mailcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/mailcraft/references/automation-surface.md",
+      "rel": "mailcraft/references/automation-surface.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/mailcraft/references/automation-surface.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/CHANGES.md",
+      "rel": "materialcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/SKILL.md",
+      "rel": "materialcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/agents/openai.yaml",
+      "rel": "materialcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/evidence.md",
+      "rel": "materialcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/references/commands.md",
+      "rel": "materialcraft/references/commands.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/references/commands.md"
+    },
+    {
+      "source": "scripts/artcraft/materialcraft/references/library.md",
+      "rel": "materialcraft/references/library.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/materialcraft/references/library.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/CHANGES.md",
+      "rel": "pdfcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/SKILL.md",
+      "rel": "pdfcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/agents/openai.yaml",
+      "rel": "pdfcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/evidence.md",
+      "rel": "pdfcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/pdfcraft/references/automation-tools.md",
+      "rel": "pdfcraft/references/automation-tools.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/pdfcraft/references/automation-tools.md"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/CHANGES.md",
+      "rel": "photocraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/SKILL.md",
+      "rel": "photocraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/agents/openai.yaml",
+      "rel": "photocraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/photocraft/evidence.md",
+      "rel": "photocraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/photocraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/CHANGES.md",
+      "rel": "solidcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/SKILL.md",
+      "rel": "solidcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/agents/openai.yaml",
+      "rel": "solidcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/solidcraft/evidence.md",
+      "rel": "solidcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/solidcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/CHANGES.md",
+      "rel": "soundcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/SKILL.md",
+      "rel": "soundcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/agents/openai.yaml",
+      "rel": "soundcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/soundcraft/evidence.md",
+      "rel": "soundcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/soundcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/CHANGES.md",
+      "rel": "texturecraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/SKILL.md",
+      "rel": "texturecraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/agents/openai.yaml",
+      "rel": "texturecraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/evidence.md",
+      "rel": "texturecraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/texturecraft/references/automation-surfaces.md",
+      "rel": "texturecraft/references/automation-surfaces.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/texturecraft/references/automation-surfaces.md"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/CHANGES.md",
+      "rel": "vectorcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/SKILL.md",
+      "rel": "vectorcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/agents/openai.yaml",
+      "rel": "vectorcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/vectorcraft/evidence.md",
+      "rel": "vectorcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/vectorcraft/evidence.md"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/CHANGES.md",
+      "rel": "wordcraft/CHANGES.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/CHANGES.md"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/SKILL.md",
+      "rel": "wordcraft/SKILL.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/SKILL.md"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/agents/openai.yaml",
+      "rel": "wordcraft/agents/openai.yaml",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/agents/openai.yaml"
+    },
+    {
+      "source": "scripts/artcraft/wordcraft/evidence.md",
+      "rel": "wordcraft/evidence.md",
+      "url": "https://raw.githubusercontent.com/midasmatterhorn/artcraft-skills/main/wordcraft/evidence.md"
+    }
   ]
 }

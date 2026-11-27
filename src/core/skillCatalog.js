@@ -10,6 +10,7 @@ import {
   getDeviceSkillsDir
 } from '../config.js';
 import { getGitHubToken } from './syncEngine.js';
+import { parseSkillMarkdown } from './skillImporter.js';
 
 const FETCH_CONCURRENCY = 8;
 
@@ -135,6 +136,24 @@ export async function getCatalogAndDeviceSkills() {
         // predate them, so fall back to the catalog entry instead of showing nothing.
         category: installed.category || cat.category,
         token_saver: Boolean(installed.token_saver ?? cat.token_saver),
+        // Attribution and upstream tracking live in the shipped catalog; the device
+        // manifest may be older than those fields.
+        origin: installed.origin || cat.origin || 'own',
+        author: installed.author || cat.author || '',
+        repo: installed.repo || cat.repo || '',
+        url: installed.url || cat.url || '',
+        license: installed.license || cat.license || '',
+        upstream_skill: installed.upstream_skill || cat.upstream_skill || '',
+        upstream_skill_url: installed.upstream_skill_url || cat.upstream_skill_url || '',
+        upstream_sha: installed.upstream_sha || cat.upstream_sha || '',
+        upstream_project: installed.upstream_project || cat.upstream_project || '',
+        upstream_project_url: installed.upstream_project_url || cat.upstream_project_url || '',
+        upstream_license: installed.upstream_license || cat.upstream_license || '',
+        wrapper_note: installed.wrapper_note || cat.wrapper_note || '',
+        related_project: installed.related_project || cat.related_project || '',
+        related_project_url: installed.related_project_url || cat.related_project_url || '',
+        related_license: installed.related_license || cat.related_license || '',
+        related_note: installed.related_note || cat.related_note || '',
         on_device: true,
         files_count: Array.isArray(installed.files_to_copy) ? installed.files_to_copy.length : (cat.files_count || 0),
         size_bytes: sizeBytes || Number(cat.size_bytes) || 0,
@@ -151,10 +170,28 @@ export async function getCatalogAndDeviceSkills() {
         dependencies: cat.dependencies || { npm: [], pip: [] },
         mcp_servers: cat.mcp_servers || [],
         claude_command: cat.claude_command ? { name: cat.claude_command, content: '' } : undefined,
-        files_to_copy: [],
+        files_to_copy: Array.isArray(cat.pack_files)
+          ? cat.pack_files.map((dest) => ({ source: '', destination: dest }))
+          : [],
         files_count: Number(cat.files_count) || 0,
         size_bytes: Number(cat.size_bytes) || 0,
         manifest_remote_url: cat.manifest_remote_url || '',
+        origin: cat.origin || 'own',
+        author: cat.author || '',
+        repo: cat.repo || '',
+        url: cat.url || '',
+        license: cat.license || '',
+        upstream_skill: cat.upstream_skill || '',
+        upstream_skill_url: cat.upstream_skill_url || '',
+        upstream_sha: cat.upstream_sha || '',
+        upstream_project: cat.upstream_project || '',
+        upstream_project_url: cat.upstream_project_url || '',
+        upstream_license: cat.upstream_license || '',
+        wrapper_note: cat.wrapper_note || '',
+        related_project: cat.related_project || '',
+        related_project_url: cat.related_project_url || '',
+        related_license: cat.related_license || '',
+        related_note: cat.related_note || '',
         on_device: false,
         in_catalog: true
       });
@@ -307,6 +344,64 @@ export async function removeSkillFromDevice(skillId) {
   return { ok: true, skillId, removedFiles };
 }
 
+/**
+ * Pulls the author's own latest content for a third-party skill. This is what makes
+ * Update meaningful for skills ContextRig only packages: the mirror here can be
+ * stale, but the original repo is always the source of truth.
+ * @param {Object} manifest  device manifest (has upstream_files / upstream_base)
+ * @param {Object} headers
+ * @returns {Promise<{ updatedCount: number, failedFiles: string[] }>}
+ */
+async function syncFromUpstream(manifest, headers) {
+  const deviceDir = getDeviceDir();
+  const items = Array.isArray(manifest.upstream_files) ? manifest.upstream_files : [];
+  let updatedCount = 0;
+  const failedFiles = [];
+
+  await runConcurrent(items, FETCH_CONCURRENCY, async (item) => {
+    const url = item.url || (manifest.upstream_base ? manifest.upstream_base + item.rel : null);
+    if (!url || !item.source) return;
+    const remote = await fetchTextWithCandidates([url], headers);
+    if (remote === null) { failedFiles.push(item.source); return; }
+    const destPath = path.resolve(deviceDir, item.source);
+    if (!isInsideDir(destPath, deviceDir)) return;
+    const existing = existsSync(destPath) ? await fs.readFile(destPath, 'utf8').catch(() => '') : '';
+    if (!existsSync(destPath) || sha256(existing) !== sha256(remote)) {
+      await fs.mkdir(path.dirname(destPath), { recursive: true });
+      await fs.writeFile(destPath, remote, 'utf8');
+      updatedCount++;
+    }
+  });
+
+  // Prompt-only skills have no files; their body is the updatable part.
+  if (manifest.refresh_instructions && manifest.upstream_skill_url) {
+    const raw = await fetchTextWithCandidates([manifest.upstream_skill_url], headers);
+    if (raw) {
+      const parsed = parseSkillMarkdown(raw, manifest.id);
+      // Same shape the package uses: bounded body stored verbatim. Heading
+      // flattening happens at inject time (fileInjector), not here, so an update
+      // compares against the packaged bytes instead of always looking changed.
+      const body = parsed.body.replace(/\r\n/g, '\n').trim();
+      const next = body.length <= 3200
+        ? body
+        : `${body.slice(0, 3200).trimEnd()}\n\n(Full guide: rigtools/${manifest.id}/SKILL.md)`;
+      if (sha256(next) !== sha256(manifest.ai_instructions || '')) {
+        manifest.ai_instructions = next;
+        if (parsed.description) manifest.description = parsed.description;
+        if (manifest.claude_command) {
+          manifest.claude_command.content = `# /${manifest.claude_command.name}\n\n${manifest.ai_instructions}`;
+        }
+        updatedCount++;
+      }
+      // Record what was just pulled, so the skill reads as current afterwards
+      // instead of staying flagged as outdated forever.
+      manifest.upstream_sha = sha256(raw);
+    }
+  }
+
+  return { updatedCount, failedFiles };
+}
+
 export async function updateSkillOnDevice(skillId) {
   if (!skillId || typeof skillId !== 'string') throw new Error('skillId is required.');
   const deviceDir = getDeviceDir();
@@ -379,13 +474,138 @@ export async function updateSkillOnDevice(skillId) {
     await fs.writeFile(manifestPath, `${JSON.stringify(nextManifest, null, 2)}\n`, 'utf8');
   }
 
+  // Third-party skills: refresh from the author's repo, not this project's mirror.
+  let upstreamFiles = 0;
+  let upstreamFailed = [];
+  if (nextManifest.upstream_files || nextManifest.upstream_skill_url) {
+    const up = await syncFromUpstream(nextManifest, headers);
+    upstreamFiles = up.updatedCount;
+    upstreamFailed = up.failedFiles;
+    if (up.updatedCount > 0 || up.failedFiles.length === 0) {
+      nextManifest.upstream_checked_at = new Date().toISOString();
+      await fs.writeFile(manifestPath, `${JSON.stringify(nextManifest, null, 2)}\n`, 'utf8');
+    }
+  }
+
   return {
     ok: true,
-    updated: manifestUpdated || updatedCount > 0,
+    updated: manifestUpdated || updatedCount > 0 || upstreamFiles > 0,
     manifestUpdated,
-    updatedCount,
-    failedFiles,
+    updatedCount: updatedCount + upstreamFiles,
+    upstreamUpdated: upstreamFiles,
+    failedFiles: failedFiles.concat(upstreamFailed),
     skill: nextManifest
+  };
+}
+
+/**
+ * Asks each tracked skill's own source whether it moved. Cached briefly so opening
+ * the Skills tab does not hammer GitHub, and `force` skips the cache.
+ * @param {{ force?: boolean }} [opts]
+ * @returns {Promise<Record<string, 'current'|'outdated'|'none'|'unknown'>>}
+ */
+let updateCache = { at: 0, states: {} };
+
+export async function getSkillUpdateStates({ force = false } = {}) {
+  const CACHE_MS = 10 * 60 * 1000;
+  if (!force && updateCache.at && Date.now() - updateCache.at < CACHE_MS) {
+    return updateCache.states;
+  }
+
+  const catalog = await loadCatalog();
+  const device = await loadDeviceSkills();
+  const deviceById = new Map(device.map((s) => [s.id, s]));
+  const token = await getGitHubToken(ROOT_DIR);
+  const headers = buildHeaders(token);
+  const states = {};
+
+  await runConcurrent(catalog, FETCH_CONCURRENCY, async (entry) => {
+    const local = deviceById.get(entry.id);
+    if (!local) { states[entry.id] = 'none'; return; }
+
+    const sourceUrl = local.upstream_skill_url || entry.upstream_skill_url;
+    const baseline = local.upstream_sha || entry.upstream_sha || '';
+
+    if (!sourceUrl) {
+      // First-party skill: compare the installed manifest against the release mirror.
+      const mirrorUrl = `https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/${entry.id}.json`;
+      const raw = await fetchTextWithCandidates([mirrorUrl], headers);
+      if (raw === null) { states[entry.id] = 'unknown'; return; }
+      states[entry.id] = baseline && baseline !== sha256(raw) ? 'outdated' : 'current';
+      return;
+    }
+
+    const raw = await fetchTextWithCandidates([sourceUrl], headers);
+    if (raw === null) { states[entry.id] = 'unknown'; return; }
+    states[entry.id] = baseline && baseline !== sha256(raw) ? 'outdated' : 'current';
+  });
+
+  updateCache = { at: Date.now(), states };
+  return states;
+}
+
+/**
+ * Compares a skill against the author's own repo, not this project's mirror.
+ * Third-party skills change upstream; the mirror here only freezes a snapshot, so
+ * "is there an update?" must be answered by the original source.
+ * @param {string} skillId
+ */
+export async function checkUpstreamSkill(skillId) {
+  const deviceDir = getDeviceSkillsDir();
+  const manifestPath = path.join(deviceDir, `${skillId}.json`);
+  const catalogEntry = (await loadCatalog()).find((s) => s.id === skillId) || null;
+  const deviceManifest = existsSync(manifestPath)
+    ? JSON.parse(await fs.readFile(manifestPath, 'utf8'))
+    : null;
+  if (!deviceManifest && !catalogEntry) throw new Error(`Unknown skill '${skillId}'.`);
+  // A manifest installed before the attribution fields existed still needs them,
+  // so fall back to the shipped catalog entry rather than reporting "untracked".
+  const local = {
+    ...(catalogEntry || {}),
+    ...(deviceManifest || {}),
+    origin: (deviceManifest && deviceManifest.origin) || (catalogEntry && catalogEntry.origin) || 'own',
+    upstream_skill_url: (deviceManifest && deviceManifest.upstream_skill_url) || (catalogEntry && catalogEntry.upstream_skill_url) || '',
+    upstream_sha: (deviceManifest && deviceManifest.upstream_sha) || (catalogEntry && catalogEntry.upstream_sha) || ''
+  };
+  const token = await getGitHubToken(ROOT_DIR);
+  const headers = buildHeaders(token);
+
+  // First-party skills ship with ContextRig: their update path is the package
+  // mirror below, and their source repository is ContextRig itself.
+  if (!local.upstream_skill_url && local.origin === 'own') {
+    const mainUrl = `https://raw.githubusercontent.com/Reff33/ContextRig/main/skills_library/${skillId}.json`;
+    const raw = await fetchTextWithCandidates([mainUrl, local.manifest_remote_url], headers);
+    if (raw === null) throw new Error('Could not reach the ContextRig repository.');
+    let remote;
+    try { remote = JSON.parse(raw); } catch { throw new Error('Mirror returned invalid JSON.'); }
+    const localRaw = existsSync(manifestPath) ? await fs.readFile(manifestPath, 'utf8') : '';
+    return {
+      ok: true,
+      tracked: true,
+      firstParty: true,
+      skillId,
+      upstreamUrl: mainUrl,
+      drift: Boolean(localRaw) && sha256(localRaw) !== sha256(raw),
+      checkedAt: new Date().toISOString(),
+      message: remote?.name ? 'Compared against the ContextRig release mirror.' : undefined
+    };
+  }
+
+  const raw = await fetchTextWithCandidates([local.upstream_skill_url], headers);
+  if (raw === null) throw new Error('Could not reach the upstream repository.');
+
+  const upstreamSha = sha256(raw);
+  const baseline = local.upstream_sha || '';
+  return {
+    ok: true,
+    tracked: true,
+    skillId,
+    upstreamUrl: local.upstream_skill_url,
+    upstreamSha,
+    baselineSha: baseline,
+    drift: Boolean(baseline) && upstreamSha !== baseline,
+    firstCheck: !baseline,
+    checkedAt: new Date().toISOString()
   };
 }
 

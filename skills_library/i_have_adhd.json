@@ -18,5 +18,15 @@
   "gitignore": [
     ".agents/"
   ],
-  "files_to_copy": []
+  "files_to_copy": [],
+  "origin": "upstream",
+  "author": "ayghri",
+  "repo": "ayghri/i-have-adhd",
+  "url": "https://github.com/ayghri/i-have-adhd",
+  "license": "see upstream",
+  "upstream_skill_url": "https://raw.githubusercontent.com/ayghri/i-have-adhd/main/skills/i-have-adhd/SKILL.md",
+  "upstream_sha": "4a3e5f5fd8f671dcf9d920c376c2e14b8da4d3c48ff1a3128edc78cdfc6874fa",
+  "upstream_base": "https://raw.githubusercontent.com/ayghri/i-have-adhd/main/skills/i-have-adhd/",
+  "upstream_files": [],
+  "refresh_instructions": false
 }

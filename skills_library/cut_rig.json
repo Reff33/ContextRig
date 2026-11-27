@@ -60,5 +60,11 @@
       "destination": "rigtools/cut_rig/references/after-effects.md",
       "remote_url": "https://raw.githubusercontent.com/Reff33/CutRig-MCP/testing/skills/references/after-effects.md"
     }
-  ]
+  ],
+  "origin": "own",
+  "author": "Reff33",
+  "repo": "Reff33/ContextRig",
+  "url": "https://github.com/Reff33/ContextRig",
+  "license": "MIT",
+  "upstream_skill": ""
 }

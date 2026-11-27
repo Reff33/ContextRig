@@ -11,6 +11,8 @@ import {
   installSkillToDevice,
   removeSkillFromDevice,
   updateSkillOnDevice,
+  checkUpstreamSkill,
+  getSkillUpdateStates,
   ensureSkillInstalled
 } from '../core/skillCatalog.js';
 import { getCurrentVersionSync, checkForUpdates } from '../core/updateChecker.js';
@@ -28,6 +30,8 @@ import {
   getSkillSchema
 } from '../core/skillSettings.js';
 import { previewPurge, purgeWorkspace } from '../core/purgeEngine.js';
+import { loadBundles, saveBundles } from '../core/bundleStore.js';
+import { snapshotProject, listSnapshots, restoreSnapshot } from '../core/snapshots.js';
 
 const PORT_PREF_PATH = () => path.join(getDeviceDir(), 'web-port.json');
 
@@ -259,6 +263,9 @@ async function injectToProject({ targetPath, agentValue = 'claude', skillIds = [
 
   const { fullPath, projectName, created } = await setupTargetProject(targetPath);
 
+  // Snapshot the rules files we are about to touch, so a bad inject can be undone.
+  await snapshotProject(fullPath, { agents: [agent.value], reason: 'inject' }).catch(() => null);
+
   const outputFile = await injectTemplate({
     targetDir: fullPath,
     templateFileName: agent.templateFile,
@@ -320,6 +327,7 @@ async function syncProjectsFromWeb({ projectPath, all = false } = {}) {
     }
 
     const agentValues = Array.isArray(proj.agents) && proj.agents.length ? proj.agents : ['claude'];
+    await snapshotProject(proj.path, { agents: agentValues, reason: 'sync' }).catch(() => null);
     for (const av of agentValues) {
       const agent = SUPPORTED_AGENTS.find((a) => a.value === av);
       if (!agent) continue;
@@ -593,6 +601,7 @@ async function removeFromProject({ projectPath, skillIds = [] }) {
   const remainingIds = installed.filter((id) => !validIds.includes(id));
   const remainingSkills = remainingIds.map((id) => byId.get(id)).filter(Boolean);
 
+  await snapshotProject(entry.path, { agents: entry.agents || [], reason: 'remove' }).catch(() => null);
   await removeSkillsFromProject(entry.path, entry.name, skillsToRemove, remainingSkills);
 
   await registerProject({
@@ -606,8 +615,7 @@ async function removeFromProject({ projectPath, skillIds = [] }) {
   return { ok: true, projectPath: entry.path, removed: validIds, remaining: remainingIds };
 }
 
-/** Imports a skill manifest from a GitHub/skills.sh URL into the master library. */
-async function importSkill({ sourceUrl }) {
+/** Imports a skill manifest from a GitHub/skills.sh URL into the master library. */async function importSkill({ sourceUrl }) {
   if (!sourceUrl || typeof sourceUrl !== 'string') throw new Error('sourceUrl is required.');
   const preview = await inspectRemoteSkillRepo(sourceUrl.trim());
   if (!preview.validation.valid) {
@@ -682,7 +690,9 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
         ...s,
         settings_schema: getSkillSchema(s)
       }));
-      sendJson(200, { skills: enriched });
+      // Global conflict map so the matrix can badge skills that would collide
+      // when injected into the same project.
+      sendJson(200, { skills: enriched, conflicts: detectSkillConflicts(skills) });
       return;
     }
 
@@ -691,6 +701,31 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
         const { skillId } = await readBody();
         if (!skillId) { sendJson(400, { ok: false, message: 'skillId is required' }); return; }
         sendJson(200, await installSkillToDevice(skillId));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/skills/updates') {
+      // Which installed skills are behind their own source. Cached for 10 minutes;
+      // ?force=1 re-checks now (used after an Update click).
+      try {
+        const states = await getSkillUpdateStates({ force: url.searchParams.get('force') === '1' });
+        sendJson(200, { ok: true, states });
+      } catch (err) {
+        sendJson(200, { ok: false, states: {}, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/skills/upstream-check' && req.method === 'POST') {
+      // Ask the author's own repo whether their skill moved, so a stale mirror
+      // here is visible instead of silently drifting.
+      try {
+        const { skillId } = await readBody();
+        if (!skillId) { sendJson(400, { ok: false, message: 'skillId is required' }); return; }
+        sendJson(200, await checkUpstreamSkill(skillId));
       } catch (err) {
         sendJson(400, { ok: false, message: err.message });
       }
@@ -900,6 +935,8 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
           'skills',
           'skills/install',
           'skills/update',
+          'skills/upstream-check',
+          'skills/updates',
           'skills/uninstall',
           'sync',
           'inject',
@@ -907,9 +944,84 @@ export function startWebServer({ port = DEFAULT_PORT, host = 'localhost', onShut
           'import',
           'settings',
           'purge',
+          'bundles',
+          'snapshots',
+          'snapshots/restore',
+          'fix-all',
           'shutdown'
         ]
       });
+      return;
+    }
+
+    if (url.pathname === '/api/bundles' && req.method === 'GET') {
+      sendJson(200, { bundles: await loadBundles() });
+      return;
+    }
+
+    if (url.pathname === '/api/bundles' && req.method === 'POST') {
+      try {
+        const body = await readBody();
+        sendJson(200, { ok: true, bundles: await saveBundles(body?.bundles) });
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/snapshots' && req.method === 'GET') {
+      try {
+        const projectPath = url.searchParams.get('projectPath');
+        if (!projectPath) { sendJson(400, { ok: false, message: 'projectPath is required.' }); return; }
+        sendJson(200, { ok: true, snapshots: await listSnapshots(projectPath) });
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/snapshots/restore' && req.method === 'POST') {
+      try {
+        const { projectPath, snapshotId } = await readBody();
+        if (!projectPath) throw new Error('projectPath is required.');
+        sendJson(200, await restoreSnapshot(projectPath, snapshotId));
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
+      return;
+    }
+
+    if (url.pathname === '/api/fix-all' && req.method === 'POST') {
+      // One click repair: re-sync every registered project, then drop orphan
+      // skill references that no longer resolve to a catalog entry.
+      try {
+        const registry = await loadRegistry();
+        const catalog = await getCatalogAndDeviceSkills();
+        const byId = new Map(catalog.map((s) => [s.id, s]));
+
+        const syncResult = await syncProjectsFromWeb({ all: true });
+        const cleaned = [];
+        for (const proj of registry.projects) {
+          const orphans = (proj.skills || []).filter((id) => !byId.has(id));
+          if (!orphans.length) continue;
+          await registerProject({
+            projectPath: proj.path,
+            name: proj.name,
+            agents: proj.agents || [],
+            skills: (proj.skills || []).filter((id) => byId.has(id)),
+            mergeSkills: false
+          });
+          cleaned.push({ name: proj.name, path: proj.path, orphans });
+        }
+        sendJson(200, {
+          ok: true,
+          syncedCount: syncResult.syncedCount,
+          cleaned,
+          orphanCount: cleaned.reduce((n, c) => n + c.orphans.length, 0)
+        });
+      } catch (err) {
+        sendJson(400, { ok: false, message: err.message });
+      }
       return;
     }
 
